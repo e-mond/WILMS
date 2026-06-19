@@ -1,0 +1,56 @@
+import { USER_ROLE } from '@/constants/roles';
+import type { SettingsUserRecord } from '@/types/settings';
+
+export const MOCK_SETTINGS_USERS: SettingsUserRecord[] = [
+  {
+    id: 'user-super-admin',
+    displayName: 'Ama Boateng',
+    email: 'ama.boateng@wilms.demo',
+    role: USER_ROLE.SUPER_ADMIN,
+    roleLabel: 'Super Admin',
+    roleTone: 'gold',
+    lastLoginLabel: 'Today 09:41',
+    status: 'ACTIVE',
+    isCurrentUser: true,
+  },
+  {
+    id: 'user-admin',
+    displayName: 'Kweku Mensah',
+    email: 'kweku.mensah@wilms.demo',
+    role: USER_ROLE.SUPER_ADMIN,
+    roleLabel: 'Admin',
+    roleTone: 'primary',
+    lastLoginLabel: 'Today 08:12',
+    status: 'ACTIVE',
+  },
+  {
+    id: 'user-approver',
+    displayName: 'Akosua Darko',
+    email: 'akosua.darko@wilms.demo',
+    role: USER_ROLE.APPROVER,
+    roleLabel: 'Approver',
+    roleTone: 'primary',
+    lastLoginLabel: 'Yesterday',
+    status: 'ACTIVE',
+  },
+  {
+    id: 'user-readonly',
+    displayName: 'Fiifi Boateng',
+    email: 'fiifi.boateng@wilms.demo',
+    role: USER_ROLE.REGISTRATION_OFFICER,
+    roleLabel: 'Read-Only',
+    roleTone: 'muted',
+    lastLoginLabel: '3 days ago',
+    status: 'ACTIVE',
+  },
+  {
+    id: 'user-auditor',
+    displayName: 'Yaa Owusu',
+    email: 'auditor@wilms.demo',
+    role: USER_ROLE.AUDITOR,
+    roleLabel: 'Auditor',
+    roleTone: 'muted',
+    lastLoginLabel: 'Yesterday',
+    status: 'ACTIVE',
+  },
+];

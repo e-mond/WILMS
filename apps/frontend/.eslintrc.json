@@ -1,0 +1,24 @@
+{
+  "extends": ["next/core-web-vitals", "next/typescript"],
+  "rules": {
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": ["@/mocks", "@/mocks/*"],
+            "message": "Mock data may only be imported from src/services/."
+          }
+        ]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/services/**/*.ts", "src/services/**/*.tsx"],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ]
+}

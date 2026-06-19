@@ -1,0 +1,493 @@
+import { isDatabaseEnabled, runInTransaction } from '../../db/client.js';
+import { BORROWER_STATUS } from '@wilms/shared-contracts';
+import {
+  assertDivisibleLoanAmount,
+  calculateWeeklyPaymentPesewas,
+} from '../../domain/loan/calculations.js';
+import {
+  LOAN_LIFECYCLE,
+  assertLifecycleTransition,
+} from '../../domain/loan/lifecycle.js';
+import {
+  calculateLoanProgress,
+  mapLoanRowToDetail,
+  mapScheduleRow,
+  sumRepaymentLedgerAmounts,
+  type LoanDetailDto,
+} from '../../domain/loan/mappers.js';
+import { generateLoanScheduleWeeks } from '../../domain/loan/schedule.js';
+import { runWithIdempotency } from '../../infrastructure/idempotency/run-with-idempotency.js';
+import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
+import * as borrowerRepo from '../../repositories/borrower.repository.js';
+import * as disbursementRepo from '../../repositories/loan-disbursement.repository.js';
+import * as ledgerRepo from '../../repositories/ledger.repository.js';
+import * as loanRepo from '../../repositories/loan.repository.js';
+import * as scheduleRepo from '../../repositories/loan-schedule.repository.js';
+
+export interface CreateLoanBody {
+  borrowerId: string;
+  amountPesewas: number;
+  durationWeeks: number;
+  paymentDay: string;
+  cycleBatch: string;
+  startDate: string;
+}
+
+function mapServiceError(error: unknown): never {
+  if (error instanceof Error) {
+    if (error.message.startsWith('NOT_FOUND')) {
+      throw new Error('NOT_FOUND');
+    }
+    if (error.message.startsWith('VALIDATION')) {
+      throw new Error('VALIDATION');
+    }
+    if (error.message.startsWith('CONFLICT')) {
+      throw new Error('CONFLICT');
+    }
+    if (error.message === 'IDEMPOTENCY_IN_PROGRESS') {
+      throw new Error('IDEMPOTENCY_IN_PROGRESS');
+    }
+  }
+  throw error;
+}
+
+function requireDatabase(): void {
+  if (!isDatabaseEnabled()) {
+    throw new Error('VALIDATION:Database persistence is required for loan operations.');
+  }
+}
+
+async function getBorrowerName(borrowerId: string): Promise<string> {
+  const borrower = await borrowerRepo.getBorrower(borrowerId);
+  return borrower?.fullName ?? 'Unknown borrower';
+}
+
+export async function listLoans(status?: string): Promise<LoanDetailDto[]> {
+  requireDatabase();
+  const rows = await loanRepo.listLoans(status ? { externalStatus: status } : undefined);
+  return rows.map(mapLoanRowToDetail);
+}
+
+export async function getLoan(id: string): Promise<LoanDetailDto> {
+  requireDatabase();
+  const row = await loanRepo.findLoanById(id);
+  if (!row) {
+    throw new Error('NOT_FOUND');
+  }
+  return mapLoanRowToDetail(row);
+}
+
+export async function createLoan(input: CreateLoanBody, actorId: string): Promise<LoanDetailDto> {
+  requireDatabase();
+  assertDivisibleLoanAmount(input.amountPesewas, input.durationWeeks);
+
+  const borrower = await borrowerRepo.getBorrower(input.borrowerId);
+  if (!borrower) {
+    throw new Error('NOT_FOUND');
+  }
+  if (borrower.status !== BORROWER_STATUS.APPROVED) {
+    throw new Error('VALIDATION:Loans can only be created for approved borrowers.');
+  }
+  if (await loanRepo.borrowerHasOpenLoan(input.borrowerId)) {
+    throw new Error('VALIDATION:This borrower already has an active or pending loan.');
+  }
+
+  const weeklyPaymentPesewas = calculateWeeklyPaymentPesewas(
+    input.amountPesewas,
+    input.durationWeeks,
+  );
+  const scheduleWeeks = generateLoanScheduleWeeks({
+    durationWeeks: input.durationWeeks,
+    weeklyPaymentPesewas,
+    startDate: input.startDate,
+    paymentDay: input.paymentDay,
+  });
+
+  try {
+    const loan = await runInTransaction(async (tx) => {
+      const row = await loanRepo.insertLoan(
+        {
+          borrowerId: input.borrowerId,
+          amountPesewas: input.amountPesewas,
+          durationWeeks: input.durationWeeks,
+          weeklyPaymentPesewas,
+          paymentDay: input.paymentDay,
+          startDate: input.startDate,
+          cycleBatch: input.cycleBatch,
+          createdByUserId: actorId,
+        },
+        tx,
+      );
+
+      await scheduleRepo.insertScheduleWeeks(row.id, scheduleWeeks, tx);
+      await ledgerRepo.appendLedgerEntry(
+        {
+          entryType: 'INTEREST_CHARGE',
+          loanId: row.id,
+          borrowerId: input.borrowerId,
+          amountDecimal: '0.00',
+          description: 'Loan created pending disbursement',
+          actorUserId: actorId,
+        },
+        tx,
+      );
+
+      return row;
+    });
+
+    appendAuditEntry({
+      action: 'loan.created',
+      actorId,
+      targetEntityId: loan.id,
+      targetEntityType: 'loan',
+    });
+
+    return mapLoanRowToDetail(loan);
+  } catch (error) {
+    mapServiceError(error);
+  }
+}
+
+export async function approveLoan(loanId: string, actorId: string): Promise<LoanDetailDto> {
+  requireDatabase();
+  const loan = await loanRepo.findLoanById(loanId);
+  if (!loan) {
+    throw new Error('NOT_FOUND');
+  }
+
+  if (loan.lifecycleStatus === LOAN_LIFECYCLE.PENDING_DISBURSEMENT) {
+    return mapLoanRowToDetail(loan);
+  }
+
+  if (loan.lifecycleStatus === LOAN_LIFECYCLE.PENDING_APPROVAL) {
+    assertLifecycleTransition(loan.lifecycleStatus, LOAN_LIFECYCLE.APPROVED);
+  } else if (loan.lifecycleStatus === LOAN_LIFECYCLE.DRAFT) {
+    assertLifecycleTransition(loan.lifecycleStatus, LOAN_LIFECYCLE.PENDING_APPROVAL);
+    assertLifecycleTransition(LOAN_LIFECYCLE.PENDING_APPROVAL, LOAN_LIFECYCLE.APPROVED);
+  } else {
+    throw new Error(`VALIDATION:Loan cannot be approved from status ${loan.lifecycleStatus}.`);
+  }
+
+  const updated = await runInTransaction(async (tx) => {
+    const approved = await loanRepo.updateLoanLifecycle(
+      {
+        loanId,
+        expectedVersion: loan.version,
+        lifecycleStatus: LOAN_LIFECYCLE.PENDING_DISBURSEMENT,
+        approvedByUserId: actorId,
+      },
+      tx,
+    );
+
+    await ledgerRepo.appendLedgerEntry(
+      {
+        entryType: 'INTEREST_CHARGE',
+        loanId,
+        borrowerId: loan.borrowerId,
+        amountDecimal: '0.00',
+        description: 'Loan approved',
+        actorUserId: actorId,
+      },
+      tx,
+    );
+
+    return approved;
+  });
+
+  appendAuditEntry({
+    action: 'loan.approved',
+    actorId,
+    targetEntityId: loanId,
+    targetEntityType: 'loan',
+  });
+
+  return mapLoanRowToDetail(updated);
+}
+
+export async function rejectLoan(
+  loanId: string,
+  reason: string,
+  actorId: string,
+): Promise<LoanDetailDto> {
+  requireDatabase();
+  const loan = await loanRepo.findLoanById(loanId);
+  if (!loan) {
+    throw new Error('NOT_FOUND');
+  }
+
+  assertLifecycleTransition(loan.lifecycleStatus as never, LOAN_LIFECYCLE.REJECTED);
+
+  const updated = await loanRepo.updateLoanLifecycle({
+    loanId,
+    expectedVersion: loan.version,
+    lifecycleStatus: LOAN_LIFECYCLE.REJECTED,
+    rejectionReason: reason.trim(),
+    approvedByUserId: actorId,
+  });
+
+  appendAuditEntry({
+    action: 'loan.rejected',
+    actorId,
+    targetEntityId: loanId,
+    targetEntityType: 'loan',
+    reason: reason.trim(),
+  });
+
+  return mapLoanRowToDetail(updated);
+}
+
+export async function disburseLoan(
+  loanId: string,
+  actorId: string,
+  idempotencyKey?: string,
+): Promise<LoanDetailDto> {
+  requireDatabase();
+
+  return runWithIdempotency({
+    scope: 'LOAN_DISBURSE',
+    actorUserId: actorId,
+    idempotencyKey,
+    responseStatus: 200,
+    execute: async () => {
+      const loan = await loanRepo.findLoanById(loanId);
+      if (!loan) {
+        throw new Error('NOT_FOUND');
+      }
+      if (loan.externalStatus !== 'PENDING_DISBURSEMENT') {
+        throw new Error('VALIDATION:Only loans pending disbursement can be disbursed.');
+      }
+
+      const amountDecimal = loan.principalAmount;
+
+      const updated = await runInTransaction(async (tx) => {
+        const disbursed = await loanRepo.updateLoanLifecycle(
+          {
+            loanId,
+            expectedVersion: loan.version,
+            lifecycleStatus: LOAN_LIFECYCLE.DISBURSED,
+            disbursedAmount: amountDecimal,
+            disbursedByUserId: actorId,
+          },
+          tx,
+        );
+
+        const active = await loanRepo.updateLoanLifecycle(
+          {
+            loanId,
+            expectedVersion: disbursed.version,
+            lifecycleStatus: LOAN_LIFECYCLE.ACTIVE,
+          },
+          tx,
+        );
+
+        await disbursementRepo.insertDisbursement(
+          {
+            loanId,
+            amountDecimal,
+            disbursedByUserId: actorId,
+          },
+          tx,
+        );
+
+        await ledgerRepo.appendLedgerEntry(
+          {
+            entryType: 'LOAN_DISBURSEMENT',
+            loanId,
+            borrowerId: loan.borrowerId,
+            amountDecimal,
+            description: 'Loan disbursed',
+            actorUserId: actorId,
+          },
+          tx,
+        );
+
+        return active;
+      });
+
+      const dto = mapLoanRowToDetail(updated);
+
+      appendAuditEntry({
+        action: 'loan.disbursed',
+        actorId,
+        targetEntityId: loanId,
+        targetEntityType: 'loan',
+      });
+
+      return dto;
+    },
+  });
+}
+
+export async function getLoanSchedule(loanId: string, referenceDate?: string) {
+  requireDatabase();
+  const loan = await loanRepo.findLoanById(loanId);
+  if (!loan) {
+    throw new Error('NOT_FOUND');
+  }
+
+  const ref = referenceDate ?? new Date().toISOString().slice(0, 10);
+  await scheduleRepo.applyMissedWeekMarking(loanId, ref);
+  const weeks = await scheduleRepo.listScheduleWeeks(loanId);
+
+  if (!weeks.length) {
+    throw new Error('NOT_FOUND');
+  }
+
+  return {
+    loanId,
+    weeks: weeks.map(mapScheduleRow),
+  };
+}
+
+export async function getLoanProgress(loanId: string, referenceDate?: string) {
+  requireDatabase();
+  const loan = await loanRepo.findLoanById(loanId);
+  if (!loan) {
+    throw new Error('NOT_FOUND');
+  }
+
+  const schedule = await getLoanSchedule(loanId, referenceDate);
+  const ledger = await ledgerRepo.listLedgerForLoan(loanId);
+  const totalPaidPesewas = sumRepaymentLedgerAmounts(ledger);
+
+  return calculateLoanProgress({
+    loanId,
+    amountPesewas: mapLoanRowToDetail(loan).amountPesewas,
+    scheduleWeeks: schedule.weeks,
+    totalPaidPesewas,
+    referenceDate,
+  });
+}
+
+export async function listLoanPaymentLog(loanId: string) {
+  requireDatabase();
+  const loan = await loanRepo.findLoanById(loanId);
+  if (!loan) {
+    throw new Error('NOT_FOUND');
+  }
+
+  const disbursement = await disbursementRepo.findDisbursementByLoan(loanId);
+  const ledger = await ledgerRepo.listLedgerForLoan(loanId);
+  const payments = ledger.filter((row) => row.entryType === 'REPAYMENT');
+
+  const entries = [];
+
+  if (disbursement) {
+    entries.push({
+      id: disbursement.id,
+      type: 'DISBURSEMENT' as const,
+      amountPesewas: Math.round(Number(disbursement.disbursedAmount) * 100),
+      recordedAt: disbursement.disbursedAt.toISOString(),
+      collectorId: disbursement.disbursedByUserId,
+      paymentStatus: 'CONFIRMED' as const,
+    });
+  }
+
+  for (const payment of payments) {
+    entries.push({
+      id: payment.id,
+      type: 'REPAYMENT' as const,
+      amountPesewas: Math.round(Number(payment.amount) * 100),
+      recordedAt: payment.recordedAt.toISOString(),
+      collectorId: payment.actorUserId ?? '',
+      weekNumber: (payment.metadata as { weekNumber?: number } | null)?.weekNumber,
+      paymentStatus: 'CONFIRMED' as const,
+      gpsVerified: true,
+    });
+  }
+
+  return entries.sort((left, right) => right.recordedAt.localeCompare(left.recordedAt));
+}
+
+export async function listPortfolioEntries() {
+  requireDatabase();
+  const rows = await loanRepo.listLoans();
+  const entries = await Promise.all(
+    rows.map(async (row) => {
+      const detail = mapLoanRowToDetail(row);
+      const borrowerName = await getBorrowerName(row.borrowerId);
+      const borrower = await borrowerRepo.getBorrower(row.borrowerId);
+      return {
+        id: detail.id,
+        borrowerId: detail.borrowerId,
+        borrowerName,
+        community: borrower?.community ?? '—',
+        groupName: borrower?.groupName ?? '—',
+        amountPesewas: detail.amountPesewas,
+        outstandingPesewas: detail.outstandingPesewas,
+        weeklyPaymentPesewas: detail.weeklyPaymentPesewas,
+        durationWeeks: detail.durationWeeks,
+        status: detail.status,
+        cycleBatch: detail.cycleBatch,
+        paymentDay: detail.paymentDay,
+        startDate: detail.startDate,
+      };
+    }),
+  );
+
+  return entries.sort((left, right) => left.borrowerName.localeCompare(right.borrowerName));
+}
+
+export async function listBorrowerLoans(borrowerId: string) {
+  requireDatabase();
+  const rows = await loanRepo.listBorrowerLoans(borrowerId);
+  return rows.map((row) => {
+    const detail = mapLoanRowToDetail(row);
+    return {
+      id: detail.id,
+      amountPesewas: detail.amountPesewas,
+      outstandingPesewas: detail.outstandingPesewas,
+      weeklyPaymentPesewas: detail.weeklyPaymentPesewas,
+      durationWeeks: detail.durationWeeks,
+      status: detail.status,
+      cycleBatch: detail.cycleBatch,
+      startDate: detail.startDate,
+    };
+  });
+}
+
+export async function listEligibleBorrowers() {
+  requireDatabase();
+  const borrowers = await borrowerRepo.listBorrowers();
+  const eligible = [];
+
+  for (const borrower of borrowers) {
+    if (borrower.status !== BORROWER_STATUS.APPROVED) {
+      continue;
+    }
+    if (await loanRepo.borrowerHasOpenLoan(borrower.id)) {
+      continue;
+    }
+    eligible.push({
+      id: borrower.id,
+      fullName: borrower.fullName,
+      phone: borrower.phone,
+      community: borrower.community,
+      groupName: borrower.groupName,
+    });
+  }
+
+  return eligible.sort((left, right) => left.fullName.localeCompare(right.fullName));
+}
+
+export async function getDisbursementEligibility(borrowerId: string) {
+  requireDatabase();
+  const borrower = await borrowerRepo.getBorrower(borrowerId);
+  if (!borrower) {
+    return { borrowerId, canDisburse: false, reason: 'Borrower not found.' };
+  }
+
+  const pendingLoan = (await loanRepo.listBorrowerLoans(borrowerId)).find(
+    (row) => row.externalStatus === 'PENDING_DISBURSEMENT',
+  );
+
+  if (!pendingLoan) {
+    return {
+      borrowerId,
+      canDisburse: false,
+      reason: 'No loan pending disbursement for this borrower.',
+    };
+  }
+
+  return { borrowerId, canDisburse: true };
+}

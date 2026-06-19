@@ -1,0 +1,25 @@
+export const USER_ROLE = {
+  SUPER_ADMIN: 'SUPER_ADMIN',
+  COLLECTOR: 'COLLECTOR',
+  REGISTRATION_OFFICER: 'REGISTRATION_OFFICER',
+  APPROVER: 'APPROVER',
+  AUDITOR: 'AUDITOR',
+} as const;
+
+export type UserRole = (typeof USER_ROLE)[keyof typeof USER_ROLE];
+
+export const ALL_USER_ROLES: UserRole[] = [
+  USER_ROLE.SUPER_ADMIN,
+  USER_ROLE.COLLECTOR,
+  USER_ROLE.REGISTRATION_OFFICER,
+  USER_ROLE.APPROVER,
+  USER_ROLE.AUDITOR,
+];
+
+export const ROLE_LABELS: Record<UserRole, string> = {
+  [USER_ROLE.SUPER_ADMIN]: 'Super Admin',
+  [USER_ROLE.COLLECTOR]: 'Collector',
+  [USER_ROLE.REGISTRATION_OFFICER]: 'Registration Officer',
+  [USER_ROLE.APPROVER]: 'Approver',
+  [USER_ROLE.AUDITOR]: 'Auditor',
+};

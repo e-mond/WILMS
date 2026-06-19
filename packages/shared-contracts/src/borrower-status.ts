@@ -1,0 +1,10 @@
+export const BORROWER_STATUS = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  AT_RISK: 'AT_RISK',
+  DEFAULTED: 'DEFAULTED',
+  REJECTED: 'REJECTED',
+  BLACKLISTED: 'BLACKLISTED',
+} as const;
+
+export type BorrowerStatus = (typeof BORROWER_STATUS)[keyof typeof BORROWER_STATUS];
