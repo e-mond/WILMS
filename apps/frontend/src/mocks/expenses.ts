@@ -1,0 +1,43 @@
+import { EXPENSE_CATEGORY, EXPENSE_STATUS, type ExpenseRecord } from '@/types/expense';
+
+export const MOCK_EXPENSES: ExpenseRecord[] = [
+  {
+    id: 'EXP-001',
+    category: EXPENSE_CATEGORY.FUEL,
+    categoryLabel: 'Fuel',
+    amountPesewas: 18000,
+    expenseDate: '2026-06-08',
+    reason: 'Field visit fuel top-up',
+    notes: 'Kumasi route',
+    receiptFileName: 'fuel-receipt-001.jpg',
+    gpsLabel: '5.6037, -0.1870',
+    recordedById: 'user-collector',
+    recordedByName: 'Kwame Asante',
+    status: EXPENSE_STATUS.APPROVED,
+    createdAt: '2026-06-08T16:20:00.000Z',
+  },
+  {
+    id: 'EXP-002',
+    category: EXPENSE_CATEGORY.TRANSPORT,
+    categoryLabel: 'Transport',
+    amountPesewas: 4500,
+    expenseDate: '2026-06-09',
+    reason: 'Trotro fare for borrower visits',
+    recordedById: 'user-collector-2',
+    recordedByName: 'Ama Mensah',
+    status: EXPENSE_STATUS.PENDING,
+    createdAt: '2026-06-09T10:05:00.000Z',
+  },
+  {
+    id: 'EXP-003',
+    category: EXPENSE_CATEGORY.OFFICE,
+    categoryLabel: 'Office Expenses',
+    amountPesewas: 32000,
+    expenseDate: '2026-06-07',
+    reason: 'Printing and stationery',
+    recordedById: 'user-admin',
+    recordedByName: 'Kweku Mensah',
+    status: EXPENSE_STATUS.APPROVED,
+    createdAt: '2026-06-07T14:00:00.000Z',
+  },
+];

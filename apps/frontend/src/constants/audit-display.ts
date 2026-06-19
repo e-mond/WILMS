@@ -1,0 +1,34 @@
+import { AUDIT_ACTION, type AuditAction } from '@/constants/audit';
+
+export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
+  [AUDIT_ACTION.BORROWER_REGISTERED]: 'Borrower registered',
+  [AUDIT_ACTION.BORROWER_APPROVED]: 'Borrower approved',
+  [AUDIT_ACTION.BORROWER_REJECTED]: 'Borrower rejected',
+  [AUDIT_ACTION.BORROWER_BLACKLISTED]: 'Borrower blacklisted',
+  [AUDIT_ACTION.PAYMENT_RECORDED]: 'Payment recorded',
+  [AUDIT_ACTION.PAYMENT_EDITED]: 'Payment edited',
+  [AUDIT_ACTION.OVERPAYMENT_FLAGGED]: 'Overpayment flagged',
+  [AUDIT_ACTION.OVERPAYMENT_REVIEWED]: 'Overpayment reviewed',
+  [AUDIT_ACTION.ADJUSTMENT_REQUESTED]: 'Adjustment requested',
+  [AUDIT_ACTION.ADJUSTMENT_APPROVED]: 'Adjustment approved',
+  [AUDIT_ACTION.ADJUSTMENT_REJECTED]: 'Adjustment rejected',
+  [AUDIT_ACTION.RECONCILIATION_SUBMITTED]: 'Reconciliation submitted',
+  [AUDIT_ACTION.USER_LOGGED_OUT]: 'User logged out',
+  [AUDIT_ACTION.GROUP_FLAGGED]: 'Group flagged',
+  [AUDIT_ACTION.GROUP_COLLECTOR_REASSIGNED]: 'Group collector reassigned',
+  [AUDIT_ACTION.GROUP_MEMBER_ADDED]: 'Group member added',
+  [AUDIT_ACTION.GROUP_MEMBER_REMOVED]: 'Group member removed',
+  [AUDIT_ACTION.GROUP_LEADER_REPLACED]: 'Group leader replaced',
+  [AUDIT_ACTION.GROUP_ADJUSTMENT_RECORDED]: 'Group adjustment recorded',
+  [AUDIT_ACTION.GROUP_DISPLAY_NAME_UPDATED]: 'Group display name updated',
+  [AUDIT_ACTION.RISK_FLAG_ESCALATED]: 'Risk flag escalated',
+  [AUDIT_ACTION.RISK_FLAG_RESOLVED]: 'Risk flag resolved',
+  [AUDIT_ACTION.RISK_FLAG_ASSIGNED]: 'Risk flag assigned',
+  [AUDIT_ACTION.RISK_FLAG_RAISED]: 'Risk flag raised',
+  [AUDIT_ACTION.SETTINGS_EXPORTED]: 'Settings exported',
+};
+
+export const AUDIT_ACTION_FILTER_OPTIONS = [
+  { value: '', label: 'All actions' },
+  ...Object.entries(AUDIT_ACTION_LABELS).map(([value, label]) => ({ value, label })),
+];

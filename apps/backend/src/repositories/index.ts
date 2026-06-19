@@ -1,0 +1,10 @@
+export * as borrowerRepository from './borrower.repository.js';
+export * as paymentRepository from './payment.repository.js';
+export * as groupRepository from './group.repository.js';
+export * as auditRepository from './audit.repository.js';
+export * as userRepository from './user.repository.js';
+export * as loanRepository from './loan.repository.js';
+export * as loanScheduleRepository from './loan-schedule.repository.js';
+export * as loanDisbursementRepository from './loan-disbursement.repository.js';
+export * as ledgerRepository from './ledger.repository.js';
+export * as idempotencyRepository from './idempotency.repository.js';

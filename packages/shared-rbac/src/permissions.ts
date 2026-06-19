@@ -1,0 +1,50 @@
+/**
+ * Canonical permission identifiers — use these instead of string literals.
+ */
+export const PERMISSION = {
+  ACCESS_ADMIN_PORTAL: 'access-admin-portal',
+  ACCESS_COLLECTOR_PORTAL: 'access-collector-portal',
+  ACCESS_REGISTRATION_PORTAL: 'access-registration-portal',
+  ACCESS_APPROVER_PORTAL: 'access-approver-portal',
+  ACCESS_AUDITOR_PORTAL: 'access-auditor-portal',
+  REGISTER_BORROWERS: 'register-borrowers',
+  EDIT_BORROWERS: 'edit-borrowers',
+  EDIT_PENDING_REGISTRATIONS: 'edit-pending-registrations',
+  CAPTURE_DOCUMENTS: 'capture-documents',
+  UPLOAD_SIGNATURES: 'upload-signatures',
+  GPS_VERIFICATION: 'gps-verification',
+  MANAGE_GROUPS: 'manage-groups',
+  VIEW_ASSIGNED_BORROWERS: 'view-assigned-borrowers',
+  RECORD_COLLECTIONS: 'record-collections',
+  RECORD_EXPENSES: 'record-expenses',
+  VIEW_REPORTS: 'view-reports',
+  VIEW_FINANCIAL_REPORTS: 'view-financial-reports',
+  EXPORT_REPORTS: 'export-reports',
+  VIEW_AUDIT_LOG: 'view-audit-log',
+  REVIEW_APPLICATIONS: 'review-applications',
+  APPROVE_BORROWERS: 'approve-borrowers',
+  APPROVE_LOANS: 'approve-loans',
+  REJECT_LOANS: 'reject-loans',
+  REVIEW_RISK_FLAGS: 'review-risk-flags',
+  MANAGE_USERS: 'manage-users',
+  EDIT_USERS: 'edit-users',
+  VIEW_ALL_USERS: 'view-all-users',
+  RESET_PASSWORD: 'reset-password',
+  RESET_PIN: 'reset-pin',
+  SUSPEND_USERS: 'suspend-users',
+  ACTIVATE_USERS: 'activate-users',
+  ASSIGN_PERMISSIONS: 'assign-permissions',
+  ASSIGN_ROLES: 'assign-roles',
+  DELEGATE_AUTHORITY: 'delegate-authority',
+  VIEW_AUDIT_HISTORY: 'view-audit-history',
+  MANAGE_ROLES: 'manage-roles',
+  MANAGE_SYSTEM_SETTINGS: 'manage-system-settings',
+  MANAGE_EXPENSES: 'manage-expenses',
+  VIEW_ALL_COLLECTORS: 'view-all-collectors',
+  FORCE_LOGOUT: 'force-logout',
+  ENABLE_MFA: 'enable-mfa',
+} as const;
+
+export type PermissionId = (typeof PERMISSION)[keyof typeof PERMISSION];
+
+export const ALL_PERMISSION_IDS: PermissionId[] = Object.values(PERMISSION);

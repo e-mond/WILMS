@@ -1,0 +1,23 @@
+{
+  "name": "wilms",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @wilms/frontend",
+    "dev:api": "npm run dev -w @wilms/api",
+    "build": "npm run build -w @wilms/frontend",
+    "start": "npm run start -w @wilms/frontend",
+    "lint": "npm run lint -w @wilms/frontend",
+    "type-check": "npm run type-check -w @wilms/frontend && npm run type-check -w @wilms/api",
+    "type-check:api": "npm run type-check -w @wilms/api",
+    "test": "npm run test -w @wilms/frontend",
+    "test:coverage": "npm run test:coverage -w @wilms/frontend",
+    "test:watch": "npm run test:watch -w @wilms/frontend",
+    "test:e2e:install": "npm run test:e2e:install -w @wilms/frontend",
+    "test:e2e": "npm run test:e2e -w @wilms/frontend"
+  }
+}

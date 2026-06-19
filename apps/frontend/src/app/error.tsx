@@ -1,0 +1,34 @@
+'use client';
+
+import { Button } from '@/components/ui/Button';
+
+export default function GlobalError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  const isChunkError = error.name === 'ChunkLoadError' || error.message.includes('Loading chunk');
+
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center gap-wilms-4 bg-background px-wilms-4 text-center">
+      <h1 className="text-heading-1 font-semibold text-text-primary">
+        {isChunkError ? 'Page failed to load' : 'Something went wrong'}
+      </h1>
+      <p className="max-w-md text-body text-text-muted">
+        {isChunkError
+          ? 'A stale application bundle was detected. Refresh the page or try again after the latest build finishes.'
+          : error.message}
+      </p>
+      <div className="flex flex-wrap justify-center gap-wilms-2">
+        <Button type="button" variant="primary" onClick={() => reset()}>
+          Try again
+        </Button>
+        <Button type="button" variant="secondary" onClick={() => window.location.reload()}>
+          Refresh page
+        </Button>
+      </div>
+    </div>
+  );
+}
