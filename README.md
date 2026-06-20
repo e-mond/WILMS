@@ -28,8 +28,9 @@ WILMS supports registration officers, approvers, collectors, auditors, and super
 | Financial core | **Operational** | Loan lifecycle, repayment engine, ledger, idempotency |
 | Neon / Drizzle | **Operational** | Migrations apply; seed loads when `DATABASE_URL` set |
 | Production certification | **Partial (82%)** | `docs/page-validation/P14.3A.4-production-certification.md` |
-| P14.3B — Loan Pools | **Backend read API** | Phase 1 complete — `verify:pools` 5/5 |
-| P14.3B — Other domains | **Not started** | Adjustments, reversals, reconciliation, write-offs mock-only |
+| P14.3B — Loan Pools | **Certified (warnings)** | Phase 1 — `verify:pools` 5/5; see `P14.3B-phase-1-certification.md` |
+| P14.3B — Adjustments | **Next** | Phase 2 authorized — see `P14.3B-adjustment-architecture-review.md` |
+| P14.3B — Other domains | **Not started** | Reversals, reconciliation, write-offs mock-only |
 
 ---
 
@@ -369,11 +370,12 @@ From `docs/page-validation/P14.3A.4-production-certification.md` + P14.3B Phase 
 | Neon schema deployment | 90% |
 | Live integration proof | 85% |
 | Financial harness (full green) | 70% |
-| P14.3B domains | **25%** (loan pools read API; 4 domains remain) |
+| P14.3B Phase 1 (loan pools) | **88%** — certified with warnings |
+| P14.3B remaining domains | **0%** (adjustments, reversals, reconciliation, write-offs) |
 | Security / ops | 80% |
-| **Overall** | **83% — partial certification** |
+| **Overall** | **84% — partial certification** |
 
-**Not fully certified.** Remaining: financial harness 60/60 green, live UI in API mode, P14.3B adjustments/reversals/reconciliation/write-offs.
+**Not fully certified.** Remaining: financial harness 60/60 green, live UI in API mode, P14.3B Phase 2–5 domains.
 
 ---
 
@@ -401,7 +403,7 @@ From `docs/page-validation/P14.3A.4-production-certification.md` + P14.3B Phase 
 | **P14.3A.2** Certification | `P14.3A.2-system-certification.md`, `P14.3A.2-neon-verification.md`, `P14.3A.2-integration-verification.md` |
 | **P14.3A.3** Env hardening | `P14.3A.3-environment-governance.md`, `P14.3A.3-env-loading-audit.md`, `P14.3A.3-api-architecture.md`, `P14.3A.3-upload-architecture.md`, `P14.3A.3-readme-update-report.md` |
 | **P14.3A.4** Live certification | `P14.3A.4-production-certification.md`, `P14.3A.4-backend-live-verification.md` |
-| **P14.3B** | `P14.3B-performance-baseline.md`, `P14.3B-pool-architecture-review.md`, `P14.3B-loan-pools-report.md`, `P14.3B-readiness-assessment.md` |
+| **P14.3B** | `P14.3B-phase-1-certification.md`, `P14.3B-adjustment-architecture-review.md`, `P14.3B-performance-baseline.md`, `P14.3B-pool-architecture-review.md`, `P14.3B-loan-pools-report.md`, `P14.3B-readiness-assessment.md` |
 
 All paths under `docs/page-validation/`.
 
