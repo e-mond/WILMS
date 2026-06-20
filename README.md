@@ -27,9 +27,9 @@ WILMS supports registration officers, approvers, collectors, auditors, and super
 | Backend API | **Operational** | Express on `:4000`, RBAC + `{ data }` envelopes |
 | Financial core | **Operational** | Loan lifecycle, repayment engine, ledger, idempotency |
 | Neon / Drizzle | **Operational** | Migrations apply; seed loads when `DATABASE_URL` set |
-| Production certification | **Partial (78%)** | `docs/page-validation/P14.3A.2-system-certification.md` |
-| Environment hardening | **In progress** | P14.3A.3 — dotenv, env examples, upload/mail/SMS infra |
-| P14.3B domains | **Not started** | Frontend mock only |
+| Production certification | **Partial (82%)** | `docs/page-validation/P14.3A.4-production-certification.md` |
+| P14.3B — Loan Pools | **Backend read API** | Phase 1 complete — `verify:pools` 5/5 |
+| P14.3B — Other domains | **Not started** | Adjustments, reversals, reconciliation, write-offs mock-only |
 
 ---
 
@@ -145,18 +145,19 @@ npm workspaces + Turbo (`build`, `type-check`, `lint`, `test`)
 | Repayment engine | `/payments` | Collector payment UI | Exact weekly rules |
 | Ledger | `ledger_entries` | Financial reports | |
 | Idempotency | Disburse + payment POST | — | Unique-index race handled |
-| Concurrency | Optimistic `version` | — | Harness: 2/3 concurrency checks fail on Neon |
+| Concurrency | Optimistic `version` | — | Harness: perf + concurrency gaps on Neon |
+| **Loan Pools** | `GET /loan-pools`, `GET /loan-pools/:id` | `/loan-pools` | Phase 1 read API; seed + `verify:pools` |
 
-### Deferred (P14.3B — frontend mock only)
+### Deferred (P14.3B — remaining)
 
 | Domain | Status |
 |--------|--------|
-| Loan Pools | UI mock — no backend module |
 | Adjustments | UI mock — no backend module |
 | Reversals | Not implemented |
 | Reconciliation | UI mock — no backend module |
 | Write-Offs | Enum/hook only — no dedicated service |
 | Financial Controls | Partial RBAC; admin fee not server-enforced |
+| Pool disburse/payment hooks | Schema ready; writers deferred to Phase 2+ |
 
 Detail: `docs/page-validation/P14.3B-readiness-assessment.md`
 
@@ -308,6 +309,8 @@ npm run build               # Next.js production build (42 routes)
 npm run test                # Vitest unit tests (400 tests, 2 shards)
 npm run test:e2e            # Playwright E2E (use CI=1 in CI)
 npm run verify:financial -w @wilms/api   # Financial harness
+npm run verify:pools -w @wilms/api       # Loan pool integrity (P14.3B)
+npm run perf:baseline -w @wilms/api      # Performance baseline (P14.3B)
 ```
 
 | Command | Validates |
@@ -315,6 +318,8 @@ npm run verify:financial -w @wilms/api   # Financial harness
 | `npm run test` | UI components, services, utils, auth, payment rules |
 | `npm run test:e2e` | Role journeys, accessibility, responsive shells, PWA |
 | `npm run verify:financial` | Unit calculations, RBAC HTTP checks, DB ledger/concurrency/idempotency (requires `DATABASE_URL` + seed) |
+| `npm run verify:pools` | Pool balance integrity + list/detail API checks (requires `DATABASE_URL` + seed) |
+| `npm run perf:baseline` | Latency baseline for loan/portfolio/report queries (P14.3B Phase 0) |
 
 **E2E tip:** `CI=1 PLAYWRIGHT_PORT=3010 npm run test:e2e` avoids port conflicts with `npm run dev`.
 
@@ -342,6 +347,7 @@ npm run start -w @wilms/api            # Backend API
 npm run db:migrate -w @wilms/api
 npm run db:seed -w @wilms/api          # First deploy only
 npm run verify:financial -w @wilms/api # Post-deploy verification
+npm run verify:pools -w @wilms/api     # After P14.3B pool migration/seed
 ```
 
 ### Production environment
@@ -354,32 +360,33 @@ Detail: `docs/page-validation/P14.3A.3-environment-governance.md`
 
 ## Current Production Readiness
 
-From `docs/page-validation/P14.3A.2-system-certification.md` (evidence-based, not aspirational):
+From `docs/page-validation/P14.3A.4-production-certification.md` + P14.3B Phase 1 (evidence-based):
 
 | Domain | Score |
 |--------|-------|
 | Frontend build & tests | 95% |
-| Backend financial core (code) | 90% |
-| Neon schema deployment | 85% |
-| Neon data & verification | 78% |
-| End-to-end integration | 35% |
-| P14.3B domains | 10% |
-| Security / ops | 75% |
-| **Overall** | **78% — partial certification** |
+| Backend financial core (code) | 92% |
+| Neon schema deployment | 90% |
+| Live integration proof | 85% |
+| Financial harness (full green) | 70% |
+| P14.3B domains | **25%** (loan pools read API; 4 domains remain) |
+| Security / ops | 80% |
+| **Overall** | **83% — partial certification** |
 
-**Not fully certified.** Conditions remaining: financial harness 59/59, live full-stack smoke test, production auth hardening.
+**Not fully certified.** Remaining: financial harness 60/60 green, live UI in API mode, P14.3B adjustments/reversals/reconciliation/write-offs.
 
 ---
 
 ## Known Limitations
 
-- **Mock-backed domains** — Dashboard, collectors, loan pools, adjustments, reconciliation, settings, notifications, search, and risk flags use mock services in development and have no backend API.
+- **Mock-backed domains** — Dashboard, collectors, adjustments, reconciliation, settings, notifications, search, and risk flags use mock services in development.
+- **Loan pools** — Backend read API available in production API mode; disburse/payment pool attribution not wired yet.
 - **Dev isolation** — `npm run dev` always uses mocks; live API requires production build + env configuration.
-- **Financial harness** — 54/59 DB checks pass; concurrent repayment (10/25/50) and Neon latency p95 checks fail remotely.
+- **Financial harness** — 58/60 checks pass; Neon latency p95 checks fail remotely.
 - **Audit writes** — Best-effort async; not transactional with business operations.
 - **Demo sessions** — Not cryptographically signed; not production-grade auth.
 - **Admin fee gate** — Enforced in mock UI only; not server-validated on loan create/disburse.
-- **P14.3B** — Pools, adjustments, reversals, reconciliation, write-offs blocked until certification completes.
+- **P14.3B remainder** — Adjustments, reversals, reconciliation, write-offs not implemented on backend.
 
 ---
 
@@ -393,7 +400,8 @@ From `docs/page-validation/P14.3A.2-system-certification.md` (evidence-based, no
 | **P14.3A.1** Verification | `P14.3A.1-financial-verification.md`, `P14.3A.1-security-review.md`, `P14.3A.1-concurrency-audit.md`, `P14.3A.1-idempotency-audit.md` |
 | **P14.3A.2** Certification | `P14.3A.2-system-certification.md`, `P14.3A.2-neon-verification.md`, `P14.3A.2-integration-verification.md` |
 | **P14.3A.3** Env hardening | `P14.3A.3-environment-governance.md`, `P14.3A.3-env-loading-audit.md`, `P14.3A.3-api-architecture.md`, `P14.3A.3-upload-architecture.md`, `P14.3A.3-readme-update-report.md` |
-| **P14.3B** Next | `P14.3B-readiness-assessment.md` |
+| **P14.3A.4** Live certification | `P14.3A.4-production-certification.md`, `P14.3A.4-backend-live-verification.md` |
+| **P14.3B** | `P14.3B-performance-baseline.md`, `P14.3B-pool-architecture-review.md`, `P14.3B-loan-pools-report.md`, `P14.3B-readiness-assessment.md` |
 
 All paths under `docs/page-validation/`.
 
@@ -412,6 +420,9 @@ npm run test:e2e         # Playwright E2E
 npm run db:migrate -w @wilms/api
 npm run db:seed -w @wilms/api
 npm run verify:financial -w @wilms/api
+npm run verify:pools -w @wilms/api
+npm run verify:live -w @wilms/api
+npm run perf:baseline -w @wilms/api
 ```
 
 ---
