@@ -31,6 +31,7 @@ export const loans = pgTable('loans', {
   paymentDay: text('payment_day').notNull(),
   startDate: text('start_date').notNull(),
   cycleBatch: text('cycle_batch').notNull(),
+  loanPoolId: uuid('loan_pool_id'),
   rejectionReason: text('rejection_reason'),
   createdByUserId: uuid('created_by_user_id').references(() => users.id),
   approvedByUserId: uuid('approved_by_user_id').references(() => users.id),

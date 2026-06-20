@@ -98,6 +98,7 @@ export const auditActionEnum = pgEnum('audit_action', [
   'LOAN_APPROVED',
   'LOAN_REJECTED',
   'LOAN_DISBURSED',
+  'LOAN_POOL_REPLENISHED',
 ]);
 
 export const auditTargetEntityEnum = pgEnum('audit_target_entity', [
@@ -111,6 +112,7 @@ export const auditTargetEntityEnum = pgEnum('audit_target_entity', [
   'RISK_FLAG',
   'SETTINGS',
   'LOAN',
+  'LOAN_POOL',
 ]);
 
 export const uploadPurposeEnum = pgEnum('upload_purpose', [
@@ -177,4 +179,17 @@ export const idempotencyScopeEnum = pgEnum('idempotency_scope', [
   'LOAN_DISBURSE',
   'PAYMENT_POST',
   'LOAN_CREATE',
+]);
+
+export const loanPoolStatusEnum = pgEnum('loan_pool_status', [
+  'ACTIVE',
+  'NEAR_FULL',
+  'LAUNCHING',
+]);
+
+export const poolAllocationTypeEnum = pgEnum('pool_allocation_type', [
+  'DISBURSEMENT',
+  'REPAYMENT',
+  'REPLENISHMENT',
+  'ADJUSTMENT',
 ]);
