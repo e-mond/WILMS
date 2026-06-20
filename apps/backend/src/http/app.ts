@@ -10,6 +10,7 @@ import { borrowersRouter } from '../modules/borrowers/routes.js';
 import { groupFormationRouter } from '../modules/group-formation/routes.js';
 import { healthRouter } from '../modules/health/routes.js';
 import { loansRouter } from '../modules/loans/routes.js';
+import { loanPoolsRouter } from '../modules/loan-pools/routes.js';
 import { paymentsRouter } from '../modules/payments/routes.js';
 import { reportsRouter } from '../modules/reports/routes.js';
 import { uploadsRouter } from '../modules/uploads/routes.js';
@@ -17,6 +18,7 @@ import { uploadsRouter } from '../modules/uploads/routes.js';
 function mountBusinessRoutes(app: express.Application, basePath = '') {
   const prefix = basePath.replace(/\/$/, '');
   app.use(`${prefix}`, loansRouter);
+  app.use(`${prefix}`, loanPoolsRouter);
   app.use(`${prefix}`, paymentsRouter);
   app.use(`${prefix}`, borrowersRouter);
   app.use(`${prefix}`, groupFormationRouter);
