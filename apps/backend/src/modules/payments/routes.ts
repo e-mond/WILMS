@@ -18,6 +18,7 @@ import { PERMISSION } from '../../infrastructure/permissions/matrix.js';
 import { requireAuth } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/require-permission.js';
 import { validateBody } from '../../middleware/validate-body.js';
+import * as paymentReversalService from './payment-reversal.service.js';
 import * as paymentService from './service.js';
 
 const legacyRecordPaymentSchema = z.object({
@@ -37,6 +38,13 @@ const legacyRecordPaymentSchema = z.object({
 function mapPaymentError(error: unknown): never {
   if (error instanceof Error && error.message === 'NOT_FOUND') {
     throw new AppError('Borrower or loan not found.', ERROR_CODE.NOT_FOUND, 404);
+  }
+  mapFinancialRouteError(error);
+}
+
+function mapReversalError(error: unknown): never {
+  if (error instanceof Error && error.message === 'NOT_FOUND') {
+    throw new AppError('Payment not found.', ERROR_CODE.NOT_FOUND, 404);
   }
   mapFinancialRouteError(error);
 }
@@ -194,6 +202,35 @@ paymentsRouter.post(
       },
       201,
     );
+  }),
+);
+
+paymentsRouter.post(
+  '/payments/:paymentId/reverse',
+  requirePermission(PERMISSION.ACCESS_ADMIN_PORTAL),
+  validateBody(paymentReversalService.reversePaymentSchema),
+  asyncHandler(async (req, res) => {
+    if (!isDatabaseEnabled()) {
+      throw new AppError(
+        'Payment reversal requires database persistence.',
+        ERROR_CODE.VALIDATION,
+        422,
+      );
+    }
+
+    try {
+      const idempotencyKey = req.header('Idempotency-Key') ?? undefined;
+      sendData(
+        res,
+        await paymentReversalService.reversePayment(
+          req.params.paymentId!,
+          req.body as z.infer<typeof paymentReversalService.reversePaymentSchema>,
+          idempotencyKey,
+        ),
+      );
+    } catch (error) {
+      mapReversalError(error);
+    }
   }),
 );
 

@@ -16,6 +16,7 @@ import {
   assertLifecycleTransition,
   LOAN_LIFECYCLE,
 } from '../domain/loan/lifecycle.js';
+import { computePaymentReversalBalance } from '../domain/reversal/balance-effect.js';
 
 export interface VerificationResult {
   name: string;
@@ -150,6 +151,39 @@ export function runLifecycleChecks(): VerificationResult[] {
     name: 'rejects-completed-to-active',
     passed: rejected,
     detail: rejected ? 'rejected as expected' : 'allowed incorrectly',
+  });
+
+  return results;
+}
+
+export function runReversalBalanceChecks(): VerificationResult[] {
+  const results: VerificationResult[] = [];
+
+  const activeEffect = computePaymentReversalBalance(10000, 5000, LOAN_LIFECYCLE.ACTIVE);
+  results.push({
+    name: 'reversal-balance-active-credit',
+    passed:
+      activeEffect.beforeBalancePesewas === 10000 &&
+      activeEffect.afterBalancePesewas === 15000 &&
+      activeEffect.deltaPesewas === 5000 &&
+      activeEffect.lifecycleStatus === LOAN_LIFECYCLE.ACTIVE,
+    detail: `after=${activeEffect.afterBalancePesewas}`,
+  });
+
+  const completedEffect = computePaymentReversalBalance(0, 5000, LOAN_LIFECYCLE.COMPLETED);
+  results.push({
+    name: 'reversal-balance-completed-reactivates',
+    passed:
+      completedEffect.afterBalancePesewas === 5000 &&
+      completedEffect.lifecycleStatus === LOAN_LIFECYCLE.ACTIVE,
+    detail: `lifecycle=${completedEffect.lifecycleStatus}`,
+  });
+
+  assertLifecycleTransition(LOAN_LIFECYCLE.COMPLETED, LOAN_LIFECYCLE.ACTIVE);
+  results.push({
+    name: 'reversal-lifecycle-transition-valid',
+    passed: true,
+    detail: 'COMPLETED → ACTIVE allowed',
   });
 
   return results;

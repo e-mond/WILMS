@@ -30,8 +30,9 @@ WILMS supports registration officers, approvers, collectors, auditors, and super
 | Production certification | **Partial (82%)** | `docs/page-validation/P14.3A.4-production-certification.md` |
 | P14.3B — Loan Pools | **Certified (warnings)** | Phase 1 — `verify:pools` 5/5 |
 | P14.3B — Adjustments | **Implemented** | Phase 2 — `verify:adjustments` 10/10 |
-| P14.3B — Other domains | **Not started** | Reversals, reconciliation, write-offs mock-only |
-| **Current phase** | **P14.3B Phase 2** | Financial adjustments complete; Phase 3 reversals next |
+| P14.3B — Payment Reversal | **Implemented (MVP)** | Phase 3C.1 — `verify:reversals` |
+| P14.3B — Other domains | **Not started** | Reconciliation; other reversal types deferred |
+| **Current phase** | **P14.3B Phase 3C.1** | Payment reversal MVP complete; await approval for additional reversal types |
 
 ---
 
@@ -313,7 +314,9 @@ npm run test:e2e            # Playwright E2E (use CI=1 in CI)
 npm run verify:financial -w @wilms/api   # Financial harness
 npm run verify:pools -w @wilms/api       # Loan pool integrity (P14.3B Phase 1)
 npm run verify:adjustments -w @wilms/api # Financial adjustments (P14.3B Phase 2)
+npm run verify:reversals -w @wilms/api   # Payment reversal (P14.3B Phase 3C.1)
 npm run perf:baseline -w @wilms/api      # Performance baseline (P14.3B)
+npm run perf:reversals -w @wilms/api     # Reversal latency simulation (P14.3B Phase 3C.1)
 ```
 
 | Command | Validates |
@@ -375,7 +378,8 @@ From `docs/page-validation/P14.3A.4-production-certification.md` + P14.3B Phase 
 | Financial harness (full green) | 70% |
 | P14.3B Phase 1 (loan pools) | **88%** — certified with warnings |
 | P14.3B Phase 2 (adjustments) | **92%** — certified with warnings |
-| P14.3B remaining domains | **0%** (reversals, reconciliation, dedicated write-offs) |
+| P14.3B Phase 3C.1 (payment reversal) | **94%** — certified with warnings |
+| P14.3B remaining domains | **0%** (other reversal types, reconciliation, dedicated write-offs) |
 | Security / ops | 80% |
 | **Overall** | **86% — partial certification** |
 
@@ -392,7 +396,7 @@ From `docs/page-validation/P14.3A.4-production-certification.md` + P14.3B Phase 
 - **Audit writes** — Best-effort async; not transactional with business operations.
 - **Demo sessions** — Not cryptographically signed; not production-grade auth.
 - **Admin fee gate** — Enforced in mock UI only; not server-validated on loan create/disburse.
-- **P14.3B remainder** — Reversals, reconciliation, dedicated write-offs not implemented on backend.
+- **P14.3B remainder** — Other reversal types, reconciliation, dedicated write-offs not implemented on backend.
 
 ---
 
@@ -407,7 +411,7 @@ From `docs/page-validation/P14.3A.4-production-certification.md` + P14.3B Phase 
 | **P14.3A.2** Certification | `P14.3A.2-system-certification.md`, `P14.3A.2-neon-verification.md`, `P14.3A.2-integration-verification.md` |
 | **P14.3A.3** Env hardening | `P14.3A.3-environment-governance.md`, `P14.3A.3-env-loading-audit.md`, `P14.3A.3-api-architecture.md`, `P14.3A.3-upload-architecture.md`, `P14.3A.3-readme-update-report.md` |
 | **P14.3A.4** Live certification | `P14.3A.4-production-certification.md`, `P14.3A.4-backend-live-verification.md` |
-| **P14.3B** | `P14.3B-phase-2-certification.md`, `P14.3B-adjustment-implementation-report.md`, `P14.3B-phase-1-certification.md`, `P14.3B-adjustment-architecture-review.md`, `P14.3B-performance-baseline.md`, `P14.3B-phase-2-performance-report.md` |
+| **P14.3B** | `P14.3B-phase-3c-certification.md`, `P14.3B-reversal-architecture.md`, `P14.3B-phase-2-certification.md`, `P14.3B-adjustment-implementation-report.md`, `P14.3B-phase-1-certification.md` |
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/engineering/branching-strategy.md](docs/engineering/branching-strategy.md) for phase workflow standards.
 

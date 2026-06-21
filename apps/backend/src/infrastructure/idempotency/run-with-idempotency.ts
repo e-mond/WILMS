@@ -9,7 +9,8 @@ export type IdempotencyScope =
   | 'PAYMENT_POST'
   | 'LOAN_CREATE'
   | 'ADJUSTMENT_CREATE'
-  | 'ADJUSTMENT_APPROVE';
+  | 'ADJUSTMENT_APPROVE'
+  | 'REVERSAL_EXECUTE';
 
 export async function runWithIdempotency<T>(
   input: {

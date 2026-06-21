@@ -33,7 +33,7 @@ export const userRoleEnum = pgEnum('user_role', [
 
 export const userStatusEnum = pgEnum('user_status', ['ACTIVE', 'INVITED', 'SUSPENDED']);
 
-export const paymentStatusEnum = pgEnum('payment_status', ['CONFIRMED', 'PENDING_SYNC']);
+export const paymentStatusEnum = pgEnum('payment_status', ['CONFIRMED', 'PENDING_SYNC', 'REVERSED']);
 
 export const expenseCategoryEnum = pgEnum('expense_category', [
   'FUEL',
@@ -80,6 +80,9 @@ export const auditActionEnum = pgEnum('audit_action', [
   'ADJUSTMENT_REQUESTED',
   'ADJUSTMENT_APPROVED',
   'ADJUSTMENT_REJECTED',
+  'REVERSAL_REQUESTED',
+  'REVERSAL_EXECUTED',
+  'REVERSAL_REJECTED',
   'RECONCILIATION_SUBMITTED',
   'USER_LOGGED_OUT',
   'GROUP_FLAGGED',
@@ -106,6 +109,7 @@ export const auditTargetEntityEnum = pgEnum('audit_target_entity', [
   'PAYMENT',
   'RECONCILIATION',
   'ADJUSTMENT',
+  'REVERSAL',
   'OVERPAYMENT_REVIEW',
   'USER',
   'GROUP',
@@ -174,6 +178,7 @@ export const ledgerEntryTypeEnum = pgEnum('ledger_entry_type', [
   'INTEREST_CHARGE',
   'PENALTY_CHARGE',
   'ADJUSTMENT',
+  'REVERSAL',
 ]);
 
 export const idempotencyScopeEnum = pgEnum('idempotency_scope', [
@@ -182,6 +187,7 @@ export const idempotencyScopeEnum = pgEnum('idempotency_scope', [
   'LOAN_CREATE',
   'ADJUSTMENT_CREATE',
   'ADJUSTMENT_APPROVE',
+  'REVERSAL_EXECUTE',
 ]);
 
 export const loanPoolStatusEnum = pgEnum('loan_pool_status', [
@@ -221,6 +227,25 @@ export const adjustmentReasonCategoryEnum = pgEnum('adjustment_reason_category',
 export const adjustmentHistoryEventEnum = pgEnum('adjustment_history_event', [
   'CREATED',
   'APPROVED',
+  'REJECTED',
+  'LEDGER_POSTED',
+]);
+
+export const reversalSourceTypeEnum = pgEnum('reversal_source_type', [
+  'PAYMENT',
+  'ADJUSTMENT',
+  'DISBURSEMENT',
+]);
+
+export const reversalStatusEnum = pgEnum('reversal_status', [
+  'PENDING',
+  'EXECUTED',
+  'REJECTED',
+]);
+
+export const reversalHistoryEventEnum = pgEnum('reversal_history_event', [
+  'CREATED',
+  'EXECUTED',
   'REJECTED',
   'LEDGER_POSTED',
 ]);
