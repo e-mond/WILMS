@@ -110,6 +110,11 @@ async function executePaymentReversal(
   const referenceDate = new Date().toISOString().slice(0, 10);
 
   const executed = await runInTransaction(async (tx) => {
+    const existingInTxn = await reversalRepo.findExecutedReversalBySource('PAYMENT', paymentId, tx);
+    if (existingInTxn) {
+      throw new Error('REVERSAL_DUPLICATE');
+    }
+
     const reversal = await reversalRepo.insertReversal(
       {
         sourceType: 'PAYMENT',
