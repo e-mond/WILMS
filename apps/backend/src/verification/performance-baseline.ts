@@ -120,7 +120,7 @@ async function main(): Promise<void> {
       'listLoans(ACTIVE)',
       await measure(() => loanService.listLoans('ACTIVE')),
       1,
-      'Full table scan; status filtered in application code (loan.repository.ts)',
+      'SQL filter on external_status + loans_external_status_idx (Phase 2)',
     ),
   );
 
@@ -160,14 +160,14 @@ async function main(): Promise<void> {
       'listPortfolioEntries',
       await measure(() => loanService.listPortfolioEntries()),
       1,
-      '1 loan query + 2 borrower lookups per loan (N+1)',
+      '1 loan query + 1 batch borrower IN query (Phase 2 optimized)',
     ),
   );
 
   const loanCount = (await db.select({ id: loans.id }).from(loans)).length;
   const portfolioMeasurement = measurements[measurements.length - 1];
   if (portfolioMeasurement) {
-    portfolioMeasurement.estimatedDbQueries = 1 + loanCount * 2;
+    portfolioMeasurement.estimatedDbQueries = 2;
   }
 
   measurements.push(

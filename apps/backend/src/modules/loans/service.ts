@@ -402,28 +402,33 @@ export async function listLoanPaymentLog(loanId: string) {
 export async function listPortfolioEntries() {
   requireDatabase();
   const rows = await loanRepo.listLoans();
-  const entries = await Promise.all(
-    rows.map(async (row) => {
-      const detail = mapLoanRowToDetail(row);
-      const borrowerName = await getBorrowerName(row.borrowerId);
-      const borrower = await borrowerRepo.getBorrower(row.borrowerId);
-      return {
-        id: detail.id,
-        borrowerId: detail.borrowerId,
-        borrowerName,
-        community: borrower?.community ?? '—',
-        groupName: borrower?.groupName ?? '—',
-        amountPesewas: detail.amountPesewas,
-        outstandingPesewas: detail.outstandingPesewas,
-        weeklyPaymentPesewas: detail.weeklyPaymentPesewas,
-        durationWeeks: detail.durationWeeks,
-        status: detail.status,
-        cycleBatch: detail.cycleBatch,
-        paymentDay: detail.paymentDay,
-        startDate: detail.startDate,
-      };
-    }),
+  const borrowerIds = [...new Set(rows.map((row) => row.borrowerId))];
+  const borrowerRecords = await borrowerRepo.getBorrowersByIds(borrowerIds);
+  const borrowerById = new Map(
+    borrowerRecords
+      .filter((record): record is NonNullable<typeof record> => Boolean(record))
+      .map((record) => [record.id, record]),
   );
+
+  const entries = rows.map((row) => {
+    const detail = mapLoanRowToDetail(row);
+    const borrower = borrowerById.get(row.borrowerId);
+    return {
+      id: detail.id,
+      borrowerId: detail.borrowerId,
+      borrowerName: borrower?.fullName ?? 'Unknown borrower',
+      community: borrower?.community ?? '—',
+      groupName: borrower?.groupName ?? '—',
+      amountPesewas: detail.amountPesewas,
+      outstandingPesewas: detail.outstandingPesewas,
+      weeklyPaymentPesewas: detail.weeklyPaymentPesewas,
+      durationWeeks: detail.durationWeeks,
+      status: detail.status,
+      cycleBatch: detail.cycleBatch,
+      paymentDay: detail.paymentDay,
+      startDate: detail.startDate,
+    };
+  });
 
   return entries.sort((left, right) => left.borrowerName.localeCompare(right.borrowerName));
 }

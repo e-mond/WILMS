@@ -4,6 +4,7 @@ export * from './rbac';
 export * from './borrowers';
 export * from './groups';
 export * from './loan-pools';
+export * from './financial-adjustments';
 export * from './loans';
 export * from './loan-schedules';
 export * from './loan-disbursements';

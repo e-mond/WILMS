@@ -6,6 +6,7 @@ import { users as usersTable } from '../schema/users.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
 import { seedFinancialCore } from './seed-financial.js';
 import { seedLoanPools } from './seed-loan-pools.js';
+import { seedAdjustmentReasons } from './seed-adjustments.js';
 import { uuidv7 } from 'uuidv7';
 
 const ROLE_SEED = [
@@ -91,7 +92,8 @@ async function main(): Promise<void> {
   await seedRbac();
   await seedFinancialCore();
   await seedLoanPools();
-  console.log('Database seed completed (RBAC + financial core + loan pools).');
+  await seedAdjustmentReasons();
+  console.log('Database seed completed (RBAC + financial core + loan pools + adjustment reasons).');
 }
 
 main().catch((error) => {

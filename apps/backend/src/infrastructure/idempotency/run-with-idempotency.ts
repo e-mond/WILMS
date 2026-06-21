@@ -4,7 +4,12 @@ import { getDb } from '../../db/client.js';
 import { idempotencyKeys } from '../../db/schema/idempotency-keys.js';
 import { beginIdempotency, completeIdempotency } from '../../repositories/idempotency.repository.js';
 
-export type IdempotencyScope = 'LOAN_DISBURSE' | 'PAYMENT_POST' | 'LOAN_CREATE';
+export type IdempotencyScope =
+  | 'LOAN_DISBURSE'
+  | 'PAYMENT_POST'
+  | 'LOAN_CREATE'
+  | 'ADJUSTMENT_CREATE'
+  | 'ADJUSTMENT_APPROVE';
 
 export async function runWithIdempotency<T>(
   input: {

@@ -28,9 +28,10 @@ WILMS supports registration officers, approvers, collectors, auditors, and super
 | Financial core | **Operational** | Loan lifecycle, repayment engine, ledger, idempotency |
 | Neon / Drizzle | **Operational** | Migrations apply; seed loads when `DATABASE_URL` set |
 | Production certification | **Partial (82%)** | `docs/page-validation/P14.3A.4-production-certification.md` |
-| P14.3B — Loan Pools | **Certified (warnings)** | Phase 1 — `verify:pools` 5/5; see `P14.3B-phase-1-certification.md` |
-| P14.3B — Adjustments | **Next** | Phase 2 authorized — see `P14.3B-adjustment-architecture-review.md` |
+| P14.3B — Loan Pools | **Certified (warnings)** | Phase 1 — `verify:pools` 5/5 |
+| P14.3B — Adjustments | **Implemented** | Phase 2 — `verify:adjustments` 10/10 |
 | P14.3B — Other domains | **Not started** | Reversals, reconciliation, write-offs mock-only |
+| **Current phase** | **P14.3B Phase 2** | Financial adjustments complete; Phase 3 reversals next |
 
 ---
 
@@ -147,18 +148,18 @@ npm workspaces + Turbo (`build`, `type-check`, `lint`, `test`)
 | Ledger | `ledger_entries` | Financial reports | |
 | Idempotency | Disburse + payment POST | — | Unique-index race handled |
 | Concurrency | Optimistic `version` | — | Harness: perf + concurrency gaps on Neon |
-| **Loan Pools** | `GET /loan-pools`, `GET /loan-pools/:id` | `/loan-pools` | Phase 1 read API; seed + `verify:pools` |
+| **Loan Pools** | `GET /loan-pools`, `GET /loan-pools/:id` | `/loan-pools` | Phase 1 read API; `verify:pools` |
+| **Adjustments** | `GET/POST /adjustments`, `GET /adjustments/pending`, approve/reject | `/adjustments` | Phase 2 workflow; `verify:adjustments` |
 
 ### Deferred (P14.3B — remaining)
 
 | Domain | Status |
 |--------|--------|
-| Adjustments | UI mock — no backend module |
-| Reversals | Not implemented |
-| Reconciliation | UI mock — no backend module |
-| Write-Offs | Enum/hook only — no dedicated service |
+| Reversals | Not implemented (Phase 3) |
+| Reconciliation | UI mock — no backend module (Phase 4) |
+| Write-Offs | Partial via adjustment WRITE_OFF type (Phase 5 dedicated service) |
 | Financial Controls | Partial RBAC; admin fee not server-enforced |
-| Pool disburse/payment hooks | Schema ready; writers deferred to Phase 2+ |
+| Pool disburse/payment hooks | Schema ready; writers deferred |
 
 Detail: `docs/page-validation/P14.3B-readiness-assessment.md`
 
@@ -310,7 +311,8 @@ npm run build               # Next.js production build (42 routes)
 npm run test                # Vitest unit tests (400 tests, 2 shards)
 npm run test:e2e            # Playwright E2E (use CI=1 in CI)
 npm run verify:financial -w @wilms/api   # Financial harness
-npm run verify:pools -w @wilms/api       # Loan pool integrity (P14.3B)
+npm run verify:pools -w @wilms/api       # Loan pool integrity (P14.3B Phase 1)
+npm run verify:adjustments -w @wilms/api # Financial adjustments (P14.3B Phase 2)
 npm run perf:baseline -w @wilms/api      # Performance baseline (P14.3B)
 ```
 
@@ -319,8 +321,9 @@ npm run perf:baseline -w @wilms/api      # Performance baseline (P14.3B)
 | `npm run test` | UI components, services, utils, auth, payment rules |
 | `npm run test:e2e` | Role journeys, accessibility, responsive shells, PWA |
 | `npm run verify:financial` | Unit calculations, RBAC HTTP checks, DB ledger/concurrency/idempotency (requires `DATABASE_URL` + seed) |
-| `npm run verify:pools` | Pool balance integrity + list/detail API checks (requires `DATABASE_URL` + seed) |
-| `npm run perf:baseline` | Latency baseline for loan/portfolio/report queries (P14.3B Phase 0) |
+| `npm run verify:pools` | Pool balance integrity + list/detail API checks |
+| `npm run verify:adjustments` | Adjustment workflow, ledger, history integrity |
+| `npm run perf:baseline` | Latency baseline for loan/portfolio/report queries |
 
 **E2E tip:** `CI=1 PLAYWRIGHT_PORT=3010 npm run test:e2e` avoids port conflicts with `npm run dev`.
 
@@ -371,9 +374,10 @@ From `docs/page-validation/P14.3A.4-production-certification.md` + P14.3B Phase 
 | Live integration proof | 85% |
 | Financial harness (full green) | 70% |
 | P14.3B Phase 1 (loan pools) | **88%** — certified with warnings |
-| P14.3B remaining domains | **0%** (adjustments, reversals, reconciliation, write-offs) |
+| P14.3B Phase 2 (adjustments) | **92%** — certified with warnings |
+| P14.3B remaining domains | **0%** (reversals, reconciliation, dedicated write-offs) |
 | Security / ops | 80% |
-| **Overall** | **84% — partial certification** |
+| **Overall** | **86% — partial certification** |
 
 **Not fully certified.** Remaining: financial harness 60/60 green, live UI in API mode, P14.3B Phase 2–5 domains.
 
@@ -381,14 +385,14 @@ From `docs/page-validation/P14.3A.4-production-certification.md` + P14.3B Phase 
 
 ## Known Limitations
 
-- **Mock-backed domains** — Dashboard, collectors, adjustments, reconciliation, settings, notifications, search, and risk flags use mock services in development.
+- **Mock-backed domains** — Dashboard, collectors, reconciliation, settings, notifications, search, and risk flags use mock services in development. Adjustments and loan pools use live API when `DATABASE_URL` is configured.
 - **Loan pools** — Backend read API available in production API mode; disburse/payment pool attribution not wired yet.
 - **Dev isolation** — `npm run dev` always uses mocks; live API requires production build + env configuration.
 - **Financial harness** — 58/60 checks pass; Neon latency p95 checks fail remotely.
 - **Audit writes** — Best-effort async; not transactional with business operations.
 - **Demo sessions** — Not cryptographically signed; not production-grade auth.
 - **Admin fee gate** — Enforced in mock UI only; not server-validated on loan create/disburse.
-- **P14.3B remainder** — Adjustments, reversals, reconciliation, write-offs not implemented on backend.
+- **P14.3B remainder** — Reversals, reconciliation, dedicated write-offs not implemented on backend.
 
 ---
 
@@ -403,11 +407,10 @@ From `docs/page-validation/P14.3A.4-production-certification.md` + P14.3B Phase 
 | **P14.3A.2** Certification | `P14.3A.2-system-certification.md`, `P14.3A.2-neon-verification.md`, `P14.3A.2-integration-verification.md` |
 | **P14.3A.3** Env hardening | `P14.3A.3-environment-governance.md`, `P14.3A.3-env-loading-audit.md`, `P14.3A.3-api-architecture.md`, `P14.3A.3-upload-architecture.md`, `P14.3A.3-readme-update-report.md` |
 | **P14.3A.4** Live certification | `P14.3A.4-production-certification.md`, `P14.3A.4-backend-live-verification.md` |
-| **P14.3B** | `P14.3B-phase-1-certification.md`, `P14.3B-adjustment-architecture-review.md`, `P14.3B-performance-baseline.md`, `P14.3B-pool-architecture-review.md`, `P14.3B-loan-pools-report.md`, `P14.3B-readiness-assessment.md` |
+| **P14.3B** | `P14.3B-phase-2-certification.md`, `P14.3B-adjustment-implementation-report.md`, `P14.3B-phase-1-certification.md`, `P14.3B-adjustment-architecture-review.md`, `P14.3B-performance-baseline.md`, `P14.3B-phase-2-performance-report.md` |
 
-All paths under `docs/page-validation/`.
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/engineering/branching-strategy.md](docs/engineering/branching-strategy.md) for phase workflow standards.
 
----
 
 ## Quick Commands
 

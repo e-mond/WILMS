@@ -5,7 +5,7 @@ import { ledgerEntries } from '../db/schema/ledger-entries.js';
 
 export async function appendLedgerEntry(
   input: {
-    entryType: 'LOAN_DISBURSEMENT' | 'REPAYMENT' | 'INTEREST_CHARGE' | 'PENALTY_CHARGE';
+    entryType: 'LOAN_DISBURSEMENT' | 'REPAYMENT' | 'INTEREST_CHARGE' | 'PENALTY_CHARGE' | 'ADJUSTMENT';
     loanId?: string;
     borrowerId?: string;
     paymentId?: string;
