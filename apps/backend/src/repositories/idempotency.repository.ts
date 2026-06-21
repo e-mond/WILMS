@@ -4,6 +4,13 @@ import type { WilmsDb } from '../db/client.js';
 import { getDb } from '../db/client.js';
 import { idempotencyKeys } from '../db/schema/idempotency-keys.js';
 
+type IdempotencyScope =
+  | 'LOAN_DISBURSE'
+  | 'PAYMENT_POST'
+  | 'LOAN_CREATE'
+  | 'ADJUSTMENT_CREATE'
+  | 'ADJUSTMENT_APPROVE';
+
 const RETENTION_MS = 24 * 60 * 60 * 1000;
 
 function isUniqueViolation(error: unknown): boolean {
@@ -17,7 +24,7 @@ function isUniqueViolation(error: unknown): boolean {
 
 async function resolveExistingIdempotency(
   input: {
-    scope: 'LOAN_DISBURSE' | 'PAYMENT_POST' | 'LOAN_CREATE';
+    scope: IdempotencyScope;
     actorUserId: string;
     idempotencyKey: string;
   },
@@ -48,7 +55,7 @@ async function resolveExistingIdempotency(
 
 export async function beginIdempotency(
   input: {
-    scope: 'LOAN_DISBURSE' | 'PAYMENT_POST' | 'LOAN_CREATE';
+    scope: IdempotencyScope;
     actorUserId: string;
     idempotencyKey: string;
     requestHash?: string;

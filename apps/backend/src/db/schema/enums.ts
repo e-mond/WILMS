@@ -173,12 +173,15 @@ export const ledgerEntryTypeEnum = pgEnum('ledger_entry_type', [
   'REPAYMENT',
   'INTEREST_CHARGE',
   'PENALTY_CHARGE',
+  'ADJUSTMENT',
 ]);
 
 export const idempotencyScopeEnum = pgEnum('idempotency_scope', [
   'LOAN_DISBURSE',
   'PAYMENT_POST',
   'LOAN_CREATE',
+  'ADJUSTMENT_CREATE',
+  'ADJUSTMENT_APPROVE',
 ]);
 
 export const loanPoolStatusEnum = pgEnum('loan_pool_status', [
@@ -192,4 +195,32 @@ export const poolAllocationTypeEnum = pgEnum('pool_allocation_type', [
   'REPAYMENT',
   'REPLENISHMENT',
   'ADJUSTMENT',
+]);
+
+export const adjustmentTypeEnum = pgEnum('adjustment_type', [
+  'PAYMENT_CORRECTION',
+  'DISBURSEMENT_CORRECTION',
+  'WRITE_OFF',
+  'BALANCE_ADJUSTMENT',
+]);
+
+export const adjustmentStatusEnum = pgEnum('adjustment_status', [
+  'PENDING',
+  'APPROVED',
+  'REJECTED',
+]);
+
+export const adjustmentReasonCategoryEnum = pgEnum('adjustment_reason_category', [
+  'FEE_CORRECTION',
+  'INTEREST_CORRECTION',
+  'ADMINISTRATIVE',
+  'BALANCE_CORRECTION',
+  'MANUAL_CORRECTION',
+]);
+
+export const adjustmentHistoryEventEnum = pgEnum('adjustment_history_event', [
+  'CREATED',
+  'APPROVED',
+  'REJECTED',
+  'LEDGER_POSTED',
 ]);

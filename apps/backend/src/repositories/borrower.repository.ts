@@ -1,5 +1,6 @@
-import { eq, isNull } from 'drizzle-orm';
+import { and, eq, inArray, isNull } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
+import type { WilmsDb } from '../db/client.js';
 import { getDb } from '../db/client.js';
 import { borrowers } from '../db/schema/borrowers.js';
 import type { BorrowerRecord, BorrowerStatus } from '../db/store.js';
@@ -77,8 +78,22 @@ export async function getBorrower(id: string): Promise<BorrowerRecord | undefine
   return rowToRecord(row);
 }
 
-export async function saveBorrower(record: BorrowerRecord): Promise<BorrowerRecord> {
+export async function getBorrowersByIds(ids: string[]): Promise<BorrowerRecord[]> {
+  if (ids.length === 0) {
+    return [];
+  }
+
   const db = getDb();
+  const rows = await db
+    .select()
+    .from(borrowers)
+    .where(and(inArray(borrowers.id, ids), isNull(borrowers.deletedAt)));
+
+  return rows.map(rowToRecord);
+}
+
+export async function saveBorrower(record: BorrowerRecord, tx?: WilmsDb): Promise<BorrowerRecord> {
+  const db = tx ?? getDb();
   const values = recordToInsert(record);
   const existing = await getBorrower(record.id);
 
