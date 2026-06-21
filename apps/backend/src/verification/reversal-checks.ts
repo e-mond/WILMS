@@ -3,6 +3,7 @@
  */
 import { and, eq, notExists } from 'drizzle-orm';
 import { getDb, isDatabaseEnabled } from '../db/client.js';
+import { financialAdjustments } from '../db/schema/financial-adjustments.js';
 import { financialReversals, reversalHistory } from '../db/schema/financial-reversals.js';
 import { ledgerEntries } from '../db/schema/ledger-entries.js';
 import { loanSchedules } from '../db/schema/loan-schedules.js';
@@ -65,16 +66,34 @@ async function resolveCollectorId(): Promise<string> {
   return row.id;
 }
 
+async function loanHasApprovedPaymentCorrection(loanId: string): Promise<boolean> {
+  const db = getDb();
+  const rows = await db
+    .select({ id: financialAdjustments.id })
+    .from(financialAdjustments)
+    .where(
+      and(
+        eq(financialAdjustments.loanId, loanId),
+        eq(financialAdjustments.type, 'PAYMENT_CORRECTION'),
+        eq(financialAdjustments.status, 'APPROVED'),
+      ),
+    )
+    .limit(1);
+
+  return rows.length > 0;
+}
+
 /**
  * Finds a confirmed payment without an executed reversal, or records a new one.
  */
 export async function recordReversiblePayment(
   collectorId: string,
   suffix: string,
-  options: { preferExisting?: boolean } = {},
+  options: { preferExisting?: boolean; excludeLoansWithPaymentCorrection?: boolean } = {},
 ): Promise<{ paymentId: string; loanId: string; borrowerId: string; amountPesewas: number }> {
   const db = getDb();
   const preferExisting = options.preferExisting ?? true;
+  const excludeLoansWithPaymentCorrection = options.excludeLoansWithPaymentCorrection ?? false;
 
   if (preferExisting) {
     const candidates = await db
@@ -145,6 +164,10 @@ export async function recordReversiblePayment(
   const activeLoans = await loanRepo.listLoans({ externalStatus: 'ACTIVE' });
 
   for (const loanRow of activeLoans) {
+    if (excludeLoansWithPaymentCorrection && (await loanHasApprovedPaymentCorrection(loanRow.id))) {
+      continue;
+    }
+
     const scheduleRows = await db
       .select()
       .from(loanSchedules)
@@ -160,11 +183,21 @@ export async function recordReversiblePayment(
         continue;
       }
 
+      const amountPesewas = decimalToPesewas(nextPayable.installmentAmount);
+      const correctionConflict = await reversalRepo.hasApprovedPaymentCorrectionConflict({
+        borrowerId: loanRow.borrowerId,
+        loanId: loanRow.id,
+        amountPesewas,
+      });
+      if (correctionConflict) {
+        continue;
+      }
+
       try {
         const recorded = await paymentService.recordPayment(
           {
             borrowerId: loanRow.borrowerId,
-            amountPesewas: decimalToPesewas(nextPayable.installmentAmount),
+            amountPesewas,
             paymentDate: nextPayable.dueDate,
             collectorId,
           },
@@ -176,7 +209,7 @@ export async function recordReversiblePayment(
           paymentId: recorded.id,
           loanId: loanRow.id,
           borrowerId: loanRow.borrowerId,
-          amountPesewas: decimalToPesewas(nextPayable.installmentAmount),
+          amountPesewas,
         };
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
@@ -203,7 +236,9 @@ export async function runPaymentReversalWorkflowChecks(): Promise<VerificationRe
 
   let target: Awaited<ReturnType<typeof recordReversiblePayment>>;
   try {
-    target = await recordReversiblePayment(collectorId, suffix);
+    target = await recordReversiblePayment(collectorId, suffix, {
+      excludeLoansWithPaymentCorrection: true,
+    });
   } catch (error) {
     return [
       {
@@ -217,15 +252,27 @@ export async function runPaymentReversalWorkflowChecks(): Promise<VerificationRe
   const loanBefore = await loanRepo.findLoanById(target.loanId);
   const balanceBefore = loanBefore ? decimalToPesewas(loanBefore.loanBalance) : 0;
 
-  const reversed = await reversePayment(
-    target.paymentId,
-    {
-      reason: 'Verification harness payment reversal test',
-      actorId,
-      actorDisplayName,
-    },
-    `reversal-verify-execute-${suffix}`,
-  );
+  let reversed: Awaited<ReturnType<typeof reversePayment>>;
+  try {
+    reversed = await reversePayment(
+      target.paymentId,
+      {
+        reason: 'Verification harness payment reversal test',
+        actorId,
+        actorDisplayName,
+      },
+      `reversal-verify-execute-${suffix}`,
+    );
+  } catch (error) {
+    return [
+      ...results,
+      {
+        name: 'reversal-execute-status',
+        passed: false,
+        detail: error instanceof Error ? error.message : String(error),
+      },
+    ];
+  }
 
   results.push({
     name: 'reversal-execute-status',
@@ -296,7 +343,10 @@ export async function runPaymentReversalWorkflowChecks(): Promise<VerificationRe
     detail: duplicateBlocked ? 'REVERSAL_DUPLICATE' : 'expected block',
   });
 
-  const conflictPayment = await recordReversiblePayment(collectorId, `${suffix}-conflict`);
+  const conflictPayment = await recordReversiblePayment(collectorId, `${suffix}-conflict`, {
+    preferExisting: false,
+    excludeLoansWithPaymentCorrection: true,
+  });
   const conflictContext = await paymentService.getPaymentEntryContext(conflictPayment.borrowerId);
 
   const correction = await createAdjustment({
@@ -389,7 +439,11 @@ export async function runPaymentReversalSafetyChecks(): Promise<VerificationResu
   }
 
   try {
-    const concurrentTarget = await recordReversiblePayment(collectorId, `${suffix}-concurrent`);
+    const concurrentTarget = await recordReversiblePayment(
+      collectorId,
+      `${suffix}-concurrent`,
+      { preferExisting: false, excludeLoansWithPaymentCorrection: true },
+    );
     const concurrentAttempts = await Promise.allSettled([
       reversePayment(concurrentTarget.paymentId, {
         reason: 'Concurrent reversal attempt A',
@@ -404,6 +458,9 @@ export async function runPaymentReversalSafetyChecks(): Promise<VerificationResu
     ]);
 
     const successes = concurrentAttempts.filter((outcome) => outcome.status === 'fulfilled').length;
+    const rejectionMessages = concurrentAttempts
+      .filter((outcome): outcome is PromiseRejectedResult => outcome.status === 'rejected')
+      .map((outcome) => (outcome.reason instanceof Error ? outcome.reason.message : String(outcome.reason)));
     const executedRows = await getDb()
       .select()
       .from(financialReversals)
@@ -418,7 +475,7 @@ export async function runPaymentReversalSafetyChecks(): Promise<VerificationResu
     results.push({
       name: 'reversal-concurrency-single-execute',
       passed: successes === 1 && executedRows.length === 1,
-      detail: `successes=${successes} executedRows=${executedRows.length}`,
+      detail: `successes=${successes} executedRows=${executedRows.length} rejections=${rejectionMessages.join('|') || 'none'}`,
     });
   } catch (error) {
     results.push({

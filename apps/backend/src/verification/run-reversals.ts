@@ -35,16 +35,16 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const workflow = await runPaymentReversalWorkflowChecks();
-  printSection('Payment Reversal Workflow', workflow);
-
   const safety = await runPaymentReversalSafetyChecks();
   printSection('Payment Reversal Safety', safety);
+
+  const workflow = await runPaymentReversalWorkflowChecks();
+  printSection('Payment Reversal Workflow', workflow);
 
   const integrity = await runPaymentReversalIntegrityChecks();
   printSection('Payment Reversal Integrity', integrity);
 
-  const all = [...unitResults, ...workflow, ...safety, ...integrity];
+  const all = [...unitResults, ...safety, ...workflow, ...integrity];
   const summary = summarizeResults(all);
   console.log(`\n=== SUMMARY ===`);
   console.log(`Total: ${summary.passed}/${all.length} passed`);
