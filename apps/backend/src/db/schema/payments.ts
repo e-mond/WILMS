@@ -3,6 +3,7 @@ import { paymentStatusEnum } from './enums';
 import { borrowers } from './borrowers';
 import { loans } from './loans';
 import { users } from './users';
+import { financialReversals } from './financial-reversals.js';
 
 export const payments = pgTable('payments', {
   id: uuid('id').primaryKey(),
@@ -23,6 +24,9 @@ export const payments = pgTable('payments', {
   editReason: text('edit_reason'),
   editedAt: timestamp('edited_at', { withTimezone: true }),
   editedByUserId: uuid('edited_by_user_id').references(() => users.id),
+  reversedAt: timestamp('reversed_at', { withTimezone: true }),
+  reversedByUserId: uuid('reversed_by_user_id').references(() => users.id),
+  reversalId: uuid('reversal_id').references(() => financialReversals.id),
   version: integer('version').notNull().default(1),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
