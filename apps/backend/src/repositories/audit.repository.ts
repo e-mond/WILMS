@@ -16,6 +16,9 @@ const ACTION_MAP = {
   'loan.approved': 'LOAN_APPROVED',
   'loan.rejected': 'LOAN_REJECTED',
   'loan.disbursed': 'LOAN_DISBURSED',
+  'adjustment.requested': 'ADJUSTMENT_REQUESTED',
+  'adjustment.approved': 'ADJUSTMENT_APPROVED',
+  'adjustment.rejected': 'ADJUSTMENT_REJECTED',
 } as const satisfies Record<string, string>;
 
 const TARGET_MAP = {
@@ -24,6 +27,7 @@ const TARGET_MAP = {
   user: 'USER',
   group: 'GROUP',
   loan: 'LOAN',
+  adjustment: 'ADJUSTMENT',
 } as const satisfies Record<string, string>;
 
 export async function appendAuditEntry(

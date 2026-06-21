@@ -51,12 +51,14 @@ export async function findLoanById(id: string, tx: WilmsDb = getDb()) {
 }
 
 export async function listLoans(filter?: { externalStatus?: string }, tx: WilmsDb = getDb()) {
-  let query = tx.select().from(loans).where(isNull(loans.deletedAt));
-  const rows = await query;
+  const conditions = [isNull(loans.deletedAt)];
   if (filter?.externalStatus) {
-    return rows.filter((row) => row.externalStatus === filter.externalStatus);
+    conditions.push(eq(loans.externalStatus, filter.externalStatus as never));
   }
-  return rows;
+  return tx
+    .select()
+    .from(loans)
+    .where(and(...conditions));
 }
 
 export async function borrowerHasOpenLoan(borrowerId: string, tx: WilmsDb = getDb()) {
