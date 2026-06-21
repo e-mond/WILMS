@@ -14,7 +14,8 @@
     "verify:financial": "tsx src/verification/run-all.ts",
     "verify:live": "tsx src/verification/live-integration.ts",
     "perf:baseline": "tsx src/verification/performance-baseline.ts",
-    "verify:pools": "tsx src/verification/run-pools.ts"
+    "verify:pools": "tsx src/verification/run-pools.ts",
+    "verify:adjustments": "tsx src/verification/run-adjustments.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
