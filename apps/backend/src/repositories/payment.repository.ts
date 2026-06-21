@@ -22,6 +22,50 @@ function rowToRecord(row: typeof payments.$inferSelect): PaymentRecord {
   };
 }
 
+export async function findPaymentById(id: string, tx: WilmsDb = getDb()) {
+  const [row] = await tx.select().from(payments).where(eq(payments.id, id)).limit(1);
+  return row;
+}
+
+/**
+ * Marks a confirmed payment as reversed without mutating amount/date (append-only accounting).
+ */
+export async function markPaymentReversed(
+  input: {
+    paymentId: string;
+    expectedVersion: number;
+    reversedByUserId: string;
+    reversalId: string;
+  },
+  tx: WilmsDb = getDb(),
+) {
+  const reversedAt = new Date();
+  const result = await tx
+    .update(payments)
+    .set({
+      status: 'REVERSED',
+      reversedAt,
+      reversedByUserId: input.reversedByUserId,
+      reversalId: input.reversalId,
+      updatedAt: reversedAt,
+      version: input.expectedVersion + 1,
+    })
+    .where(
+      and(
+        eq(payments.id, input.paymentId),
+        eq(payments.status, 'CONFIRMED'),
+        eq(payments.version, input.expectedVersion),
+      ),
+    )
+    .returning();
+
+  if (result.length === 0) {
+    throw new Error('CONFLICT:Payment was modified by another request.');
+  }
+
+  return result[0]!;
+}
+
 export async function listPayments(tx: WilmsDb = getDb()): Promise<PaymentRecord[]> {
   const rows = await tx.select().from(payments);
   return rows.map(rowToRecord);

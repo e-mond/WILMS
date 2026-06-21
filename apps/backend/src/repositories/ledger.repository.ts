@@ -5,10 +5,18 @@ import { ledgerEntries } from '../db/schema/ledger-entries.js';
 
 export async function appendLedgerEntry(
   input: {
-    entryType: 'LOAN_DISBURSEMENT' | 'REPAYMENT' | 'INTEREST_CHARGE' | 'PENALTY_CHARGE' | 'ADJUSTMENT';
+    entryType:
+      | 'LOAN_DISBURSEMENT'
+      | 'REPAYMENT'
+      | 'INTEREST_CHARGE'
+      | 'PENALTY_CHARGE'
+      | 'ADJUSTMENT'
+      | 'REVERSAL';
     loanId?: string;
     borrowerId?: string;
     paymentId?: string;
+    reversesLedgerEntryId?: string;
+    reversalId?: string;
     amountDecimal: string;
     description?: string;
     actorUserId?: string;
@@ -24,6 +32,8 @@ export async function appendLedgerEntry(
       loanId: input.loanId ?? null,
       borrowerId: input.borrowerId ?? null,
       paymentId: input.paymentId ?? null,
+      reversesLedgerEntryId: input.reversesLedgerEntryId ?? null,
+      reversalId: input.reversalId ?? null,
       amount: input.amountDecimal,
       currencyCode: 'GHS',
       description: input.description ?? null,

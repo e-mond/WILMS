@@ -126,5 +126,20 @@ export async function runSecurityChecks(): Promise<VerificationResult[]> {
     detail: `status ${invalidBody.status}`,
   });
 
+  const collectorReverse = await request(app, '/payments/01930002-0001-7000-8000-000000000099/reverse', {
+    method: 'POST',
+    token: collectorToken,
+    body: {
+      reason: 'Collector should not reverse payments',
+      actorId: 'collector-user',
+      actorDisplayName: 'Collector',
+    },
+  });
+  results.push({
+    name: 'collector-cannot-reverse-payment',
+    passed: collectorReverse.status === 403,
+    detail: `status ${collectorReverse.status}`,
+  });
+
   return results;
 }

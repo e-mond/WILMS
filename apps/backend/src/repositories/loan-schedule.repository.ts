@@ -65,6 +65,57 @@ export async function markWeekPaid(
   return result[0]!;
 }
 
+/**
+ * Reverts a PAID schedule week after payment reversal.
+ * Status: MISSED if due date is before reference date, otherwise PENDING (per B-ARCH-03).
+ */
+export async function revertWeekPaid(
+  input: {
+    loanId: string;
+    weekNumber: number;
+    expectedVersion: number;
+    referenceDate: string;
+  },
+  tx: WilmsDb = getDb(),
+) {
+  const [week] = await tx
+    .select()
+    .from(loanSchedules)
+    .where(
+      and(eq(loanSchedules.loanId, input.loanId), eq(loanSchedules.weekNumber, input.weekNumber)),
+    )
+    .limit(1);
+
+  if (!week || week.status !== 'PAID') {
+    throw new Error('VALIDATION:Schedule week is not in a reversible PAID state.');
+  }
+
+  const restoredStatus = week.dueDate < input.referenceDate ? 'MISSED' : 'PENDING';
+
+  const result = await tx
+    .update(loanSchedules)
+    .set({
+      status: restoredStatus,
+      paidAt: null,
+      updatedAt: new Date(),
+      version: input.expectedVersion + 1,
+    })
+    .where(
+      and(
+        eq(loanSchedules.loanId, input.loanId),
+        eq(loanSchedules.weekNumber, input.weekNumber),
+        eq(loanSchedules.version, input.expectedVersion),
+      ),
+    )
+    .returning();
+
+  if (result.length === 0) {
+    throw new Error('CONFLICT:Schedule week was modified by another request.');
+  }
+
+  return result[0]!;
+}
+
 export async function applyMissedWeekMarking(
   loanId: string,
   referenceDate: string,

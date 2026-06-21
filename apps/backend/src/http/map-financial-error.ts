@@ -15,6 +15,13 @@ export function mapFinancialRouteError(error: unknown): never {
         409,
       );
     }
+    if (error.message === 'REVERSAL_DUPLICATE') {
+      throw new AppError(
+        'This payment has already been reversed.',
+        ERROR_CODE.DUPLICATE_TRANSACTION,
+        409,
+      );
+    }
     if (error.message.startsWith('VALIDATION')) {
       throw new AppError(
         error.message.replace(/^VALIDATION:?/, '') || 'Validation failed.',

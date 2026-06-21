@@ -32,7 +32,7 @@ const TRANSITIONS: Record<LoanLifecycleStatus, LoanLifecycleStatus[]> = {
   PENDING_DISBURSEMENT: ['DISBURSED'],
   DISBURSED: ['ACTIVE'],
   ACTIVE: ['COMPLETED', 'DEFAULTED', 'WRITTEN_OFF'],
-  COMPLETED: [],
+  COMPLETED: ['ACTIVE'],
   DEFAULTED: ['ACTIVE', 'WRITTEN_OFF'],
   WRITTEN_OFF: [],
 };
