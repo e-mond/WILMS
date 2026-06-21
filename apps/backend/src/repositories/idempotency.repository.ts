@@ -9,7 +9,8 @@ type IdempotencyScope =
   | 'PAYMENT_POST'
   | 'LOAN_CREATE'
   | 'ADJUSTMENT_CREATE'
-  | 'ADJUSTMENT_APPROVE';
+  | 'ADJUSTMENT_APPROVE'
+  | 'REVERSAL_EXECUTE';
 
 const RETENTION_MS = 24 * 60 * 60 * 1000;
 
