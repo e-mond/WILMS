@@ -17,7 +17,12 @@
     "verify:pools": "tsx src/verification/run-pools.ts",
     "verify:adjustments": "tsx src/verification/run-adjustments.ts",
     "verify:reversals": "tsx src/verification/run-reversals.ts",
-    "perf:reversals": "tsx src/verification/perf-reversals.ts"
+    "perf:reversals": "tsx src/verification/perf-reversals.ts",
+    "cert:reversal:env": "tsx src/verification/cert-reversal-environment.ts",
+    "cert:reversal:functional": "tsx src/verification/cert-reversal-functional.ts",
+    "cert:reversal:ledger": "tsx src/verification/cert-reversal-ledger.ts",
+    "cert:reversal:perf": "tsx src/verification/cert-reversal-performance.ts",
+    "cert:reversal:concurrency": "tsx src/verification/cert-reversal-concurrency.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

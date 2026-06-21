@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, ne } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
 import type { WilmsDb } from '../db/client.js';
 import { getDb } from '../db/client.js';
@@ -128,6 +128,7 @@ export async function findDuplicatePayment(
         eq(payments.borrowerId, input.borrowerId),
         eq(payments.paymentDate, input.paymentDate),
         eq(payments.amountPesewas, input.amountPesewas),
+        ne(payments.status, 'REVERSED'),
       ),
     )
     .limit(1);
