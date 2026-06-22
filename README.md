@@ -31,9 +31,9 @@ WILMS supports registration officers, approvers, collectors, auditors, and super
 | P14.3B — Loan Pools | **Certified (warnings)** | Phase 1 — `verify:pools` 5/5 |
 | P14.3B — Adjustments | **Implemented** | Phase 2 — `verify:adjustments` 10/10 |
 | P14.3B — Payment Reversal | **CONDITIONAL** | 3C.1 MVP; 3C.2 functional/concurrency/ledger/RBAC PASS; perf PARTIAL |
-| P14.3B — Reconciliation | **Discovery (4A)** | Frontend mock complete; backend not implemented |
+| P14.3B — Reconciliation | **Schema (4C.1)** | Tables migrated; service layer pending |
 | P14.3B — Other domains | **Not started** | Other reversal types deferred |
-| **Current phase** | **P14.3B Phase 4A** | Reconciliation discovery (read-only) |
+| **Current phase** | **P14.3B Phase 4C.1** | Reconciliation schema & migration |
 
 ---
 
@@ -387,7 +387,8 @@ From `docs/page-validation/P14.3A.4-production-certification.md` + P14.3B Phase 
 | P14.3B Phase 2 (adjustments) | **92%** — certified with warnings |
 | P14.3B Phase 3C.1 (payment reversal) | **94%** — certified with warnings |
 | P14.3B Phase 3C.2 (reversal certification) | **91%** — CONDITIONAL; functional/concurrency/ledger PASS; perf PARTIAL (batch 100 only) |
-| P14.3B Phase 4A (reconciliation discovery) | **62%** — frontend mock ready; backend not implemented |
+| P14.3B Phase 4A (reconciliation discovery) | **62%** — frontend mock ready |
+| P14.3B Phase 4C.1 (reconciliation schema) | **70%** — DB tables migrated; service pending |
 | P14.3B remaining domains | **0%** (other reversal types, dedicated write-offs) |
 | Security / ops | 80% |
 | **Overall** | **86% — partial certification** |
@@ -422,7 +423,7 @@ From `docs/page-validation/P14.3A.4-production-certification.md` + P14.3B Phase 
 | **P14.3A.2** Certification | `P14.3A.2-system-certification.md`, `P14.3A.2-neon-verification.md`, `P14.3A.2-integration-verification.md` |
 | **P14.3A.3** Env hardening | `P14.3A.3-environment-governance.md`, `P14.3A.3-env-loading-audit.md`, `P14.3A.3-api-architecture.md`, `P14.3A.3-upload-architecture.md`, `P14.3A.3-readme-update-report.md` |
 | **P14.3A.4** Live certification | `P14.3A.4-production-certification.md`, `P14.3A.4-backend-live-verification.md` |
-| **P14.3B** | `P14.3B-phase-3c2-production-readiness.md`, `P14.3B-reconciliation-discovery.md`, `P14.3B-reversal-architecture.md`, `P14.3B-phase-2-certification.md`, `P14.3B-phase-1-certification.md` |
+| **P14.3B** | `P14.3B-reconciliation-architecture.md`, `P14.3B-phase-4c1-schema-implementation.md`, `P14.3B-phase-3c2-production-readiness.md`, `P14.3B-reconciliation-discovery.md`, `P14.3B-reversal-architecture.md` |
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/engineering/branching-strategy.md](docs/engineering/branching-strategy.md) for phase workflow standards.
 
