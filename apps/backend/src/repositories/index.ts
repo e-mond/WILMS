@@ -8,4 +8,7 @@ export * as loanScheduleRepository from './loan-schedule.repository.js';
 export * as loanDisbursementRepository from './loan-disbursement.repository.js';
 export * as ledgerRepository from './ledger.repository.js';
 export * as loanPoolRepository from './loan-pool.repository.js';
+export * as idempotencyRepository from './idempotency.repository.js';
+export * as reconciliationRepository from './reconciliation.repository.js';
+export * as reconciliationHistoryRepository from './reconciliation-history.repository.js';
 export * as uploadRepository from './upload.repository.js';

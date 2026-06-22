@@ -10,7 +10,8 @@ export type IdempotencyScope =
   | 'LOAN_CREATE'
   | 'ADJUSTMENT_CREATE'
   | 'ADJUSTMENT_APPROVE'
-  | 'REVERSAL_EXECUTE';
+  | 'REVERSAL_EXECUTE'
+  | 'RECONCILIATION_SUBMIT';
 
 export async function runWithIdempotency<T>(
   input: {
