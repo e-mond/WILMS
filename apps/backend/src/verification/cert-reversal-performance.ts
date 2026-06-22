@@ -15,6 +15,8 @@ import { resolveCertPaymentTarget } from './cert-reversal-prep.js';
 const DEMO_ADMIN_EMAIL = 'admin@wilms.demo';
 const DEMO_COLLECTOR_EMAIL = 'collector@wilms.demo';
 const BATCHES = [100, 500, 1000] as const;
+const EARLY_STOP_SAMPLE = 25;
+const EARLY_STOP_FAILURE_RATE = 0.25;
 
 export interface PerfBatchResult {
   batch: number;
@@ -27,6 +29,8 @@ export interface PerfBatchResult {
   lockContention: number;
   rollbacks: number;
   otherFailures: number;
+  stoppedEarly: boolean;
+  stopReason?: string;
 }
 
 function percentile(sorted: number[], ratio: number): number {
@@ -76,6 +80,8 @@ export async function runPerformanceBatch(
   let lockContention = 0;
   let rollbacks = 0;
   let otherFailures = 0;
+  let stoppedEarly = false;
+  let stopReason: string | undefined;
 
   for (let index = 0; index < count; index += 1) {
     let paymentId: string;
@@ -116,6 +122,22 @@ export async function runPerformanceBatch(
         otherFailures += 1;
       }
     }
+
+    const attempts = index + 1;
+    if (attempts === EARLY_STOP_SAMPLE) {
+      const failures = paymentSetupFailures + reversalFailures;
+      const failureRate = failures / attempts;
+      if (timings.length === 0) {
+        stoppedEarly = true;
+        stopReason = 'No successful reversals within first 25 attempts';
+        break;
+      }
+      if (failureRate > EARLY_STOP_FAILURE_RATE) {
+        stoppedEarly = true;
+        stopReason = `Failure rate ${(failureRate * 100).toFixed(1)}% exceeds 25% threshold`;
+        break;
+      }
+    }
   }
 
   const sorted = [...timings].sort((left, right) => left - right);
@@ -132,13 +154,22 @@ export async function runPerformanceBatch(
     lockContention,
     rollbacks,
     otherFailures,
+    stoppedEarly,
+    stopReason,
   };
 }
 
 async function main(): Promise<void> {
+  const cliBatches = process.argv
+    .slice(2)
+    .map((value) => Number.parseInt(value, 10))
+    .filter((value) => Number.isFinite(value) && value > 0);
+  const batches = cliBatches.length > 0 ? cliBatches : [...BATCHES];
+
   console.log('P14.3B.3C.2 Performance Certification');
   console.log(`Started: ${new Date().toISOString()}`);
   console.log('Methodology: record payment (setup) + timed reversePayment() per iteration; fresh payment each index');
+  console.log(`Batches: ${batches.join(', ')}`);
 
   if (!isDatabaseEnabled()) {
     process.exit(1);
@@ -152,10 +183,10 @@ async function main(): Promise<void> {
     '|-------|---------|----------|----------|----------|------------|----------|------|----------|-------|',
   );
 
-  for (const batch of BATCHES) {
+  for (const batch of batches) {
     const result = await runPerformanceBatch(batch, actors);
     console.log(
-      `| ${result.batch} | ${result.samples} | ${result.avgMs.toFixed(1)} | ${result.p95Ms.toFixed(1)} | ${result.p99Ms.toFixed(1)} | ${result.paymentSetupFailures} | ${result.reversalFailures} | ${result.lockContention} | ${result.rollbacks} | ${result.otherFailures} |`,
+      `| ${result.batch} | ${result.samples} | ${result.avgMs.toFixed(1)} | ${result.p95Ms.toFixed(1)} | ${result.p99Ms.toFixed(1)} | ${result.paymentSetupFailures} | ${result.reversalFailures} | ${result.lockContention} | ${result.rollbacks} | ${result.otherFailures} |${result.stoppedEarly ? ` STOP: ${result.stopReason}` : ''}`,
     );
   }
 
