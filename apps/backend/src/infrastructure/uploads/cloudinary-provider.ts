@@ -1,9 +1,10 @@
 import { v2 as cloudinary } from 'cloudinary';
-import { randomUUID } from 'node:crypto';
 import { getUploadConfig, isCloudinaryConfigured } from './config.js';
-import type { StoredUpload, UploadProvider } from './types.js';
-
-const metadata = new Map<string, StoredUpload>();
+import {
+  buildCloudinaryTransformUrl,
+  resolveTransformPresetForPurpose,
+} from './cloudinary-transform.js';
+import type { UploadProvider, UploadProviderResult, UploadSaveInput } from './types.js';
 
 function configureCloudinary(): void {
   const config = getUploadConfig();
@@ -23,17 +24,9 @@ export class CloudinaryUploadProvider implements UploadProvider {
     configureCloudinary();
   }
 
-  async save(input: {
-    purpose: string;
-    fileName: string;
-    mimeType: string;
-    sizeBytes: number;
-    entityId?: string;
-    buffer: Buffer;
-  }): Promise<StoredUpload> {
+  async save(input: UploadSaveInput): Promise<UploadProviderResult> {
     const config = getUploadConfig();
-    const id = randomUUID();
-    const publicId = `${config.cloudinary.folder}/${input.purpose}/${id}`;
+    const publicId = `${config.cloudinary.folder}/${input.purpose}/${input.id}`;
 
     const result = await new Promise<{
       public_id: string;
@@ -63,44 +56,23 @@ export class CloudinaryUploadProvider implements UploadProvider {
       stream.end(input.buffer);
     });
 
-    const record: StoredUpload = {
-      id,
-      purpose: input.purpose,
-      fileName: input.fileName,
-      mimeType: input.mimeType,
-      sizeBytes: result.bytes ?? input.sizeBytes,
-      entityId: input.entityId,
-      uploadedAt: new Date().toISOString(),
+    const preset = resolveTransformPresetForPurpose(input.purpose);
+    const deliveryUrl = buildCloudinaryTransformUrl(result.public_id, preset);
+
+    return {
       storageKey: result.public_id,
-      url: result.secure_url,
+      url: deliveryUrl,
+      sizeBytes: result.bytes ?? input.sizeBytes,
     };
-
-    metadata.set(id, record);
-    return record;
   }
 
-  async get(id: string): Promise<StoredUpload | null> {
-    return metadata.get(id) ?? null;
+  async delete(_id: string, storageKey: string): Promise<boolean> {
+    const response = await cloudinary.uploader.destroy(storageKey, { resource_type: 'auto' });
+    return response.result === 'ok' || response.result === 'not found';
   }
 
-  async delete(id: string): Promise<boolean> {
-    const record = metadata.get(id);
-    if (!record) {
-      return false;
-    }
-
-    await cloudinary.uploader.destroy(record.storageKey, { resource_type: 'auto' });
-    metadata.delete(id);
-    return true;
-  }
-
-  async readBuffer(id: string): Promise<Buffer | null> {
-    const record = metadata.get(id);
-    if (!record) {
-      return null;
-    }
-
-    const response = await fetch(record.url);
+  async readBuffer(_storageKey: string, url: string): Promise<Buffer | null> {
+    const response = await fetch(url);
     if (!response.ok) {
       return null;
     }
