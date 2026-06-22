@@ -141,7 +141,7 @@ npm workspaces + Turbo (`build`, `type-check`, `lint`, `test`)
 | Registration | Partial API | `/officer/register` | |
 | Approvals | Loan approve/reject | `/approver/*` | |
 | Groups | `/group-formation` | `/groups` | |
-| Uploads | `/uploads/*` | Photo flows | Local + Cloudinary infra |
+| Uploads | `/uploads/*` | Photo flows | Local disk (dev) or Cloudinary (prod) |
 | Audit | `/audit/*` | Audit log reports | Async best-effort writes |
 | Reports | `/reports/*` | `/reports/*` | Partial backend parity |
 | Loans | `/loans/*` | `/loans` | Full lifecycle |
@@ -271,6 +271,12 @@ Reference files (never commit secrets):
 | `CLOUDINARY_FOLDER` | No | `wilms` |
 | `UPLOAD_MAX_SIZE_BYTES` | No | `10485760` |
 | `UPLOAD_ALLOWED_MIME_TYPES` | No | jpeg,png,webp,pdf |
+
+See [docs/engineering/cloudinary-setup.md](docs/engineering/cloudinary-setup.md) for setup, staging/production profiles, and troubleshooting.
+
+```bash
+npm run cert:upload:env -w @wilms/api   # Validate upload configuration (secrets masked)
+```
 
 ### Mail (infrastructure only)
 

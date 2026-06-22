@@ -1,10 +1,10 @@
+import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { randomUUID } from 'node:crypto';
 import { env } from '../../config/env.js';
-import type { StoredUpload, UploadProvider } from './types.js';
+import type { UploadProvider, UploadProviderResult, UploadSaveInput } from './types.js';
 
-const uploads = new Map<string, StoredUpload & { storagePath: string }>();
+const localFiles = new Map<string, string>();
 
 async function ensureUploadDir(): Promise<string> {
   const dir = path.resolve(process.cwd(), env.uploadDir);
@@ -13,70 +13,42 @@ async function ensureUploadDir(): Promise<string> {
 }
 
 export class LocalUploadProvider implements UploadProvider {
-  async save(input: {
-    purpose: string;
-    fileName: string;
-    mimeType: string;
-    sizeBytes: number;
-    entityId?: string;
-    buffer: Buffer;
-  }): Promise<StoredUpload> {
-    const id = `upload-${randomUUID()}`;
+  async save(input: UploadSaveInput): Promise<UploadProviderResult> {
     const dir = await ensureUploadDir();
-    const storagePath = path.join(dir, id);
+    const storagePath = path.join(dir, input.id);
     await writeFile(storagePath, input.buffer);
 
-    const record: StoredUpload & { storagePath: string } = {
-      id,
-      purpose: input.purpose,
-      fileName: input.fileName,
-      mimeType: input.mimeType,
-      sizeBytes: input.sizeBytes,
-      entityId: input.entityId,
-      uploadedAt: new Date().toISOString(),
+    localFiles.set(input.id, storagePath);
+
+    return {
       storageKey: storagePath,
-      storagePath,
-      url: `/uploads/${id}/content`,
+      url: `/uploads/${input.id}/content`,
+      sizeBytes: input.sizeBytes,
     };
-
-    uploads.set(id, record);
-    return record;
   }
 
-  async get(id: string): Promise<StoredUpload | null> {
-    const record = uploads.get(id);
-    if (!record) {
-      return null;
-    }
-
-    const { storagePath: _storagePath, ...rest } = record;
-    return rest;
-  }
-
-  async delete(id: string): Promise<boolean> {
-    const record = uploads.get(id);
-
-    if (!record) {
-      return false;
-    }
+  async delete(id: string, storageKey: string): Promise<boolean> {
+    const storagePath = localFiles.get(id) ?? storageKey;
 
     try {
-      await unlink(record.storagePath);
+      await unlink(storagePath);
     } catch {
       // ignore missing file
     }
 
-    uploads.delete(id);
+    localFiles.delete(id);
     return true;
   }
 
-  async readBuffer(id: string): Promise<Buffer | null> {
-    const record = uploads.get(id);
-
-    if (!record) {
+  async readBuffer(storageKey: string, _url?: string): Promise<Buffer | null> {
+    try {
+      return await readFile(storageKey);
+    } catch {
       return null;
     }
-
-    return readFile(record.storagePath);
   }
+}
+
+export function buildLocalUploadId(): string {
+  return `upload-${randomUUID()}`;
 }

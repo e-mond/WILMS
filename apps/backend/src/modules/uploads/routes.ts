@@ -4,8 +4,13 @@ import { asyncHandler } from '../../http/async-handler.js';
 import { AppError, ERROR_CODE } from '../../http/errors.js';
 import { sendData } from '../../http/response.js';
 import {
+  deleteStoredUpload,
   getUploadProvider,
+  getUploadRecord,
   isCloudinaryConfigured,
+  readUploadBuffer,
+  resolveUploadAccessUrl,
+  saveUpload,
   toUploadRecord,
   validateUploadInput,
 } from '../../infrastructure/uploads/index.js';
@@ -31,6 +36,10 @@ function decodeDataUrl(dataUrl: string): Buffer {
   return Buffer.from(match[2]!, 'base64');
 }
 
+function isCloudinaryDeliveryUrl(url: string): boolean {
+  return url.startsWith('https://res.cloudinary.com/');
+}
+
 export const uploadsRouter = Router();
 
 uploadsRouter.use(requireAuth);
@@ -48,7 +57,14 @@ uploadsRouter.get(
       throw new AppError('Signed uploads are not supported.', ERROR_CODE.NOT_FOUND, 404);
     }
 
-    sendData(res, await provider.getSignedUploadParams());
+    const params = await provider.getSignedUploadParams();
+    sendData(res, {
+      cloudName: params.cloudName,
+      apiKey: params.apiKey,
+      timestamp: params.timestamp,
+      signature: params.signature,
+      folder: params.folder,
+    });
   }),
 );
 
@@ -70,13 +86,14 @@ uploadsRouter.post(
     }
 
     const buffer = decodeDataUrl(input.dataUrl);
-    const stored = await getUploadProvider().save({
+    const stored = await saveUpload({
       purpose: input.purpose,
       fileName: input.fileName,
       mimeType: input.mimeType,
       sizeBytes: input.sizeBytes,
       entityId: input.entityId,
       buffer,
+      ownerUserId: req.session?.userId,
     });
 
     sendData(res, toUploadRecord(stored), 201);
@@ -86,20 +103,24 @@ uploadsRouter.post(
 uploadsRouter.get(
   '/uploads/:id',
   asyncHandler(async (req, res) => {
-    const stored = await getUploadProvider().get(req.params.id!);
+    const stored = await getUploadRecord(req.params.id!);
 
     if (!stored) {
       throw new AppError('Upload not found.', ERROR_CODE.NOT_FOUND, 404);
     }
 
-    sendData(res, toUploadRecord(stored));
+    const record = toUploadRecord(stored);
+    sendData(res, {
+      ...record,
+      url: resolveUploadAccessUrl(stored) ?? record.url,
+    });
   }),
 );
 
 uploadsRouter.post(
   '/uploads/:id/delete',
   asyncHandler(async (req, res) => {
-    const deleted = await getUploadProvider().delete(req.params.id!);
+    const deleted = await deleteStoredUpload(req.params.id!);
 
     if (!deleted) {
       throw new AppError('Upload not found.', ERROR_CODE.NOT_FOUND, 404);
@@ -112,13 +133,18 @@ uploadsRouter.post(
 uploadsRouter.get(
   '/uploads/:id/content',
   asyncHandler(async (req, res) => {
-    const stored = await getUploadProvider().get(req.params.id!);
+    const stored = await getUploadRecord(req.params.id!);
 
     if (!stored) {
       throw new AppError('Upload not found.', ERROR_CODE.NOT_FOUND, 404);
     }
 
-    const buffer = await getUploadProvider().readBuffer(req.params.id!);
+    if (isCloudinaryDeliveryUrl(stored.url)) {
+      res.redirect(302, stored.url);
+      return;
+    }
+
+    const buffer = await readUploadBuffer(req.params.id!);
 
     if (!buffer) {
       throw new AppError('Upload not found.', ERROR_CODE.NOT_FOUND, 404);
