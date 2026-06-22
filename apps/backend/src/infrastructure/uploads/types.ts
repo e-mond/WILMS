@@ -10,18 +10,26 @@ export interface StoredUpload {
   storageKey: string;
 }
 
+export interface UploadSaveInput {
+  id: string;
+  purpose: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  entityId?: string;
+  buffer: Buffer;
+}
+
+export interface UploadProviderResult {
+  storageKey: string;
+  url: string;
+  sizeBytes: number;
+}
+
 export interface UploadProvider {
-  save(input: {
-    purpose: string;
-    fileName: string;
-    mimeType: string;
-    sizeBytes: number;
-    entityId?: string;
-    buffer: Buffer;
-  }): Promise<StoredUpload>;
-  get(id: string): Promise<StoredUpload | null>;
-  delete(id: string): Promise<boolean>;
-  readBuffer(id: string): Promise<Buffer | null>;
+  save(input: UploadSaveInput): Promise<UploadProviderResult>;
+  delete(id: string, storageKey: string): Promise<boolean>;
+  readBuffer(storageKey: string, url: string): Promise<Buffer | null>;
   getSignedUploadParams?(): Promise<{
     cloudName: string;
     apiKey: string;
