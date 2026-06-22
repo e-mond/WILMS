@@ -188,6 +188,7 @@ export const idempotencyScopeEnum = pgEnum('idempotency_scope', [
   'ADJUSTMENT_CREATE',
   'ADJUSTMENT_APPROVE',
   'REVERSAL_EXECUTE',
+  'RECONCILIATION_SUBMIT',
 ]);
 
 export const loanPoolStatusEnum = pgEnum('loan_pool_status', [
@@ -248,4 +249,20 @@ export const reversalHistoryEventEnum = pgEnum('reversal_history_event', [
   'EXECUTED',
   'REJECTED',
   'LEDGER_POSTED',
+]);
+
+/** P14.3B Phase 4C.1 — Collector cash reconciliation variance classification. */
+export const reconciliationVarianceClassEnum = pgEnum('reconciliation_variance_class', [
+  'BALANCED',
+  'SHORTAGE',
+  'OVERAGE',
+]);
+
+/** P14.3B Phase 4C.1 — Reconciliation submission lifecycle (v1: submit-only). */
+export const reconciliationStatusEnum = pgEnum('reconciliation_status', ['SUBMITTED']);
+
+/** P14.3B Phase 4C.1 — Append-only reconciliation history events. */
+export const reconciliationHistoryEventEnum = pgEnum('reconciliation_history_event', [
+  'SUBMITTED',
+  'COMMENT_ADDED',
 ]);
