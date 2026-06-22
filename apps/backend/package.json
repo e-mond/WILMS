@@ -25,7 +25,8 @@
     "cert:reversal:ledger": "tsx src/verification/cert-reversal-ledger.ts",
     "cert:reversal:perf": "tsx src/verification/cert-reversal-performance.ts",
     "cert:reversal:concurrency": "tsx src/verification/cert-reversal-concurrency.ts",
-    "cert:reversal:seed-reset": "tsx src/verification/cert-reversal-seed-reset.ts"
+    "cert:reversal:seed-reset": "tsx src/verification/cert-reversal-seed-reset.ts",
+    "cert:upload:env": "tsx src/verification/cert-upload-environment.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
