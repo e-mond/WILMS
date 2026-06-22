@@ -139,3 +139,22 @@ export async function findDuplicatePayment(
 export function nextPaymentId(): string {
   return uuidv7();
 }
+
+export async function listConfirmedPaymentsForCollectorOnDate(
+  collectorUserId: string,
+  paymentDate: string,
+  tx: WilmsDb = getDb(),
+) {
+  return tx
+    .select({
+      amountPesewas: payments.amountPesewas,
+      status: payments.status,
+    })
+    .from(payments)
+    .where(
+      and(
+        eq(payments.collectorUserId, collectorUserId),
+        eq(payments.paymentDate, paymentDate),
+      ),
+    );
+}

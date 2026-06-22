@@ -1,8 +1,9 @@
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq, inArray, isNull } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
 import type { WilmsDb } from '../db/client.js';
 import { getDb } from '../db/client.js';
 import { loans } from '../db/schema/loans.js';
+import { groupMembers, groups } from '../db/schema/groups.js';
 import { LOAN_LIFECYCLE, toExternalStatus } from '../domain/loan/lifecycle.js';
 import { pesewasToDecimal } from '../domain/money.js';
 
@@ -123,4 +124,55 @@ export async function sumLedgerRepayments(loanId: string, tx: WilmsDb = getDb())
   return rows
     .filter((row) => row.entryType === 'REPAYMENT')
     .reduce((total, row) => total + Number(row.amount) * 100, 0);
+}
+
+/**
+ * Active loans for borrowers in groups assigned to the collector.
+ */
+export async function listPortfolioLoansForCollector(
+  collectorUserId: string,
+  tx: WilmsDb = getDb(),
+) {
+  const collectorGroups = await tx
+    .select({ id: groups.id })
+    .from(groups)
+    .where(and(eq(groups.collectorUserId, collectorUserId), isNull(groups.deletedAt)));
+
+  const groupIds = collectorGroups.map((group) => group.id);
+  if (groupIds.length === 0) {
+    return [];
+  }
+
+  const members = await tx
+    .select({ borrowerId: groupMembers.borrowerId })
+    .from(groupMembers)
+    .where(and(inArray(groupMembers.groupId, groupIds), isNull(groupMembers.removedAt)));
+
+  const borrowerIds = [...new Set(members.map((member) => member.borrowerId))];
+  if (borrowerIds.length === 0) {
+    return [];
+  }
+
+  const rows = await tx
+    .select({
+      paymentDay: loans.paymentDay,
+      installmentAmount: loans.installmentAmount,
+      externalStatus: loans.externalStatus,
+    })
+    .from(loans)
+    .where(
+      and(
+        inArray(loans.borrowerId, borrowerIds),
+        isNull(loans.deletedAt),
+        eq(loans.externalStatus, 'ACTIVE'),
+      ),
+    );
+
+  const { decimalToPesewas } = await import('../domain/money.js');
+
+  return rows.map((row) => ({
+    paymentDay: row.paymentDay,
+    weeklyPaymentPesewas: decimalToPesewas(row.installmentAmount),
+    externalStatus: row.externalStatus,
+  }));
 }
