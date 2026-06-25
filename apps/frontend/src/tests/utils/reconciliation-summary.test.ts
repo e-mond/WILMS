@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildReconciliationTotals,
-  calculatePhysicalCashVariance,
+  calculatePrimaryVariancePesewas,
   isVarianceAboveThreshold,
 } from '@/utils/reconciliation-summary';
 
@@ -36,8 +36,16 @@ describe('reconciliation-summary utils', () => {
     });
   });
 
-  it('calculates physical cash variance against system collected total', () => {
-    expect(calculatePhysicalCashVariance(4500, 5000)).toBe(-500);
+  it('calculates zero primary variance when physical cash matches expected due', () => {
+    expect(calculatePrimaryVariancePesewas(5000, 5000)).toBe(0);
+  });
+
+  it('calculates positive primary variance when physical cash exceeds expected due', () => {
+    expect(calculatePrimaryVariancePesewas(5500, 5000)).toBe(500);
+  });
+
+  it('calculates negative primary variance when physical cash is below expected due', () => {
+    expect(calculatePrimaryVariancePesewas(4500, 5000)).toBe(-500);
   });
 
   it('flags variance above the default threshold', () => {

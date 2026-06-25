@@ -24,7 +24,7 @@ describe('apiClient', () => {
     });
   });
 
-  it('maps unauthorized responses to ApiError', async () => {
+  it('maps 401 responses to session expired ApiError', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(JSON.stringify({ message: 'Unauthorized' }), {
         status: 401,
@@ -35,6 +35,30 @@ describe('apiClient', () => {
     await expect(apiClient.get('/borrowers')).rejects.toMatchObject({
       code: API_ERROR_CODE.UNAUTHORIZED,
       status: 401,
+      message: 'Your session has expired. Please sign in again.',
+    } satisfies Partial<ApiError>);
+  });
+
+  it('maps 403 responses to forbidden ApiError', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          error: {
+            message: 'You do not have permission to perform this action.',
+            code: 'UNAUTHORIZED',
+          },
+        }),
+        {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      ),
+    );
+
+    await expect(apiClient.get('/reconciliations')).rejects.toMatchObject({
+      code: API_ERROR_CODE.FORBIDDEN,
+      status: 403,
+      message: 'You do not have permission to perform this action.',
     } satisfies Partial<ApiError>);
   });
 
