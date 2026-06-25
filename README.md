@@ -31,9 +31,9 @@ WILMS supports registration officers, approvers, collectors, auditors, and super
 | P14.3B — Loan Pools | **Certified (warnings)** | Phase 1 — `verify:pools` 5/5 |
 | P14.3B — Adjustments | **Implemented** | Phase 2 — `verify:adjustments` 10/10 |
 | P14.3B — Payment Reversal | **CONDITIONAL** | 3C.1 MVP; 3C.2 functional/concurrency/ledger/RBAC PASS; perf PARTIAL |
-| P14.3B — Reconciliation | **Service (4C.2)** | Schema + domain/service; API routes pending |
+| P14.3B — Reconciliation | **Certified (4C.4)** | API + service certified; frontend pending |
 | P14.3B — Other domains | **Not started** | Other reversal types deferred |
-| **Current phase** | **P14.3B Phase 4C.2** | Reconciliation repository & service layer |
+| **Current phase** | **P14.3B Phase 4C.4** | Reconciliation certification (awaiting review) |
 
 ---
 
@@ -158,7 +158,7 @@ npm workspaces + Turbo (`build`, `type-check`, `lint`, `test`)
 | Domain | Status |
 |--------|--------|
 | Reversals | Not implemented (Phase 3) |
-| Reconciliation | UI mock; backend service layer (4C.2) — routes pending (4C.3) |
+| Reconciliation | UI mock; backend API certified (4C.4) — frontend wiring pending (4D) |
 | Write-Offs | Partial via adjustment WRITE_OFF type (Phase 5 dedicated service) |
 | Financial Controls | Partial RBAC; admin fee not server-enforced |
 | Pool disburse/payment hooks | Schema ready; writers deferred |
@@ -330,6 +330,12 @@ npm run cert:reversal:functional -w @wilms/api  # 3C.2 — live functional cert
 npm run cert:reversal:ledger -w @wilms/api      # 3C.2 — ledger integrity cert
 npm run cert:reversal:concurrency -w @wilms/api # 3C.2 — concurrency cert
 npm run cert:reversal:perf -w @wilms/api        # 3C.2 — performance cert (100/500/1000)
+npm run cert:reconciliation:seed-reset -w @wilms/api  # 4C.4 — reset cert reconciliation rows
+npm run cert:reconciliation:env -w @wilms/api         # 4C.4 — environment probe
+npm run cert:reconciliation:functional -w @wilms/api  # 4C.4 — functional + idempotency + integrity
+npm run cert:reconciliation:rbac -w @wilms/api       # 4C.4 — RBAC cert
+npm run cert:reconciliation:concurrency -w @wilms/api # 4C.4 — concurrency cert
+npm run cert:reconciliation:perf -w @wilms/api        # 4C.4 — performance cert (100/500/1000)
 ```
 
 | Command | Validates |
@@ -395,7 +401,8 @@ From `docs/page-validation/P14.3A.4-production-certification.md` + P14.3B Phase 
 | P14.3B Phase 3C.2 (reversal certification) | **91%** — CONDITIONAL; functional/concurrency/ledger PASS; perf PARTIAL (batch 100 only) |
 | P14.3B Phase 4A (reconciliation discovery) | **62%** — frontend mock ready |
 | P14.3B Phase 4C.1 (reconciliation schema) | **70%** — DB tables migrated |
-| P14.3B Phase 4C.2 (reconciliation service) | **82%** — domain + service; API pending |
+| P14.3B Phase 4C.2 (reconciliation service) | **82%** — domain + service |
+| P14.3B Phase 4C.4 (reconciliation cert) | **90%** — live cert PASS; frontend pending |
 | P14.3B remaining domains | **0%** (other reversal types, dedicated write-offs) |
 | Security / ops | 80% |
 | **Overall** | **86% — partial certification** |
@@ -413,7 +420,7 @@ From `docs/page-validation/P14.3A.4-production-certification.md` + P14.3B Phase 
 - **Audit writes** — Best-effort async; not transactional with business operations.
 - **Demo sessions** — Not cryptographically signed; not production-grade auth.
 - **Admin fee gate** — Enforced in mock UI only; not server-validated on loan create/disburse.
-- **Shared Neon certification** — `db:seed` skips existing loans; run `cert:reversal:seed-reset` before repeated 3C.2 cert runs.
+- **Shared Neon certification** — run `cert:reversal:seed-reset` or `cert:reconciliation:seed-reset` before repeated cert runs.
 - **P14.3B reversal perf** — Batch 500 interrupted; batch 1000 not executed; no scalability conclusions from unfinished runs.
 - **P14.3B remainder** — Other reversal types, reconciliation backend, dedicated write-offs not implemented.
 
@@ -430,7 +437,7 @@ From `docs/page-validation/P14.3A.4-production-certification.md` + P14.3B Phase 
 | **P14.3A.2** Certification | `P14.3A.2-system-certification.md`, `P14.3A.2-neon-verification.md`, `P14.3A.2-integration-verification.md` |
 | **P14.3A.3** Env hardening | `P14.3A.3-environment-governance.md`, `P14.3A.3-env-loading-audit.md`, `P14.3A.3-api-architecture.md`, `P14.3A.3-upload-architecture.md`, `P14.3A.3-readme-update-report.md` |
 | **P14.3A.4** Live certification | `P14.3A.4-production-certification.md`, `P14.3A.4-backend-live-verification.md` |
-| **P14.3B** | `P14.3B-reconciliation-architecture.md`, `P14.3B-phase-4c2-service-implementation.md`, `P14.3B-phase-4c1-schema-implementation.md`, `P14.3B-reconciliation-discovery.md` |
+| **P14.3B** | `P14.3B-phase-4c4-production-readiness.md`, `P14.3B-reconciliation-architecture.md`, `P14.3B-phase-4c2-service-implementation.md` |
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/engineering/branching-strategy.md](docs/engineering/branching-strategy.md) for phase workflow standards.
 

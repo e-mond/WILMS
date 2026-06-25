@@ -1,0 +1,129 @@
+/**
+ * P14.3B Phase 4C.3 — Reconciliation HTTP routes.
+ *
+ * RBAC: RECORD_COLLECTIONS for all reconciliation endpoints (v1).
+ */
+import { Router } from 'express';
+import { z } from 'zod';
+import { asyncHandler } from '../../http/async-handler.js';
+import { AppError, ERROR_CODE } from '../../http/errors.js';
+import { mapFinancialRouteError } from '../../http/map-financial-error.js';
+import { sendData } from '../../http/response.js';
+import { PERMISSION } from '../../infrastructure/permissions/matrix.js';
+import { requireAuth } from '../../middleware/authenticate.js';
+import { requirePermission } from '../../middleware/require-permission.js';
+import { validateBody } from '../../middleware/validate-body.js';
+import * as reconciliationService from './service.js';
+
+const submitReconciliationBodySchema = z.object({
+  collectorId: z.string().min(1),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  physicalCashPesewas: z.number().int().nonnegative(),
+  comment: z.string().optional(),
+});
+
+function mapError(error: unknown): never {
+  if (error instanceof Error && error.message === 'NOT_FOUND') {
+    throw new AppError('Reconciliation not found.', ERROR_CODE.NOT_FOUND, 404);
+  }
+  mapFinancialRouteError(error);
+}
+
+export const reconciliationRouter = Router();
+
+reconciliationRouter.use(requireAuth);
+
+reconciliationRouter.get(
+  '/reconciliation',
+  requirePermission(PERMISSION.RECORD_COLLECTIONS),
+  asyncHandler(async (req, res) => {
+    const collectorId = String(req.query.collectorId ?? '');
+    const date = String(req.query.date ?? '');
+
+    if (!collectorId || !date) {
+      throw new AppError(
+        'collectorId and date query parameters are required.',
+        ERROR_CODE.VALIDATION,
+        422,
+      );
+    }
+
+    try {
+      sendData(res, await reconciliationService.getReconciliationSummary(collectorId, date));
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+reconciliationRouter.get(
+  '/reconciliations',
+  requirePermission(PERMISSION.RECORD_COLLECTIONS),
+  asyncHandler(async (req, res) => {
+    const collectorId = req.query.collectorId ? String(req.query.collectorId) : undefined;
+
+    try {
+      sendData(res, await reconciliationService.listReconciliations({ collectorId }));
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+reconciliationRouter.get(
+  '/reconciliations/:id',
+  requirePermission(PERMISSION.RECORD_COLLECTIONS),
+  asyncHandler(async (req, res) => {
+    try {
+      const summary = await reconciliationService.getReconciliationById(req.params.id!);
+      if (!summary) {
+        throw new AppError('Reconciliation not found.', ERROR_CODE.NOT_FOUND, 404);
+      }
+      sendData(res, summary);
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+reconciliationRouter.get(
+  '/reconciliations/:id/history',
+  requirePermission(PERMISSION.RECORD_COLLECTIONS),
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(res, await reconciliationService.getReconciliationHistory(req.params.id!));
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+reconciliationRouter.post(
+  '/reconciliations',
+  requirePermission(PERMISSION.RECORD_COLLECTIONS),
+  validateBody(submitReconciliationBodySchema),
+  asyncHandler(async (req, res) => {
+    const { collectorId, date, physicalCashPesewas, comment } = req.body;
+    const idempotencyKey = req.header('Idempotency-Key') ?? req.header('idempotency-key') ?? undefined;
+
+    try {
+      sendData(
+        res,
+        await reconciliationService.submitReconciliation(
+          {
+            collectorId,
+            reconciliationDate: date,
+            physicalCashPesewas,
+            comment,
+            actorId: req.session!.userId,
+            actorDisplayName: req.session!.displayName,
+          },
+          idempotencyKey,
+        ),
+        201,
+      );
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
