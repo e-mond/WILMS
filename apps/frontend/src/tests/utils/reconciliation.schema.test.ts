@@ -1,16 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import {
-  ghsInputToPesewas,
-  reconciliationFormSchema,
-} from '@/utils/reconciliation.schema';
+import { flaggedCommentSchema } from '@/utils/reconciliation.schema';
 
 describe('reconciliation.schema', () => {
-  it('validates physical cash input', () => {
-    expect(reconciliationFormSchema.safeParse({ physicalCashGhs: '12.50' }).success).toBe(true);
-    expect(reconciliationFormSchema.safeParse({ physicalCashGhs: '' }).success).toBe(false);
+  it('allows empty comment when variance is not flagged', () => {
+    expect(flaggedCommentSchema(false).safeParse('').success).toBe(true);
   });
 
-  it('converts ghs input to pesewas', () => {
-    expect(ghsInputToPesewas('10.25')).toBe(1025);
+  it('rejects short comment when variance is flagged', () => {
+    const result = flaggedCommentSchema(true).safeParse('too short');
+    expect(result.success).toBe(false);
+  });
+
+  it('accepts valid comment when variance is flagged', () => {
+    const result = flaggedCommentSchema(true).safeParse(
+      'Collector held less cash than expected due to delayed collections.',
+    );
+    expect(result.success).toBe(true);
   });
 });

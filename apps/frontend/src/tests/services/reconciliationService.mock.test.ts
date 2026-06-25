@@ -4,7 +4,8 @@ vi.mock('@/services/mock/delay', () => ({
   simulateDelay: async () => undefined,
 }));
 
-import { AUDIT_ACTION } from '@/constants/audit';import { resetMockBorrowerRegistrations } from '@/services/mock/borrowerService.mock';
+import { AUDIT_ACTION } from '@/constants/audit';
+import { resetMockBorrowerRegistrations } from '@/services/mock/borrowerService.mock';
 import { resetMockLoans } from '@/services/mock/loanService.mock';
 import { getMockSupervisorAlerts, resetMockSupervisorAlerts } from '@/services/mock/notificationService.mock';
 import { resetPaymentTransactions } from '@/services/mock/payment-transaction.store';
@@ -46,12 +47,12 @@ describe('reconciliationService.mock', () => {
     const summary = await reconciliationServiceMock.submitReconciliation({
       collectorId: 'user-collector',
       date: '2026-05-29',
-      physicalCashPesewas: 0,
+      physicalCashPesewas: 11000,
     });
 
     expect(summary).toMatchObject({
       submitted: true,
-      physicalCashPesewas: 0,
+      physicalCashPesewas: 11000,
       actualPesewas: 0,
       variancePesewas: 0,
       varianceFlagged: false,
@@ -72,6 +73,7 @@ describe('reconciliationService.mock', () => {
       collectorId: 'user-collector',
       date: '2026-05-29',
       physicalCashPesewas: 4000,
+      comment: 'Collector held less cash than expected due to delayed collections.',
     });
 
     const alerts = getMockSupervisorAlerts().filter((alert) =>
@@ -85,18 +87,43 @@ describe('reconciliationService.mock', () => {
     });
   });
 
+  it('rejects flagged variance without a comment', async () => {
+    await expect(
+      reconciliationServiceMock.submitReconciliation({
+        collectorId: 'user-collector',
+        date: '2026-05-30',
+        physicalCashPesewas: 4000,
+      }),
+    ).rejects.toMatchObject({
+      status: 422,
+    });
+  });
+
+  it('rejects flagged variance with a short comment', async () => {
+    await expect(
+      reconciliationServiceMock.submitReconciliation({
+        collectorId: 'user-collector',
+        date: '2026-05-31',
+        physicalCashPesewas: 4000,
+        comment: 'short',
+      }),
+    ).rejects.toMatchObject({
+      status: 422,
+    });
+  });
+
   it('blocks duplicate submissions for the same collector and date', async () => {
     await reconciliationServiceMock.submitReconciliation({
       collectorId: 'user-collector',
       date: '2026-05-29',
-      physicalCashPesewas: 0,
+      physicalCashPesewas: 11000,
     });
 
     await expect(
       reconciliationServiceMock.submitReconciliation({
         collectorId: 'user-collector',
         date: '2026-05-29',
-        physicalCashPesewas: 0,
+        physicalCashPesewas: 11000,
       }),
     ).rejects.toBeInstanceOf(ApiError);
   });
