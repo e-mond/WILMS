@@ -1,3 +1,4 @@
+import { RECONCILIATION_FLAGGED_COMMENT_MIN_LENGTH } from '@/constants/reconciliation';
 import { AUDIT_ACTION, AUDIT_TARGET_ENTITY } from '@/constants/audit';
 import { loadCollectorDashboardInputs } from '@/services/mock/collector-dashboard-inputs';
 import auditServiceMock from '@/services/mock/auditService.mock';
@@ -13,7 +14,7 @@ import type { IReconciliationService, ReconciliationSummary } from '@/types/serv
 import { API_ERROR_CODE, ApiError } from '@/types/api';
 import {
   buildReconciliationTotals,
-  calculatePhysicalCashVariance,
+  calculatePrimaryVariancePesewas,
   isVarianceAboveThreshold,
 } from '@/utils/reconciliation-summary';
 
@@ -80,11 +81,23 @@ const reconciliationServiceMock: IReconciliationService = {
       loans,
       payments,
     );
-    const variancePesewas = calculatePhysicalCashVariance(
+    const variancePesewas = calculatePrimaryVariancePesewas(
       input.physicalCashPesewas,
-      actualPesewas,
+      expectedPesewas,
     );
     const varianceFlagged = isVarianceAboveThreshold(variancePesewas, expectedPesewas);
+
+    if (varianceFlagged) {
+      const comment = input.comment?.trim() ?? '';
+      if (comment.length < RECONCILIATION_FLAGGED_COMMENT_MIN_LENGTH) {
+        throw new ApiError(
+          `A comment of at least ${RECONCILIATION_FLAGGED_COMMENT_MIN_LENGTH} characters is required when variance is flagged.`,
+          API_ERROR_CODE.VALIDATION,
+          422,
+        );
+      }
+    }
+
     const submittedAt = new Date().toISOString();
 
     saveReconciliationSubmission({
@@ -104,7 +117,7 @@ const reconciliationServiceMock: IReconciliationService = {
       targetEntityId: `${input.collectorId}:${input.date}`,
       targetEntityType: AUDIT_TARGET_ENTITY.RECONCILIATION,
       reason: varianceFlagged
-        ? `Variance ${variancePesewas} pesewas exceeds threshold`
+        ? input.comment?.trim() ?? `Variance ${variancePesewas} pesewas exceeds threshold`
         : undefined,
     });
 

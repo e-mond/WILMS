@@ -42,6 +42,14 @@ function shouldUseMockServices() {
 
 
 
+  if (process.env.NEXT_PUBLIC_USE_MOCK === 'false') {
+
+    return false;
+
+  }
+
+
+
   return process.env.NODE_ENV !== 'production';
 
 }

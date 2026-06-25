@@ -17,13 +17,15 @@ import { useSubmitReconciliation } from '@/features/reconciliation/hooks/useSubm
 import { useAuth } from '@/hooks/useAuth';
 import { ApiError } from '@/types/api';
 import {
-  calculatePhysicalCashVariance,
+  calculatePrimaryVariancePesewas,
   isVarianceAboveThreshold,
 } from '@/utils/reconciliation-summary';
 import {
+  flaggedCommentSchema,
   ghsInputToPesewas,
   reconciliationFormSchema,
 } from '@/utils/reconciliation.schema';
+import { RECONCILIATION_FLAGGED_COMMENT_MIN_LENGTH } from '@/constants/reconciliation';
 import { formatDisplayDate } from '@/utils/format-date';
 
 function defaultReconciliationDate(): string {
@@ -34,7 +36,9 @@ export function ReconciliationForm() {
   const { user } = useAuth();
   const [date, setDate] = useState(defaultReconciliationDate);
   const [physicalCashGhs, setPhysicalCashGhs] = useState('');
+  const [comment, setComment] = useState('');
   const [fieldError, setFieldError] = useState<string | null>(null);
+  const [commentError, setCommentError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -52,9 +56,9 @@ export function ReconciliationForm() {
       return null;
     }
 
-    return calculatePhysicalCashVariance(
+    return calculatePrimaryVariancePesewas(
       ghsInputToPesewas(parsed.data.physicalCashGhs),
-      data.actualPesewas,
+      data.expectedPesewas,
     );
   }, [data, physicalCashGhs]);
 
@@ -103,14 +107,25 @@ export function ReconciliationForm() {
     }
 
     setFieldError(null);
+    setCommentError(null);
     setActionError(null);
     setSuccessMessage(null);
+
+    const commentValidation = flaggedCommentSchema(previewVarianceFlagged).safeParse(comment);
+    if (!commentValidation.success) {
+      setCommentError(
+        commentValidation.error.issues[0]?.message ??
+          `A comment of at least ${RECONCILIATION_FLAGGED_COMMENT_MIN_LENGTH} characters is required when variance is flagged.`,
+      );
+      return;
+    }
 
     try {
       const result = await submitMutation.mutateAsync({
         collectorId: user.id,
         date,
         physicalCashPesewas: ghsInputToPesewas(parsed.data.physicalCashGhs),
+        comment: previewVarianceFlagged ? comment.trim() : undefined,
       });
 
       if (result.varianceFlagged) {
@@ -118,7 +133,7 @@ export function ReconciliationForm() {
           'Reconciliation submitted. Variance exceeds threshold — Super Admin has been notified.',
         );
       } else if (result.variancePesewas === 0) {
-        setSuccessMessage('Reconciliation submitted. Physical cash matches system records.');
+        setSuccessMessage('Reconciliation submitted. Physical cash matches expected collections.');
       } else {
         setSuccessMessage('Reconciliation submitted and locked for this date.');
       }
@@ -141,6 +156,8 @@ export function ReconciliationForm() {
               setDate(event.target.value);
               setSuccessMessage(null);
               setActionError(null);
+              setComment('');
+              setCommentError(null);
             }}
             disabled={data.submitted}
           />
@@ -194,7 +211,7 @@ export function ReconciliationForm() {
           {data.varianceFlagged
             ? 'Variance exceeds the review threshold — Super Admin has been notified.'
             : data.variancePesewas === 0
-              ? 'Physical cash matches system records.'
+              ? 'Physical cash matches expected collections.'
               : 'Minor variance recorded.'}
         </Alert>
       ) : null}
@@ -207,8 +224,8 @@ export function ReconciliationForm() {
       ) : null}
 
       {!data.submitted && previewVariancePesewas === 0 && physicalCashGhs.trim() ? (
-        <Alert title="Cash matches system" variant="success">
-          Physical cash matches system collected total.
+        <Alert title="Cash matches expected" variant="success">
+          Physical cash matches expected collections for this date.
         </Alert>
       ) : null}
 
@@ -241,6 +258,32 @@ export function ReconciliationForm() {
           <p className="text-small text-text-muted">
             Enter the total cash you physically hold at end of day.
           </p>
+
+          {previewVarianceFlagged ? (
+            <>
+              <FormField
+                label="Variance explanation (required)"
+                htmlFor="reconciliation-comment"
+                error={commentError ?? undefined}
+                required
+              >
+                <textarea
+                  id="reconciliation-comment"
+                  className="min-h-[96px] w-full rounded-wilms-md border border-border bg-surface px-wilms-3 py-wilms-2 text-body text-text-primary"
+                  value={comment}
+                  onChange={(event) => {
+                    setComment(event.target.value);
+                    setCommentError(null);
+                  }}
+                  placeholder="Explain the variance for supervisor review"
+                />
+              </FormField>
+              <p className="text-small text-text-muted">
+                Minimum {RECONCILIATION_FLAGGED_COMMENT_MIN_LENGTH} characters when variance exceeds{' '}
+                {RECONCILIATION_VARIANCE_THRESHOLD_PERCENT}%.
+              </p>
+            </>
+          ) : null}
 
           <PermissionGate permission={PERMISSION.RECORD_COLLECTIONS}>
             <Button type="submit" disabled={submitMutation.isPending}>

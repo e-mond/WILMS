@@ -84,6 +84,10 @@ export function resolveDataProviderMode(): DataProviderMode {
     return 'mock';
   }
 
+  if (process.env.NEXT_PUBLIC_USE_MOCK === 'false') {
+    return 'api';
+  }
+
   if (process.env.NODE_ENV !== 'production') {
     return 'mock';
   }
