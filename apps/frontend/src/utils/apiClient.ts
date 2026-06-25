@@ -37,8 +37,22 @@ function mapStatusToError(status: number, body: ApiErrorBody | null): ApiError {
   const message = nested?.message ?? body?.message ?? 'Request failed';
   const code = nested?.code ?? body?.code;
 
-  if (status === 401 || status === 403) {
-    return new ApiError('Your session has expired. Please sign in again.', API_ERROR_CODE.UNAUTHORIZED, status);
+  if (status === 401) {
+    return new ApiError(
+      'Your session has expired. Please sign in again.',
+      API_ERROR_CODE.UNAUTHORIZED,
+      401,
+    );
+  }
+
+  if (status === 403) {
+    return new ApiError(
+      message === 'Request failed'
+        ? 'You do not have permission to perform this action.'
+        : message,
+      API_ERROR_CODE.FORBIDDEN,
+      403,
+    );
   }
 
   if (status === 404) {
@@ -115,7 +129,7 @@ async function request<T>(
     return parseSuccessBody<T>(response);
   } catch (error) {
     if (error instanceof ApiError) {
-      if (error.code === API_ERROR_CODE.UNAUTHORIZED && typeof window !== 'undefined') {
+      if (error.status === 401 && typeof window !== 'undefined') {
         triggerUnauthorizedHandler();
       }
 

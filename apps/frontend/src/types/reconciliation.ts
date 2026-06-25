@@ -2,6 +2,7 @@ export interface SubmitReconciliationInput {
   collectorId: string;
   date: string;
   physicalCashPesewas: number;
+  comment?: string;
 }
 
 export interface ReconciliationSubmission {

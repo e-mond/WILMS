@@ -10,6 +10,9 @@ export interface ReconciliationTotals {
   actualPesewas: number;
 }
 
+/**
+ * ExpectedCashFormula v1 — matches backend `calculateExpectedDuePesewas`.
+ */
 export function buildReconciliationTotals(
   collectorId: string,
   date: string,
@@ -25,23 +28,27 @@ export function buildReconciliationTotals(
   return { expectedPesewas, actualPesewas };
 }
 
-export function calculatePhysicalCashVariance(
+/**
+ * Primary variance v1 — matches backend `calculatePrimaryVariancePesewas`:
+ * physical_cash − expected_due
+ */
+export function calculatePrimaryVariancePesewas(
   physicalCashPesewas: number,
-  actualPesewas: number,
+  expectedDuePesewas: number,
 ): number {
-  return physicalCashPesewas - actualPesewas;
+  return physicalCashPesewas - expectedDuePesewas;
 }
 
 export function isVarianceAboveThreshold(
-  variancePesewas: number,
-  expectedPesewas: number,
+  primaryVariancePesewas: number,
+  expectedDuePesewas: number,
   thresholdPercent: number = RECONCILIATION_VARIANCE_THRESHOLD_PERCENT,
 ): boolean {
-  if (expectedPesewas === 0) {
-    return Math.abs(variancePesewas) > 0;
+  if (expectedDuePesewas === 0) {
+    return Math.abs(primaryVariancePesewas) > 0;
   }
 
-  const variancePercent = (Math.abs(variancePesewas) / expectedPesewas) * 100;
+  const variancePercent = (Math.abs(primaryVariancePesewas) / expectedDuePesewas) * 100;
 
   return variancePercent > thresholdPercent;
 }
