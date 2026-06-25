@@ -114,6 +114,17 @@ export async function listReconciliations(
   return rows.map((row) => mapReconciliationRowToSummary(row));
 }
 
+export async function getReconciliationHistory(reconciliationId: string) {
+  requireDatabase();
+
+  const reconciliation = await reconciliationRepo.findReconciliationById(reconciliationId);
+  if (!reconciliation) {
+    throw new Error('NOT_FOUND');
+  }
+
+  return reconciliationHistoryRepo.listHistoryForReconciliation(reconciliationId);
+}
+
 export async function submitReconciliation(
   input: z.infer<typeof submitReconciliationSchema>,
   idempotencyKey?: string,
