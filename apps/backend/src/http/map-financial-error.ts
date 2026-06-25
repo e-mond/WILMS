@@ -8,12 +8,13 @@ export function mapFinancialRouteError(error: unknown): never {
     if (error.message === 'NOT_FOUND') {
       throw new AppError('Resource not found.', ERROR_CODE.NOT_FOUND, 404);
     }
-    if (error.message === 'DUPLICATE') {
-      throw new AppError(
-        'This payment was already recorded for this borrower, date, and amount.',
-        ERROR_CODE.DUPLICATE_TRANSACTION,
-        409,
-      );
+    if (error.message === 'DUPLICATE' || error.message.startsWith('DUPLICATE:')) {
+      const message =
+        error.message === 'DUPLICATE'
+          ? 'This payment was already recorded for this borrower, date, and amount.'
+          : error.message.replace(/^DUPLICATE:?/, '') ||
+            'Duplicate transaction — request already processed.';
+      throw new AppError(message, ERROR_CODE.DUPLICATE_TRANSACTION, 409);
     }
     if (error.message === 'REVERSAL_DUPLICATE') {
       throw new AppError(
