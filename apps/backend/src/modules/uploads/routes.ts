@@ -14,8 +14,12 @@ import {
   toUploadRecord,
   validateUploadInput,
 } from '../../infrastructure/uploads/index.js';
+import { PERMISSION, roleHasPermission } from '../../infrastructure/permissions/matrix.js';
+import type { SessionUser } from '../../middleware/authenticate.js';
 import { requireAuth } from '../../middleware/authenticate.js';
 import { validateBody } from '../../middleware/validate-body.js';
+import { isDatabaseEnabled } from '../../db/client.js';
+import * as uploadRepository from '../../repositories/upload.repository.js';
 
 const uploadSchema = z.object({
   purpose: z.string().min(1),
@@ -38,6 +42,30 @@ function decodeDataUrl(dataUrl: string): Buffer {
 
 function isCloudinaryDeliveryUrl(url: string): boolean {
   return url.startsWith('https://res.cloudinary.com/');
+}
+
+async function assertUploadAccess(uploadId: string, session: SessionUser): Promise<void> {
+  if (roleHasPermission(session.role, PERMISSION.ACCESS_ADMIN_PORTAL)) {
+    return;
+  }
+
+  if (!isDatabaseEnabled()) {
+    return;
+  }
+
+  const ownerUserId = await uploadRepository.findUploadOwnerById(uploadId);
+
+  if (ownerUserId === undefined) {
+    throw new AppError('Upload not found.', ERROR_CODE.NOT_FOUND, 404);
+  }
+
+  if (ownerUserId !== null && ownerUserId !== session.userId) {
+    throw new AppError('You do not have access to this upload.', ERROR_CODE.UNAUTHORIZED, 403);
+  }
+
+  if (ownerUserId === null) {
+    throw new AppError('You do not have access to this upload.', ERROR_CODE.UNAUTHORIZED, 403);
+  }
 }
 
 export const uploadsRouter = Router();
@@ -103,6 +131,7 @@ uploadsRouter.post(
 uploadsRouter.get(
   '/uploads/:id',
   asyncHandler(async (req, res) => {
+    await assertUploadAccess(req.params.id!, req.session!);
     const stored = await getUploadRecord(req.params.id!);
 
     if (!stored) {
@@ -120,6 +149,7 @@ uploadsRouter.get(
 uploadsRouter.post(
   '/uploads/:id/delete',
   asyncHandler(async (req, res) => {
+    await assertUploadAccess(req.params.id!, req.session!);
     const deleted = await deleteStoredUpload(req.params.id!);
 
     if (!deleted) {
@@ -133,6 +163,7 @@ uploadsRouter.post(
 uploadsRouter.get(
   '/uploads/:id/content',
   asyncHandler(async (req, res) => {
+    await assertUploadAccess(req.params.id!, req.session!);
     const stored = await getUploadRecord(req.params.id!);
 
     if (!stored) {

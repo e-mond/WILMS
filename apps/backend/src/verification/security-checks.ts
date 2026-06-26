@@ -1,10 +1,15 @@
 /**
- * P14.3A.1 — Security verification via HTTP (no DATABASE_URL required for auth/RBAC).
+ * P14.3A.1 / P14.3B Pre-5B — Security verification via HTTP.
  */
+import { USER_ROLE } from '@wilms/shared-rbac';
 import { createApp } from '../http/app.js';
 import { encodeSessionToken } from '../middleware/authenticate.js';
-import { USER_ROLE } from '@wilms/shared-rbac';
 import type { VerificationResult } from './unit-checks.js';
+
+const DEMO_AUDITOR_USER_ID = '01930000-0001-7000-8000-000000000005';
+const DEMO_COLLECTOR_USER_ID = '01930000-0001-7000-8000-000000000002';
+const DEMO_OFFICER_USER_ID = '01930000-0001-7000-8000-000000000003';
+const DEMO_APPROVER_USER_ID = '01930000-0001-7000-8000-000000000004';
 
 function buildSession(role: string, userId: string): string {
   return encodeSessionToken({
@@ -53,6 +58,23 @@ async function request(
   }
 }
 
+function buildForgedUnsignedToken(): string {
+  const payload = Buffer.from(
+    JSON.stringify({
+      userId: 'forged-user',
+      role: USER_ROLE.SUPER_ADMIN,
+      expiresAt: Date.now() + 60_000,
+    }),
+    'utf8',
+  )
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+
+  return payload;
+}
+
 export async function runSecurityChecks(): Promise<VerificationResult[]> {
   const app = createApp();
   const results: VerificationResult[] = [];
@@ -76,7 +98,15 @@ export async function runSecurityChecks(): Promise<VerificationResult[]> {
     detail: `status ${expired.status}`,
   });
 
-  const collectorToken = buildSession(USER_ROLE.COLLECTOR, 'collector-user');
+  const forgedToken = buildForgedUnsignedToken();
+  const forged = await request(app, '/loans', { token: forgedToken });
+  results.push({
+    name: 'unsigned-forged-token-blocked',
+    passed: forged.status === 401,
+    detail: `status ${forged.status}`,
+  });
+
+  const collectorToken = buildSession(USER_ROLE.COLLECTOR, DEMO_COLLECTOR_USER_ID);
   const collectorApprove = await request(app, '/loans/01930002-0001-7000-8000-000000000003/approve', {
     method: 'PATCH',
     token: collectorToken,
@@ -97,7 +127,7 @@ export async function runSecurityChecks(): Promise<VerificationResult[]> {
     detail: `status ${collectorDisburse.status}`,
   });
 
-  const officerToken = buildSession(USER_ROLE.REGISTRATION_OFFICER, 'officer-user');
+  const officerToken = buildSession(USER_ROLE.REGISTRATION_OFFICER, DEMO_OFFICER_USER_ID);
   const officerPayment = await request(app, '/payments', {
     method: 'POST',
     token: officerToken,
@@ -114,7 +144,7 @@ export async function runSecurityChecks(): Promise<VerificationResult[]> {
     detail: `status ${officerPayment.status}`,
   });
 
-  const approverToken = buildSession(USER_ROLE.APPROVER, 'approver-user');
+  const approverToken = buildSession(USER_ROLE.APPROVER, DEMO_APPROVER_USER_ID);
   const invalidBody = await request(app, '/loans', {
     method: 'POST',
     token: approverToken,
@@ -139,6 +169,57 @@ export async function runSecurityChecks(): Promise<VerificationResult[]> {
     name: 'collector-cannot-reverse-payment',
     passed: collectorReverse.status === 403,
     detail: `status ${collectorReverse.status}`,
+  });
+
+  const auditorToken = buildSession(USER_ROLE.AUDITOR, DEMO_AUDITOR_USER_ID);
+  const auditSpoof = await request(app, '/audit', {
+    method: 'POST',
+    token: collectorToken,
+    body: {
+      action: 'payment.recorded',
+      actorId: 'other-user',
+      targetEntityId: 'fake-payment',
+      targetEntityType: 'payment',
+    },
+  });
+  results.push({
+    name: 'collector-cannot-post-audit',
+    passed: auditSpoof.status === 403,
+    detail: `status ${auditSpoof.status}`,
+  });
+
+  const auditorAudit = await request(app, '/audit', {
+    method: 'POST',
+    token: auditorToken,
+    body: {
+      action: 'settings.exported',
+      targetEntityId: 'settings',
+      targetEntityType: 'settings',
+    },
+  });
+  results.push({
+    name: 'auditor-can-post-audit',
+    passed: auditorAudit.status === 201,
+    detail: `status ${auditorAudit.status}`,
+  });
+
+  let rateLimitTriggered = false;
+  for (let attempt = 0; attempt < 25; attempt += 1) {
+    const loginAttempt = await request(app, '/auth/login', {
+      method: 'POST',
+      body: { email: 'nobody@wilms.demo', password: 'wrong-password' },
+    });
+
+    if (loginAttempt.status === 429) {
+      rateLimitTriggered = true;
+      break;
+    }
+  }
+
+  results.push({
+    name: 'login-rate-limit-triggered',
+    passed: rateLimitTriggered,
+    detail: rateLimitTriggered ? '429 received' : 'no 429 within 25 attempts',
   });
 
   return results;
