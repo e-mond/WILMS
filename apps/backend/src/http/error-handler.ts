@@ -9,7 +9,7 @@ export function errorHandler(error: unknown, _req: Request, res: Response, _next
   }
 
   if (error instanceof Error) {
-    sendError(res, 500, error.message, 'SERVER');
+    sendError(res, 500, 'An unexpected error occurred.', 'SERVER');
     return;
   }
 

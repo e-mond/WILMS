@@ -8,6 +8,7 @@ interface RemoteLoginResponse {
   role: UserRole;
   displayName?: string;
   expiresAt: number;
+  token?: string;
   user?: {
     id: string;
     role: UserRole;
@@ -15,22 +16,45 @@ interface RemoteLoginResponse {
   };
 }
 
+export interface CredentialAuthResult {
+  session: SessionPayload;
+  sessionToken: string;
+}
+
 export async function authenticateCredentials(
   credentials: LoginInput,
-): Promise<SessionPayload | null> {
+): Promise<CredentialAuthResult | null> {
   if (USE_MOCK_SERVICES) {
     const { authenticateMockCredentials } = await import('@/services/mock/authService.mock');
-    return authenticateMockCredentials(credentials);
+    const session = await authenticateMockCredentials(credentials);
+
+    if (!session) {
+      return null;
+    }
+
+    const { encodeSessionPayload } = await import('@/lib/auth/session');
+    return {
+      session,
+      sessionToken: encodeSessionPayload(session),
+    };
   }
 
   try {
     const response = await apiClient.post<RemoteLoginResponse>('/auth/login', credentials);
-
-    return {
+    const session: SessionPayload = {
       userId: response.userId ?? response.user?.id ?? '',
       role: response.role ?? response.user?.role ?? USER_ROLE.COLLECTOR,
       displayName: response.displayName ?? response.user?.displayName,
       expiresAt: response.expiresAt,
+    };
+
+    if (!response.token) {
+      return null;
+    }
+
+    return {
+      session,
+      sessionToken: response.token,
     };
   } catch {
     return null;

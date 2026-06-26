@@ -19,7 +19,16 @@ export async function findUserByEmail(email: string): Promise<DemoUser | undefin
     password: row.passwordHash,
     role: row.role,
     displayName: row.displayName,
+    status: row.status,
   };
+}
+
+export async function updateLastLoginAt(userId: string): Promise<void> {
+  const db = getDb();
+  await db
+    .update(users)
+    .set({ lastLoginAt: new Date(), updatedAt: new Date() })
+    .where(eq(users.id, userId));
 }
 
 export async function upsertDemoUser(user: DemoUser & { passwordHash?: string }): Promise<void> {

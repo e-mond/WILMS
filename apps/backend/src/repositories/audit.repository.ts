@@ -23,6 +23,8 @@ const ACTION_MAP = {
   'reversal.executed': 'REVERSAL_EXECUTED',
   'reversal.rejected': 'REVERSAL_REJECTED',
   'reconciliation.submitted': 'RECONCILIATION_SUBMITTED',
+  'user.logged-in': 'SETTINGS_EXPORTED',
+  'user.login-failed': 'SETTINGS_EXPORTED',
 } as const satisfies Record<string, string>;
 
 const TARGET_MAP = {
@@ -34,6 +36,8 @@ const TARGET_MAP = {
   adjustment: 'ADJUSTMENT',
   reversal: 'REVERSAL',
   reconciliation: 'RECONCILIATION',
+  user: 'USER',
+  settings: 'SETTINGS',
 } as const satisfies Record<string, string>;
 
 export async function appendAuditEntry(

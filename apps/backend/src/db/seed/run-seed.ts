@@ -1,9 +1,11 @@
 import '../../config/load-env.js';
-import { eq } from 'drizzle-orm';import { PERMISSION, USER_ROLE } from '@wilms/shared-rbac';
+import { eq } from 'drizzle-orm';
+import { PERMISSION, USER_ROLE } from '@wilms/shared-rbac';
 import { isDatabaseEnabled, getDb } from '../client.js';
 import { permissions, roles, userRoles } from '../schema/rbac.js';
 import { users as usersTable } from '../schema/users.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
+import { hashPassword } from '../../lib/password.js';
 import { seedFinancialCore } from './seed-financial.js';
 import { seedLoanPools } from './seed-loan-pools.js';
 import { seedAdjustmentReasons } from './seed-adjustments.js';
@@ -47,12 +49,13 @@ async function seedRbac(): Promise<void> {
 
   for (const user of DEMO_USERS) {
     const userId = uuidv7();
+    const passwordHash = await hashPassword(user.password);
     await db
       .insert(usersTable)
       .values({
         id: userId,
         email: user.email.toLowerCase(),
-        passwordHash: user.password,
+        passwordHash,
         displayName: user.displayName,
         role: user.role,
         status: 'ACTIVE',
@@ -60,7 +63,7 @@ async function seedRbac(): Promise<void> {
       .onConflictDoUpdate({
         target: usersTable.email,
         set: {
-          passwordHash: user.password,
+          passwordHash,
           displayName: user.displayName,
           role: user.role,
           updatedAt: new Date(),
