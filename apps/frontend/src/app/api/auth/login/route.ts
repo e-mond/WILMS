@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { loginSchema } from '@/features/authentication/login.schema';
 import { authenticateCredentials } from '@/lib/auth/authenticate';
 import { getSessionCookieOptions, SESSION_COOKIE_NAME } from '@/lib/auth/cookies';
-import { encodeSessionPayload, toAuthSession } from '@/lib/auth/session';
+import { toAuthSession } from '@/lib/auth/session';
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -20,13 +20,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: firstIssue }, { status: 422 });
   }
 
-  const sessionPayload = await authenticateCredentials(parsed.data);
+  const authResult = await authenticateCredentials(parsed.data);
 
-  if (!sessionPayload) {
+  if (!authResult) {
     return NextResponse.json({ message: 'Invalid email or password.' }, { status: 401 });
   }
 
-  const session = toAuthSession(sessionPayload);
+  const session = toAuthSession(authResult.session);
   const response = NextResponse.json({
     user: session.user,
     expiresAt: session.expiresAt,
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
 
   response.cookies.set(
     SESSION_COOKIE_NAME,
-    encodeSessionPayload(sessionPayload),
+    authResult.sessionToken,
     getSessionCookieOptions(),
   );
 

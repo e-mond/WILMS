@@ -18,7 +18,8 @@ export function decodeSessionPayload(value: string | undefined | null): SessionP
   }
 
   try {
-    const base64 = value.replace(/-/g, '+').replace(/_/g, '/');
+    const tokenBody = value.includes('.') ? value.slice(0, value.indexOf('.')) : value;
+    const base64 = tokenBody.replace(/-/g, '+').replace(/_/g, '/');
     const padding = '='.repeat((4 - (base64.length % 4)) % 4);
     const json = atob(`${base64}${padding}`);
     const parsed = JSON.parse(json) as Partial<SessionPayload>;
