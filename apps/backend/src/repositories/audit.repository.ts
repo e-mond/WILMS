@@ -36,7 +36,6 @@ const TARGET_MAP = {
   adjustment: 'ADJUSTMENT',
   reversal: 'REVERSAL',
   reconciliation: 'RECONCILIATION',
-  user: 'USER',
   settings: 'SETTINGS',
 } as const satisfies Record<string, string>;
 
