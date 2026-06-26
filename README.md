@@ -23,7 +23,7 @@ WILMS supports registration officers, approvers, collectors, auditors, and super
 
 | Area | Status | Evidence |
 |------|--------|----------|
-| Frontend UI | **Operational** | 42 routes, 400 unit tests, Playwright E2E suite |
+| Frontend UI | **Operational** | 42 routes, 205 unit tests, Playwright E2E suite |
 | Backend API | **Operational** | Express on `:4000`, RBAC + `{ data }` envelopes |
 | Financial core | **Operational** | Loan lifecycle, repayment engine, ledger, idempotency |
 | Neon / Drizzle | **Operational** | Migrations apply; seed loads when `DATABASE_URL` set |
@@ -32,8 +32,9 @@ WILMS supports registration officers, approvers, collectors, auditors, and super
 | P14.3B — Adjustments | **Implemented** | Phase 2 — `verify:adjustments` 10/10 |
 | P14.3B — Payment Reversal | **CONDITIONAL** | 3C.1 MVP; 3C.2 functional/concurrency/ledger/RBAC PASS; perf PARTIAL |
 | P14.3B — Reconciliation | **Demo ready (4D.1 + 4D.2)** | Backend certified; frontend live-validated |
+| P14.3B — Release consolidation | **5A complete (conditional)** | Docs + audit; merge to main pending |
 | P14.3B — Other domains | **Not started** | Other reversal types deferred |
-| **Current phase** | **P14.3B Phase 4D.2** | Stakeholder demo certification (awaiting review) |
+| **Current phase** | **P14.3B Phase 5A** | Release consolidation (awaiting review) |
 
 ---
 
