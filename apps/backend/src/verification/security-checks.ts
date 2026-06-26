@@ -2,14 +2,17 @@
  * P14.3A.1 / P14.3B Pre-5B — Security verification via HTTP.
  */
 import { USER_ROLE } from '@wilms/shared-rbac';
+import { eq } from 'drizzle-orm';
 import { createApp } from '../http/app.js';
+import { isDatabaseEnabled, getDb } from '../db/client.js';
+import { users } from '../db/schema/users.js';
 import { encodeSessionToken } from '../middleware/authenticate.js';
 import type { VerificationResult } from './unit-checks.js';
 
-const DEMO_AUDITOR_USER_ID = '01930000-0001-7000-8000-000000000005';
-const DEMO_COLLECTOR_USER_ID = '01930000-0001-7000-8000-000000000002';
-const DEMO_OFFICER_USER_ID = '01930000-0001-7000-8000-000000000003';
-const DEMO_APPROVER_USER_ID = '01930000-0001-7000-8000-000000000004';
+const DEMO_AUDITOR_EMAIL = 'auditor@wilms.demo';
+const DEMO_COLLECTOR_EMAIL = 'collector@wilms.demo';
+const DEMO_OFFICER_EMAIL = 'officer@wilms.demo';
+const DEMO_APPROVER_EMAIL = 'approver@wilms.demo';
 
 function buildSession(role: string, userId: string): string {
   return encodeSessionToken({
@@ -17,6 +20,24 @@ function buildSession(role: string, userId: string): string {
     role: role as never,
     expiresAt: Date.now() + 60_000,
   });
+}
+
+async function resolveDemoUserId(email: string): Promise<string | null> {
+  if (!isDatabaseEnabled()) {
+    return null;
+  }
+  const db = getDb();
+  const [row] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.email, email.toLowerCase()))
+    .limit(1);
+  return row?.id ?? null;
+}
+
+async function buildDemoSession(role: string, email: string, fallbackUserId: string): Promise<string> {
+  const userId = (await resolveDemoUserId(email)) ?? fallbackUserId;
+  return buildSession(role, userId);
 }
 
 async function request(
@@ -79,6 +100,15 @@ export async function runSecurityChecks(): Promise<VerificationResult[]> {
   const app = createApp();
   const results: VerificationResult[] = [];
 
+  const collectorToken = await buildDemoSession(USER_ROLE.COLLECTOR, DEMO_COLLECTOR_EMAIL, 'collector-user');
+  const officerToken = await buildDemoSession(
+    USER_ROLE.REGISTRATION_OFFICER,
+    DEMO_OFFICER_EMAIL,
+    'officer-user',
+  );
+  const approverToken = await buildDemoSession(USER_ROLE.APPROVER, DEMO_APPROVER_EMAIL, 'approver-user');
+  const auditorToken = await buildDemoSession(USER_ROLE.AUDITOR, DEMO_AUDITOR_EMAIL, 'auditor-user');
+
   const unauthenticated = await request(app, '/loans');
   results.push({
     name: 'unauthenticated-loans-blocked',
@@ -106,7 +136,6 @@ export async function runSecurityChecks(): Promise<VerificationResult[]> {
     detail: `status ${forged.status}`,
   });
 
-  const collectorToken = buildSession(USER_ROLE.COLLECTOR, DEMO_COLLECTOR_USER_ID);
   const collectorApprove = await request(app, '/loans/01930002-0001-7000-8000-000000000003/approve', {
     method: 'PATCH',
     token: collectorToken,
@@ -127,7 +156,6 @@ export async function runSecurityChecks(): Promise<VerificationResult[]> {
     detail: `status ${collectorDisburse.status}`,
   });
 
-  const officerToken = buildSession(USER_ROLE.REGISTRATION_OFFICER, DEMO_OFFICER_USER_ID);
   const officerPayment = await request(app, '/payments', {
     method: 'POST',
     token: officerToken,
@@ -144,7 +172,6 @@ export async function runSecurityChecks(): Promise<VerificationResult[]> {
     detail: `status ${officerPayment.status}`,
   });
 
-  const approverToken = buildSession(USER_ROLE.APPROVER, DEMO_APPROVER_USER_ID);
   const invalidBody = await request(app, '/loans', {
     method: 'POST',
     token: approverToken,
@@ -171,7 +198,6 @@ export async function runSecurityChecks(): Promise<VerificationResult[]> {
     detail: `status ${collectorReverse.status}`,
   });
 
-  const auditorToken = buildSession(USER_ROLE.AUDITOR, DEMO_AUDITOR_USER_ID);
   const auditSpoof = await request(app, '/audit', {
     method: 'POST',
     token: collectorToken,

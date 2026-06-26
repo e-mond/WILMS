@@ -16,6 +16,17 @@ function resolveSessionSecret(): string {
   return 'wilms-dev-session-secret-change-me';
 }
 
+function resolveTrustProxy(): boolean {
+  const raw = process.env.WILMS_TRUST_PROXY?.trim().toLowerCase();
+  if (raw === 'true' || raw === '1') {
+    return true;
+  }
+  if (raw === 'false' || raw === '0') {
+    return false;
+  }
+  return nodeEnv === 'production';
+}
+
 export const env = {
   port: Number(process.env.WILMS_API_PORT ?? process.env.API_PORT ?? process.env.PORT ?? DEFAULT_PORT),
   host: process.env.WILMS_API_HOST ?? '127.0.0.1',
@@ -27,4 +38,7 @@ export const env = {
   minGroupSize: Number(process.env.WILMS_MIN_GROUP_SIZE ?? 5),
   maxGroupSize: Number(process.env.WILMS_MAX_GROUP_SIZE ?? 15),
   databaseUrl: process.env.DATABASE_URL?.trim() || undefined,
+  trustProxy: resolveTrustProxy(),
+  trustProxyHops: Number(process.env.WILMS_TRUST_PROXY_HOPS ?? 1),
+  gitCommit: process.env.WILMS_GIT_COMMIT?.trim() || undefined,
 };
