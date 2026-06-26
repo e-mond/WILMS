@@ -1,0 +1,611 @@
+{
+  "generatedAt": "2026-06-26T16:48:48.405Z",
+  "head": "e71c6a7512347de85af26c3f19b254a47b6d16a0",
+  "pageCount": 46,
+  "pages": [
+    {
+      "file": "/page.tsx",
+      "route": "/"
+    },
+    {
+      "file": "/(super-admin)/adjustments/page.tsx",
+      "route": "//adjustments"
+    },
+    {
+      "file": "/(approver)/approver/pending/page.tsx",
+      "route": "//approver/pending"
+    },
+    {
+      "file": "/(approver)/approver/pending/[id]/page.tsx",
+      "route": "//approver/pending/[id]"
+    },
+    {
+      "file": "/(approver)/approver/reviewed/page.tsx",
+      "route": "//approver/reviewed"
+    },
+    {
+      "file": "/(approver)/approver/settings/page.tsx",
+      "route": "//approver/settings"
+    },
+    {
+      "file": "/(auditor)/auditor/audit-log/page.tsx",
+      "route": "//auditor/audit-log"
+    },
+    {
+      "file": "/(auditor)/auditor/reports/page.tsx",
+      "route": "//auditor/reports"
+    },
+    {
+      "file": "/(auditor)/auditor/settings/page.tsx",
+      "route": "//auditor/settings"
+    },
+    {
+      "file": "/(super-admin)/borrowers/page.tsx",
+      "route": "//borrowers"
+    },
+    {
+      "file": "/(super-admin)/borrowers/[id]/page.tsx",
+      "route": "//borrowers/[id]"
+    },
+    {
+      "file": "/(super-admin)/borrowers/[id]/loan/page.tsx",
+      "route": "//borrowers/[id]/loan"
+    },
+    {
+      "file": "/(collector)/collector/admin-fee/page.tsx",
+      "route": "//collector/admin-fee"
+    },
+    {
+      "file": "/(collector)/collector/admin-fee/[borrowerId]/page.tsx",
+      "route": "//collector/admin-fee/[borrowerId]"
+    },
+    {
+      "file": "/(collector)/collector/dashboard/page.tsx",
+      "route": "//collector/dashboard"
+    },
+    {
+      "file": "/(collector)/collector/expenses/page.tsx",
+      "route": "//collector/expenses"
+    },
+    {
+      "file": "/(collector)/collector/groups/[id]/collection-sheet/page.tsx",
+      "route": "//collector/groups/[id]/collection-sheet"
+    },
+    {
+      "file": "/(collector)/collector/my-borrowers/page.tsx",
+      "route": "//collector/my-borrowers"
+    },
+    {
+      "file": "/(collector)/collector/payment/[id]/page.tsx",
+      "route": "//collector/payment/[id]"
+    },
+    {
+      "file": "/(collector)/collector/reconciliation/page.tsx",
+      "route": "//collector/reconciliation"
+    },
+    {
+      "file": "/(collector)/collector/security/page.tsx",
+      "route": "//collector/security"
+    },
+    {
+      "file": "/(collector)/collector/settings/page.tsx",
+      "route": "//collector/settings"
+    },
+    {
+      "file": "/(super-admin)/collectors/page.tsx",
+      "route": "//collectors"
+    },
+    {
+      "file": "/(super-admin)/collectors/[id]/page.tsx",
+      "route": "//collectors/[id]"
+    },
+    {
+      "file": "/(super-admin)/dashboard/page.tsx",
+      "route": "//dashboard"
+    },
+    {
+      "file": "/(super-admin)/groups/page.tsx",
+      "route": "//groups"
+    },
+    {
+      "file": "/(super-admin)/groups/[id]/page.tsx",
+      "route": "//groups/[id]"
+    },
+    {
+      "file": "/(super-admin)/loan-pools/page.tsx",
+      "route": "//loan-pools"
+    },
+    {
+      "file": "/(super-admin)/loans/page.tsx",
+      "route": "//loans"
+    },
+    {
+      "file": "/(super-admin)/loans/[id]/page.tsx",
+      "route": "//loans/[id]"
+    },
+    {
+      "file": "/(super-admin)/loans/new/page.tsx",
+      "route": "//loans/new"
+    },
+    {
+      "file": "/(auth)/login/page.tsx",
+      "route": "//login"
+    },
+    {
+      "file": "/(registration-officer)/officer/my-registrations/page.tsx",
+      "route": "//officer/my-registrations"
+    },
+    {
+      "file": "/(registration-officer)/officer/register/page.tsx",
+      "route": "//officer/register"
+    },
+    {
+      "file": "/(registration-officer)/officer/settings/page.tsx",
+      "route": "//officer/settings"
+    },
+    {
+      "file": "/(super-admin)/reports/page.tsx",
+      "route": "//reports"
+    },
+    {
+      "file": "/(super-admin)/reports/audit-log/page.tsx",
+      "route": "//reports/audit-log"
+    },
+    {
+      "file": "/(super-admin)/reports/collector-performance/page.tsx",
+      "route": "//reports/collector-performance"
+    },
+    {
+      "file": "/(super-admin)/reports/daily-collection/page.tsx",
+      "route": "//reports/daily-collection"
+    },
+    {
+      "file": "/(super-admin)/reports/defaulters/page.tsx",
+      "route": "//reports/defaulters"
+    },
+    {
+      "file": "/(super-admin)/reports/financial-ledger/page.tsx",
+      "route": "//reports/financial-ledger"
+    },
+    {
+      "file": "/(super-admin)/reports/group-risk/page.tsx",
+      "route": "//reports/group-risk"
+    },
+    {
+      "file": "/(super-admin)/reports/loan-portfolio/page.tsx",
+      "route": "//reports/loan-portfolio"
+    },
+    {
+      "file": "/(super-admin)/risk-flags/page.tsx",
+      "route": "//risk-flags"
+    },
+    {
+      "file": "/(auth)/session-expired/page.tsx",
+      "route": "//session-expired"
+    },
+    {
+      "file": "/(super-admin)/settings/page.tsx",
+      "route": "//settings"
+    }
+  ],
+  "endpointCount": 70,
+  "endpoints": [
+    {
+      "module": "adjustments",
+      "method": "GET",
+      "path": "/adjustments"
+    },
+    {
+      "module": "adjustments",
+      "method": "POST",
+      "path": "/adjustments"
+    },
+    {
+      "module": "adjustments",
+      "method": "GET",
+      "path": "/adjustments/:id"
+    },
+    {
+      "module": "adjustments",
+      "method": "POST",
+      "path": "/adjustments/:id/approve"
+    },
+    {
+      "module": "adjustments",
+      "method": "POST",
+      "path": "/adjustments/:id/reject"
+    },
+    {
+      "module": "adjustments",
+      "method": "GET",
+      "path": "/adjustments/pending"
+    },
+    {
+      "module": "audit",
+      "method": "POST",
+      "path": "/audit"
+    },
+    {
+      "module": "audit",
+      "method": "GET",
+      "path": "/audit-log"
+    },
+    {
+      "module": "auth",
+      "method": "POST",
+      "path": "/auth/login"
+    },
+    {
+      "module": "auth",
+      "method": "GET",
+      "path": "/auth/session"
+    },
+    {
+      "module": "borrowers",
+      "method": "GET",
+      "path": "/borrowers"
+    },
+    {
+      "module": "borrowers",
+      "method": "POST",
+      "path": "/borrowers"
+    },
+    {
+      "module": "loans",
+      "method": "GET",
+      "path": "/borrowers/:borrowerId/disbursement-eligibility"
+    },
+    {
+      "module": "loans",
+      "method": "GET",
+      "path": "/borrowers/:borrowerId/loans"
+    },
+    {
+      "module": "payments",
+      "method": "GET",
+      "path": "/borrowers/:borrowerId/payment-entry"
+    },
+    {
+      "module": "borrowers",
+      "method": "GET",
+      "path": "/borrowers/:id"
+    },
+    {
+      "module": "borrowers",
+      "method": "PATCH",
+      "path": "/borrowers/:id/approve"
+    },
+    {
+      "module": "borrowers",
+      "method": "PATCH",
+      "path": "/borrowers/:id/blacklist"
+    },
+    {
+      "module": "borrowers",
+      "method": "GET",
+      "path": "/borrowers/:id/full-profile"
+    },
+    {
+      "module": "borrowers",
+      "method": "DELETE",
+      "path": "/borrowers/:id/registration"
+    },
+    {
+      "module": "borrowers",
+      "method": "PATCH",
+      "path": "/borrowers/:id/reject"
+    },
+    {
+      "module": "borrowers",
+      "method": "GET",
+      "path": "/borrowers/:id/review"
+    },
+    {
+      "module": "borrowers",
+      "method": "GET",
+      "path": "/borrowers/check-active-loan"
+    },
+    {
+      "module": "borrowers",
+      "method": "GET",
+      "path": "/borrowers/check-blacklist"
+    },
+    {
+      "module": "borrowers",
+      "method": "POST",
+      "path": "/borrowers/check-guarantor-eligibility"
+    },
+    {
+      "module": "borrowers",
+      "method": "GET",
+      "path": "/borrowers/check-id"
+    },
+    {
+      "module": "borrowers",
+      "method": "GET",
+      "path": "/borrowers/check-name"
+    },
+    {
+      "module": "borrowers",
+      "method": "GET",
+      "path": "/borrowers/check-phone"
+    },
+    {
+      "module": "loans",
+      "method": "GET",
+      "path": "/borrowers/loan-eligible"
+    },
+    {
+      "module": "borrowers",
+      "method": "GET",
+      "path": "/borrowers/my-registrations"
+    },
+    {
+      "module": "borrowers",
+      "method": "GET",
+      "path": "/borrowers/reviewed"
+    },
+    {
+      "module": "group-formation",
+      "method": "GET",
+      "path": "/groups/formation/config"
+    },
+    {
+      "module": "group-formation",
+      "method": "POST",
+      "path": "/groups/formation/process-approval"
+    },
+    {
+      "module": "group-formation",
+      "method": "GET",
+      "path": "/groups/formation/status/:community"
+    },
+    {
+      "module": "health",
+      "method": "GET",
+      "path": "/health"
+    },
+    {
+      "module": "loan-pools",
+      "method": "GET",
+      "path": "/loan-pools"
+    },
+    {
+      "module": "loan-pools",
+      "method": "GET",
+      "path": "/loan-pools/:id"
+    },
+    {
+      "module": "loans",
+      "method": "GET",
+      "path": "/loans"
+    },
+    {
+      "module": "loans",
+      "method": "POST",
+      "path": "/loans"
+    },
+    {
+      "module": "loans",
+      "method": "GET",
+      "path": "/loans/:id"
+    },
+    {
+      "module": "loans",
+      "method": "PATCH",
+      "path": "/loans/:id/approve"
+    },
+    {
+      "module": "loans",
+      "method": "POST",
+      "path": "/loans/:id/disburse"
+    },
+    {
+      "module": "loans",
+      "method": "GET",
+      "path": "/loans/:id/payments"
+    },
+    {
+      "module": "loans",
+      "method": "GET",
+      "path": "/loans/:id/progress"
+    },
+    {
+      "module": "loans",
+      "method": "PATCH",
+      "path": "/loans/:id/reject"
+    },
+    {
+      "module": "loans",
+      "method": "GET",
+      "path": "/loans/:id/schedule"
+    },
+    {
+      "module": "loans",
+      "method": "GET",
+      "path": "/loans/portfolio"
+    },
+    {
+      "module": "payments",
+      "method": "POST",
+      "path": "/payments"
+    },
+    {
+      "module": "payments",
+      "method": "GET",
+      "path": "/payments/:paymentId"
+    },
+    {
+      "module": "payments",
+      "method": "PATCH",
+      "path": "/payments/:paymentId"
+    },
+    {
+      "module": "payments",
+      "method": "POST",
+      "path": "/payments/:paymentId/reverse"
+    },
+    {
+      "module": "payments",
+      "method": "GET",
+      "path": "/payments/same-day"
+    },
+    {
+      "module": "reconciliation",
+      "method": "GET",
+      "path": "/reconciliation"
+    },
+    {
+      "module": "reconciliation",
+      "method": "GET",
+      "path": "/reconciliations"
+    },
+    {
+      "module": "reconciliation",
+      "method": "POST",
+      "path": "/reconciliations"
+    },
+    {
+      "module": "reconciliation",
+      "method": "GET",
+      "path": "/reconciliations/:id"
+    },
+    {
+      "module": "reconciliation",
+      "method": "GET",
+      "path": "/reconciliations/:id/history"
+    },
+    {
+      "module": "reports",
+      "method": "GET",
+      "path": "/reports"
+    },
+    {
+      "module": "reports",
+      "method": "GET",
+      "path": "/reports/collector-performance"
+    },
+    {
+      "module": "reports",
+      "method": "GET",
+      "path": "/reports/daily-collection"
+    },
+    {
+      "module": "reports",
+      "method": "GET",
+      "path": "/reports/defaulters"
+    },
+    {
+      "module": "reports",
+      "method": "GET",
+      "path": "/reports/financial-ledger"
+    },
+    {
+      "module": "reports",
+      "method": "GET",
+      "path": "/reports/group-risk"
+    },
+    {
+      "module": "reports",
+      "method": "GET",
+      "path": "/reports/hub"
+    },
+    {
+      "module": "reports",
+      "method": "GET",
+      "path": "/reports/loan-portfolio"
+    },
+    {
+      "module": "uploads",
+      "method": "POST",
+      "path": "/uploads"
+    },
+    {
+      "module": "uploads",
+      "method": "GET",
+      "path": "/uploads/:id"
+    },
+    {
+      "module": "uploads",
+      "method": "GET",
+      "path": "/uploads/:id/content"
+    },
+    {
+      "module": "uploads",
+      "method": "POST",
+      "path": "/uploads/:id/delete"
+    },
+    {
+      "module": "uploads",
+      "method": "GET",
+      "path": "/uploads/signature"
+    }
+  ],
+  "frontendApiPathCount": 28,
+  "frontendApiPaths": [
+    "/analytics/collections",
+    "/expenses",
+    "/expenses/:param",
+    "/expenses/summary",
+    "/registration/capture-sessions",
+    "/registration/capture-sessions/:param",
+    "/reports",
+    "/reports/collector-performance",
+    "/reports/daily-collection",
+    "/reports/defaulters",
+    "/reports/financial-ledger${query ",
+    "/reports/group-risk",
+    "/reports/hub",
+    "/reports/loan-portfolio${query ",
+    "/settings/activity",
+    "/settings/permissions",
+    "/settings/registration-legal",
+    "/settings/roles",
+    "/settings/roles/:param",
+    "/settings/roles/:param/clone",
+    "/settings/roles/:param/delete",
+    "/settings/users",
+    "/settings/users/:param",
+    "/settings/users/:param/activate",
+    "/settings/users/:param/delete",
+    "/settings/users/:param/disable",
+    "/settings/users/:param/profile",
+    "/uploads/:param/delete"
+  ],
+  "tableCount": 33,
+  "tables": [
+    "adjustment_history",
+    "adjustment_reasons",
+    "audit_entries",
+    "borrower_approval_decisions",
+    "borrowers",
+    "collectors",
+    "expenses",
+    "financial_adjustments",
+    "financial_reconciliations",
+    "financial_reversals",
+    "group_formation_queue",
+    "group_members",
+    "group_sequence_counters",
+    "groups",
+    "idempotency_keys",
+    "ledger_entries",
+    "loan_disbursements",
+    "loan_pools",
+    "loan_schedules",
+    "loans",
+    "notifications",
+    "payments",
+    "permissions",
+    "pool_allocations",
+    "pool_memberships",
+    "reconciliation_history",
+    "reversal_history",
+    "role_permissions",
+    "roles",
+    "uploads",
+    "user_permission_overrides",
+    "user_roles",
+    "users"
+  ]
+}
