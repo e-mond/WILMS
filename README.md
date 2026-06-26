@@ -23,18 +23,19 @@ WILMS supports registration officers, approvers, collectors, auditors, and super
 
 | Area | Status | Evidence |
 |------|--------|----------|
-| Frontend UI | **Operational** | 42 routes, 205 unit tests, Playwright E2E suite |
-| Backend API | **Operational** | Express on `:4000`, RBAC + `{ data }` envelopes |
-| Financial core | **Operational** | Loan lifecycle, repayment engine, ledger, idempotency |
-| Neon / Drizzle | **Operational** | Migrations apply; seed loads when `DATABASE_URL` set |
-| Production certification | **Partial (82%)** | `docs/page-validation/P14.3A.4-production-certification.md` |
-| P14.3B — Loan Pools | **Certified (warnings)** | Phase 1 — `verify:pools` 5/5 |
-| P14.3B — Adjustments | **Implemented** | Phase 2 — `verify:adjustments` 10/10 |
-| P14.3B — Payment Reversal | **CONDITIONAL** | 3C.1 MVP; 3C.2 functional/concurrency/ledger/RBAC PASS; perf PARTIAL |
-| P14.3B — Reconciliation | **Demo ready (4D.1 + 4D.2)** | Backend certified; frontend live-validated |
-| P14.3B — Release consolidation | **5A complete (conditional)** | Docs + audit; merge to main pending |
-| P14.3B — Other domains | **Not started** | Other reversal types deferred |
-| **Current phase** | **P14.3B Phase 5A** | Release consolidation (awaiting review) |
+| Frontend UI | **Certified** | 42 routes; **205/205** unit tests (`docs/page-validation/phase-5b-evidence/test-frontend.txt`) |
+| Backend API | **Certified** | Express on `:4000`; **9/9** tests (`docs/page-validation/phase-5b-evidence/test-backend.txt`) |
+| Financial core | **Conditional** | Cert scripts PASS; `verify:financial` **50/63** on shared Neon |
+| Neon / Drizzle | **Operational** | Migrations `0000`–`0006`; seed when `DATABASE_URL` set |
+| Security | **Certified** | Pre-5B hardening + 5B re-verify **11/11** (`P14.3B-phase-5b-security-certification.md`) |
+| Production certification | **Certified** | Phase 5B **CONDITIONAL** — `P14.3B-phase-5b-release-approval.md` |
+| P14.3B — Loan Pools | **Certified** | Phase 1 — `verify:pools` 5/5 |
+| P14.3B — Adjustments | **Certified** | Phase 2 — `verify:adjustments` 10/10 |
+| P14.3B — Payment Reversal | **Certified** | `cert:reversal:*` PASS — functional 10/10, ledger 1634/1634 |
+| P14.3B — Reconciliation | **Certified** | functional 24/24, RBAC 6/6; demo 31/32 |
+| P14.3B — Uploads | **Conditional** | `cert:upload:env` PASS (local); Cloudinary staging not configured |
+| Notifications (SMS/email) | **Deferred** | Adapters only; no workflow call sites (`docs/audit/P14.3B-feature-completion-matrix.md`) |
+| **Current phase** | **P14.3B Phase 5B** | Production certification complete — **CONDITIONAL** verdict |
 
 ---
 
@@ -52,7 +53,8 @@ wilms/
 │   ├── shared-validation/ Zod schemas (login, API validation)
 │   └── shared-utils/      Shared helpers
 ├── docs/
-│   └── page-validation/   Phase audit and certification reports
+│   ├── page-validation/   Phase audit and certification reports
+│   └── audit/             Pre-5B project audit (P14.3B)
 ├── .env.example           Monorepo environment reference
 ├── package.json           npm workspaces root scripts
 └── turbo.json             Turbo task graph
@@ -81,7 +83,7 @@ UI → @/services → apiClient → NEXT_PUBLIC_API_BASE_URL
   → Express modules → repositories → Neon PostgreSQL
 ```
 
-Development defaults to **mock services** unless `NODE_ENV=production` and `NEXT_PUBLIC_API_BASE_URL` are both set.
+Development defaults to **mock services** unless `NEXT_PUBLIC_API_BASE_URL` is set and either `NODE_ENV=production` or `NEXT_PUBLIC_USE_MOCK=false` (`apps/frontend/src/data-provider/types.ts`).
 
 ---
 
@@ -120,8 +122,8 @@ Development defaults to **mock services** unless `NODE_ENV=production` and `NEXT
 
 | Layer | Tool |
 |-------|------|
-| Unit | Vitest 2.1 (frontend, 400 tests) |
-| E2E | Playwright 1.48 (186 scenarios, Chromium) |
+| Unit | Vitest 2.1 — frontend **205** tests; backend **9** tests |
+| E2E | Playwright 1.48 — **61** tests across 14 spec files (Chromium) |
 | Financial | Custom harness — `verify:financial` (backend) |
 
 ### Monorepo
@@ -136,8 +138,8 @@ npm workspaces + Turbo (`build`, `type-check`, `lint`, `test`)
 
 | Domain | Backend | Frontend | Notes |
 |--------|---------|----------|-------|
-| Authentication | `/auth/*` | Login, session, middleware | Demo session tokens |
-| RBAC | `requirePermission` | `PermissionProvider` | 6/6 harness checks pass |
+| Authentication | `/auth/*` | Login, session, middleware | HMAC-signed sessions + bcrypt (`b68f3eb`) |
+| RBAC | `requirePermission` | `PermissionProvider` | Security harness **11/11**; reconciliation RBAC **6/6** |
 | Borrowers | `/borrowers/*` | `/borrowers` | |
 | Registration | Partial API | `/officer/register` | |
 | Approvals | Loan approve/reject | `/approver/*` | |
@@ -153,18 +155,21 @@ npm workspaces + Turbo (`build`, `type-check`, `lint`, `test`)
 | Concurrency | Optimistic `version` | — | Harness: perf + concurrency gaps on Neon |
 | **Loan Pools** | `GET /loan-pools`, `GET /loan-pools/:id` | `/loan-pools` | Phase 1 read API; `verify:pools` |
 | **Adjustments** | `GET/POST /adjustments`, `GET /adjustments/pending`, approve/reject | `/adjustments` | Phase 2 workflow; `verify:adjustments` |
+| **Payment Reversal** | `POST .../reverse`, reversal service | Approver flows | Phase 3C — `cert:reversal:*` certified |
+| **Reconciliation** | `POST /reconciliation`, collector submit | `/reconciliation` | Phase 4C/4D — `cert:reconciliation:*` certified |
 
 ### Deferred (P14.3B — remaining)
 
 | Domain | Status |
 |--------|--------|
-| Reversals | Not implemented (Phase 3) |
-| Reconciliation | UI mock; backend API certified (4C.4) — frontend wiring pending (4D) |
-| Write-Offs | Partial via adjustment WRITE_OFF type (Phase 5 dedicated service) |
-| Financial Controls | Partial RBAC; admin fee not server-enforced |
+| Other reversal types | Deferred by design — MVP payment reversal only |
+| Write-Offs | Partial via adjustment `WRITE_OFF` type; dedicated service deferred |
+| Financial Controls | Partial RBAC; admin fee not server-enforced on loan create/disburse |
 | Pool disburse/payment hooks | Schema ready; writers deferred |
+| OTP / password reset | Not implemented — documented deferral (`docs/audit/P14.3B-security-audit.md`) |
+| SMS / email notification workflows | Infrastructure adapters only; Hubtel UI label, backend: Arkesel/Twilio |
 
-Detail: `docs/page-validation/P14.3B-readiness-assessment.md`
+Detail: `docs/page-validation/P14.3B-remaining-work-roadmap.md` (current) · historical: `P14.3B-readiness-assessment.md`
 
 ---
 
@@ -213,7 +218,8 @@ cp apps/backend/.env.local.example apps/backend/.env.local
 cp apps/frontend/.env.local.example apps/frontend/.env.local
 # Set DATABASE_URL in .env / apps/backend/.env.local
 # Set NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:3000/api/wilms in frontend .env.local
-# Build frontend with NODE_ENV=production for live API mode
+# For live API in dev without production build: NEXT_PUBLIC_USE_MOCK=false (see .env.local.example)
+# Or: build frontend with NODE_ENV=production for live API mode
 ```
 
 ---
@@ -242,7 +248,8 @@ Reference files (never commit secrets):
 | `NEXT_PUBLIC_DEMO_MODE` | No | — | Force mock |
 | `NEXT_PUBLIC_FORCE_DEMO_MODE` | No | — | Force mock |
 | `NEXT_PUBLIC_API_DISABLED` | No | — | Force mock |
-| `NEXT_PUBLIC_WILMS_ENV` | No | — | Export label |
+| `NEXT_PUBLIC_USE_MOCK` | No | unset | Set `false` for live API in development (requires API URL) |
+| `NEXT_PUBLIC_WILMS_ENV` | No | — | Export label (staging vs production) |
 | `NEXT_PUBLIC_APP_LOCK_IDLE_MS` | No | 300000 | App lock idle ms |
 | `NODE_ENV` | No | `development` | Runtime mode |
 
@@ -255,7 +262,8 @@ Reference files (never commit secrets):
 | `API_PORT` | No | — | Alias for port |
 | `PORT` | No | — | Platform alias |
 | `WILMS_API_HOST` | No | `127.0.0.1` | Bind address |
-| `WILMS_CORS_ORIGIN` | No | `http://127.0.0.1:3000` | CORS origin |
+| `WILMS_CORS_ORIGIN` | Prod: yes | `http://127.0.0.1:3000` | CORS origin |
+| `WILMS_SESSION_SECRET` | Prod: yes (≥32 chars) | dev fallback if unset | HMAC session signing — required when `NODE_ENV=production` |
 | `WILMS_UPLOAD_DIR` | No | `.wilms-uploads` | Local upload path |
 | `WILMS_MIN_GROUP_SIZE` | No | `5` | Group formation |
 | `WILMS_MAX_GROUP_SIZE` | No | `15` | Group formation |
@@ -265,7 +273,7 @@ Reference files (never commit secrets):
 
 | Variable | Required | Default |
 |----------|----------|---------|
-| `UPLOAD_PROVIDER` | No | `local` |
+| `UPLOAD_PROVIDER` | No | `local` — use `cloudinary` in production |
 | `CLOUDINARY_CLOUD_NAME` | When cloudinary | — |
 | `CLOUDINARY_API_KEY` | When cloudinary | — |
 | `CLOUDINARY_API_SECRET` | When cloudinary | — |
@@ -273,7 +281,7 @@ Reference files (never commit secrets):
 | `UPLOAD_MAX_SIZE_BYTES` | No | `10485760` |
 | `UPLOAD_ALLOWED_MIME_TYPES` | No | jpeg,png,webp,pdf |
 
-See [docs/engineering/cloudinary-setup.md](docs/engineering/cloudinary-setup.md) for setup, staging/production profiles, and troubleshooting.
+See [docs/engineering/cloudinary-setup.md](docs/engineering/cloudinary-setup.md) for setup. **Phase 5B:** Cloudinary staging credentials not yet configured — required before production upload path is certified.
 
 ```bash
 npm run cert:upload:env -w @wilms/api   # Validate upload configuration (secrets masked)
@@ -292,11 +300,13 @@ npm run cert:upload:env -w @wilms/api   # Validate upload configuration (secrets
 
 ### SMS (infrastructure only)
 
+**Product target:** Hubtel (shown in settings UI). **Runtime backend** supports `SMS_PROVIDER=none`, `arkesel`, or `twilio` only (`apps/backend/src/infrastructure/sms/config.ts`). Hubtel adapter not yet implemented.
+
 | Variable | Required | Default |
 |----------|----------|---------|
 | `SMS_PROVIDER` | No | `none` |
-| `ARKESEL_API_KEY`, `ARKESEL_SENDER_ID` | Arkesel | — |
-| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER` | Twilio | — |
+| `ARKESEL_API_KEY`, `ARKESEL_SENDER_ID` | When `arkesel` | — |
+| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER` | When `twilio` | — |
 
 ### E2E / Playwright
 
@@ -307,7 +317,7 @@ npm run cert:upload:env -w @wilms/api   # Validate upload configuration (secrets
 | `PLAYWRIGHT_PORT` / `FRONTEND_PORT` / `E2E_PORT` | No | `3000` |
 | `CI` | No | — | Disables server reuse, enables retries |
 
-Full inventory: `docs/page-validation/P14.3A.3-environment-discovery.md`
+Full inventory: `docs/page-validation/P14.3A.3-environment-discovery.md` · latest audit: `P14.3B-environment-audit.md`
 
 ---
 
@@ -317,8 +327,10 @@ Full inventory: `docs/page-validation/P14.3A.3-environment-discovery.md`
 npm run type-check          # TypeScript — frontend + backend
 npm run lint                # ESLint — frontend
 npm run build               # Next.js production build (42 routes)
-npm run test                # Vitest unit tests (400 tests, 2 shards)
+npm run test                # Vitest — frontend 205 tests (2 shards)
+npm run test -w @wilms/api  # Backend unit tests (9)
 npm run test:e2e            # Playwright E2E (use CI=1 in CI)
+npm run verify:live -w @wilms/api        # Live integration (5B gate: 16/17)
 npm run verify:financial -w @wilms/api   # Financial harness
 npm run verify:pools -w @wilms/api       # Loan pool integrity (P14.3B Phase 1)
 npm run verify:adjustments -w @wilms/api # Financial adjustments (P14.3B Phase 2)
@@ -342,7 +354,9 @@ npm run cert:demo:stakeholder -w @wilms/api            # 4D.2 — end-to-end dem
 
 | Command | Validates |
 |---------|-----------|
-| `npm run test` | UI components, services, utils, auth, payment rules |
+| `npm run test` | Frontend unit tests (205) |
+| `npm run test -w @wilms/api` | Backend unit tests (9) |
+| `npm run verify:live` | Auth, RBAC, Neon persistence, loan workflows (requires API + seed) |
 | `npm run test:e2e` | Role journeys, accessibility, responsive shells, PWA |
 | `npm run verify:financial` | Unit calculations, RBAC HTTP checks, DB ledger/concurrency/idempotency (requires `DATABASE_URL` + seed) |
 | `npm run verify:pools` | Pool balance integrity + list/detail API checks |
@@ -380,51 +394,49 @@ npm run verify:pools -w @wilms/api     # After P14.3B pool migration/seed
 
 ### Production environment
 
-Set secrets in the deployment platform — never commit `.env`. See `apps/backend/.env.production.example` and `apps/frontend/.env.production.example`.
+Set secrets in the deployment platform — never commit `.env`. Required in production: `DATABASE_URL`, `WILMS_SESSION_SECRET` (≥32 chars), `WILMS_CORS_ORIGIN`, and Cloudinary credentials when using `UPLOAD_PROVIDER=cloudinary`. See `apps/backend/.env.production.example` and `apps/frontend/.env.production.example`.
 
-Detail: `docs/page-validation/P14.3A.3-environment-governance.md`
+Detail: `docs/page-validation/P14.3B-phase-5a-deployment-guide.md` · `P14.3A.3-environment-governance.md`
 
 ---
 
 ## Current Production Readiness
 
-From `docs/page-validation/P14.3A.4-production-certification.md` + P14.3B Phase 1 (evidence-based):
+**Authority:** Phase 5B production certification (`docs/page-validation/P14.3B-phase-5b-release-approval.md`).  
+**Verdict:** **Conditional** — do not deploy to production without resolving open blockers.
 
-| Domain | Score |
-|--------|-------|
-| Frontend build & tests | 95% |
-| Backend financial core (code) | 92% |
-| Neon schema deployment | 90% |
-| Live integration proof | 85% |
-| Financial harness (full green) | 70% |
-| P14.3B Phase 1 (loan pools) | **88%** — certified with warnings |
-| P14.3B Phase 2 (adjustments) | **92%** — certified with warnings |
-| P14.3B Phase 3C.1 (payment reversal) | **94%** — certified with warnings |
-| P14.3B Phase 3C.2 (reversal certification) | **91%** — CONDITIONAL; functional/concurrency/ledger PASS; perf PARTIAL (batch 100 only) |
-| P14.3B Phase 4A (reconciliation discovery) | **62%** — frontend mock ready |
-| P14.3B Phase 4C.1 (reconciliation schema) | **70%** — DB tables migrated |
-| P14.3B Phase 4C.2 (reconciliation service) | **82%** — domain + service |
-| P14.3B Phase 4C.4 (reconciliation cert) | **90%** — live cert PASS; frontend pending |
-| P14.3B remaining domains | **0%** (other reversal types, dedicated write-offs) |
-| Security / ops | 80% |
-| **Overall** | **86% — partial certification** |
+| Area | Rating | Evidence |
+|------|--------|----------|
+| Application (frontend + backend) | **Certified** | Build gates PASS; 205 + 9 tests (`phase-5b-evidence/`) |
+| Financial domains (reversal, reconciliation) | **Certified** | `cert:reversal:*`, `cert:reconciliation:*` PASS |
+| Financial harness (`verify:financial`) | **Conditional** | **50/63** on shared Neon |
+| Live integration (`verify:live`) | **Conditional** | **16/17** — `workflow-create-loan` |
+| Stakeholder demo | **Conditional** | **31/32** |
+| Security controls | **Certified** | **11/11** harness (`P14.3B-phase-5b-security-certification.md`) |
+| Uploads | **Conditional** | Local PASS; Cloudinary staging **Blocked** |
+| Staging / HTTPS / CORS | **Blocked** | Not exercised in 5B |
+| Release branch (merge to `main`) | **Blocked** | Feature branch only |
+| Production deployment | **Blocked** | Pending B-001–B-005 in release approval |
 
-**Not fully certified.** Remaining: financial harness 60/60 green, live UI in API mode, P14.3B Phase 2–5 domains.
+Full tables: `docs/page-validation/P14.3B-production-readiness-review.md`
+
+**Historical:** Percentage scores in `P14.3A.4-production-certification.md` are obsolete for release decisions.
 
 ---
 
 ## Known Limitations
 
-- **Mock-backed domains** — Dashboard, collectors, reconciliation, settings, notifications, search, and risk flags use mock services in development. Adjustments and loan pools use live API when `DATABASE_URL` is configured.
-- **Loan pools** — Backend read API available in production API mode; disburse/payment pool attribution not wired yet.
-- **Dev isolation** — `npm run dev` always uses mocks; live API requires production build + env configuration.
-- **Financial harness** — 58/60 checks pass; Neon latency p95 checks fail remotely.
+- **Mock-backed domains** — Dashboard, collectors, settings, notifications, search, and risk flags use mock services in development. Loans, payments, adjustments, loan pools, reversals, and reconciliation use live API when `NEXT_PUBLIC_USE_MOCK=false` (or production build) with backend running.
+- **Loan pools** — Backend read API available in API mode; disburse/payment pool attribution not wired yet.
+- **Dev default** — `npm run dev` uses mocks unless `NEXT_PUBLIC_USE_MOCK=false` and `NEXT_PUBLIC_API_BASE_URL` are set (see `.env.local.example`).
+- **Financial harness** — **50/63** checks pass on shared Neon (`phase-5b-evidence/verify-financial.txt`); pollution and remote latency affect DB checks.
+- **Health endpoint** — Returns OK without database connectivity probe (5B operational gap).
+- **Cloudinary** — Staging/production upload path not certified until credentials configured.
 - **Audit writes** — Best-effort async; not transactional with business operations.
-- **Demo sessions** — Not cryptographically signed; not production-grade auth.
 - **Admin fee gate** — Enforced in mock UI only; not server-validated on loan create/disburse.
-- **Shared Neon certification** — run `cert:reversal:seed-reset` or `cert:reconciliation:seed-reset` before repeated cert runs.
-- **P14.3B reversal perf** — Batch 500 interrupted; batch 1000 not executed; no scalability conclusions from unfinished runs.
-- **P14.3B remainder** — Other reversal types, reconciliation backend, dedicated write-offs not implemented.
+- **Shared Neon certification** — Run `cert:reversal:seed-reset` or `cert:reconciliation:seed-reset` before repeated cert runs.
+- **P14.3B reversal perf** — Long-run perf batches (500/1000) not required for 5B gate; prior interrupted runs documented historically.
+- **Deferred domains** — Other reversal types, dedicated write-offs, OTP, password reset, SMS/email workflows — see `P14.3B-remaining-work-roadmap.md`.
 
 ---
 
@@ -432,14 +444,17 @@ From `docs/page-validation/P14.3A.4-production-certification.md` + P14.3B Phase 
 
 | Phase | Key documents |
 |-------|---------------|
-| **P14.1** Discovery | `P14.1A-domain-inventory.md`, `P14.1B-*`, `P14.1C-*`, `P14.1D-workspace-decision.md` |
+| **P14.1** Discovery | `P14.1A-domain-inventory.md`, `P14.1B-database-blueprint.md`, `P14.1C-domain-model.md`, `P14.1D-workspace-decision.md` |
 | **P14.2** Database | `P14.2-frontend-contract-verification.md` |
 | **P14.3A** Financial core | `P14.3A-loan-lifecycle-report.md`, `P14.3A-repayment-engine-report.md`, `P14.3A-financial-safety-audit.md` |
-| **P14.3A.1** Verification | `P14.3A.1-financial-verification.md`, `P14.3A.1-security-review.md`, `P14.3A.1-concurrency-audit.md`, `P14.3A.1-idempotency-audit.md` |
-| **P14.3A.2** Certification | `P14.3A.2-system-certification.md`, `P14.3A.2-neon-verification.md`, `P14.3A.2-integration-verification.md` |
-| **P14.3A.3** Env hardening | `P14.3A.3-environment-governance.md`, `P14.3A.3-env-loading-audit.md`, `P14.3A.3-api-architecture.md`, `P14.3A.3-upload-architecture.md`, `P14.3A.3-readme-update-report.md` |
-| **P14.3A.4** Live certification | `P14.3A.4-production-certification.md`, `P14.3A.4-backend-live-verification.md` |
-| **P14.3B** | `P14.3B-phase-4c4-production-readiness.md`, `P14.3B-reconciliation-architecture.md`, `P14.3B-phase-4c2-service-implementation.md` |
+| **P14.3A.1** Verification | `P14.3A.1-financial-verification.md`, `P14.3A.1-security-review.md` |
+| **P14.3A.2–4** Certification | `P14.3A.4-production-certification.md` (historical) |
+| **P14.3B** Features | Reversal, reconciliation, Cloudinary — see `P14.3B-reconciliation-architecture.md` |
+| **P14.3B Phase 5A** | `P14.3B-phase-5a-deployment-guide.md`, `P14.3B-phase-5a-release-validation.md` |
+| **P14.3B Phase 5B** | `P14.3B-phase-5b-production-certification.md`, `P14.3B-phase-5b-release-approval.md` |
+| **Pre-5B audit** | `docs/audit/P14.3B-final-readiness.md`, `P14.3B-security-audit.md`, `P14.3B-feature-completion-matrix.md` |
+| **Doc alignment (current)** | `P14.3B-readme-audit.md`, `P14.3B-production-readiness-review.md`, `P14.3B-remaining-work-roadmap.md` |
+| **Releases** | `docs/releases/P14.3B-Phase-5A.md`, `P14.3B-Phase-5B.md` |
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/engineering/branching-strategy.md](docs/engineering/branching-strategy.md) for phase workflow standards.
 
