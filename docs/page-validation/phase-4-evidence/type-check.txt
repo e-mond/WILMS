@@ -1,0 +1,12 @@
+﻿
+> wilms@0.1.0 type-check
+> npm run type-check -w @wilms/frontend && npm run type-check -w @wilms/api
+
+
+> @wilms/frontend@0.1.0 type-check
+> tsc --noEmit
+
+
+> @wilms/api@0.1.0 type-check
+> tsc --noEmit
+
