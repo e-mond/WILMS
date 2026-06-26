@@ -53,6 +53,20 @@ export async function findUploadById(id: string, tx: WilmsDb = getDb()) {
   return row ? rowToStoredUpload(row) : null;
 }
 
+export async function findUploadOwnerById(id: string, tx: WilmsDb = getDb()): Promise<string | null | undefined> {
+  const [row] = await tx
+    .select({ ownerUserId: uploads.ownerUserId })
+    .from(uploads)
+    .where(and(eq(uploads.id, id), isNull(uploads.deletedAt)))
+    .limit(1);
+
+  if (!row) {
+    return undefined;
+  }
+
+  return row.ownerUserId ?? null;
+}
+
 export async function softDeleteUpload(id: string, tx: WilmsDb = getDb()) {
   const deletedAt = new Date();
   const result = await tx

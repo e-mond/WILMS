@@ -12,13 +12,12 @@ auditRouter.use(requireAuth);
 
 auditRouter.post(
   '/audit',
+  requirePermission(PERMISSION.VIEW_AUDIT_LOG),
   asyncHandler(async (req, res) => {
     const entry = appendAuditEntry({
       action: String(req.body.action ?? ''),
-      actorId: String(req.body.actorId ?? req.session!.userId),
-      actorDisplayName: req.body.actorDisplayName
-        ? String(req.body.actorDisplayName)
-        : req.session!.displayName,
+      actorId: req.session!.userId,
+      actorDisplayName: req.session!.displayName,
       targetEntityId: String(req.body.targetEntityId ?? ''),
       targetEntityType: String(req.body.targetEntityType ?? ''),
       reason: req.body.reason ? String(req.body.reason) : undefined,

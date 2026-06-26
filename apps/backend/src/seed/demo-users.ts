@@ -6,6 +6,7 @@ export interface DemoUser {
   password: string;
   role: UserRole;
   displayName: string;
+  status?: 'ACTIVE' | 'INVITED' | 'SUSPENDED';
 }
 
 export const DEMO_USERS: DemoUser[] = [

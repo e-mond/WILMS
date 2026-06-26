@@ -1,4 +1,6 @@
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import type { NextFunction, Request, Response } from 'express';
+import { env } from '../config/env.js';
 import { AppError, ERROR_CODE } from '../http/errors.js';
 import type { UserRole } from '../infrastructure/permissions/matrix.js';
 
@@ -17,9 +19,24 @@ declare global {
   }
 }
 
-function decodeSessionToken(token: string): SessionUser | null {
+const TOKEN_SEPARATOR = '.';
+
+function encodePayloadBase64(session: SessionUser): string {
+  const json = JSON.stringify(session);
+  return Buffer.from(json, 'utf8')
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+}
+
+function signPayload(payloadBase64: string): string {
+  return createHmac('sha256', env.sessionSecret).update(payloadBase64).digest('base64url');
+}
+
+function parseSessionPayload(payloadBase64: string): SessionUser | null {
   try {
-    const base64 = token.replace(/-/g, '+').replace(/_/g, '/');
+    const base64 = payloadBase64.replace(/-/g, '+').replace(/_/g, '/');
     const padding = '='.repeat((4 - (base64.length % 4)) % 4);
     const json = Buffer.from(`${base64}${padding}`, 'base64').toString('utf8');
     const parsed = JSON.parse(json) as Partial<SessionUser>;
@@ -45,6 +62,35 @@ function decodeSessionToken(token: string): SessionUser | null {
   } catch {
     return null;
   }
+}
+
+function verifySignature(payloadBase64: string, signature: string): boolean {
+  const expected = signPayload(payloadBase64);
+  const provided = Buffer.from(signature);
+  const expectedBuffer = Buffer.from(expected);
+
+  if (provided.length !== expectedBuffer.length) {
+    return false;
+  }
+
+  return timingSafeEqual(provided, expectedBuffer);
+}
+
+function decodeSessionToken(token: string): SessionUser | null {
+  const separatorIndex = token.indexOf(TOKEN_SEPARATOR);
+
+  if (separatorIndex <= 0 || separatorIndex === token.length - 1) {
+    return null;
+  }
+
+  const payloadBase64 = token.slice(0, separatorIndex);
+  const signature = token.slice(separatorIndex + 1);
+
+  if (!verifySignature(payloadBase64, signature)) {
+    return null;
+  }
+
+  return parseSessionPayload(payloadBase64);
 }
 
 function extractSession(req: Request): SessionUser | null {
@@ -81,10 +127,17 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction): v
 }
 
 export function encodeSessionToken(session: SessionUser): string {
-  const json = JSON.stringify(session);
-  return Buffer.from(json, 'utf8')
-    .toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
+  const payloadBase64 = encodePayloadBase64(session);
+  return `${payloadBase64}.${signPayload(payloadBase64)}`;
+}
+
+/** Decode payload without signature verification — UI expiry hints only. */
+export function decodeSessionPayloadUnsafe(token: string): SessionUser | null {
+  const separatorIndex = token.indexOf(TOKEN_SEPARATOR);
+
+  if (separatorIndex <= 0) {
+    return null;
+  }
+
+  return parseSessionPayload(token.slice(0, separatorIndex));
 }
