@@ -32,7 +32,8 @@
     "cert:reconciliation:functional": "tsx src/verification/cert-reconciliation-functional.ts",
     "cert:reconciliation:rbac": "tsx src/verification/cert-reconciliation-rbac.ts",
     "cert:reconciliation:concurrency": "tsx src/verification/cert-reconciliation-concurrency.ts",
-    "cert:reconciliation:perf": "tsx src/verification/cert-reconciliation-performance.ts"
+    "cert:reconciliation:perf": "tsx src/verification/cert-reconciliation-performance.ts",
+    "cert:demo:stakeholder": "tsx src/verification/demo-stakeholder-cert.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

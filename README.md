@@ -31,9 +31,9 @@ WILMS supports registration officers, approvers, collectors, auditors, and super
 | P14.3B — Loan Pools | **Certified (warnings)** | Phase 1 — `verify:pools` 5/5 |
 | P14.3B — Adjustments | **Implemented** | Phase 2 — `verify:adjustments` 10/10 |
 | P14.3B — Payment Reversal | **CONDITIONAL** | 3C.1 MVP; 3C.2 functional/concurrency/ledger/RBAC PASS; perf PARTIAL |
-| P14.3B — Reconciliation | **Certified (4C.4)** | API + service certified; frontend pending |
+| P14.3B — Reconciliation | **Demo ready (4D.1 + 4D.2)** | Backend certified; frontend live-validated |
 | P14.3B — Other domains | **Not started** | Other reversal types deferred |
-| **Current phase** | **P14.3B Phase 4C.4** | Reconciliation certification (awaiting review) |
+| **Current phase** | **P14.3B Phase 4D.2** | Stakeholder demo certification (awaiting review) |
 
 ---
 
@@ -336,6 +336,7 @@ npm run cert:reconciliation:functional -w @wilms/api  # 4C.4 — functional + id
 npm run cert:reconciliation:rbac -w @wilms/api       # 4C.4 — RBAC cert
 npm run cert:reconciliation:concurrency -w @wilms/api # 4C.4 — concurrency cert
 npm run cert:reconciliation:perf -w @wilms/api        # 4C.4 — performance cert (100/500/1000)
+npm run cert:demo:stakeholder -w @wilms/api            # 4D.2 — end-to-end demo workflow cert
 ```
 
 | Command | Validates |
