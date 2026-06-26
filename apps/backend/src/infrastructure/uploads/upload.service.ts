@@ -14,6 +14,10 @@ function isCloudinaryUrl(url: string): boolean {
 }
 
 function createUploadId(): string {
+  if (isDatabaseEnabled()) {
+    return uuidv7();
+  }
+
   const config = getUploadConfig();
   if (config.provider === 'cloudinary' && isCloudinaryConfigured()) {
     return uuidv7();
