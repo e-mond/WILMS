@@ -1,6 +1,7 @@
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
+import helmet from 'helmet';
 import { env } from '../config/env.js';
 import { errorHandler } from './error-handler.js';
 import { optionalAuth } from '../middleware/authenticate.js';
@@ -33,6 +34,17 @@ function mountBusinessRoutes(app: express.Application, basePath = '') {
 
 export function createApp() {
   const app = express();
+
+  if (env.trustProxy) {
+    app.set('trust proxy', env.trustProxyHops);
+  }
+
+  app.use(
+    helmet({
+      contentSecurityPolicy: env.nodeEnv === 'production',
+      crossOriginEmbedderPolicy: false,
+    }),
+  );
 
   app.use(
     cors({

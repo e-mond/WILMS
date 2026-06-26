@@ -12,6 +12,7 @@ import { loans } from '../db/schema/loans.js';
 import { payments } from '../db/schema/payments.js';
 import { users } from '../db/schema/users.js';
 import { decimalToPesewas } from '../domain/money.js';
+import { CERT_LIVE_BORROWER_ID, ensureCertLiveBorrower } from './cert-live-prep.js';
 
 const BASE = process.env.WILMS_LIVE_API_BASE ?? `http://${process.env.WILMS_API_HOST ?? '127.0.0.1'}:${process.env.WILMS_API_PORT ?? '4000'}`;
 
@@ -73,6 +74,8 @@ async function main(): Promise<void> {
     printSummary();
     process.exit(1);
   }
+
+  await ensureCertLiveBorrower();
 
   const health = await fetch(`${BASE}/health`);
   record('health-endpoint', health.ok, `status ${health.status}`);
@@ -140,10 +143,10 @@ async function main(): Promise<void> {
 
   const eligible = await api('/borrowers/loan-eligible', approverToken);
   const eligibleList = (eligible.body as { data?: { id: string }[] })?.data ?? [];
-  const targetBorrower = eligibleList.find((b) => b.id) ?? { id: '01930002-0001-7000-8000-000000000003' };
+  const targetBorrowerId = eligibleList[0]?.id ?? CERT_LIVE_BORROWER_ID;
 
   const createBody = {
-    borrowerId: targetBorrower.id,
+    borrowerId: targetBorrowerId,
     amountPesewas: 20000,
     durationWeeks: 4,
     paymentDay: 'Friday',

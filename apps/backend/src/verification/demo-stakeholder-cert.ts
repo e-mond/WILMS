@@ -5,6 +5,7 @@
  * Output: docs/page-validation/P14.3B-phase-4d2-functional-evidence.json
  */
 import '../config/load-env.js';
+import { ensureCertLiveBorrower } from './cert-live-prep.js';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -188,6 +189,8 @@ async function main(): Promise<void> {
     writeOutput(false);
     process.exit(1);
   }
+
+  await ensureCertLiveBorrower();
 
   const healthStart = performance.now();
   const health = await fetch(`${BASE}/health`);
