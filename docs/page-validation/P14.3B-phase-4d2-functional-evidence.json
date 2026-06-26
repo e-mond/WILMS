@@ -1,5 +1,5 @@
 {
-  "startedAt": "2026-06-26T00:26:00.537Z",
+  "startedAt": "2026-06-26T01:01:03.067Z",
   "apiBase": "http://127.0.0.1:4000",
   "uploadProvider": "local",
   "cloudinaryConfigured": false,
@@ -9,7 +9,7 @@
       "workflow": "environment",
       "step": "health",
       "passed": true,
-      "durationMs": 79,
+      "durationMs": 66,
       "detail": {
         "status": 200
       }
@@ -66,7 +66,7 @@
       "step": "search",
       "passed": true,
       "status": 200,
-      "durationMs": 272,
+      "durationMs": 263,
       "detail": {
         "data": [
           {
@@ -105,7 +105,7 @@
       "step": "list",
       "passed": true,
       "status": 200,
-      "durationMs": 262,
+      "durationMs": 267,
       "detail": {
         "count": 4,
         "sampleId": "01930001-0001-7000-8000-000000000001"
@@ -116,7 +116,7 @@
       "step": "profile",
       "passed": true,
       "status": 200,
-      "durationMs": 262,
+      "durationMs": 256,
       "detail": {
         "data": {
           "id": "01930001-0001-7000-8000-000000000001",
@@ -135,7 +135,7 @@
       "workflow": "loan",
       "step": "create",
       "passed": false,
-      "durationMs": 516,
+      "durationMs": 512,
       "detail": {
         "lastError": {
           "error": {
@@ -162,7 +162,7 @@
       "passed": true,
       "durationMs": 0,
       "detail": {
-        "reversalId": "019f0151-8d8b-7f3a-ba0e-cb07b98fe8f1"
+        "reversalId": "019f0171-a6ce-74b2-9d9c-b3e9b4be7ea0"
       }
     },
     {
@@ -181,7 +181,7 @@
       "durationMs": 0,
       "detail": {
         "auditEntries": 2,
-        "reversalId": "019f0151-8d8b-7f3a-ba0e-cb07b98fe8f1"
+        "reversalId": "019f0171-a6ce-74b2-9d9c-b3e9b4be7ea0"
       }
     },
     {
@@ -190,8 +190,17 @@
       "passed": true,
       "durationMs": 0,
       "detail": {
-        "ledgerBefore": 22,
-        "ledgerAfter": 23
+        "ledgerBefore": 23,
+        "ledgerAfter": 24
+      }
+    },
+    {
+      "workflow": "reversal",
+      "step": "persisted",
+      "passed": true,
+      "durationMs": 0,
+      "detail": {
+        "count": 1
       }
     },
     {
@@ -200,8 +209,10 @@
       "passed": true,
       "durationMs": 0,
       "detail": {
-        "error": "syntax error at or near \"=\"",
-        "carriedEvidence": "cert:reversal:functional 10/10"
+        "paymentId": "019ed645-0293-7538-8b8a-d80767c8e441",
+        "loanId": "01930002-0001-7000-8000-000000000001",
+        "borrowerId": "01930001-0001-7000-8000-000000000001",
+        "amountPesewas": 5000
       }
     },
     {
@@ -209,11 +220,11 @@
       "step": "fetch-summary",
       "passed": true,
       "status": 200,
-      "durationMs": 1563,
+      "durationMs": 1069,
       "detail": {
         "data": {
           "collectorId": "019ed644-4cdb-76a7-845a-b0863bfa304b",
-          "date": "2032-09-23",
+          "date": "2032-04-08",
           "expectedPesewas": 0,
           "actualPesewas": 0,
           "physicalCashPesewas": 0,
@@ -228,18 +239,18 @@
       "step": "submit-zero-variance",
       "passed": true,
       "status": 201,
-      "durationMs": 2068,
+      "durationMs": 1525,
       "detail": {
         "data": {
           "collectorId": "019ed644-4cdb-76a7-845a-b0863bfa304b",
-          "date": "2032-09-23",
+          "date": "2032-04-08",
           "expectedPesewas": 0,
           "actualPesewas": 0,
           "physicalCashPesewas": 0,
           "variancePesewas": 0,
           "varianceFlagged": false,
           "submitted": true,
-          "submittedAt": "2026-06-26T00:25:56.377Z"
+          "submittedAt": "2026-06-26T01:00:59.195Z"
         }
       }
     },
@@ -248,7 +259,7 @@
       "step": "duplicate-prevention",
       "passed": true,
       "status": 422,
-      "durationMs": 250,
+      "durationMs": 252,
       "detail": {
         "error": {
           "message": "Reconciliation already submitted for this date.",
@@ -261,16 +272,16 @@
       "step": "create-borrower-photo",
       "passed": true,
       "status": 201,
-      "durationMs": 261,
+      "durationMs": 274,
       "detail": {
         "data": {
-          "id": "019f0151-ac9e-700f-a0ec-658bf5fa6508",
+          "id": "019f0171-c1c0-7cb4-ae18-302bd989f701",
           "purpose": "borrower-photo",
-          "fileName": "borrower-photo-1782433545053.png",
+          "fileName": "borrower-photo-1782435648993.png",
           "mimeType": "image/png",
           "sizeBytes": 68,
-          "url": "/uploads/019f0151-ac9e-700f-a0ec-658bf5fa6508/content",
-          "uploadedAt": "2026-06-26T00:25:57.665Z"
+          "url": "/uploads/019f0171-c1c0-7cb4-ae18-302bd989f701/content",
+          "uploadedAt": "2026-06-26T01:01:00.229Z"
         }
       }
     },
@@ -279,16 +290,16 @@
       "step": "metadata-borrower-photo",
       "passed": true,
       "status": 200,
-      "durationMs": 257,
+      "durationMs": 254,
       "detail": {
         "data": {
-          "id": "019f0151-ac9e-700f-a0ec-658bf5fa6508",
+          "id": "019f0171-c1c0-7cb4-ae18-302bd989f701",
           "purpose": "borrower-photo",
-          "fileName": "borrower-photo-1782433545053.png",
+          "fileName": "borrower-photo-1782435648993.png",
           "mimeType": "image/png",
           "sizeBytes": 68,
-          "url": "/uploads/019f0151-ac9e-700f-a0ec-658bf5fa6508/content",
-          "uploadedAt": "2026-06-26T00:25:57.665Z"
+          "url": "/uploads/019f0171-c1c0-7cb4-ae18-302bd989f701/content",
+          "uploadedAt": "2026-06-26T01:01:00.229Z"
         }
       }
     },
@@ -297,16 +308,16 @@
       "step": "create-guarantor-photo",
       "passed": true,
       "status": 201,
-      "durationMs": 263,
+      "durationMs": 264,
       "detail": {
         "data": {
-          "id": "019f0151-aea6-7e13-9f7b-db715c008bfe",
+          "id": "019f0171-c3cf-7d4a-91fc-a3d066bbdd3a",
           "purpose": "guarantor-photo",
-          "fileName": "guarantor-photo-1782433545053.png",
+          "fileName": "guarantor-photo-1782435648993.png",
           "mimeType": "image/png",
           "sizeBytes": 68,
-          "url": "/uploads/019f0151-aea6-7e13-9f7b-db715c008bfe/content",
-          "uploadedAt": "2026-06-26T00:25:58.184Z"
+          "url": "/uploads/019f0171-c3cf-7d4a-91fc-a3d066bbdd3a/content",
+          "uploadedAt": "2026-06-26T01:01:00.762Z"
         }
       }
     },
@@ -315,16 +326,16 @@
       "step": "metadata-guarantor-photo",
       "passed": true,
       "status": 200,
-      "durationMs": 265,
+      "durationMs": 250,
       "detail": {
         "data": {
-          "id": "019f0151-aea6-7e13-9f7b-db715c008bfe",
+          "id": "019f0171-c3cf-7d4a-91fc-a3d066bbdd3a",
           "purpose": "guarantor-photo",
-          "fileName": "guarantor-photo-1782433545053.png",
+          "fileName": "guarantor-photo-1782435648993.png",
           "mimeType": "image/png",
           "sizeBytes": 68,
-          "url": "/uploads/019f0151-aea6-7e13-9f7b-db715c008bfe/content",
-          "uploadedAt": "2026-06-26T00:25:58.184Z"
+          "url": "/uploads/019f0171-c3cf-7d4a-91fc-a3d066bbdd3a/content",
+          "uploadedAt": "2026-06-26T01:01:00.762Z"
         }
       }
     },
@@ -333,16 +344,16 @@
       "step": "create-registration-attachment",
       "passed": true,
       "status": 201,
-      "durationMs": 254,
+      "durationMs": 252,
       "detail": {
         "data": {
-          "id": "019f0151-b0b5-7ce1-be8f-f0d4e8f8ca3c",
+          "id": "019f0171-c5d1-75d3-af06-21da8596b6ed",
           "purpose": "registration-attachment",
-          "fileName": "registration-attachment-1782433545053.png",
+          "fileName": "registration-attachment-1782435648993.png",
           "mimeType": "image/png",
           "sizeBytes": 68,
-          "url": "/uploads/019f0151-b0b5-7ce1-be8f-f0d4e8f8ca3c/content",
-          "uploadedAt": "2026-06-26T00:25:58.711Z"
+          "url": "/uploads/019f0171-c5d1-75d3-af06-21da8596b6ed/content",
+          "uploadedAt": "2026-06-26T01:01:01.268Z"
         }
       }
     },
@@ -351,16 +362,16 @@
       "step": "metadata-registration-attachment",
       "passed": true,
       "status": 200,
-      "durationMs": 259,
+      "durationMs": 255,
       "detail": {
         "data": {
-          "id": "019f0151-b0b5-7ce1-be8f-f0d4e8f8ca3c",
+          "id": "019f0171-c5d1-75d3-af06-21da8596b6ed",
           "purpose": "registration-attachment",
-          "fileName": "registration-attachment-1782433545053.png",
+          "fileName": "registration-attachment-1782435648993.png",
           "mimeType": "image/png",
           "sizeBytes": 68,
-          "url": "/uploads/019f0151-b0b5-7ce1-be8f-f0d4e8f8ca3c/content",
-          "uploadedAt": "2026-06-26T00:25:58.711Z"
+          "url": "/uploads/019f0171-c5d1-75d3-af06-21da8596b6ed/content",
+          "uploadedAt": "2026-06-26T01:01:01.268Z"
         }
       }
     },
@@ -369,16 +380,16 @@
       "step": "create-document",
       "passed": true,
       "status": 201,
-      "durationMs": 257,
+      "durationMs": 256,
       "detail": {
         "data": {
-          "id": "019f0151-b2b5-79ac-8631-6c920c5519d2",
+          "id": "019f0171-c7cd-7134-9a92-04fbbc3f5045",
           "purpose": "document",
-          "fileName": "document-1782433545053.png",
+          "fileName": "document-1782435648993.png",
           "mimeType": "image/png",
           "sizeBytes": 68,
-          "url": "/uploads/019f0151-b2b5-79ac-8631-6c920c5519d2/content",
-          "uploadedAt": "2026-06-26T00:25:59.224Z"
+          "url": "/uploads/019f0171-c7cd-7134-9a92-04fbbc3f5045/content",
+          "uploadedAt": "2026-06-26T01:01:01.777Z"
         }
       }
     },
@@ -387,16 +398,16 @@
       "step": "metadata-document",
       "passed": true,
       "status": 200,
-      "durationMs": 271,
+      "durationMs": 253,
       "detail": {
         "data": {
-          "id": "019f0151-b2b5-79ac-8631-6c920c5519d2",
+          "id": "019f0171-c7cd-7134-9a92-04fbbc3f5045",
           "purpose": "document",
-          "fileName": "document-1782433545053.png",
+          "fileName": "document-1782435648993.png",
           "mimeType": "image/png",
           "sizeBytes": 68,
-          "url": "/uploads/019f0151-b2b5-79ac-8631-6c920c5519d2/content",
-          "uploadedAt": "2026-06-26T00:25:59.224Z"
+          "url": "/uploads/019f0171-c7cd-7134-9a92-04fbbc3f5045/content",
+          "uploadedAt": "2026-06-26T01:01:01.777Z"
         }
       }
     },
@@ -416,7 +427,7 @@
       "passed": true,
       "durationMs": 0,
       "detail": {
-        "id": "019f0151-ac9e-700f-a0ec-658bf5fa6508"
+        "id": "019f0171-c1c0-7cb4-ae18-302bd989f701"
       }
     },
     {
@@ -424,9 +435,9 @@
       "step": "delete-lifecycle",
       "passed": true,
       "status": 204,
-      "durationMs": 522,
+      "durationMs": 520,
       "detail": {
-        "id": "019f0151-ac9e-700f-a0ec-658bf5fa6508"
+        "id": "019f0171-c1c0-7cb4-ae18-302bd989f701"
       }
     },
     {
@@ -446,82 +457,82 @@
   "performance": {
     "auth:login:admin": {
       "samples": 1,
-      "avgMs": 1029,
-      "p95Ms": 1029,
-      "p99Ms": 1029
+      "avgMs": 1043,
+      "p95Ms": 1043,
+      "p99Ms": 1043
     },
     "auth:login:approver": {
       "samples": 1,
-      "avgMs": 259,
-      "p95Ms": 259,
-      "p99Ms": 259
+      "avgMs": 274,
+      "p95Ms": 274,
+      "p99Ms": 274
     },
     "auth:login:collector": {
       "samples": 1,
-      "avgMs": 260,
-      "p95Ms": 260,
-      "p99Ms": 260
+      "avgMs": 266,
+      "p95Ms": 266,
+      "p99Ms": 266
     },
     "auth:login:officer": {
       "samples": 1,
-      "avgMs": 262,
-      "p95Ms": 262,
-      "p99Ms": 262
+      "avgMs": 270,
+      "p95Ms": 270,
+      "p99Ms": 270
     },
     "borrower:search": {
-      "samples": 1,
-      "avgMs": 272,
-      "p95Ms": 272,
-      "p99Ms": 272
-    },
-    "loan:create": {
-      "samples": 1,
-      "avgMs": 516,
-      "p95Ms": 516,
-      "p99Ms": 516
-    },
-    "reversal:execute": {
-      "samples": 1,
-      "avgMs": 3681,
-      "p95Ms": 3681,
-      "p99Ms": 3681
-    },
-    "reversal:duplicate-attempt": {
-      "samples": 1,
-      "avgMs": 982,
-      "p95Ms": 982,
-      "p99Ms": 982
-    },
-    "reconciliation:submit": {
-      "samples": 1,
-      "avgMs": 2068,
-      "p95Ms": 2068,
-      "p99Ms": 2068
-    },
-    "upload:borrower-photo": {
-      "samples": 1,
-      "avgMs": 261,
-      "p95Ms": 261,
-      "p99Ms": 261
-    },
-    "upload:guarantor-photo": {
       "samples": 1,
       "avgMs": 263,
       "p95Ms": 263,
       "p99Ms": 263
     },
+    "loan:create": {
+      "samples": 1,
+      "avgMs": 512,
+      "p95Ms": 512,
+      "p99Ms": 512
+    },
+    "reversal:execute": {
+      "samples": 1,
+      "avgMs": 3745,
+      "p95Ms": 3745,
+      "p99Ms": 3745
+    },
+    "reversal:duplicate-attempt": {
+      "samples": 1,
+      "avgMs": 963,
+      "p95Ms": 963,
+      "p99Ms": 963
+    },
+    "reconciliation:submit": {
+      "samples": 1,
+      "avgMs": 1525,
+      "p95Ms": 1525,
+      "p99Ms": 1525
+    },
+    "upload:borrower-photo": {
+      "samples": 1,
+      "avgMs": 274,
+      "p95Ms": 274,
+      "p99Ms": 274
+    },
+    "upload:guarantor-photo": {
+      "samples": 1,
+      "avgMs": 264,
+      "p95Ms": 264,
+      "p99Ms": 264
+    },
     "upload:registration-attachment": {
       "samples": 1,
-      "avgMs": 254,
-      "p95Ms": 254,
-      "p99Ms": 254
+      "avgMs": 252,
+      "p95Ms": 252,
+      "p99Ms": 252
     },
     "upload:document": {
       "samples": 1,
-      "avgMs": 257,
-      "p95Ms": 257,
-      "p99Ms": 257
+      "avgMs": 256,
+      "p95Ms": 256,
+      "p99Ms": 256
     }
   },
-  "summary": "30/31 passed"
+  "summary": "31/32 passed"
 }
