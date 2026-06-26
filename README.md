@@ -454,6 +454,7 @@ Full tables: `docs/page-validation/P14.3B-production-readiness-review.md`
 | **P14.3B Phase 5B** | `P14.3B-phase-5b-production-certification.md`, `P14.3B-phase-5b-release-approval.md` |
 | **Pre-5B audit** | `docs/audit/P14.3B-final-readiness.md`, `P14.3B-security-audit.md`, `P14.3B-feature-completion-matrix.md` |
 | **Doc alignment (current)** | `P14.3B-readme-audit.md`, `P14.3B-production-readiness-review.md`, `P14.3B-remaining-work-roadmap.md` |
+| **P14.3C Release readiness** | `P14.3C-release-dashboard.md`, `P14.3C-executive-summary.md` — page/API/RBAC coverage (46 pages; 41% live-API-safe) |
 | **Releases** | `docs/releases/P14.3B-Phase-5A.md`, `P14.3B-Phase-5B.md` |
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/engineering/branching-strategy.md](docs/engineering/branching-strategy.md) for phase workflow standards.
