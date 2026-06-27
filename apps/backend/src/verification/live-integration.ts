@@ -143,7 +143,8 @@ async function main(): Promise<void> {
 
   const eligible = await api('/borrowers/loan-eligible', approverToken);
   const eligibleList = (eligible.body as { data?: { id: string }[] })?.data ?? [];
-  const targetBorrowerId = eligibleList[0]?.id ?? CERT_LIVE_BORROWER_ID;
+  const certBorrowerEligible = eligibleList.some((row) => row.id === CERT_LIVE_BORROWER_ID);
+  const targetBorrowerId = certBorrowerEligible ? CERT_LIVE_BORROWER_ID : (eligibleList[0]?.id ?? CERT_LIVE_BORROWER_ID);
 
   const createBody = {
     borrowerId: targetBorrowerId,
