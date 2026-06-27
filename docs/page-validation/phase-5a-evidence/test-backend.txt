@@ -1,0 +1,17 @@
+﻿
+> @wilms/api@0.1.0 test
+> vitest run
+
+
+ RUN  v2.1.9 C:/Users/eddie/Downloads/WILMS/apps/backend
+
+ Ô£ô src/tests/reconciliation/repository.test.ts (1 test) 11ms
+ Ô£ô src/tests/reconciliation/domain.test.ts (5 tests) 16ms
+ Ô£ô src/tests/reconciliation/service.test.ts (3 tests) 22ms
+ Ô£ô src/tests/health/health.service.test.ts (2 tests) 16ms
+
+ Test Files  4 passed (4)
+      Tests  11 passed (11)
+   Start at  23:36:18
+   Duration  2.22s (transform 624ms, setup 0ms, collect 1.95s, tests 65ms, environment 3ms, prepare 1.90s)
+

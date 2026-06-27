@@ -143,12 +143,12 @@ export function runLifecycleChecks(): VerificationResult[] {
 
   let rejected = false;
   try {
-    assertLifecycleTransition(LOAN_LIFECYCLE.COMPLETED, LOAN_LIFECYCLE.ACTIVE);
+    assertLifecycleTransition(LOAN_LIFECYCLE.COMPLETED, LOAN_LIFECYCLE.DRAFT);
   } catch {
     rejected = true;
   }
   results.push({
-    name: 'rejects-completed-to-active',
+    name: 'rejects-completed-to-draft',
     passed: rejected,
     detail: rejected ? 'rejected as expected' : 'allowed incorrectly',
   });

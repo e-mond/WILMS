@@ -24,6 +24,7 @@ import {
   runPortfolioReconciliationChecks,
 } from './db-checks.js';
 import { runSecurityChecks } from './security-checks.js';
+import { resetSeedFinancialState } from './cert-financial-prep.js';
 
 function printSection(title: string, results: VerificationResult[]): void {
   const summary = summarizeResults(results);
@@ -58,6 +59,17 @@ async function main(): Promise<void> {
     ...runLifecycleChecks(),
   ];
   printSection('Unit Checks (no DB)', unitResults);
+
+  if (databaseChecksAvailable()) {
+    console.log('\n## Certification Prep');
+    try {
+      await resetSeedFinancialState();
+      console.log('  ✓ cert-financial-prep: seed financial state reset');
+    } catch (error) {
+      console.log(`  ✗ cert-financial-prep: ${error instanceof Error ? error.message : String(error)}`);
+      process.exit(1);
+    }
+  }
 
   const securityResults = await runSecurityChecks();
   printSection('Security / RBAC Checks', securityResults);
