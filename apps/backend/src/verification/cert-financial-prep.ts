@@ -6,10 +6,13 @@
  * Usage: npm run cert:financial:prep -w @wilms/api
  */
 import '../config/load-env.js';
-import { inArray } from 'drizzle-orm';
+import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
+import { inArray, like, or } from 'drizzle-orm';
 import { isDatabaseEnabled, getDb } from '../db/client.js';
 import { financialAdjustments, adjustmentHistory } from '../db/schema/financial-adjustments.js';
 import { financialReversals, reversalHistory } from '../db/schema/financial-reversals.js';
+import { idempotencyKeys } from '../db/schema/idempotency-keys.js';
 import { ledgerEntries } from '../db/schema/ledger-entries.js';
 import { poolAllocations } from '../db/schema/loan-pools.js';
 import { loanDisbursements } from '../db/schema/loan-disbursements.js';
@@ -25,7 +28,24 @@ export const SEED_LOAN_IDS = [
   '01930002-0001-7000-8000-000000000004',
 ] as const;
 
-export async function resetSeedFinancialState(): Promise<void> {
+/** FC-004 / FC-007: stale idempotency rows replay without re-executing after seed reset. */
+async function clearHarnessIdempotencyKeys(): Promise<number> {
+  const db = getDb();
+  const removed = await db
+    .delete(idempotencyKeys)
+    .where(
+      or(
+        like(idempotencyKeys.idempotencyKey, 'idempotency-audit-%'),
+        like(idempotencyKeys.idempotencyKey, 'concurrency-test-%'),
+        like(idempotencyKeys.idempotencyKey, 'p143a4-%'),
+        like(idempotencyKeys.idempotencyKey, 'cert-%'),
+      ),
+    )
+    .returning({ id: idempotencyKeys.id });
+  return removed.length;
+}
+
+export async function resetSeedFinancialState(): Promise<number> {
   if (!isDatabaseEnabled()) {
     throw new Error('DATABASE_URL required for cert financial prep');
   }
@@ -74,15 +94,27 @@ export async function resetSeedFinancialState(): Promise<void> {
   await db.delete(loanDisbursements).where(inArray(loanDisbursements.loanId, seedLoanIds));
   await db.delete(loans).where(inArray(loans.id, seedLoanIds));
 
+  const idempotencyRemoved = await clearHarnessIdempotencyKeys();
+
   await seedFinancialCore();
+
+  return idempotencyRemoved;
 }
 
 async function main(): Promise<void> {
-  await resetSeedFinancialState();
-  console.log('cert:financial:prep PASS — seed financial state reset');
+  const idempotencyRemoved = await resetSeedFinancialState();
+  console.log(
+    `cert:financial:prep PASS — seed financial state reset (idempotency cleared=${idempotencyRemoved})`,
+  );
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+const isDirectRun =
+  process.argv[1] !== undefined &&
+  fileURLToPath(import.meta.url) === resolve(process.argv[1]);
+
+if (isDirectRun) {
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}
