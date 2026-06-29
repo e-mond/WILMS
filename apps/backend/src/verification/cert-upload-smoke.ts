@@ -5,6 +5,7 @@
  */
 import '../config/load-env.js';
 import { randomUUID } from 'node:crypto';
+import { uuidv7 } from 'uuidv7';
 import { isCloudinaryConfigured, validateUploadEnvironment } from '../infrastructure/uploads/index.js';
 import { saveUpload } from '../infrastructure/uploads/upload.service.js';
 import { deleteStoredUpload } from '../infrastructure/uploads/delete-upload.js';
@@ -28,13 +29,18 @@ async function main(): Promise<void> {
     process.exit(0);
   }
 
-  const buffer = Buffer.from('P14.5A upload smoke test');
+  const entityId = uuidv7();
+  // Minimal valid 1×1 PNG — allowed mime type for smoke upload lifecycle.
+  const buffer = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+    'base64',
+  );
   const stored = await saveUpload({
-    purpose: 'document',
-    fileName: `smoke-${randomUUID()}.txt`,
-    mimeType: 'application/pdf',
+    purpose: 'borrower-photo',
+    fileName: `smoke-${randomUUID()}.png`,
+    mimeType: 'image/png',
     sizeBytes: buffer.length,
-    entityId: 'cert-smoke',
+    entityId,
     buffer,
   });
 

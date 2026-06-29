@@ -27,7 +27,7 @@ export class LocalUploadProvider implements UploadProvider {
     };
   }
 
-  async delete(id: string, storageKey: string): Promise<boolean> {
+  async delete(id: string, storageKey: string, _mimeType?: string): Promise<boolean> {
     const storagePath = localFiles.get(id) ?? storageKey;
 
     try {
