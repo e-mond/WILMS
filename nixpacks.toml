@@ -1,0 +1,10 @@
+# Nixpacks config for WILMS API on Railway (monorepo root)
+# NODE_ENV=production omits devDependencies by default; API start:prod needs tsx + drizzle-kit.
+[phases.setup]
+nixPkgs = ["nodejs_20", "npm-10_x"]
+
+[phases.install]
+cmds = ["npm ci --include=dev"]
+
+[start]
+cmd = "npm run start:prod -w @wilms/api"
