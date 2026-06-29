@@ -6,3 +6,12 @@ apps/frontend/.env.local
 .next
 .wilms-uploads
 *.tsbuildinfo
+coverage/
+**/coverage/
+test-results/
+.turbo/
+*.log
+perf-*-output.txt
+vitest-*.txt
+test-output.*
+test-final.txt
