@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { LoginForm } from '@/features/authentication/components/LoginForm';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { AppVersionBadge } from '@/components/layout/AppVersionBadge';
 
 export default function LoginPage() {
   return (
@@ -22,6 +23,7 @@ export default function LoginPage() {
       >
         <LoginForm />
       </Suspense>
+      <AppVersionBadge />
     </main>
   );
 }
