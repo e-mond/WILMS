@@ -11,6 +11,8 @@ import { validateUploadEnvironment } from './infrastructure/uploads/index.js';
 
 const envReport = validateEnvironment();
 
+process.env.WILMS_DEPLOYED_AT ??= new Date().toISOString();
+
 for (const warning of envReport.warnings) {
   logger.warn('startup.env.warning', { warning });
 }

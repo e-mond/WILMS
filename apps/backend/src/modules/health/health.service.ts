@@ -59,6 +59,11 @@ export interface HealthReport {
   session: {
     provider: 'hmac-signed-token';
   };
+  runtime: {
+    nodeVersion: string;
+    deployedAt: string | null;
+    buildId: string | null;
+  };
 }
 
 export async function buildHealthReport(): Promise<HealthReport> {
@@ -88,12 +93,12 @@ export async function buildHealthReport(): Promise<HealthReport> {
         const rows = result.rows as { count?: number; latest?: string | Date }[];
         appliedMigrations = Number(rows[0]?.count ?? 0);
         const latest = rows[0]?.latest;
-        latestAppliedAt =
-          latest instanceof Date
-            ? latest.toISOString()
-            : typeof latest === 'string'
-              ? latest
-              : null;
+        if (latest instanceof Date) {
+          latestAppliedAt = latest.toISOString();
+        } else if (typeof latest === 'string' || typeof latest === 'number') {
+          const asDate = new Date(latest);
+          latestAppliedAt = Number.isNaN(asDate.getTime()) ? String(latest) : asDate.toISOString();
+        }
         migrationStatus =
           appliedMigrations >= expectedMigrations && expectedMigrations > 0 ? 'ok' : 'degraded';
       } catch (error) {
@@ -138,6 +143,15 @@ export async function buildHealthReport(): Promise<HealthReport> {
     },
     session: {
       provider: 'hmac-signed-token',
+    },
+    runtime: {
+      nodeVersion: process.version,
+      deployedAt: process.env.WILMS_DEPLOYED_AT?.trim() || null,
+      buildId:
+        process.env.RAILWAY_DEPLOYMENT_ID?.trim() ||
+        process.env.RAILWAY_GIT_COMMIT_SHA?.trim() ||
+        process.env.VERCEL_GIT_COMMIT_SHA?.trim() ||
+        null,
     },
   };
 }

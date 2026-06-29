@@ -1,13 +1,25 @@
 import { API_ERROR_CODE, ApiError } from '@/types/api';
 import type { LoginInput, LoginResult } from '@/types/auth';
 import type { IAuthService } from '@/types/services';
+import { csrfHeaders, readCsrfFromDocumentCookie } from '@/lib/auth/csrf';
+
+async function ensureCsrfToken(): Promise<void> {
+  if (readCsrfFromDocumentCookie()) {
+    return;
+  }
+
+  await fetch('/api/auth/csrf', { credentials: 'include' });
+}
 
 const authService: IAuthService = {
   async login(input: LoginInput): Promise<LoginResult> {
+    await ensureCsrfToken();
+
     const response = await fetch('/api/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...csrfHeaders(),
       },
       credentials: 'include',
       body: JSON.stringify(input),

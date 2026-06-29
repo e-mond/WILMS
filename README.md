@@ -36,7 +36,7 @@ WILMS supports registration officers, approvers, collectors, auditors, and super
 | P14.3B — Reconciliation | **Certified** | functional 24/24, RBAC 6/6, concurrency PASS |
 | P14.3B — Uploads | **Certified** | `cert:upload:env` + `cert:upload:smoke` PASS (Cloudinary) |
 | Notifications (SMS/email) | **Deferred** | Adapters only; no workflow call sites (`docs/audit/P14.3B-feature-completion-matrix.md`) |
-| **Current phase** | **P14.5A.3 RC0** | Release Candidate Zero validation — **CONDITIONAL** verdict |
+| **Current phase** | **P14.5G** | Production hardening v0.2.1 — CSRF, health expansion, release docs |
 
 ---
 
@@ -397,9 +397,9 @@ npm run verify:pools -w @wilms/api     # After P14.3B pool migration/seed
 
 Set secrets in the deployment platform — never commit `.env`. Required in production: `DATABASE_URL`, `WILMS_SESSION_SECRET` (≥32 chars), `WILMS_CORS_ORIGIN`, and Cloudinary credentials when using `UPLOAD_PROVIDER=cloudinary`. See `apps/backend/.env.production.example` and `apps/frontend/.env.production.example`.
 
-Detail: `docs/page-validation/P14.5F-deployment-update.md` · `P14.3B-phase-5a-deployment-guide.md`
+Detail: `docs/deployment-guide.md` · `docs/security-guide.md` · `docs/production-guide.md` · `docs/page-validation/P14.5G-deployment-report.md`
 
-### Live production (P14.5E/F)
+### Live production (P14.5G — v0.2.1)
 
 | Service | URL |
 |---------|-----|
