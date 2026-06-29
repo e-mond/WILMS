@@ -39,7 +39,7 @@ async function main(): Promise<void> {
   const appUrl = requireEnv('WILMS_APP_URL');
   const apiUrl = requireEnv('WILMS_API_URL');
   const email = process.env.WILMS_SMOKE_EMAIL ?? 'admin@wilms.demo';
-  const password = process.env.WILMS_SMOKE_PASSWORD ?? 'Admin123!';
+  const password = process.env.WILMS_SMOKE_PASSWORD ?? 'DemoAdmin1!';
 
   console.log('P14.5D Production Smoke Tests');
   console.log(`Started: ${new Date().toISOString()}`);
@@ -58,7 +58,10 @@ async function main(): Promise<void> {
 
   // API health
   const healthRes = await fetch(`${apiUrl}/health`);
-  const healthJson = (await healthRes.json()) as { status?: string; database?: { connected?: boolean } };
+  const healthEnvelope = (await healthRes.json()) as {
+    data?: { status?: string; database?: { connected?: boolean } };
+  };
+  const healthJson = healthEnvelope.data ?? {};
   record(
     'api-health-status',
     healthRes.status === 200 && healthJson.status === 'ok',
@@ -88,13 +91,23 @@ async function main(): Promise<void> {
     setCookie ? 'cookie present' : 'no set-cookie',
   );
 
-  const loginBody = (await loginRes.json()) as { token?: string };
-  const token = loginBody.token;
-  record('login-token', Boolean(token), token ? 'received' : 'missing');
+  const loginBody = (await loginRes.json()) as { user?: { id: string }; expiresAt?: number };
+  const setCookieHeader = loginRes.headers.get('set-cookie') ?? '';
+  const sessionCookie = setCookieHeader.match(/wilms_session=([^;]+)/i)?.[1];
+  record(
+    'login-session',
+    loginRes.status === 200 && Boolean(loginBody.user?.id || sessionCookie),
+    sessionCookie ? 'session cookie set' : loginBody.user?.id ? 'user in body' : 'missing',
+  );
+
+  const authHeaders: Record<string, string> = {};
+  if (sessionCookie) {
+    authHeaders.cookie = `wilms_session=${sessionCookie}`;
+  }
 
   // BFF proxy — loans list (admin)
   const loansRes = await fetch(`${appUrl}/api/wilms/loans?status=ACTIVE`, {
-    headers: token ? { authorization: `Bearer ${token}` } : {},
+    headers: authHeaders,
   });
   record('bff-proxy-loans', loansRes.status === 200, `status=${loansRes.status}`);
 
@@ -104,7 +117,7 @@ async function main(): Promise<void> {
 
   // Reports hub via BFF
   const reportsRes = await fetch(`${appUrl}/api/wilms/reports`, {
-    headers: token ? { authorization: `Bearer ${token}` } : {},
+    headers: authHeaders,
   });
   record('bff-proxy-reports', reportsRes.status === 200, `status=${reportsRes.status}`);
 
