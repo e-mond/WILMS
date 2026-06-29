@@ -6,7 +6,8 @@
 
 [build]
 builder = "nixpacks"
-buildCommand = "npm ci"
+# Install is handled by nixpacks.toml (npm ci). Build only type-checks the API workspace.
+buildCommand = "npm run type-check -w @wilms/api"
 
 [deploy]
 startCommand = "npm run start:prod -w @wilms/api"
