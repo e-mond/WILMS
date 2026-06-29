@@ -47,6 +47,7 @@ export interface HealthReport {
   migrations: {
     expected: number;
     applied: number | null;
+    latestAppliedAt: string | null;
     status: 'ok' | 'degraded' | 'unknown' | 'disabled';
   };
   uploads: {
@@ -65,6 +66,7 @@ export async function buildHealthReport(): Promise<HealthReport> {
   const expectedMigrations = readExpectedMigrationCount();
   let dbConnected = false;
   let appliedMigrations: number | null = null;
+  let latestAppliedAt: string | null = null;
   let migrationStatus: HealthReport['migrations']['status'] = 'disabled';
   let databaseStatus: HealthReport['database']['status'] = 'disabled';
 
@@ -80,13 +82,22 @@ export async function buildHealthReport(): Promise<HealthReport> {
 
       try {
         const result = await db.execute(sql`
-          SELECT COUNT(*)::int AS count FROM "__drizzle_migrations"
+          SELECT COUNT(*)::int AS count, MAX(created_at) AS latest
+          FROM drizzle.__drizzle_migrations
         `);
-        const rows = result.rows as { count?: number }[];
+        const rows = result.rows as { count?: number; latest?: string | Date }[];
         appliedMigrations = Number(rows[0]?.count ?? 0);
+        const latest = rows[0]?.latest;
+        latestAppliedAt =
+          latest instanceof Date
+            ? latest.toISOString()
+            : typeof latest === 'string'
+              ? latest
+              : null;
         migrationStatus =
           appliedMigrations >= expectedMigrations && expectedMigrations > 0 ? 'ok' : 'degraded';
-      } catch {
+      } catch (error) {
+        console.error('[health] migration count query failed:', error);
         migrationStatus = 'unknown';
       }
     } catch {
@@ -116,6 +127,7 @@ export async function buildHealthReport(): Promise<HealthReport> {
     migrations: {
       expected: expectedMigrations,
       applied: appliedMigrations,
+      latestAppliedAt,
       status: migrationStatus,
     },
     uploads: {
