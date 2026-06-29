@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'release/**']
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build frontend
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_BASE_URL: https://app.wilms.example/api/wilms
+          NEXT_PUBLIC_USE_MOCK: 'false'
+
+      - name: Backend tests
+        run: npm run test -w @wilms/api
+
+      - name: Frontend tests
+        run: npm run test
+
+  health-check-template:
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post-deploy health (enable when deploy secrets configured)
+        run: |
+          curl -fsS "${{ secrets.WILMS_API_URL }}/health"
