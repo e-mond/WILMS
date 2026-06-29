@@ -29,7 +29,7 @@ function resolveTrustProxy(): boolean {
 
 export const env = {
   port: Number(process.env.WILMS_API_PORT ?? process.env.API_PORT ?? process.env.PORT ?? DEFAULT_PORT),
-  host: process.env.WILMS_API_HOST ?? '127.0.0.1',
+  host: process.env.WILMS_API_HOST ?? (nodeEnv === 'production' ? '0.0.0.0' : '127.0.0.1'),
   nodeEnv,
   corsOrigin: process.env.WILMS_CORS_ORIGIN ?? 'http://127.0.0.1:3000',
   uploadDir: process.env.WILMS_UPLOAD_DIR ?? '.wilms-uploads',

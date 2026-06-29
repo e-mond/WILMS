@@ -1,0 +1,14 @@
+# WILMS API — Railway service configuration (P14.5C)
+# Dashboard: set Root Directory to repository root OR use Railway monorepo path apps/backend
+# Required env: DATABASE_URL, WILMS_SESSION_SECRET, WILMS_CORS_ORIGIN, CLOUDINARY_*, UPLOAD_PROVIDER=cloudinary
+
+[build]
+builder = "nixpacks"
+buildCommand = "cd ../.. && npm ci"
+
+[deploy]
+startCommand = "cd ../.. && npm run start:prod -w @wilms/api"
+healthcheckPath = "/health"
+healthcheckTimeout = 60
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3

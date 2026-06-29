@@ -1,0 +1,64 @@
+# P14.5C — Production deployment workflow (requires secrets)
+# Secrets: VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID, RAILWAY_TOKEN, RAILWAY_SERVICE_ID
+# Enable manually or on main merge after platform projects are linked.
+
+name: Deploy Production
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+
+jobs:
+  deploy-api:
+    if: vars.ENABLE_PRODUCTION_DEPLOY == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - name: Run database migrations
+        run: npm run db:migrate -w @wilms/api
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - name: Deploy API to Railway
+        uses: berviantoleo/railway-deploy@main
+        with:
+          railway_token: ${{ secrets.RAILWAY_TOKEN }}
+          service: ${{ secrets.RAILWAY_SERVICE_ID }}
+
+  deploy-frontend:
+    if: vars.ENABLE_PRODUCTION_DEPLOY == 'true'
+    needs: deploy-api
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: apps/frontend
+          vercel-args: '--prod'
+
+  verify:
+    if: vars.ENABLE_PRODUCTION_DEPLOY == 'true'
+    needs: [deploy-api, deploy-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: API health check
+        run: curl -fsS "${{ secrets.WILMS_API_URL }}/health"
+      - name: Frontend smoke (homepage)
+        run: curl -fsS "${{ secrets.WILMS_APP_URL }}/login"
