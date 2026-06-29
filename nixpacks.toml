@@ -1,0 +1,12 @@
+# Nixpacks config for WILMS API on Railway (monorepo root)
+[phases.setup]
+nixPkgs = ["nodejs_20", "npm-10_x"]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = ["npm run type-check -w @wilms/api"]
+
+[start]
+cmd = "npm run start:prod -w @wilms/api"
