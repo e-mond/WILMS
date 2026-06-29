@@ -10,6 +10,7 @@ import { ShellNavigation } from '@/layouts/ShellNavigation';
 import type { ShellNavVariant } from '@/layouts/ShellNavLink';
 import { useShellLayoutStore } from '@/state/shellLayoutStore';
 import { cn } from '@/utils/cn';
+import { getAppVersionLabel } from '@/lib/app-version';
 import { Button } from '@/components/ui/Button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -29,7 +30,7 @@ export function AppSidebar({
   navVariant = 'executive',
   isExecutive = true,
   brandTitle,
-  versionLabel = 'v2.4.1 — WILMS CORE',
+  versionLabel = getAppVersionLabel() || undefined,
   footer,
 }: AppSidebarProps) {
   const { user } = useAuth();

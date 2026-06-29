@@ -16,3 +16,4 @@ vitest-*.txt
 test-output.*
 test-final.txt
 .vercel
+.env*

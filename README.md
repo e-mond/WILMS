@@ -397,7 +397,17 @@ npm run verify:pools -w @wilms/api     # After P14.3B pool migration/seed
 
 Set secrets in the deployment platform — never commit `.env`. Required in production: `DATABASE_URL`, `WILMS_SESSION_SECRET` (≥32 chars), `WILMS_CORS_ORIGIN`, and Cloudinary credentials when using `UPLOAD_PROVIDER=cloudinary`. See `apps/backend/.env.production.example` and `apps/frontend/.env.production.example`.
 
-Detail: `docs/page-validation/P14.3B-phase-5a-deployment-guide.md` · `P14.3A.3-environment-governance.md`
+Detail: `docs/page-validation/P14.5F-deployment-update.md` · `P14.3B-phase-5a-deployment-guide.md`
+
+### Live production (P14.5E/F)
+
+| Service | URL |
+|---------|-----|
+| Frontend | https://wilms.vercel.app |
+| API | https://wilms-production.up.railway.app |
+
+Deploy from **monorepo root** (`railway up` / `vercel deploy --prod`). Smoke: `WILMS_APP_URL=https://wilms.vercel.app WILMS_API_URL=https://wilms-production.up.railway.app npm run smoke:production`
+
 
 ---
 
