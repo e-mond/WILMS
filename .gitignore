@@ -1,5 +1,7 @@
 node_modules
+.vercel
 .env
+.env.*
 .env.local
 apps/backend/.env.local
 apps/frontend/.env.local
@@ -15,5 +17,4 @@ perf-*-output.txt
 vitest-*.txt
 test-output.*
 test-final.txt
-.vercel
-.env*
+.wilms-production-credentials.json

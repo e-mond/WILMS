@@ -2,6 +2,25 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [0.2.1] - 2026-06-20
+
+### Added
+- BFF synchronizer-token CSRF protection (`wilms_csrf` cookie + `x-wilms-csrf` header)
+- `GET /api/auth/csrf` token issuance endpoint
+- Expanded `/health`: version, git commit, uptime, runtime (node, deployedAt, buildId)
+- Version label on dashboard footer (`OfficeShellFooter`)
+- Production demo-user rotation script (`rotate-production-users.mjs`)
+- P14.5G audit and validation documentation
+
+### Security
+- CSRF validation on `/api/auth/login`, `/api/auth/logout`, and BFF mutations
+- Helmet: explicit HSTS, `hidePoweredBy`, `referrerPolicy: no-referrer`
+- Production smoke tests for CSRF rejection and expanded health checks
+
+### Changed
+- Version bumped to **0.2.1** (semantic versioning — production hardening patch)
+- `getAppVersionLabel()` format: `WILMS v{version}` from root `package.json`
+
 ## [0.2.0] - 2026-06-29
 
 ### Added

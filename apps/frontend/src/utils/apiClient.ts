@@ -1,4 +1,5 @@
 import { API_BASE_URL, API_TIMEOUT_MS } from '@/config/api';
+import { csrfHeaders } from '@/lib/auth/csrf';
 import { triggerUnauthorizedHandler } from '@/lib/auth/unauthorized-handler';
 import { API_ERROR_CODE, ApiError } from '@/types/api';
 
@@ -107,12 +108,17 @@ async function request<T>(
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
+    const method = (init.method ?? 'GET').toUpperCase();
+    const csrf =
+      method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS' ? csrfHeaders() : {};
+
     const response = await fetch(buildUrl(path), {
       ...init,
       credentials: 'include',
       signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
+        ...csrf,
         ...init.headers,
       },
     });

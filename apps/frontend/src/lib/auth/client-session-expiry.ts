@@ -1,5 +1,6 @@
 'use client';
 
+import { csrfHeaders } from '@/lib/auth/csrf';
 import { buildSessionExpiredUrl } from '@/lib/auth/session-expiry';
 import { isPublicPath } from '@/lib/auth/routes';
 import { useAuthStore } from '@/state/authStore';
@@ -24,6 +25,7 @@ export async function handleClientSessionExpiry(nextPath?: string | null): Promi
     await fetch('/api/auth/logout', {
       method: 'POST',
       credentials: 'include',
+      headers: csrfHeaders(),
     });
   } catch {
     // Redirect even if logout request fails.
