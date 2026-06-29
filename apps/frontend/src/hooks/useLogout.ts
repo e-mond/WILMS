@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
+import { csrfHeaders } from '@/lib/auth/csrf';
 import { useAuthStore } from '@/state/authStore';
 
 export function useLogout() {
@@ -20,6 +21,7 @@ export function useLogout() {
       await fetch('/api/auth/logout', {
         method: 'POST',
         credentials: 'include',
+        headers: csrfHeaders(),
       });
     } catch {
       // Clear local session and redirect even if the logout request fails.

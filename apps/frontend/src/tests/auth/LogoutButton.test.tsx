@@ -38,6 +38,7 @@ describe('LogoutButton', () => {
       expect(fetch).toHaveBeenCalledWith('/api/auth/logout', {
         method: 'POST',
         credentials: 'include',
+        headers: {},
       });
       expect(useAuthStore.getState().user).toBeNull();
       expect(replace).toHaveBeenCalledWith('/login');

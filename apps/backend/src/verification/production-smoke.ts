@@ -27,6 +27,31 @@ function record(name: string, pass: boolean, detail: string): void {
   console.log(`  ${mark} ${name}: ${detail}`);
 }
 
+function parseSetCookies(headers: Headers): Record<string, string> {
+  const cookies: Record<string, string> = {};
+  const raw =
+    typeof headers.getSetCookie === 'function'
+      ? headers.getSetCookie()
+      : [headers.get('set-cookie')].filter(Boolean) as string[];
+
+  for (const header of raw) {
+    const match = header.match(/^([^=]+)=([^;]+)/);
+    if (match?.[1] && match[2]) {
+      cookies[match[1]] = match[2];
+    }
+  }
+
+  return cookies;
+}
+
+function cookieHeader(cookies: Record<string, string>): string {
+  return Object.entries(cookies)
+    .map(([name, value]) => `${name}=${value}`)
+    .join('; ');
+}
+
+const CSRF_HEADER = 'x-wilms-csrf';
+
 function requireEnv(name: string): string {
   const value = process.env[name]?.trim();
   if (!value) {
@@ -73,16 +98,63 @@ async function main(): Promise<void> {
     `connected=${String(healthJson.database?.connected)}`,
   );
 
+  const healthData = healthEnvelope.data as {
+    version?: string;
+    gitCommit?: string | null;
+    uptimeSeconds?: number;
+    environment?: string;
+    migrations?: { expected?: number; applied?: number | null; status?: string };
+    runtime?: { nodeVersion?: string; deployedAt?: string | null; buildId?: string | null };
+  } | undefined;
+
+  record(
+    'api-health-version',
+    typeof healthData?.version === 'string' && healthData.version.length > 0,
+    `version=${healthData?.version ?? 'missing'}`,
+  );
+  record(
+    'api-health-migrations',
+    healthData?.migrations?.status === 'ok' && healthData.migrations.applied === healthData.migrations.expected,
+    `expected=${healthData?.migrations?.expected ?? '?'} applied=${healthData?.migrations?.applied ?? '?'} status=${healthData?.migrations?.status ?? 'unknown'}`,
+  );
+  record(
+    'api-health-runtime',
+    Boolean(healthData?.runtime?.nodeVersion),
+    `node=${healthData?.runtime?.nodeVersion ?? 'missing'} uptime=${healthData?.uptimeSeconds ?? '?'}s env=${healthData?.environment ?? '?'}`,
+  );
+
   // Frontend login page
   const loginPage = await fetch(`${appUrl}/login`);
   record('frontend-login-page', loginPage.status === 200, `status=${loginPage.status}`);
 
-  // BFF login
-  const loginRes = await fetch(`${appUrl}/api/auth/login`, {
+  // CSRF token issuance
+  const csrfRes = await fetch(`${appUrl}/api/auth/csrf`, { credentials: 'include' });
+  const csrfCookies = parseSetCookies(csrfRes.headers);
+  record(
+    'csrf-token-issued',
+    csrfRes.status === 200 && Boolean(csrfCookies.wilms_csrf),
+    csrfRes.status === 200 ? 'token cookie set' : `status=${csrfRes.status}`,
+  );
+
+  // Login without CSRF must fail
+  const loginNoCsrfRes = await fetch(`${appUrl}/api/auth/login`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ email, password }),
   });
+  record('csrf-blocks-login-without-token', loginNoCsrfRes.status === 403, `status=${loginNoCsrfRes.status}`);
+
+  // BFF login with CSRF
+  const loginRes = await fetch(`${appUrl}/api/auth/login`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      cookie: cookieHeader(csrfCookies),
+      [CSRF_HEADER]: csrfCookies.wilms_csrf ?? '',
+    },
+    body: JSON.stringify({ email, password }),
+  });
+  const loginCookies = { ...csrfCookies, ...parseSetCookies(loginRes.headers) };
   const setCookie = loginRes.headers.get('set-cookie') ?? '';
   record('bff-login', loginRes.status === 200, `status=${loginRes.status}`);
   record(
@@ -92,18 +164,17 @@ async function main(): Promise<void> {
   );
 
   const loginBody = (await loginRes.json()) as { user?: { id: string }; expiresAt?: number };
-  const setCookieHeader = loginRes.headers.get('set-cookie') ?? '';
-  const sessionCookie = setCookieHeader.match(/wilms_session=([^;]+)/i)?.[1];
+  const sessionCookie = loginCookies.wilms_session;
   record(
     'login-session',
     loginRes.status === 200 && Boolean(loginBody.user?.id || sessionCookie),
     sessionCookie ? 'session cookie set' : loginBody.user?.id ? 'user in body' : 'missing',
   );
 
-  const authHeaders: Record<string, string> = {};
-  if (sessionCookie) {
-    authHeaders.cookie = `wilms_session=${sessionCookie}`;
-  }
+  const authHeaders: Record<string, string> = {
+    cookie: cookieHeader(loginCookies),
+    [CSRF_HEADER]: loginCookies.wilms_csrf ?? csrfCookies.wilms_csrf ?? '',
+  };
 
   // BFF proxy — loans list (admin)
   const loansRes = await fetch(`${appUrl}/api/wilms/loans?status=ACTIVE`, {
