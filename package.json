@@ -18,6 +18,7 @@
     "test:coverage": "npm run test:coverage -w @wilms/frontend",
     "test:watch": "npm run test:watch -w @wilms/frontend",
     "test:e2e:install": "npm run test:e2e:install -w @wilms/frontend",
-    "test:e2e": "npm run test:e2e -w @wilms/frontend"
+    "test:e2e": "npm run test:e2e -w @wilms/frontend",
+    "smoke:production": "npm run smoke:production -w @wilms/api"
   }
 }

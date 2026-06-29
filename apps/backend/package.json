@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
+    "start:prod": "drizzle-kit migrate && tsx src/index.ts",
     "type-check": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
@@ -36,7 +37,8 @@
     "cert:reconciliation:rbac": "tsx src/verification/cert-reconciliation-rbac.ts",
     "cert:reconciliation:concurrency": "tsx src/verification/cert-reconciliation-concurrency.ts",
     "cert:reconciliation:perf": "tsx src/verification/cert-reconciliation-performance.ts",
-    "cert:demo:stakeholder": "tsx src/verification/demo-stakeholder-cert.ts"
+    "cert:demo:stakeholder": "tsx src/verification/demo-stakeholder-cert.ts",
+    "smoke:production": "tsx src/verification/production-smoke.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
