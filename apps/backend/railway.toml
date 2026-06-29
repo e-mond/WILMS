@@ -7,7 +7,7 @@ builder = "nixpacks"
 buildCommand = "cd ../.. && npm ci"
 
 [deploy]
-startCommand = "cd ../.. && npm run start -w @wilms/api"
+startCommand = "cd ../.. && npm run start:prod -w @wilms/api"
 healthcheckPath = "/health"
 healthcheckTimeout = 60
 restartPolicyType = "on_failure"
