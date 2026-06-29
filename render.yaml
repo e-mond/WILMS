@@ -1,0 +1,56 @@
+# WILMS — Render Blueprint (P14.5C)
+# Option B reference: both services on Render. Recommended production uses Vercel + Railway (Option A).
+# Apply via Render Dashboard → Blueprints → New Blueprint Instance
+
+services:
+  - type: web
+    name: wilms-api
+    runtime: node
+    plan: starter
+    region: oregon
+    buildCommand: npm ci
+    startCommand: npm run start -w @wilms/api
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: WILMS_API_HOST
+        value: 0.0.0.0
+      - key: UPLOAD_PROVIDER
+        value: cloudinary
+      - key: WILMS_TRUST_PROXY
+        value: "true"
+      - key: DATABASE_URL
+        sync: false
+      - key: WILMS_SESSION_SECRET
+        generateValue: true
+      - key: WILMS_CORS_ORIGIN
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+
+  - type: web
+    name: wilms-frontend
+    runtime: node
+    plan: starter
+    region: oregon
+    buildCommand: npm ci && npm run build -w @wilms/frontend
+    startCommand: npm run start -w @wilms/frontend
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_USE_MOCK
+        value: "false"
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
+      - key: NEXT_PUBLIC_API_BASE_URL
+        sync: false
+      - key: WILMS_API_UPSTREAM
+        fromService:
+          name: wilms-api
+          type: web
+          property: host
