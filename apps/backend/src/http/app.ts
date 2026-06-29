@@ -43,6 +43,9 @@ export function createApp() {
     helmet({
       contentSecurityPolicy: env.nodeEnv === 'production',
       crossOriginEmbedderPolicy: false,
+      hidePoweredBy: true,
+      referrerPolicy: { policy: 'no-referrer' },
+      hsts: env.nodeEnv === 'production' ? { maxAge: 31536000, includeSubDomains: true } : false,
     }),
   );
 

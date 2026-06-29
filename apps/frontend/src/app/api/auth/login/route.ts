@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
 import { loginSchema } from '@/features/authentication/login.schema';
 import { authenticateCredentials } from '@/lib/auth/authenticate';
+import { rejectInvalidCsrf, setCsrfCookie } from '@/lib/auth/csrf-server';
 import { getSessionCookieOptions, SESSION_COOKIE_NAME } from '@/lib/auth/cookies';
 import { toAuthSession } from '@/lib/auth/session';
 
 export async function POST(request: Request) {
+  const csrfFailure = rejectInvalidCsrf(request);
+  if (csrfFailure) {
+    return csrfFailure;
+  }
+
   let body: unknown;
 
   try {
@@ -37,6 +43,7 @@ export async function POST(request: Request) {
     authResult.sessionToken,
     getSessionCookieOptions(),
   );
+  setCsrfCookie(response);
 
   return response;
 }
