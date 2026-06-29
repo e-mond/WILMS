@@ -5,6 +5,7 @@ import { DetailSidebarCard } from '@/components/layout/executive';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
 import { useSettingsActivity } from '@/features/settings/hooks/useSettingsActivity';
 import { formatDisplayDate } from '@/utils/format-date';
+import { getAppVersionLabel } from '@/lib/app-version';
 import { resolvePersonPhotoUrl } from '@/utils/person-photo';
 
 export interface SettingsAsidePanelProps {
@@ -26,6 +27,10 @@ export function SettingsAsidePanel({ updatedAt, activeSectionLabel }: SettingsAs
           <div>
             <dt className="text-text-muted">Core services</dt>
             <dd className="font-semibold text-status-active">Operational</dd>
+          </div>
+          <div>
+            <dt className="text-text-muted">Application version</dt>
+            <dd className="font-semibold">{getAppVersionLabel() || '—'}</dd>
           </div>
           <div>
             <dt className="text-text-muted">Last settings sync</dt>
