@@ -13,7 +13,7 @@ export async function deleteStoredUpload(id: string): Promise<boolean> {
     return false;
   }
 
-  const providerDeleted = await getUploadProvider().delete(id, record.storageKey);
+  const providerDeleted = await getUploadProvider().delete(id, record.storageKey, record.mimeType);
 
   if (isDatabaseEnabled()) {
     await uploadRepository.softDeleteUpload(id);

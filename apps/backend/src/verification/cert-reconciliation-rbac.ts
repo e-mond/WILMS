@@ -18,6 +18,8 @@ import {
   DEMO_COLLECTOR_EMAIL,
   DEMO_OFFICER_EMAIL,
 } from './cert-reconciliation-prep.js';
+import { calculateExpectedDuePesewas } from '../domain/reconciliation/expected-cash.js';
+import * as loanRepo from '../repositories/loan.repository.js';
 import {
   DEMO_PASSWORDS,
   httpJson,
@@ -58,11 +60,20 @@ export async function runRbacCertification(): Promise<CertCheck[]> {
   const checks: CertCheck[] = [];
   const actors = await resolveCertActors();
   await ensureCertCollectorPortfolio(actors.collectorId);
-  const certDate = certDateForIndex(9000 + (Date.now() % 1000));
+  const suffix = Date.now();
+  const certDate = certDateForIndex(100 + (suffix % 3000));
+  const dueLoans = await loanRepo.listPortfolioLoansForCollector(actors.collectorId);
+  const expectedDue = calculateExpectedDuePesewas(
+    dueLoans.map((loan) => ({
+      paymentDay: loan.paymentDay,
+      weeklyPaymentPesewas: loan.weeklyPaymentPesewas,
+    })),
+    certDate,
+  );
   const body = {
     collectorId: actors.collectorId,
     date: certDate,
-    physicalCashPesewas: 0,
+    physicalCashPesewas: expectedDue,
   };
 
   const before = await countReconciliationSideEffects(actors.collectorId, certDate);
@@ -80,7 +91,7 @@ export async function runRbacCertification(): Promise<CertCheck[]> {
       detail: `status=${allowedStatus}`,
     });
 
-    const deniedDate = certDateForIndex(9100 + (Date.now() % 1000));
+    const deniedDate = certDateForIndex(100 + ((suffix + 1) % 3000));
     const deniedBody = { ...body, date: deniedDate };
 
     const officerStatus = (
@@ -93,7 +104,7 @@ export async function runRbacCertification(): Promise<CertCheck[]> {
       detail: `status=${officerStatus} reconciliations=${officerAfter.reconciliations}`,
     });
 
-    const auditorDate = certDateForIndex(9200 + (Date.now() % 1000));
+    const auditorDate = certDateForIndex(100 + ((suffix + 2) % 3000));
     const auditorBody = { ...body, date: auditorDate };
     const auditorStatus = (
       await httpJson(baseUrl, 'POST', '/api/v1/reconciliations', auditor, auditorBody)
@@ -105,7 +116,7 @@ export async function runRbacCertification(): Promise<CertCheck[]> {
       detail: `status=${auditorStatus}`,
     });
 
-    const anonymousDate = certDateForIndex(9300 + (Date.now() % 1000));
+    const anonymousDate = certDateForIndex(100 + ((suffix + 3) % 3000));
     const anonymousBody = { ...body, date: anonymousDate };
     const anonymousStatus = (
       await httpJson(baseUrl, 'POST', '/api/v1/reconciliations', undefined, anonymousBody)
