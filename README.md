@@ -23,7 +23,7 @@ WILMS supports registration officers, approvers, collectors, auditors, and super
 
 | Area | Status | Evidence |
 |------|--------|----------|
-| Frontend UI | **Certified** | 42 routes; unit tests PASS (prior 205/205; RC0 re-run interrupted — `phase-5a.3-evidence/test-frontend.txt`) |
+| Frontend UI | **Certified** | 42 routes; **205/205** unit tests (`docs/page-validation/phase-5a.3-evidence/` — RC0 re-run PASS) |
 | Backend API | **Certified** | Express on `:4000`; **11/11** tests (`docs/page-validation/phase-5a.3-evidence/test-backend.txt`) |
 | Financial core | **Certified** | `verify:financial` **64/64** ×2 on shared Neon (`phase-5a.3-evidence/verify-financial-run*.txt`) |
 | Live integration | **Certified** | `verify:live` **23/23** ×2 (`phase-5a.3-evidence/verify-live-run*.txt`) |
