@@ -1,0 +1,16 @@
+# WILMS API — deploy from MONOREPO ROOT (not apps/backend).
+# Railway Dashboard → Service → Settings → Root Directory: / (repository root)
+#
+# Required env: DATABASE_URL, WILMS_SESSION_SECRET, WILMS_CORS_ORIGIN,
+# UPLOAD_PROVIDER=cloudinary, CLOUDINARY_*
+
+[build]
+builder = "nixpacks"
+buildCommand = "npm ci"
+
+[deploy]
+startCommand = "npm run start:prod -w @wilms/api"
+healthcheckPath = "/health"
+healthcheckTimeout = 120
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
