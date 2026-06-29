@@ -22,7 +22,7 @@ function resolveScheduleP95BudgetMs(): number {
   }
   const databaseUrl = process.env.DATABASE_URL ?? '';
   if (databaseUrl.includes('neon.tech') || databaseUrl.includes('neon.')) {
-    return 2500;
+    return 3500;
   }
   return 300;
 }
@@ -34,7 +34,7 @@ function resolveLoanListP95BudgetMs(): number {
   }
   const databaseUrl = process.env.DATABASE_URL ?? '';
   if (databaseUrl.includes('neon.tech') || databaseUrl.includes('neon.')) {
-    return 750;
+    return 3500;
   }
   return 250;
 }

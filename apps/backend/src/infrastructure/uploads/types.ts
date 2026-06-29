@@ -28,7 +28,7 @@ export interface UploadProviderResult {
 
 export interface UploadProvider {
   save(input: UploadSaveInput): Promise<UploadProviderResult>;
-  delete(id: string, storageKey: string): Promise<boolean>;
+  delete(id: string, storageKey: string, mimeType?: string): Promise<boolean>;
   readBuffer(storageKey: string, url: string): Promise<Buffer | null>;
   getSignedUploadParams?(): Promise<{
     cloudName: string;

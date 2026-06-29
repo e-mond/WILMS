@@ -23,19 +23,20 @@ WILMS supports registration officers, approvers, collectors, auditors, and super
 
 | Area | Status | Evidence |
 |------|--------|----------|
-| Frontend UI | **Certified** | 42 routes; **205/205** unit tests (`docs/page-validation/phase-5b-evidence/test-frontend.txt`) |
-| Backend API | **Certified** | Express on `:4000`; **9/9** tests (`docs/page-validation/phase-5b-evidence/test-backend.txt`) |
-| Financial core | **Conditional** | Cert scripts PASS; `verify:financial` **50/63** on shared Neon |
+| Frontend UI | **Certified** | 42 routes; **205/205** unit tests (`docs/page-validation/phase-5a.3-evidence/` — RC0 re-run PASS) |
+| Backend API | **Certified** | Express on `:4000`; **11/11** tests (`docs/page-validation/phase-5a.3-evidence/test-backend.txt`) |
+| Financial core | **Certified** | `verify:financial` **64/64** ×2 on shared Neon (`phase-5a.3-evidence/verify-financial-run*.txt`) |
+| Live integration | **Certified** | `verify:live` **23/23** ×2 (`phase-5a.3-evidence/verify-live-run*.txt`) |
 | Neon / Drizzle | **Operational** | Migrations `0000`–`0006`; seed when `DATABASE_URL` set |
 | Security | **Certified** | Pre-5B hardening + 5B re-verify **11/11** (`P14.3B-phase-5b-security-certification.md`) |
-| Production certification | **Certified** | Phase 5B **CONDITIONAL** — `P14.3B-phase-5b-release-approval.md` |
+| Production certification | **RC0 complete** | P14.5A.3 — **CONDITIONAL** (`P14.5A.3-release-candidate.md`) |
 | P14.3B — Loan Pools | **Certified** | Phase 1 — `verify:pools` 5/5 |
 | P14.3B — Adjustments | **Certified** | Phase 2 — `verify:adjustments` 10/10 |
-| P14.3B — Payment Reversal | **Certified** | `cert:reversal:*` PASS — functional 10/10, ledger 1634/1634 |
-| P14.3B — Reconciliation | **Certified** | functional 24/24, RBAC 6/6; demo 31/32 |
-| P14.3B — Uploads | **Conditional** | `cert:upload:env` PASS (local); Cloudinary staging not configured |
+| P14.3B — Payment Reversal | **Certified** | functional 10/10, concurrency PASS; perf measured (Neon latency) |
+| P14.3B — Reconciliation | **Certified** | functional 24/24, RBAC 6/6, concurrency PASS |
+| P14.3B — Uploads | **Certified** | `cert:upload:env` + `cert:upload:smoke` PASS (Cloudinary) |
 | Notifications (SMS/email) | **Deferred** | Adapters only; no workflow call sites (`docs/audit/P14.3B-feature-completion-matrix.md`) |
-| **Current phase** | **P14.3B Phase 5B** | Production certification complete — **CONDITIONAL** verdict |
+| **Current phase** | **P14.5A.3 RC0** | Release Candidate Zero validation — **CONDITIONAL** verdict |
 
 ---
 
@@ -281,7 +282,7 @@ Reference files (never commit secrets):
 | `UPLOAD_MAX_SIZE_BYTES` | No | `10485760` |
 | `UPLOAD_ALLOWED_MIME_TYPES` | No | jpeg,png,webp,pdf |
 
-See [docs/engineering/cloudinary-setup.md](docs/engineering/cloudinary-setup.md) for setup. **Phase 5B:** Cloudinary staging credentials not yet configured — required before production upload path is certified.
+See [docs/engineering/cloudinary-setup.md](docs/engineering/cloudinary-setup.md) for setup. **P14.5A.3:** `cert:upload:env` and `cert:upload:smoke` PASS with Cloudinary configured (`phase-5a.3-evidence/`).
 
 ```bash
 npm run cert:upload:env -w @wilms/api   # Validate upload configuration (secrets masked)
@@ -402,40 +403,41 @@ Detail: `docs/page-validation/P14.3B-phase-5a-deployment-guide.md` · `P14.3A.3-
 
 ## Current Production Readiness
 
-**Authority:** Phase 5B production certification (`docs/page-validation/P14.3B-phase-5b-release-approval.md`).  
-**Verdict:** **Conditional** — do not deploy to production without resolving open blockers.
+**Authority:** P14.5A.3 Release Candidate Zero (`docs/page-validation/P14.5A.3-release-candidate.md`).  
+**Verdict:** **CONDITIONAL** — financial core is certified; full-portal production requires scope acceptance and DevOps sign-off.
 
 | Area | Rating | Evidence |
 |------|--------|----------|
-| Application (frontend + backend) | **Certified** | Build gates PASS; 205 + 9 tests (`phase-5b-evidence/`) |
-| Financial domains (reversal, reconciliation) | **Certified** | `cert:reversal:*`, `cert:reconciliation:*` PASS |
-| Financial harness (`verify:financial`) | **Conditional** | **50/63** on shared Neon |
-| Live integration (`verify:live`) | **Conditional** | **16/17** — `workflow-create-loan` |
-| Stakeholder demo | **Conditional** | **31/32** |
+| Application (frontend + backend) | **Certified** | type-check, lint, build PASS; backend **11/11** (`phase-5a.3-evidence/`) |
+| Financial domains (reversal, reconciliation) | **Certified** | functional, RBAC, concurrency PASS |
+| Financial harness (`verify:financial`) | **Certified** | **64/64** ×2 |
+| Live integration (`verify:live`) | **Certified** | **23/23** ×2 |
 | Security controls | **Certified** | **11/11** harness (`P14.3B-phase-5b-security-certification.md`) |
-| Uploads | **Conditional** | Local PASS; Cloudinary staging **Blocked** |
-| Staging / HTTPS / CORS | **Blocked** | Not exercised in 5B |
-| Release branch (merge to `main`) | **Blocked** | Feature branch only |
-| Production deployment | **Blocked** | Pending B-001–B-005 in release approval |
+| Uploads (Cloudinary) | **Certified** | `cert:upload:env` + `cert:upload:smoke` PASS |
+| Performance certs (100-batch) | **Conditional** | Reversal measured (Neon ETIMEDOUT); reconciliation perf failed DNS during RC0 |
+| V1 scope (mock-only pages) | **Open** | 16+ admin/collector routes 404 in live API mode — P14.4A V2 deferral |
+| Staging / HTTPS / CORS | **Blocked** | RC-054/055 — not validated in staging |
+| Human release sign-off | **Blocked** | RC-058 — Product/Ops approval pending |
+| Production deployment | **Conditional** | Financial-core-only deploy viable with documented scope boundaries |
 
-Full tables: `docs/page-validation/P14.3B-production-readiness-review.md`
+Full blocker matrix: `docs/page-validation/P14.5A.3-release-candidate.md`
 
-**Historical:** Percentage scores in `P14.3A.4-production-certification.md` are obsolete for release decisions.
+**Historical:** Phase 5B scores (`50/63`, `16/17`) superseded by P14.5A.1/P14.5A.3 evidence.
 
 ---
 
 ## Known Limitations
 
 - **Mock-backed domains** — Dashboard, collectors, settings, notifications, search, and risk flags use mock services in development. Loans, payments, adjustments, loan pools, reversals, and reconciliation use live API when `NEXT_PUBLIC_USE_MOCK=false` (or production build) with backend running.
+- **V1 live scope** — 16+ UI routes call backend paths with no implementation (404 in live mode). Deploy financial-core routes only, or defer full-portal live deploy to V2 (`P14.4A-version1-scope.md`).
+- **Report stubs** — Five report types return empty rows from backend stubs (loan portfolio, defaulters, ledger, collector performance, group risk).
 - **Loan pools** — Backend read API available in API mode; disburse/payment pool attribution not wired yet.
 - **Dev default** — `npm run dev` uses mocks unless `NEXT_PUBLIC_USE_MOCK=false` and `NEXT_PUBLIC_API_BASE_URL` are set (see `.env.local.example`).
-- **Financial harness** — **50/63** checks pass on shared Neon (`phase-5b-evidence/verify-financial.txt`); pollution and remote latency affect DB checks.
-- **Health endpoint** — Returns OK without database connectivity probe (5B operational gap).
-- **Cloudinary** — Staging/production upload path not certified until credentials configured.
+- **Health endpoint** — Production `/health` includes DB, migrations, uploads, version, and uptime probes (P14.5A).
+- **Shared Neon certification** — Remote latency and connection timeouts affect perf batches; run `cert:reversal:seed-reset` or `cert:reconciliation:seed-reset` before repeated cert runs.
 - **Audit writes** — Best-effort async; not transactional with business operations.
 - **Admin fee gate** — Enforced in mock UI only; not server-validated on loan create/disburse.
-- **Shared Neon certification** — Run `cert:reversal:seed-reset` or `cert:reconciliation:seed-reset` before repeated cert runs.
-- **P14.3B reversal perf** — Long-run perf batches (500/1000) not required for 5B gate; prior interrupted runs documented historically.
+- **HTTPS / CORS / trust proxy** — Require staging validation and deploy-time config (`WILMS_CORS_ORIGIN`, `WILMS_TRUST_PROXY`).
 - **Deferred domains** — Other reversal types, dedicated write-offs, OTP, password reset, SMS/email workflows — see `P14.3B-remaining-work-roadmap.md`.
 
 ---
@@ -456,7 +458,10 @@ Full tables: `docs/page-validation/P14.3B-production-readiness-review.md`
 | **Doc alignment (current)** | `P14.3B-readme-audit.md`, `P14.3B-production-readiness-review.md`, `P14.3B-remaining-work-roadmap.md` |
 | **P14.3C Release readiness** | `P14.3C-release-dashboard.md`, `P14.3C-executive-summary.md` — page/API/RBAC coverage (46 pages; 41% live-API-safe) |
 | **P14.4 Release candidate** | `P14.4I-release-decision.md`, `P14.4-executive-summary.md` — V1 scope freeze; **NOT READY** for production |
-| **P14.5A Production hardening** | `P14.5A-release-readiness.md`, `P14.5A-validation-report.md` — **CONDITIONAL** |
+| **P14.5A Production hardening** | `P14.5A-release-readiness.md`, `P14.5A-validation-report.md` |
+| **P14.5A.1 Financial closure** | `P14.5A.1-financial-certification-closure.md`, `P14.5A.1-release-readiness.md` |
+| **P14.5A.2 Release freeze audit** | `P14.5A.2-executive-summary.md`, `P14.5A.2-risk-register.md` |
+| **P14.5A.3 Release Candidate Zero** | **`P14.5A.3-release-candidate.md`** — **CONDITIONAL** (canonical RC0) |
 | **Releases** | `docs/releases/P14.3B-Phase-5A.md`, `P14.3B-Phase-5B.md` |
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/engineering/branching-strategy.md](docs/engineering/branching-strategy.md) for phase workflow standards.

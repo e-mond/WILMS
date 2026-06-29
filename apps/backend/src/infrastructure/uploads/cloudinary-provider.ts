@@ -2,6 +2,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import { getUploadConfig, isCloudinaryConfigured } from './config.js';
 import {
   buildCloudinaryTransformUrl,
+  resolveCloudinaryResourceType,
   resolveTransformPresetForPurpose,
 } from './cloudinary-transform.js';
 import type { UploadProvider, UploadProviderResult, UploadSaveInput } from './types.js';
@@ -26,7 +27,8 @@ export class CloudinaryUploadProvider implements UploadProvider {
 
   async save(input: UploadSaveInput): Promise<UploadProviderResult> {
     const config = getUploadConfig();
-    const publicId = `${config.cloudinary.folder}/${input.purpose}/${input.id}`;
+    const publicId = `${input.purpose}/${input.id}`;
+    const resourceType = resolveCloudinaryResourceType(input.mimeType);
 
     const result = await new Promise<{
       public_id: string;
@@ -36,7 +38,7 @@ export class CloudinaryUploadProvider implements UploadProvider {
       const stream = cloudinary.uploader.upload_stream(
         {
           public_id: publicId,
-          resource_type: 'auto',
+          resource_type: resourceType,
           folder: config.cloudinary.folder,
         },
         (error, uploadResult) => {
@@ -66,8 +68,9 @@ export class CloudinaryUploadProvider implements UploadProvider {
     };
   }
 
-  async delete(_id: string, storageKey: string): Promise<boolean> {
-    const response = await cloudinary.uploader.destroy(storageKey, { resource_type: 'auto' });
+  async delete(_id: string, storageKey: string, mimeType?: string): Promise<boolean> {
+    const resourceType = mimeType ? resolveCloudinaryResourceType(mimeType) : 'image';
+    const response = await cloudinary.uploader.destroy(storageKey, { resource_type: resourceType });
     return response.result === 'ok' || response.result === 'not found';
   }
 

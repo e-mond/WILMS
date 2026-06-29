@@ -80,3 +80,14 @@ export function resolveTransformPresetForPurpose(purpose: string): CloudinaryTra
       return CLOUDINARY_TRANSFORM_PRESET.ORIGINAL;
   }
 }
+
+/** Cloudinary destroy/upload_stream require an explicit resource type (not `auto`). */
+export function resolveCloudinaryResourceType(mimeType: string): 'image' | 'raw' | 'video' {
+  if (mimeType.startsWith('image/')) {
+    return 'image';
+  }
+  if (mimeType.startsWith('video/')) {
+    return 'video';
+  }
+  return 'raw';
+}
