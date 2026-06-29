@@ -5,11 +5,10 @@
 # UPLOAD_PROVIDER=cloudinary, CLOUDINARY_*
 
 [build]
-builder = "nixpacks"
-# Install/start defined in nixpacks.toml (npm ci --include=dev for tsx + drizzle-kit).
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "npm run start:prod -w @wilms/api"
 healthcheckPath = "/health"
 healthcheckTimeout = 120
 restartPolicyType = "on_failure"

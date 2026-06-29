@@ -1,0 +1,17 @@
+node_modules
+**/node_modules
+.next
+**/.next
+.git
+coverage
+test-results
+*.log
+.env
+.env.*
+!.env.production.example
+!.env.example
+docs
+**/*.md
+vitest-*.txt
+test-*.txt
+test-*.log
