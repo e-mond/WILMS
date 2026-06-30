@@ -27,6 +27,7 @@ import { useLoanSchedule } from '@/features/loan-management/hooks/useLoanSchedul
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { LOAN_STATUS } from '@/types/loan';
 import { formatDisplayDate } from '@/utils/format-date';
+import { resolveBorrowerDisplayId } from '@/utils/format-borrower-display-id';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
 
 export interface BorrowerProfilePanelProps {
@@ -68,7 +69,7 @@ export function BorrowerProfilePanel({ borrowerId }: BorrowerProfilePanelProps) 
               size="lg"
             />
             <StatusBadge status={borrower.status} />
-            <p className="text-small text-text-muted">{borrower.id}</p>
+            <p className="text-small text-text-muted">{resolveBorrowerDisplayId(borrower)}</p>
           </div>
         </DetailSidebarCard>
         <DetailSidebarCard title="Quick Actions">
@@ -178,7 +179,7 @@ export function BorrowerProfilePanel({ borrowerId }: BorrowerProfilePanelProps) 
               <h1 className="text-heading-1 font-semibold text-text-primary">{borrower.fullName}</h1>
               <StatusBadge status={borrower.status} />
             </div>
-            <p className="text-small text-text-muted">{borrower.id}</p>
+            <p className="text-small text-text-muted">{resolveBorrowerDisplayId(borrower)}</p>
           </div>
         </div>
         <BorrowerProfileActions
@@ -215,7 +216,7 @@ export function BorrowerProfilePanel({ borrowerId }: BorrowerProfilePanelProps) 
           columns={3}
           items={[
             { label: 'Full Name', value: borrower.fullName },
-            { label: 'Borrower ID', value: borrower.id },
+            { label: 'Borrower ID', value: resolveBorrowerDisplayId(borrower) },
             { label: 'Phone Number', value: borrower.phone },
             { label: 'Alternative Phone', value: borrower.alternativePhone ?? 'Not provided' },
             { label: 'Email Address', value: borrower.email ?? 'Not provided' },

@@ -1,5 +1,5 @@
 import { and, eq, isNull, sql } from 'drizzle-orm';
-import { PERMISSION, USER_ROLE } from '@wilms/shared-rbac';
+import { PERMISSION, USER_ROLE, type UserRole } from '@wilms/shared-rbac';
 import { uuidv7 } from 'uuidv7';
 import { isDatabaseEnabled, getDb } from '../../db/client.js';
 import { auditEntries } from '../../db/schema/audit.js';
@@ -790,13 +790,37 @@ export async function cloneRole(id: string): Promise<RoleDefinition> {
 const DEFAULT_INVITE_PASSWORD = 'ChangeMe1!';
 
 export async function createUser(input: CreateSettingsUserInput): Promise<SettingsUserRecord> {
+  const displayName = input.displayName?.trim();
+  const email = input.email?.trim().toLowerCase();
+  const role = input.role?.trim();
+
+  if (!displayName) {
+    throw new Error('VALIDATION:Full name is required.');
+  }
+
+  if (!email || !email.includes('@')) {
+    throw new Error('VALIDATION:A valid email address is required.');
+  }
+
+  const allowedRoles = Object.values(USER_ROLE) as UserRole[];
+  if (!role || !allowedRoles.includes(role as UserRole)) {
+    throw new Error('VALIDATION:A valid role is required.');
+  }
+
+  if (isDatabaseEnabled()) {
+    const existing = await userRepo.findUserByEmail(email);
+    if (existing) {
+      throw new Error('VALIDATION:A user with this email already exists.');
+    }
+  }
+
   if (!isDatabaseEnabled()) {
     const created = mapDemoUserToSettingsRecord({
       id: `user-${uuidv7().slice(0, 8)}`,
-      email: input.email.trim().toLowerCase(),
+      email,
       password: DEFAULT_INVITE_PASSWORD,
-      role: input.role as (typeof DEMO_USERS)[number]['role'],
-      displayName: input.displayName.trim(),
+      role: role as (typeof DEMO_USERS)[number]['role'],
+      displayName,
       status: 'INVITED',
     });
     created.lastLoginLabel = 'Invited';
@@ -810,10 +834,10 @@ export async function createUser(input: CreateSettingsUserInput): Promise<Settin
 
   await db.insert(users).values({
     id: userId,
-    email: input.email.trim().toLowerCase(),
+    email,
     passwordHash,
-    displayName: input.displayName.trim(),
-    role: input.role as typeof users.$inferInsert.role,
+    displayName,
+    role: role as typeof users.$inferInsert.role,
     status: 'INVITED',
   });
 

@@ -17,6 +17,7 @@ import { useSettingsUsers } from '@/features/settings/hooks/useSettingsUsers';
 import { useSettingsUserMutations } from '@/features/settings/hooks/useSettingsUserMutations';
 import { useToast } from '@/hooks/useToast';
 import type { SettingsUserRecord } from '@/types/settings';
+import { ApiError } from '@/types/api';
 import { formatSettingsUserStatus } from '@/utils/settings-user-presentation';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
 import { cn } from '@/utils/cn';
@@ -72,8 +73,12 @@ export function SettingsUsersSection() {
       await createUser.mutateAsync(values);
       toast.success('Invite sent', { message: `${values.displayName} was added to the user directory.` });
       closeModal();
-    } catch {
-      toast.error('Unable to invite user', { message: 'Check the email address and try again.' });
+    } catch (error) {
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : 'Check the email address and try again.';
+      toast.error('Unable to invite user', { message });
     }
   }
 
