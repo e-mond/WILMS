@@ -40,6 +40,7 @@ export interface DashboardKpi {
   id: string;
   label: string;
   amountPesewas: number;
+  valueKind?: 'currency' | 'count';
   trendLabel?: string;
   trendDirection?: DashboardTrendDirection;
   trendTone?: DashboardValueTone;
