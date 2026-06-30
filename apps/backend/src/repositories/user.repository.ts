@@ -1,6 +1,7 @@
-import { eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
+import { USER_ROLE } from '@wilms/shared-rbac';
 import { getDb } from '../db/client.js';
-import { users } from '../db/schema/users.js';
+import { collectors, users } from '../db/schema/users.js';
 import type { DemoUser } from '../seed/demo-users.js';
 
 export async function findUserByEmail(email: string): Promise<DemoUser | undefined> {
@@ -57,6 +58,31 @@ export async function upsertDemoUser(user: DemoUser & { passwordHash?: string })
 
 export async function getUserById(id: string) {
   const db = getDb();
-  const [row] = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  const [row] = await db
+    .select()
+    .from(users)
+    .where(and(eq(users.id, id), isNull(users.deletedAt)))
+    .limit(1);
   return row ?? undefined;
+}
+
+export async function listUsers() {
+  const db = getDb();
+  return db.select().from(users).where(isNull(users.deletedAt));
+}
+
+export async function listCollectors() {
+  const db = getDb();
+  const collectorUsers = await db
+    .select()
+    .from(users)
+    .where(and(eq(users.role, USER_ROLE.COLLECTOR), isNull(users.deletedAt)));
+
+  const collectorRows = await db.select().from(collectors).where(isNull(collectors.deletedAt));
+  const collectorByUserId = new Map(collectorRows.map((row) => [row.userId, row]));
+
+  return collectorUsers.map((user) => ({
+    user,
+    collector: collectorByUserId.get(user.id) ?? null,
+  }));
 }

@@ -60,9 +60,7 @@ WILMS_SMOKE_PASSWORD=... \
 npm run smoke:production
 ```
 
-Expected: **17/17** checks (v0.2.2).
-
-Set `WILMS_GIT_COMMIT` on Railway so `/health` reports the deployed SHA.
+Expected: **17/17** checks (v0.2.2). After P14.6.4 backend deploy, migrations become **9/9** (`0008_admin_extensions`).
 
 ---
 

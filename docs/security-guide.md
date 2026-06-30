@@ -1,6 +1,6 @@
 # WILMS Security Guide
 
-**Last updated:** P14.5G (v0.2.1)
+**Last updated:** P14.6.4 (v0.2.2)
 
 ---
 

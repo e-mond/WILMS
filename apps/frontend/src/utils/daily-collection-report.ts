@@ -162,3 +162,55 @@ export function buildDailyCollectionReport(
     rows,
   };
 }
+
+/** Normalize legacy flat API payloads `{ date, rows, totalPesewas }` into `DailyCollectionReport`. */
+export function normalizeDailyCollectionReport(
+  payload: Partial<DailyCollectionReport> & {
+    date?: string;
+    totalPesewas?: number;
+    rows?: DailyCollectionReportRow[];
+  },
+  requestedDate: string,
+): DailyCollectionReport {
+  if (payload.summary?.date) {
+    return {
+      generatedAt: payload.generatedAt ?? new Date().toISOString(),
+      summary: payload.summary,
+      rows: payload.rows ?? [],
+    };
+  }
+
+  const date = payload.date ?? requestedDate;
+  const rows = (payload.rows ?? []).map((row, index) => ({
+    id: row.id ?? `row-${index}`,
+    borrowerId: row.borrowerId ?? '',
+    borrowerName: row.borrowerName ?? '—',
+    community: row.community ?? '—',
+    loanId: row.loanId,
+    collectorId: row.collectorId ?? '',
+    collectorName: row.collectorName ?? '—',
+    expectedPesewas: row.expectedPesewas ?? 0,
+    collectedPesewas: row.collectedPesewas ?? 0,
+    variancePesewas: row.variancePesewas ?? 0,
+    recordedAt: row.recordedAt,
+  }));
+
+  const collectedFromRows = rows.reduce((total, row) => total + row.collectedPesewas, 0);
+  const collectedPesewas = payload.totalPesewas ?? collectedFromRows;
+  const expectedPesewas = rows.reduce((total, row) => total + row.expectedPesewas, 0);
+
+  return {
+    generatedAt: payload.generatedAt ?? new Date().toISOString(),
+    summary: {
+      date,
+      paymentDayLabel: getWeekdayNameFromIsoDate(date),
+      borrowersDueCount: rows.length,
+      borrowersPaidCount: rows.filter((row) => row.collectedPesewas > 0).length,
+      expectedPesewas,
+      collectedPesewas,
+      variancePesewas: collectedPesewas - expectedPesewas,
+      collectorsActiveCount: new Set(rows.map((row) => row.collectorId).filter(Boolean)).size,
+    },
+    rows,
+  };
+}

@@ -16,7 +16,7 @@
 
 ## Baseline (verified)
 
-- Migrations: **8/8** applied (includes `0007_offline_sync`)
+- Migrations: **9/9** applied after P14.6.4 deploy (`0008_admin_extensions`); production may show 8/8 until redeploy
 - Database: Neon PostgreSQL connected
 - Uploads: Cloudinary connected
 - Sessions: HMAC tokens working

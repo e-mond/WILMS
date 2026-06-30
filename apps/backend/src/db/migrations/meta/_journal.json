@@ -57,6 +57,13 @@
       "when": 1782401600000,
       "tag": "0007_offline_sync",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1782488000000,
+      "tag": "0008_admin_extensions",
+      "breakpoints": true
     }
   ]
 }

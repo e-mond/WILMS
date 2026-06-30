@@ -1,14 +1,12 @@
 'use client';
 
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import type { PermissionId } from '@/constants/permissions';
 import {
   USER_ROLE_TO_RBAC_ROLE_ID,
   resolveUserPermissionIds,
 } from '@/lib/rbac/permission-matrix';
 import { useAuth } from '@/hooks/useAuth';
-import { settingsService } from '@/services';
 import type { UserPermissionOverride } from '@/types/rbac';
 
 interface PermissionContextValue {
@@ -25,13 +23,6 @@ const PermissionContext = createContext<PermissionContextValue | null>(null);
 
 export function PermissionProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-
-  const query = useQuery({
-    queryKey: ['rbac', 'permissions', user?.id, user?.role],
-    queryFn: async () => settingsService.listPermissions(),
-    enabled: Boolean(user),
-    staleTime: 60_000,
-  });
 
   const value = useMemo<PermissionContextValue>(() => {
     if (!user) {
@@ -53,14 +44,14 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
       permissionIds,
       overrides: [],
       roleId,
-      isLoading: query.isLoading,
+      isLoading: false,
       hasPermission: (permissionId) => permissionIds.has(permissionId as PermissionId),
       hasAnyPermission: (required) =>
         required.some((permissionId) => permissionIds.has(permissionId as PermissionId)),
       hasAllPermissions: (required) =>
         required.every((permissionId) => permissionIds.has(permissionId as PermissionId)),
     };
-  }, [query.isLoading, user]);
+  }, [user]);
 
   return <PermissionContext.Provider value={value}>{children}</PermissionContext.Provider>;
 }

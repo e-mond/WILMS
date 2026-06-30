@@ -14,6 +14,7 @@ import { CollectionsAsidePanel } from '@/features/reports/components/Collections
 import { useDailyCollectionReport } from '@/features/reports/hooks/useDailyCollectionReport';
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { collectorManagementService } from '@/services';
+import type { CollectorListResponse } from '@/types/collector-management';
 import type { DailyCollectionReportRow } from '@/types/reports';
 import { formatDisplayDate } from '@/utils/format-date';
 import { formatPesewasForCsv } from '@/utils/export-csv';
@@ -38,7 +39,25 @@ export function DailyCollectionReportPanel() {
 
   const collectorsQuery = useQuery({
     queryKey: ['collectors-filter'],
-    queryFn: () => collectorManagementService.listCollectors(),
+    queryFn: async (): Promise<CollectorListResponse> => {
+      try {
+        return await collectorManagementService.listCollectors();
+      } catch {
+        return {
+          generatedAt: new Date().toISOString(),
+          summary: {
+            totalCollectors: 0,
+            avgCollectionRatePercent: 0,
+            belowSeventyPercent: 0,
+            activeToday: 0,
+          },
+          rateDistribution: { topPerformers: 0, onTrack: 0, needsAttention: 0 },
+          collectors: [],
+          alerts: [],
+        };
+      }
+    },
+    retry: false,
   });
 
   const collectorFilterOptions = useMemo(
@@ -73,7 +92,7 @@ export function DailyCollectionReportPanel() {
 
   const asideContent = useMemo(
     () =>
-      data ? (
+      data?.summary ? (
         <CollectionsAsidePanel
           reportDate={data.summary.date}
           borrowersDue={data.summary.borrowersDueCount}

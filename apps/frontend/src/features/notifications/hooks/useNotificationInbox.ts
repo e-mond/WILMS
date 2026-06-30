@@ -16,9 +16,16 @@ export function useNotificationInbox(enabled = true) {
 export function useNotificationUnreadCount(enabled = true) {
   return useQuery({
     queryKey: notificationUnreadCountQueryKey,
-    queryFn: () => notificationService.getUnreadCount(),
+    queryFn: async () => {
+      try {
+        return await notificationService.getUnreadCount();
+      } catch {
+        return 0;
+      }
+    },
     enabled,
     staleTime: 30_000,
+    retry: false,
   });
 }
 
