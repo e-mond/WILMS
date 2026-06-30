@@ -1,0 +1,1 @@
+export const FINANCIAL_OPERATION_TYPES = new Set(['RECORD_PAYMENT']);

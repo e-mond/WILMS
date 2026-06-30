@@ -17,3 +17,4 @@ export * from './expenses';
 export * from './notifications';
 export * from './uploads';
 export * from './audit';
+export * from './offline-sync';

@@ -1,5 +1,6 @@
 import { API_BASE_URL, API_TIMEOUT_MS } from '@/config/api';
 import { csrfHeaders } from '@/lib/auth/csrf';
+import { isPublicPath } from '@/lib/auth/routes';
 import { triggerUnauthorizedHandler } from '@/lib/auth/unauthorized-handler';
 import { API_ERROR_CODE, ApiError } from '@/types/api';
 
@@ -136,7 +137,9 @@ async function request<T>(
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.status === 401 && typeof window !== 'undefined') {
-        triggerUnauthorizedHandler();
+        if (!isPublicPath(window.location.pathname)) {
+          triggerUnauthorizedHandler();
+        }
       }
 
       throw error;
