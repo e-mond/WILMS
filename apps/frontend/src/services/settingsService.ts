@@ -1,4 +1,11 @@
-import type { CreateSettingsUserInput, SystemSettings, UpdateSettingsUserInput, UpdateSystemSettingsInput } from '@/types/settings';
+import type {
+  CreateSettingsUserInput,
+  SettingsMeProfile,
+  SystemSettings,
+  UpdateSettingsMeInput,
+  UpdateSettingsUserInput,
+  UpdateSystemSettingsInput,
+} from '@/types/settings';
 import type { CreateRoleInput, UpdateRoleInput } from '@/types/user-management';
 import type { ISettingsService } from '@/types/services';
 import { apiClient } from '@/utils/apiClient';
@@ -10,6 +17,26 @@ const settingsService: ISettingsService = {
 
   updateSettings(input: UpdateSystemSettingsInput): Promise<SystemSettings> {
     return apiClient.patch<SystemSettings>('/settings', input);
+  },
+
+  getSettingsMe(): Promise<SettingsMeProfile> {
+    return apiClient.get<SettingsMeProfile>('/settings/me');
+  },
+
+  updateSettingsMe(input: UpdateSettingsMeInput): Promise<SettingsMeProfile> {
+    return apiClient.patch<SettingsMeProfile>('/settings/me', input);
+  },
+
+  sendTestSms(phone: string): Promise<{ ok: true }> {
+    return apiClient.post('/settings/sms/test', { phone });
+  },
+
+  getSmsBalance(): Promise<{ balance: string }> {
+    return apiClient.get('/settings/sms/balance');
+  },
+
+  sendTestEmail(email: string): Promise<{ ok: true }> {
+    return apiClient.post('/settings/email/test', { email });
   },
 
   listUsers() {

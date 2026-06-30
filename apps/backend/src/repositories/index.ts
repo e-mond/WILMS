@@ -11,4 +11,4 @@ export * as loanPoolRepository from './loan-pool.repository.js';
 export * as idempotencyRepository from './idempotency.repository.js';
 export * as reconciliationRepository from './reconciliation.repository.js';
 export * as reconciliationHistoryRepository from './reconciliation-history.repository.js';
-export * as uploadRepository from './upload.repository.js';
+export * as systemSettingsRepository from './system-settings.repository.js';

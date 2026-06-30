@@ -3,8 +3,7 @@
 import Link from 'next/link';
 import { useMemo } from 'react';
 import { CurrencyAmount, GroupRiskCard, KpiCard } from '@/components/data-display';
-import { EmptyState } from '@/components/feedback/EmptyState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import {
   DashboardKpiIcon,
   type DashboardKpiIconName,
@@ -52,7 +51,7 @@ const QUICK_ACTIONS = [
 ];
 
 export function SuperAdminDashboard() {
-  const { data, isLoading, isError } = useDashboardSummary();
+  const { data, isLoading, isError, refetch } = useDashboardSummary();
   const alertsAside = useMemo(
     () => (data ? <DashboardAlertsAside alerts={data.recentAlerts} /> : null),
     [data]
@@ -60,13 +59,28 @@ export function SuperAdminDashboard() {
 
   useShellAsideContent(alertsAside);
 
-  if (isLoading) return <LoadingSpinner label="Loading system dashboard" className="py-wilms-8" />;
-  if (isError || !data) {
-    return <EmptyState title="Unable to load dashboard" description="Check your connection and try again." />;
-  }
+  return (
+    <QueryStatePanel
+      isLoading={isLoading}
+      isError={isError || !data}
+      errorMessage="Unable to load dashboard. Check your connection and try again."
+      onRetry={() => void refetch()}
+      variant="cards"
+    >
+      {data ? (
+        <SuperAdminDashboardContent data={data} borrowerTotal={data.borrowerSegments.reduce((sum, segment) => sum + segment.count, 0)} />
+      ) : null}
+    </QueryStatePanel>
+  );
+}
 
-  const borrowerTotal = data.borrowerSegments.reduce((sum, segment) => sum + segment.count, 0);
-
+function SuperAdminDashboardContent({
+  data,
+  borrowerTotal,
+}: {
+  data: NonNullable<ReturnType<typeof useDashboardSummary>['data']>;
+  borrowerTotal: number;
+}) {
   return (
     <div className="space-y-wilms-6">
       {/* Top Section: KPIs + Risk + Quick Actions */}

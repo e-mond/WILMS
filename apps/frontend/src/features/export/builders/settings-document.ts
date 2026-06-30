@@ -64,7 +64,7 @@ export function buildSettingsExportDocument(input: SettingsExportInput): WilmsEx
         title: 'SMS & Communications',
         type: 'summary',
         summaryItems: [
-          { label: 'SMS Provider', value: 'Hubtel SMS' },
+          { label: 'SMS Provider', value: 'SMSNotifyGH' },
           { label: 'Payment Confirmation SMS', value: input.settings.smsNotificationsEnabled ? 'Enabled' : 'Disabled' },
           { label: 'Missed Payment Alerts', value: 'Enabled' },
           { label: 'Approval Notifications', value: 'Enabled' },

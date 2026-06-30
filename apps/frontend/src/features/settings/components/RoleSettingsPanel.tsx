@@ -242,7 +242,7 @@ function IntegrationsSection() {
     >
       <SettingsSettingRow
         title="SMS Gateway"
-        description="Hubtel SMS integration."
+        description="SMSNotifyGH outbound messaging."
         control={<Input defaultValue="Connected" readOnly aria-label="SMS gateway" />}
       />
       <SettingsSettingRow

@@ -1,5 +1,6 @@
 import { getSmsConfig } from './config.js';
 import { ArkeselSmsProvider } from './arkesel-adapter.js';
+import { SmsNotifyGhProvider } from './smsnotifygh-adapter.js';
 import { TwilioSmsProvider } from './twilio-adapter.js';
 import type { SmsProvider } from './types.js';
 
@@ -34,6 +35,11 @@ export function getSmsProvider(): SmsProvider {
 
   if (config.provider === 'twilio') {
     smsProviderInstance = new TwilioSmsProvider();
+    return smsProviderInstance;
+  }
+
+  if (config.provider === 'smsnotifygh') {
+    smsProviderInstance = new SmsNotifyGhProvider();
     return smsProviderInstance;
   }
 
