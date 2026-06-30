@@ -36,16 +36,37 @@ jobs:
           NEXT_PUBLIC_API_BASE_URL: https://app.wilms.example/api/wilms
           NEXT_PUBLIC_USE_MOCK: 'false'
 
+      - name: Bundle budget check
+        run: npm run bundle:budget-check
+
+      - name: Performance budget check
+        run: npm run perf:budget-check
+
       - name: Backend tests
         run: npm run test -w @wilms/api
 
       - name: Frontend tests
         run: npm run test
 
-  health-check-template:
-    if: false
+  security:
     runs-on: ubuntu-latest
     steps:
-      - name: Post-deploy health (enable when deploy secrets configured)
-        run: |
-          curl -fsS "${{ secrets.WILMS_API_URL }}/health"
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: npm audit (critical — high findings documented in P14.6-security-scan-report.md)
+        run: npm audit --audit-level=critical
+
+      - name: Secret scan (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

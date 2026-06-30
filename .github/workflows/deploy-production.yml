@@ -1,32 +1,49 @@
-# P14.5C — Production deployment workflow (requires secrets)
-# Secrets: VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID, RAILWAY_TOKEN, RAILWAY_SERVICE_ID
-# Enable manually or on main merge after platform projects are linked.
-
 name: Deploy Production
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths-ignore:
-      - 'docs/**'
-      - '*.md'
+    inputs:
+      confirm:
+        description: 'Type deploy to confirm production deployment'
+        required: true
+        type: string
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
 
 jobs:
-  deploy-api:
-    if: vars.ENABLE_PRODUCTION_DEPLOY == 'true'
+  verify-baseline:
+    if: inputs.confirm == 'deploy'
     runs-on: ubuntu-latest
     steps:
+      - name: Confirm current production health
+        if: ${{ secrets.WILMS_API_URL != '' }}
+        run: |
+          curl -fsS "${{ secrets.WILMS_API_URL }}/health"
+          echo "Baseline healthy"
+
+  deploy-api:
+    if: inputs.confirm == 'deploy'
+    needs: verify-baseline
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: npm
+
       - run: npm ci
+
       - name: Run database migrations
+        if: ${{ secrets.DATABASE_URL != '' }}
         run: npm run db:migrate -w @wilms/api
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
       - name: Deploy API to Railway
         uses: berviantoleo/railway-deploy@main
         with:
@@ -34,31 +51,60 @@ jobs:
           service: ${{ secrets.RAILWAY_SERVICE_ID }}
 
   deploy-frontend:
-    if: vars.ENABLE_PRODUCTION_DEPLOY == 'true'
+    if: inputs.confirm == 'deploy'
     needs: deploy-api
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: npm
+
       - run: npm ci
-      - name: Deploy to Vercel
+
+      - name: Deploy to Vercel production
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: apps/frontend
+          working-directory: .
           vercel-args: '--prod'
 
-  verify:
-    if: vars.ENABLE_PRODUCTION_DEPLOY == 'true'
+  verify-production:
+    if: inputs.confirm == 'deploy'
     needs: [deploy-api, deploy-frontend]
     runs-on: ubuntu-latest
+    environment: production
     steps:
-      - name: API health check
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Health check (200)
         run: curl -fsS "${{ secrets.WILMS_API_URL }}/health"
-      - name: Frontend smoke (homepage)
-        run: curl -fsS "${{ secrets.WILMS_APP_URL }}/login"
+
+      - name: Version consistency
+        run: node scripts/verify-version-consistency.mjs
+        env:
+          WILMS_API_URL: ${{ secrets.WILMS_API_URL }}
+          WILMS_APP_URL: ${{ secrets.WILMS_APP_URL }}
+
+      - name: Production smoke tests
+        run: npm run smoke:production
+        env:
+          WILMS_APP_URL: ${{ secrets.WILMS_APP_URL }}
+          WILMS_API_URL: ${{ secrets.WILMS_API_URL }}
+          WILMS_SMOKE_EMAIL: ${{ secrets.WILMS_SMOKE_EMAIL }}
+          WILMS_SMOKE_PASSWORD: ${{ secrets.WILMS_SMOKE_PASSWORD }}
+
+      - name: Deployment complete
+        run: echo "Production verification pipeline passed"

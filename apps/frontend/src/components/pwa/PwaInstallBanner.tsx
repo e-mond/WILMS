@@ -18,11 +18,17 @@ export function PwaInstallBanner() {
       return;
     }
 
-    setIsDismissed(window.localStorage.getItem(PWA_INSTALL_DISMISS_KEY) === 'true');
+    const dismissed = window.localStorage.getItem(PWA_INSTALL_DISMISS_KEY) === 'true';
+    setIsDismissed(dismissed);
 
     const onBeforeInstallPrompt = (event: Event) => {
+      if (window.localStorage.getItem(PWA_INSTALL_DISMISS_KEY) === 'true') {
+        return;
+      }
+
       event.preventDefault();
       setDeferredPrompt(event as BeforeInstallPromptEvent);
+      setIsDismissed(false);
     };
 
     window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt);

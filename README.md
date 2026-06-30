@@ -36,7 +36,7 @@ WILMS supports registration officers, approvers, collectors, auditors, and super
 | P14.3B — Reconciliation | **Certified** | functional 24/24, RBAC 6/6, concurrency PASS |
 | P14.3B — Uploads | **Certified** | `cert:upload:env` + `cert:upload:smoke` PASS (Cloudinary) |
 | Notifications (SMS/email) | **Deferred** | Adapters only; no workflow call sites (`docs/audit/P14.3B-feature-completion-matrix.md`) |
-| **Current phase** | **P14.6** | CD/sync/UX completion — staged deploy, monitoring, offline sync backend |
+| **Current phase** | **P14.6** | v0.2.2 — staged CI/CD, offline sync, UX completion |
 
 ---
 
@@ -397,7 +397,7 @@ npm run verify:pools -w @wilms/api     # After P14.3B pool migration/seed
 
 Set secrets in the deployment platform — never commit `.env`. Required in production: `DATABASE_URL`, `WILMS_SESSION_SECRET` (≥32 chars), `WILMS_CORS_ORIGIN`, and Cloudinary credentials when using `UPLOAD_PROVIDER=cloudinary`. See `apps/backend/.env.production.example` and `apps/frontend/.env.production.example`.
 
-Detail: `docs/deployment-guide.md` · `docs/security-guide.md` · `docs/production-guide.md` · `docs/page-validation/P14.5G-deployment-report.md`
+Detail: `docs/deployment-guide.md` · `docs/security-guide.md` · `docs/production-guide.md` · `docs/page-validation/P14.6-environment-and-credentials.md`
 
 ### Live production (P14.5G — v0.2.1)
 
@@ -407,6 +407,10 @@ Detail: `docs/deployment-guide.md` · `docs/security-guide.md` · `docs/producti
 | API | https://wilms-production.up.railway.app |
 
 Deploy from **monorepo root** (`railway up` / `vercel deploy --prod`). Smoke: `WILMS_APP_URL=https://wilms.vercel.app WILMS_API_URL=https://wilms-production.up.railway.app npm run smoke:production`
+
+### P14.6 (in progress)
+
+Staged CI/CD, offline sync backend, UX state completion. See `docs/page-validation/P14.6-pre-phase-confirmation.md` and `P14.6-cicd-implementation-report.md` (STOP GATE 1 — awaiting approval).
 
 
 ---
