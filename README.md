@@ -408,18 +408,11 @@ Detail: `docs/deployment-guide.md` · `docs/security-guide.md` · `docs/producti
 
 P14.6.3 recovery complete — production synchronized. See `docs/page-validation/P14.6.3-production-acceptance.md`.
 
-### P14.6.1 (in progress — blocked)
+P14.6.4 stabilization complete — full API backend coverage. See `docs/page-validation/P14.6.4-api-synchronization.md` and `PROJECT_STATUS.md`.
 
-| Service | URL |
-|---------|-----|
-| Frontend | https://wilms.vercel.app |
-| API | https://wilms-production.up.railway.app |
+### P14.6.1 (superseded)
 
-Deploy from **monorepo root** (`railway up` / `vercel deploy --prod`). Smoke: `WILMS_APP_URL=https://wilms.vercel.app WILMS_API_URL=https://wilms-production.up.railway.app npm run smoke:production`
-
-### P14.6 (in progress)
-
-Staged CI/CD, offline sync backend, UX state completion. See `docs/page-validation/P14.6-pre-phase-confirmation.md` and `P14.6-cicd-implementation-report.md` (STOP GATE 1 — awaiting approval).
+Historical investigation artifacts — see `docs/page-validation/P14.6.3-production-acceptance.md` for current production state.
 
 
 ---

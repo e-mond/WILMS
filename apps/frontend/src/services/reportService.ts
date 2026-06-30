@@ -1,10 +1,12 @@
 import type {
   DailyCollectionReportParams,
+  DailyCollectionReport,
   FinancialLedgerReportParams,
   LoanPortfolioReportParams,
 } from '@/types/reports';
 import type { IReportService } from '@/types/services';
 import { apiClient } from '@/utils/apiClient';
+import { normalizeDailyCollectionReport } from '@/utils/daily-collection-report';
 
 const reportService: IReportService = {
   listAvailableReports() {
@@ -27,7 +29,11 @@ const reportService: IReportService = {
   getDailyCollectionReport(params: DailyCollectionReportParams) {
     const searchParams = new URLSearchParams({ date: params.date });
     if (params.collectorId) searchParams.set('collectorId', params.collectorId);
-    return apiClient.get(`/reports/daily-collection?${searchParams.toString()}`);
+    return apiClient
+      .get<Partial<DailyCollectionReport> & { date?: string; totalPesewas?: number }>(
+        `/reports/daily-collection?${searchParams.toString()}`,
+      )
+      .then((payload) => normalizeDailyCollectionReport(payload, params.date));
   },
 
   getDefaulterReport() {

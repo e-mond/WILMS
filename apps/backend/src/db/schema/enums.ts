@@ -266,3 +266,26 @@ export const reconciliationHistoryEventEnum = pgEnum('reconciliation_history_eve
   'SUBMITTED',
   'COMMENT_ADDED',
 ]);
+
+export const flagEntityTypeEnum = pgEnum('flag_entity_type', [
+  'BORROWER',
+  'GROUP',
+  'COLLECTOR',
+  'LOAN_POOL',
+  'APPLICATION',
+]);
+
+export const flagTypeEnum = pgEnum('flag_type', [
+  'MISSED_PAYMENT',
+  'DEFAULT',
+  'FRAUD_SUSPICION',
+  'DUPLICATE_ID',
+  'BLACKLISTED',
+]);
+
+export const flagStatusEnum = pgEnum('flag_status', [
+  'OPEN',
+  'UNDER_REVIEW',
+  'CRITICAL',
+  'RESOLVED',
+]);

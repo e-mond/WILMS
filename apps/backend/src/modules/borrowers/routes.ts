@@ -21,6 +21,18 @@ function mapError(error: unknown): never {
       throw new AppError('Borrower is not in a valid state for this action.', ERROR_CODE.VALIDATION, 422);
     }
 
+    if (error.message.startsWith('VALIDATION:')) {
+      throw new AppError(error.message.slice('VALIDATION:'.length), ERROR_CODE.VALIDATION, 422);
+    }
+
+    if (error.message === 'DUPLICATE') {
+      throw new AppError(
+        'Admin fee has already been recorded for this borrower.',
+        ERROR_CODE.DUPLICATE_TRANSACTION,
+        409,
+      );
+    }
+
     if (error.message === 'UNAUTHORIZED') {
       throw new AppError('You cannot delete this registration.', ERROR_CODE.UNAUTHORIZED, 403);
     }
@@ -113,6 +125,14 @@ borrowersRouter.post(
   }),
 );
 
+borrowersRouter.get(
+  '/borrowers/awaiting-admin-fee',
+  asyncHandler(async (_req, res) => {
+    const { listBorrowersAwaitingAdminFee } = await import('../transactions/service.js');
+    sendData(res, await listBorrowersAwaitingAdminFee());
+  }),
+);
+
 borrowersRouter.post(
   '/borrowers',
   requirePermission(PERMISSION.REGISTER_BORROWERS),
@@ -129,6 +149,18 @@ borrowersRouter.delete(
     try {
       await borrowerService.deleteRegistration(req.params.id!, String(req.query.officerId ?? req.session!.userId));
       res.status(204).end();
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+borrowersRouter.get(
+  '/borrowers/:id/admin-fee-status',
+  asyncHandler(async (req, res) => {
+    try {
+      const { getAdminFeeStatus } = await import('../transactions/service.js');
+      sendData(res, await getAdminFeeStatus(req.params.id!));
     } catch (error) {
       mapError(error);
     }

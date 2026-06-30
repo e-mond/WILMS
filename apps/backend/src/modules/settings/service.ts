@@ -1,0 +1,739 @@
+import { and, eq, isNull, sql } from 'drizzle-orm';
+import { PERMISSION, USER_ROLE } from '@wilms/shared-rbac';
+import { uuidv7 } from 'uuidv7';
+import { isDatabaseEnabled, getDb } from '../../db/client.js';
+import { auditEntries } from '../../db/schema/audit.js';
+import { permissions, rolePermissions, roles, userRoles } from '../../db/schema/rbac.js';
+import { users } from '../../db/schema/users.js';
+import { hashPassword } from '../../lib/password.js';
+import { DEMO_USERS } from '../../seed/demo-users.js';
+import * as userRepo from '../../repositories/user.repository.js';
+
+export interface SystemSettings {
+  adminFeePesewas: number;
+  reconciliationVarianceThresholdPercent: number;
+  smsNotificationsEnabled: boolean;
+  emailNotificationsEnabled: boolean;
+  paymentReminderDaysBefore: number;
+  minGroupSize: number;
+  maxGroupSize: number;
+  updatedAt: string;
+}
+
+export interface SettingsUserRecord {
+  id: string;
+  displayName: string;
+  email: string;
+  role: string;
+  roleLabel: string;
+  roleTone: 'gold' | 'primary' | 'info' | 'muted';
+  lastLoginLabel: string;
+  status: 'ACTIVE' | 'INVITED' | 'SUSPENDED';
+  isCurrentUser?: boolean;
+  photoUrl?: string | null;
+}
+
+export interface SettingsActivityEntry {
+  id: string;
+  title: string;
+  occurredAt: string;
+  actorLabel: string;
+}
+
+export interface PermissionDefinition {
+  id: string;
+  label: string;
+  description: string;
+  category: string;
+}
+
+export interface RoleDefinition {
+  id: string;
+  name: string;
+  description: string;
+  permissionIds: string[];
+  isSystem: boolean;
+  userCount: number;
+}
+
+export interface CreateSettingsUserInput {
+  displayName: string;
+  email: string;
+  role: string;
+}
+
+export interface UpdateSettingsUserInput {
+  displayName?: string;
+  email?: string;
+  role?: string;
+  status?: SettingsUserRecord['status'];
+}
+
+export interface UpdateSystemSettingsInput {
+  minGroupSize?: number;
+  maxGroupSize?: number;
+}
+
+export interface CreateRoleInput {
+  name: string;
+  description: string;
+  permissionIds: string[];
+}
+
+export interface UpdateRoleInput {
+  name?: string;
+  description?: string;
+  permissionIds?: string[];
+}
+
+export interface SettingsUserProfile {
+  id: string;
+  displayName: string;
+  staffId: string;
+  role: string;
+  roleLabel: string;
+  status: SettingsUserRecord['status'];
+  phone: string;
+  email: string;
+  branch: string;
+  region: string;
+  zone: string;
+  profileImageUrl?: string;
+  assignedGroups: string[];
+  assignedBorrowers: number;
+  assignedPermissionIds: string[];
+  delegatedPermissionIds: string[];
+  lastLoginAt: string;
+  activityHistory: Array<{ id: string; title: string; occurredAt: string }>;
+  loginHistory: Array<{ id: string; occurredAt: string; deviceLabel: string; locationLabel: string }>;
+  deviceHistory: Array<{ id: string; deviceLabel: string; lastSeenAt: string; platform: string }>;
+  auditHistory: Array<{ id: string; action: string; targetLabel: string; occurredAt: string }>;
+  performanceMetrics: {
+    collectionRatePercent: number;
+    dailyCollectedPesewas: number;
+    weeklyCollectedPesewas: number;
+    monthlyCollectedPesewas: number;
+    borrowersManaged: number;
+    expenseTotalPesewas?: number;
+  };
+  approvalMetrics?: {
+    approvalsCount: number;
+    rejectionsCount: number;
+    pendingQueueCount: number;
+  };
+  registrationMetrics?: {
+    registrationsCompleted: number;
+    pendingRegistrations: number;
+  };
+}
+
+export interface RegistrationLegalConfig {
+  programName: string;
+  formTitle: string;
+  instructionText: string;
+  programDeclaration: string;
+  guarantorDeclaration: string;
+  borrowerDeclaration: string;
+  keyTerms: string;
+  legalNotice: string;
+  updatedAt: string;
+}
+
+const ROLE_PRESENTATION: Record<string, Pick<SettingsUserRecord, 'roleLabel' | 'roleTone'>> = {
+  [USER_ROLE.SUPER_ADMIN]: { roleLabel: 'Super Admin', roleTone: 'gold' },
+  [USER_ROLE.APPROVER]: { roleLabel: 'Approver', roleTone: 'primary' },
+  [USER_ROLE.COLLECTOR]: { roleLabel: 'Collector', roleTone: 'info' },
+  [USER_ROLE.REGISTRATION_OFFICER]: { roleLabel: 'Registration Officer', roleTone: 'primary' },
+  [USER_ROLE.AUDITOR]: { roleLabel: 'Auditor', roleTone: 'muted' },
+};
+
+const PERMISSION_DEFINITIONS: PermissionDefinition[] = Object.values(PERMISSION).map((id) => ({
+  id,
+  label: id.replace(/-/g, ' '),
+  description: id,
+  category: 'System',
+}));
+
+const REGISTRATION_LEGAL_CONFIG: RegistrationLegalConfig = {
+  programName: "Women's Interest-Free Loan Programme",
+  formTitle: 'LOAN APPLICATION & AGREEMENT FORM',
+  instructionText:
+    'Complete all sections accurately. Passport-style photographs are required. Signatures may be captured digitally or applied manually after printing this form.',
+  programDeclaration:
+    'I apply to join the programme and confirm that I understand membership requirements, group obligations, and the role of my guarantor in this interest-free lending initiative.',
+  guarantorDeclaration:
+    'I confirm that I understand my responsibility as guarantor for the applicant named in this form. I agree to support programme compliance and repayment obligations as defined in the key terms below.',
+  borrowerDeclaration:
+    'I confirm that the information provided in this application is accurate and complete. I consent to WILMS processing my data for registration, eligibility assessment, and programme administration.',
+  keyTerms:
+    'Membership in an approved group is required. Guarantor consent must be recorded before submission. GPS verification is mandatory for rural registrations. Weekly repayments apply only after a separate loan application is approved and disbursed.',
+  legalNotice:
+    'This registration package is governed by WILMS microfinance regulations and may be audited by compliance officers. Loan amounts, disbursement schedules, and repayment terms are established only through separate loan application and approval processes.',
+  updatedAt: '2026-06-01T08:00:00.000Z',
+};
+
+let systemSettings: SystemSettings = {
+  adminFeePesewas: 5000,
+  reconciliationVarianceThresholdPercent: 5,
+  smsNotificationsEnabled: true,
+  emailNotificationsEnabled: true,
+  paymentReminderDaysBefore: 1,
+  minGroupSize: 5,
+  maxGroupSize: 10,
+  updatedAt: '2026-06-01T08:00:00.000Z',
+};
+
+const memoryRoles: RoleDefinition[] = [
+  {
+    id: 'role-collector',
+    name: 'Collector',
+    description: 'Field collections and assigned borrower management',
+    permissionIds: [
+      PERMISSION.ACCESS_COLLECTOR_PORTAL,
+      PERMISSION.REGISTER_BORROWERS,
+      PERMISSION.MANAGE_GROUPS,
+      PERMISSION.VIEW_ASSIGNED_BORROWERS,
+      PERMISSION.RECORD_COLLECTIONS,
+      PERMISSION.RECORD_EXPENSES,
+    ],
+    isSystem: true,
+    userCount: 1,
+  },
+  {
+    id: 'role-super-admin',
+    name: 'Super Admin',
+    description: 'Full platform administration',
+    permissionIds: PERMISSION_DEFINITIONS.map((permission) => permission.id),
+    isSystem: true,
+    userCount: 1,
+  },
+];
+
+function resolveRolePresentation(role: string) {
+  return ROLE_PRESENTATION[role] ?? { roleLabel: role, roleTone: 'muted' as const };
+}
+
+function formatLastLoginLabel(lastLoginAt: Date | null | undefined): string {
+  if (!lastLoginAt) {
+    return 'Never';
+  }
+  return lastLoginAt.toISOString().slice(0, 10);
+}
+
+function mapUserRowToSettingsRecord(
+  row: typeof users.$inferSelect,
+  currentUserId?: string,
+): SettingsUserRecord {
+  const presentation = resolveRolePresentation(row.role);
+  return {
+    id: row.id,
+    displayName: row.displayName,
+    email: row.email,
+    role: row.role,
+    roleLabel: presentation.roleLabel,
+    roleTone: presentation.roleTone,
+    lastLoginLabel: formatLastLoginLabel(row.lastLoginAt),
+    status: row.status,
+    isCurrentUser: currentUserId ? row.id === currentUserId : undefined,
+  };
+}
+
+function mapDemoUserToSettingsRecord(user: (typeof DEMO_USERS)[number]): SettingsUserRecord {
+  const presentation = resolveRolePresentation(user.role);
+  return {
+    id: user.id,
+    displayName: user.displayName,
+    email: user.email,
+    role: user.role,
+    roleLabel: presentation.roleLabel,
+    roleTone: presentation.roleTone,
+    lastLoginLabel: 'Never',
+    status: user.status ?? 'ACTIVE',
+  };
+}
+
+export function getSettings(): SystemSettings {
+  return { ...systemSettings };
+}
+
+export function updateSettings(input: UpdateSystemSettingsInput): SystemSettings {
+  const minGroupSize = input.minGroupSize ?? systemSettings.minGroupSize;
+  const maxGroupSize = input.maxGroupSize ?? systemSettings.maxGroupSize;
+
+  if (minGroupSize < 1) {
+    throw new Error('VALIDATION:Minimum group size must be at least 1.');
+  }
+
+  if (maxGroupSize < minGroupSize) {
+    throw new Error('VALIDATION:Maximum group size cannot be less than minimum group size.');
+  }
+
+  systemSettings = {
+    ...systemSettings,
+    minGroupSize,
+    maxGroupSize,
+    updatedAt: new Date().toISOString(),
+  };
+
+  return { ...systemSettings };
+}
+
+export async function listUsers(currentUserId?: string): Promise<SettingsUserRecord[]> {
+  if (!isDatabaseEnabled()) {
+    return DEMO_USERS.map((user) => ({
+      ...mapDemoUserToSettingsRecord(user),
+      isCurrentUser: user.id === currentUserId,
+    }));
+  }
+
+  const rows = await userRepo.listUsers();
+  return rows.map((row) => mapUserRowToSettingsRecord(row, currentUserId));
+}
+
+export async function getUserProfile(userId: string): Promise<SettingsUserProfile> {
+  if (!isDatabaseEnabled()) {
+    const demo = DEMO_USERS.find((user) => user.id === userId);
+    if (!demo) {
+      throw new Error('NOT_FOUND');
+    }
+    const presentation = resolveRolePresentation(demo.role);
+    return buildMinimalProfile({
+      id: demo.id,
+      displayName: demo.displayName,
+      email: demo.email,
+      role: demo.role,
+      roleLabel: presentation.roleLabel,
+      status: demo.status ?? 'ACTIVE',
+    });
+  }
+
+  const row = await userRepo.getUserById(userId);
+  if (!row) {
+    throw new Error('NOT_FOUND');
+  }
+
+  const presentation = resolveRolePresentation(row.role);
+  return buildMinimalProfile({
+    id: row.id,
+    displayName: row.displayName,
+    email: row.email,
+    role: row.role,
+    roleLabel: presentation.roleLabel,
+    status: row.status,
+    staffId: row.staffId ?? '',
+    phone: row.phone ?? '',
+    branch: row.branch ?? '',
+    region: row.region ?? '',
+    zone: row.zone ?? '',
+    lastLoginAt: row.lastLoginAt?.toISOString() ?? '',
+  });
+}
+
+function buildMinimalProfile(input: {
+  id: string;
+  displayName: string;
+  email: string;
+  role: string;
+  roleLabel: string;
+  status: SettingsUserRecord['status'];
+  staffId?: string;
+  phone?: string;
+  branch?: string;
+  region?: string;
+  zone?: string;
+  lastLoginAt?: string;
+}): SettingsUserProfile {
+  return {
+    id: input.id,
+    displayName: input.displayName,
+    staffId: input.staffId ?? '',
+    role: input.role,
+    roleLabel: input.roleLabel,
+    status: input.status,
+    phone: input.phone ?? '',
+    email: input.email,
+    branch: input.branch ?? '',
+    region: input.region ?? '',
+    zone: input.zone ?? '',
+    assignedGroups: [],
+    assignedBorrowers: 0,
+    assignedPermissionIds: [],
+    delegatedPermissionIds: [],
+    lastLoginAt: input.lastLoginAt ?? '',
+    activityHistory: [],
+    loginHistory: [],
+    deviceHistory: [],
+    auditHistory: [],
+    performanceMetrics: {
+      collectionRatePercent: 0,
+      dailyCollectedPesewas: 0,
+      weeklyCollectedPesewas: 0,
+      monthlyCollectedPesewas: 0,
+      borrowersManaged: 0,
+    },
+  };
+}
+
+export async function getSettingsActivity(): Promise<SettingsActivityEntry[]> {
+  if (!isDatabaseEnabled()) {
+    return [
+      {
+        id: 'settings-activity-1',
+        title: 'Admin fee updated',
+        occurredAt: '2026-06-08',
+        actorLabel: 'Super Admin',
+      },
+    ];
+  }
+
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(auditEntries)
+    .orderBy(sql`${auditEntries.createdAt} desc`)
+    .limit(25);
+
+  return rows.map((row) => ({
+    id: row.id,
+    title: row.action.replace(/_/g, ' '),
+    occurredAt: row.createdAt.toISOString(),
+    actorLabel: row.actorDisplayName ?? 'System',
+  }));
+}
+
+export async function listPermissions(): Promise<PermissionDefinition[]> {
+  if (!isDatabaseEnabled()) {
+    return PERMISSION_DEFINITIONS.map((permission) => ({ ...permission }));
+  }
+
+  const db = getDb();
+  const rows = await db.select().from(permissions);
+  if (rows.length === 0) {
+    return PERMISSION_DEFINITIONS.map((permission) => ({ ...permission }));
+  }
+
+  return rows.map((row) => ({
+    id: row.id,
+    label: row.label,
+    description: row.description ?? row.label,
+    category: row.category ?? 'System',
+  }));
+}
+
+async function loadRoleDefinitionsFromDb(): Promise<RoleDefinition[]> {
+  const db = getDb();
+  const roleRows = await db.select().from(roles).where(isNull(roles.deletedAt));
+  const permissionRows = await db.select().from(rolePermissions);
+  const userRoleCounts = await db
+    .select({
+      roleId: userRoles.roleId,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(userRoles)
+    .groupBy(userRoles.roleId);
+
+  const permissionsByRole = new Map<string, string[]>();
+  for (const row of permissionRows) {
+    const current = permissionsByRole.get(row.roleId) ?? [];
+    current.push(row.permissionId);
+    permissionsByRole.set(row.roleId, current);
+  }
+
+  const countByRole = new Map(userRoleCounts.map((row) => [row.roleId, row.count]));
+
+  return roleRows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    description: row.description ?? row.name,
+    permissionIds: permissionsByRole.get(row.id) ?? [],
+    isSystem: row.isSystem,
+    userCount: countByRole.get(row.id) ?? 0,
+  }));
+}
+
+export async function listRoles(): Promise<RoleDefinition[]> {
+  if (!isDatabaseEnabled()) {
+    return memoryRoles.map((role) => ({ ...role, permissionIds: [...role.permissionIds] }));
+  }
+
+  const rolesFromDb = await loadRoleDefinitionsFromDb();
+  if (rolesFromDb.length === 0) {
+    return memoryRoles.map((role) => ({ ...role, permissionIds: [...role.permissionIds] }));
+  }
+
+  return rolesFromDb;
+}
+
+export async function createRole(input: CreateRoleInput): Promise<RoleDefinition> {
+  if (!isDatabaseEnabled()) {
+    const created: RoleDefinition = {
+      id: `role-${String(memoryRoles.length + 1).padStart(3, '0')}`,
+      name: input.name.trim(),
+      description: input.description.trim(),
+      permissionIds: [...input.permissionIds],
+      isSystem: false,
+      userCount: 0,
+    };
+    memoryRoles.push(created);
+    return { ...created, permissionIds: [...created.permissionIds] };
+  }
+
+  const db = getDb();
+  const roleId = uuidv7();
+  await db.insert(roles).values({
+    id: roleId,
+    name: input.name.trim(),
+    description: input.description.trim(),
+    isSystem: false,
+  });
+
+  if (input.permissionIds.length > 0) {
+    await db.insert(rolePermissions).values(
+      input.permissionIds.map((permissionId) => ({
+        roleId,
+        permissionId,
+      })),
+    );
+  }
+
+  const match = (await loadRoleDefinitionsFromDb()).find((role) => role.id === roleId);
+  if (!match) {
+    throw new Error('SERVER');
+  }
+  return match;
+}
+
+export async function updateRole(id: string, input: UpdateRoleInput): Promise<RoleDefinition> {
+  if (!isDatabaseEnabled()) {
+    const index = memoryRoles.findIndex((role) => role.id === id);
+    if (index === -1) {
+      throw new Error('NOT_FOUND');
+    }
+    const current = memoryRoles[index]!;
+    if (current.isSystem && input.name && input.name !== current.name) {
+      throw new Error('VALIDATION:System roles cannot be renamed');
+    }
+    const updated: RoleDefinition = {
+      ...current,
+      ...input,
+      permissionIds: input.permissionIds ? [...input.permissionIds] : [...current.permissionIds],
+    };
+    memoryRoles[index] = updated;
+    return { ...updated, permissionIds: [...updated.permissionIds] };
+  }
+
+  const db = getDb();
+  const [current] = await db
+    .select()
+    .from(roles)
+    .where(and(eq(roles.id, id), isNull(roles.deletedAt)))
+    .limit(1);
+
+  if (!current) {
+    throw new Error('NOT_FOUND');
+  }
+
+  if (current.isSystem && input.name && input.name !== current.name) {
+    throw new Error('VALIDATION:System roles cannot be renamed');
+  }
+
+  await db
+    .update(roles)
+    .set({
+      name: input.name?.trim() ?? current.name,
+      description: input.description?.trim() ?? current.description,
+      updatedAt: new Date(),
+    })
+    .where(eq(roles.id, id));
+
+  if (input.permissionIds) {
+    await db.delete(rolePermissions).where(eq(rolePermissions.roleId, id));
+    if (input.permissionIds.length > 0) {
+      await db.insert(rolePermissions).values(
+        input.permissionIds.map((permissionId) => ({
+          roleId: id,
+          permissionId,
+        })),
+      );
+    }
+  }
+
+  const match = (await loadRoleDefinitionsFromDb()).find((role) => role.id === id);
+  if (!match) {
+    throw new Error('NOT_FOUND');
+  }
+  return match;
+}
+
+export async function deleteRole(id: string): Promise<void> {
+  if (!isDatabaseEnabled()) {
+    const current = memoryRoles.find((role) => role.id === id);
+    if (!current) {
+      throw new Error('NOT_FOUND');
+    }
+    if (current.isSystem) {
+      throw new Error('VALIDATION:System roles cannot be deleted');
+    }
+    const index = memoryRoles.findIndex((role) => role.id === id);
+    memoryRoles.splice(index, 1);
+    return;
+  }
+
+  const db = getDb();
+  const [current] = await db
+    .select()
+    .from(roles)
+    .where(and(eq(roles.id, id), isNull(roles.deletedAt)))
+    .limit(1);
+
+  if (!current) {
+    throw new Error('NOT_FOUND');
+  }
+
+  if (current.isSystem) {
+    throw new Error('VALIDATION:System roles cannot be deleted');
+  }
+
+  await db
+    .update(roles)
+    .set({ deletedAt: new Date(), updatedAt: new Date() })
+    .where(eq(roles.id, id));
+}
+
+export async function cloneRole(id: string): Promise<RoleDefinition> {
+  const source = (await listRoles()).find((role) => role.id === id);
+  if (!source) {
+    throw new Error('NOT_FOUND');
+  }
+
+  return createRole({
+    name: `${source.name} Copy`,
+    description: source.description,
+    permissionIds: [...source.permissionIds],
+  });
+}
+
+const DEFAULT_INVITE_PASSWORD = 'ChangeMe1!';
+
+export async function createUser(input: CreateSettingsUserInput): Promise<SettingsUserRecord> {
+  if (!isDatabaseEnabled()) {
+    const created = mapDemoUserToSettingsRecord({
+      id: `user-${uuidv7().slice(0, 8)}`,
+      email: input.email.trim().toLowerCase(),
+      password: DEFAULT_INVITE_PASSWORD,
+      role: input.role as (typeof DEMO_USERS)[number]['role'],
+      displayName: input.displayName.trim(),
+      status: 'INVITED',
+    });
+    created.lastLoginLabel = 'Invited';
+    created.status = 'INVITED';
+    return created;
+  }
+
+  const db = getDb();
+  const passwordHash = await hashPassword(DEFAULT_INVITE_PASSWORD);
+  const userId = uuidv7();
+
+  await db.insert(users).values({
+    id: userId,
+    email: input.email.trim().toLowerCase(),
+    passwordHash,
+    displayName: input.displayName.trim(),
+    role: input.role as typeof users.$inferInsert.role,
+    status: 'INVITED',
+  });
+
+  const row = await userRepo.getUserById(userId);
+  if (!row) {
+    throw new Error('SERVER');
+  }
+
+  const record = mapUserRowToSettingsRecord(row);
+  record.lastLoginLabel = 'Invited';
+  return record;
+}
+
+export async function updateUser(
+  id: string,
+  input: UpdateSettingsUserInput,
+): Promise<SettingsUserRecord> {
+  if (!isDatabaseEnabled()) {
+    const demo = DEMO_USERS.find((user) => user.id === id);
+    if (!demo) {
+      throw new Error('NOT_FOUND');
+    }
+    const role = input.role ?? demo.role;
+    const record = mapDemoUserToSettingsRecord({
+      ...demo,
+      displayName: input.displayName?.trim() ?? demo.displayName,
+      email: input.email?.trim().toLowerCase() ?? demo.email,
+      role: role as (typeof DEMO_USERS)[number]['role'],
+      status: input.status ?? demo.status,
+    });
+    if (input.status) {
+      record.status = input.status;
+    }
+    return record;
+  }
+
+  const row = await userRepo.getUserById(id);
+  if (!row) {
+    throw new Error('NOT_FOUND');
+  }
+
+  const db = getDb();
+  const role = input.role ?? row.role;
+  await db
+    .update(users)
+    .set({
+      displayName: input.displayName?.trim() ?? row.displayName,
+      email: input.email?.trim().toLowerCase() ?? row.email,
+      role: role as typeof users.$inferInsert.role,
+      status: input.status ?? row.status,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, id));
+
+  const updated = await userRepo.getUserById(id);
+  if (!updated) {
+    throw new Error('NOT_FOUND');
+  }
+  return mapUserRowToSettingsRecord(updated);
+}
+
+export async function disableUser(id: string): Promise<SettingsUserRecord> {
+  return updateUser(id, { status: 'SUSPENDED' });
+}
+
+export async function activateUser(id: string): Promise<SettingsUserRecord> {
+  return updateUser(id, { status: 'ACTIVE' });
+}
+
+export async function deleteUser(id: string, currentUserId?: string): Promise<void> {
+  if (id === currentUserId) {
+    throw new Error('VALIDATION:Cannot delete the current user');
+  }
+
+  if (!isDatabaseEnabled()) {
+    const demo = DEMO_USERS.find((user) => user.id === id);
+    if (!demo) {
+      throw new Error('NOT_FOUND');
+    }
+    return;
+  }
+
+  const row = await userRepo.getUserById(id);
+  if (!row) {
+    throw new Error('NOT_FOUND');
+  }
+
+  const db = getDb();
+  await db
+    .update(users)
+    .set({ deletedAt: new Date(), updatedAt: new Date() })
+    .where(eq(users.id, id));
+}
+
+export function getRegistrationLegalConfig(): RegistrationLegalConfig {
+  return { ...REGISTRATION_LEGAL_CONFIG };
+}

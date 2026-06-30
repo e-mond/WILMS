@@ -18,7 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Confirm current production health
-        if: ${{ secrets.WILMS_API_URL != '' }}
         run: |
           curl -fsS "${{ secrets.WILMS_API_URL }}/health"
           echo "Baseline healthy"
@@ -39,7 +38,6 @@ jobs:
       - run: npm ci
 
       - name: Run database migrations
-        if: ${{ secrets.DATABASE_URL != '' }}
         run: npm run db:migrate -w @wilms/api
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}

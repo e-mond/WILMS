@@ -31,20 +31,17 @@ jobs:
         run: npm ci
 
       - name: Run staging database migrations
-        if: ${{ secrets.STAGING_DATABASE_URL != '' }}
         run: npm run db:migrate -w @wilms/api
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
 
       - name: Deploy API to Railway (staging)
-        if: ${{ secrets.RAILWAY_STAGING_SERVICE_ID != '' }}
         uses: berviantoleo/railway-deploy@main
         with:
           railway_token: ${{ secrets.RAILWAY_TOKEN }}
           service: ${{ secrets.RAILWAY_STAGING_SERVICE_ID }}
 
       - name: Deploy frontend to Vercel (preview)
-        if: ${{ secrets.VERCEL_TOKEN != '' }}
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
@@ -54,11 +51,9 @@ jobs:
           vercel-args: '--yes'
 
       - name: Staging health check
-        if: ${{ secrets.WILMS_STAGING_API_URL != '' }}
         run: curl -fsS "${{ secrets.WILMS_STAGING_API_URL }}/health"
 
       - name: Staging smoke tests
-        if: ${{ secrets.WILMS_STAGING_APP_URL != '' && secrets.WILMS_STAGING_API_URL != '' }}
         run: npm run smoke:staging
         env:
           WILMS_APP_URL: ${{ secrets.WILMS_STAGING_APP_URL }}
