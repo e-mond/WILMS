@@ -65,7 +65,7 @@ test.describe('shell navbar and layout', () => {
     await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toContainText('Home');
     await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toContainText('Overview');
     await expect(page.getByRole('heading', { name: 'Borrower Status' })).toBeVisible();
-    await expect(page.locator('[data-navbar="app"] [data-live-badge="true"]')).toContainText('Online');
+    await expect(page.locator('[data-navbar="app"] [data-live-badge="true"]')).toHaveCount(0);
   });
 
   test('super admin mobile exposes context panel drawer for alerts', async ({ page }) => {
