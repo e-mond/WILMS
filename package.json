@@ -26,6 +26,7 @@
     "smoke:staging": "npm run smoke:staging -w @wilms/api",
     "bundle:budget-check": "node scripts/bundle-budget-check.mjs",
     "perf:budget-check": "node scripts/perf-budget-check.mjs",
-    "verify:version": "node scripts/verify-version-consistency.mjs"
+    "verify:version": "node scripts/verify-version-consistency.mjs",
+    "verify:api-integrity": "node scripts/rc1-api-integrity.mjs"
   }
 }

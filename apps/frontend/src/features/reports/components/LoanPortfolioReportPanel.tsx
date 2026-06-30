@@ -13,8 +13,7 @@ import {
   FilterPillBar,
   ManagementToolbar,
 } from '@/components/layout/executive';
-import { EmptyState } from '@/components/feedback/EmptyState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
@@ -55,7 +54,7 @@ export function LoanPortfolioReportPanel() {
   const [statusFilter, setStatusFilter] = useState('');
   const [cycleBatchFilter, setCycleBatchFilter] = useState('');
 
-  const { data, isLoading, isError } = useLoanPortfolioReport({
+  const { data, isLoading, isError, refetch } = useLoanPortfolioReport({
     search: searchQuery,
     status: statusFilter,
     cycleBatch: cycleBatchFilter,
@@ -78,29 +77,17 @@ export function LoanPortfolioReportPanel() {
     [data?.entries],
   );
 
-  if (isLoading) {
-    return <LoadingSpinner label="Generating loan portfolio report" className="py-wilms-8" />;
-  }
-
-  if (isError || !data) {
-    return (
-      <EmptyState
-        title="Unable to generate report"
-        description="Check your connection and try again."
-      />
-    );
-  }
-
-  if (!data.entries.length) {
-    return (
-      <EmptyState
-        title="No loans match this report"
-        description="Adjust filters or create loans before exporting the portfolio report."
-      />
-    );
-  }
-
   return (
+    <QueryStatePanel
+      isLoading={isLoading}
+      isError={isError || !data}
+      errorMessage="Unable to generate the loan portfolio report. Check your connection and try again."
+      onRetry={() => void refetch()}
+      isEmpty={Boolean(data && data.entries.length === 0)}
+      emptyTitle="No loans match this report"
+      emptyDescription="Adjust filters or create loans before exporting the portfolio report."
+    >
+      {data ? (
     <div className="space-y-wilms-4">
       <ExecutiveKpiGrid>
         <KpiCard variant="executive" label="Loans in Report" value={data.summary.totalLoans} />
@@ -225,5 +212,7 @@ export function LoanPortfolioReportPanel() {
         ]}
       />
     </div>
+      ) : null}
+    </QueryStatePanel>
   );
 }

@@ -10,6 +10,7 @@ import {
   OperationalMobileHeader,
 } from '@/layouts/OperationalMobileNavigation';
 import { useFilteredNavItems } from '@/hooks/useFilteredNavItems';
+import { getAppVersionLabel } from '@/lib/app-version';
 
 export interface OfficeShellProps {
   shellId: string;
@@ -18,7 +19,6 @@ export interface OfficeShellProps {
   children: ReactNode;
   sidebarVariant?: 'executive' | 'standard';
   navVariant?: ShellNavVariant;
-  showLiveBadge?: boolean;
   versionLabel?: string;
   brandTitle?: string;
   mobileNavDrawerTitle?: string;
@@ -34,8 +34,7 @@ export function OfficeShell({
   children,
   sidebarVariant = 'standard',
   navVariant = 'executive',
-  showLiveBadge = false,
-  versionLabel = 'v2.4.1 — WILMS CORE',
+  versionLabel = getAppVersionLabel(),
   brandTitle,
   mobileNavDrawerTitle,
   showAppAside = true,
@@ -55,7 +54,6 @@ export function OfficeShell({
       mobileNavDrawerTitle={mobileNavDrawerTitle}
       sidebarVariant={sidebarVariant}
       navVariant={navVariant}
-      showLiveBadge={showLiveBadge}
       versionLabel={versionLabel}
       brandTitle={brandTitle}
       showAppAside={showAppAside}

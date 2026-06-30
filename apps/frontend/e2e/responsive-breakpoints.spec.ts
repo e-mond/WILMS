@@ -2,15 +2,15 @@ import { expect, test } from '@playwright/test';
 import { DEMO_USERS, signIn, waitForLoginForm } from './helpers/auth';
 import { expectOfficeShellAtBreakpoint } from './helpers/shell';
 
-/** Matches ui-context.md §6 responsive matrix and P13.3 certification breakpoints. */
+/** RC1 responsive matrix + P13.3 certification breakpoints. */
 const BREAKPOINTS = [
   { label: 'mobile-320', width: 320, height: 568, mobileNav: true },
-  { label: 'mobile-360', width: 360, height: 740, mobileNav: true },
+  { label: 'mobile-375', width: 375, height: 812, mobileNav: true },
   { label: 'mobile-390', width: 390, height: 844, mobileNav: true },
-  { label: 'mobile-414', width: 414, height: 896, mobileNav: true },
   { label: 'tablet-768', width: 768, height: 1024, mobileNav: false },
-  { label: 'desktop-1280', width: 1280, height: 720, mobileNav: false },
-  { label: 'wide-1536', width: 1536, height: 900, mobileNav: false },
+  { label: 'desktop-1024', width: 1024, height: 768, mobileNav: false },
+  { label: 'desktop-1366', width: 1366, height: 768, mobileNav: false },
+  { label: 'wide-1920', width: 1920, height: 1080, mobileNav: false },
 ] as const;
 
 const OFFICE_ROLE_SHELLS = [

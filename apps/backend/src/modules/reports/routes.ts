@@ -2,6 +2,11 @@ import { Router } from 'express';
 import { asyncHandler } from '../../http/async-handler.js';
 import { sendData } from '../../http/response.js';
 import { buildDailyCollectionReport } from '../../domain/reports/daily-collection.js';
+import { buildLoanPortfolioReport } from '../../domain/reports/loan-portfolio.js';
+import { buildDefaulterReport } from '../../domain/reports/defaulters.js';
+import { buildCollectorPerformanceReport } from '../../domain/reports/collector-performance.js';
+import { buildGroupRiskReport } from '../../domain/reports/group-risk.js';
+import { buildFinancialLedgerReport } from '../../domain/reports/financial-ledger.js';
 import { isDatabaseEnabled } from '../../db/client.js';
 import { PERMISSION } from '../../infrastructure/permissions/matrix.js';
 import { listBorrowers, listPayments } from '../../db/persistence.js';
@@ -10,6 +15,9 @@ import { requirePermission } from '../../middleware/require-permission.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import * as userRepo from '../../repositories/user.repository.js';
 import { mapLoanRowToDetail } from '../../domain/loan/mappers.js';
+import { listPortfolioEntries } from '../loans/service.js';
+import { listCollectors } from '../collectors/service.js';
+import { listGroupsResponse } from '../groups/service.js';
 
 const REPORTS = [
   {
@@ -128,35 +136,56 @@ reportsRouter.get(
 
 reportsRouter.get(
   '/reports/loan-portfolio',
-  asyncHandler(async (_req, res) => {
-    sendData(res, { rows: [], totals: { activeLoans: 0, outstandingPesewas: 0 } });
+  asyncHandler(async (req, res) => {
+    const entries = await listPortfolioEntries();
+    const report = buildLoanPortfolioReport(entries, {
+      search: req.query.search ? String(req.query.search) : undefined,
+      status: req.query.status ? String(req.query.status) : undefined,
+      cycleBatch: req.query.cycleBatch ? String(req.query.cycleBatch) : undefined,
+    });
+    sendData(res, report);
   }),
 );
 
 reportsRouter.get(
   '/reports/defaulters',
   asyncHandler(async (_req, res) => {
-    sendData(res, { rows: [] });
+    const [loanRows, borrowers, payments] = await Promise.all([
+      loanRepo.listLoans(),
+      listBorrowers(),
+      listPayments(),
+    ]);
+    const report = await buildDefaulterReport({ loanRows, borrowers, payments });
+    sendData(res, report);
   }),
 );
 
 reportsRouter.get(
   '/reports/collector-performance',
   asyncHandler(async (_req, res) => {
-    sendData(res, { rows: [] });
+    const collectorList = await listCollectors();
+    const report = buildCollectorPerformanceReport(collectorList.collectors);
+    sendData(res, report);
   }),
 );
 
 reportsRouter.get(
   '/reports/group-risk',
   asyncHandler(async (_req, res) => {
-    sendData(res, { rows: [] });
+    const groupList = await listGroupsResponse();
+    const report = buildGroupRiskReport(groupList.groups);
+    sendData(res, report);
   }),
 );
 
 reportsRouter.get(
   '/reports/financial-ledger',
-  asyncHandler(async (_req, res) => {
-    sendData(res, { rows: [] });
+  asyncHandler(async (req, res) => {
+    const payments = await listPayments();
+    const report = buildFinancialLedgerReport(payments, {
+      fromDate: req.query.fromDate ? String(req.query.fromDate) : undefined,
+      toDate: req.query.toDate ? String(req.query.toDate) : undefined,
+    });
+    sendData(res, report);
   }),
 );

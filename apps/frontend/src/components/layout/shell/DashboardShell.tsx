@@ -38,7 +38,6 @@ export interface DashboardShellProps {
   children: ReactNode;
   sidebarVariant?: 'executive' | 'standard';
   navVariant?: ShellNavVariant;
-  showLiveBadge?: boolean;
   versionLabel?: string;
   brandTitle?: string;
   showAppAside?: boolean;
@@ -60,7 +59,6 @@ export function DashboardShell({
   children,
   sidebarVariant = 'executive',
   navVariant = 'executive',
-  showLiveBadge = false,
   versionLabel,
   brandTitle,
   showAppAside = true,
@@ -116,7 +114,6 @@ export function DashboardShell({
         {isOffice && (
           <AppNavbar
             profile={profile}
-            showLiveBadge={showLiveBadge}
             variant={isExecutive ? 'executive' : 'standard'}
             className="h-14"
             showMobileNavTrigger={showMobileDrawer}
@@ -168,7 +165,6 @@ export function DashboardShell({
               <div className="hidden md:block">
                 <AppNavbar
                   profile={profile}
-                  showLiveBadge={showLiveBadge}
                   variant="executive"
                   className="h-14"
                   showMobileNavTrigger={showMobileDrawer}
