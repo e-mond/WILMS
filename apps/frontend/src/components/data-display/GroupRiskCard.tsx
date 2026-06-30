@@ -1,6 +1,14 @@
 import Link from 'next/link';
 import { DASHBOARD_GROUP_RISK_TONE_CLASS } from '@/constants/dashboard-display';
+import { GROUP_RISK_LEVEL } from '@/types/group';
 import type { DashboardGroupRiskSegment } from '@/types/dashboard';
+
+const RISK_FILTER_BY_TONE: Record<DashboardGroupRiskSegment['tone'], string> = {
+  low: GROUP_RISK_LEVEL.LOW_RISK,
+  atRisk: GROUP_RISK_LEVEL.AT_RISK,
+  flagged: GROUP_RISK_LEVEL.FLAGGED,
+  suspended: GROUP_RISK_LEVEL.SUSPENDED,
+};
 
 export interface GroupRiskCardProps {
   segments: DashboardGroupRiskSegment[];
@@ -69,8 +77,15 @@ export function GroupRiskCard({ segments, totalGroups, compact = false }: GroupR
                 className={`h-3 w-3 shrink-0 rounded-sm ${DASHBOARD_GROUP_RISK_TONE_CLASS[segment.tone]}`}
                 aria-hidden="true"
               />
-              <span className="min-w-0 flex-1 truncate text-text-primary">{segment.label}</span>
-              <span className="shrink-0 font-semibold text-text-muted">{segment.percent}%</span>
+              <Link
+                href={`/groups?risk=${RISK_FILTER_BY_TONE[segment.tone]}`}
+                className="min-w-0 flex-1 truncate text-text-primary hover:text-brand-primary hover:underline"
+              >
+                {segment.label}
+              </Link>
+              <span className="shrink-0 font-semibold text-text-muted">
+                {segment.count} ({segment.percent}%)
+              </span>
             </li>
           ))}
         </ul>
