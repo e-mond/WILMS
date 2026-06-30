@@ -3,8 +3,7 @@
 import { useMemo, useState } from 'react';
 import { CurrencyAmount, DataTable, KpiCard } from '@/components/data-display';
 import { ExecutiveKpiGrid, ManagementToolbar } from '@/components/layout/executive';
-import { EmptyState } from '@/components/feedback/EmptyState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
@@ -19,7 +18,7 @@ export function FinancialLedgerReportPanel() {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
 
-  const { data, isLoading, isError } = useFinancialLedgerReport({
+  const { data, isLoading, isError, refetch } = useFinancialLedgerReport({
     fromDate: fromDate || undefined,
     toDate: toDate || undefined,
   });
@@ -37,15 +36,15 @@ export function FinancialLedgerReportPanel() {
     [data?.rows],
   );
 
-  if (isLoading) {
-    return <LoadingSpinner label="Generating financial ledger" className="py-wilms-8" />;
-  }
-
-  if (isError || !data) {
-    return <EmptyState title="Unable to generate report" description="Try again shortly." />;
-  }
-
   return (
+    <QueryStatePanel
+      isLoading={isLoading}
+      isError={isError || !data}
+      errorMessage="Unable to generate report. Try again shortly."
+      onRetry={() => void refetch()}
+      variant="table"
+    >
+      {data ? (
     <div className="space-y-wilms-4">
       <ExecutiveKpiGrid>
         <KpiCard variant="executive" label="Ledger Entries" value={data.rows.length} />
@@ -112,5 +111,7 @@ export function FinancialLedgerReportPanel() {
         ]}
       />
     </div>
+      ) : null}
+    </QueryStatePanel>
   );
 }

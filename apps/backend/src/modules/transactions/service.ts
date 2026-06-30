@@ -59,11 +59,13 @@ export async function recordAdminFee(input: {
     throw new Error('DUPLICATE');
   }
 
+  const settings = await getSettings();
+
   const transaction: FinancialTransaction = {
     id: uuidv7(),
     type: 'ADMIN_FEE',
     borrowerId: input.borrowerId,
-    amountPesewas: getSettings().adminFeePesewas,
+    amountPesewas: settings.adminFeePesewas,
     collectorId: input.collectorId,
     recordedAt: new Date().toISOString(),
   };
@@ -83,10 +85,12 @@ export async function getAdminFeeStatus(borrowerId: string): Promise<AdminFeeSta
     collectorName = collector?.displayName;
   }
 
+  const settings = await getSettings();
+
   return {
     borrowerId,
     borrowerName: borrower.fullName,
-    requiredAmountPesewas: getSettings().adminFeePesewas,
+    requiredAmountPesewas: settings.adminFeePesewas,
     isPaid: Boolean(existingFee),
     paidAt: existingFee?.recordedAt,
     recordedByCollectorId: existingFee?.collectorId,
@@ -97,7 +101,8 @@ export async function getAdminFeeStatus(borrowerId: string): Promise<AdminFeeSta
 
 export async function listBorrowersAwaitingAdminFee(): Promise<AwaitingAdminFeeBorrower[]> {
   const borrowers = await listBorrowers();
-  const requiredAmountPesewas = getSettings().adminFeePesewas;
+  const settings = await getSettings();
+  const requiredAmountPesewas = settings.adminFeePesewas;
 
   return borrowers
     .filter(

@@ -27,7 +27,7 @@ settingsRouter.get(
   '/settings',
   requirePermission(PERMISSION.MANAGE_SYSTEM_SETTINGS),
   asyncHandler(async (_req, res) => {
-    sendData(res, settingsService.getSettings());
+    sendData(res, await settingsService.getSettings());
   }),
 );
 
@@ -36,7 +36,67 @@ settingsRouter.patch(
   requirePermission(PERMISSION.MANAGE_SYSTEM_SETTINGS),
   asyncHandler(async (req, res) => {
     try {
-      sendData(res, settingsService.updateSettings(req.body ?? {}));
+      sendData(res, await settingsService.updateSettings(req.body ?? {}));
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+settingsRouter.get(
+  '/settings/me',
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(res, await settingsService.getSettingsMe(req.session!.userId));
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+settingsRouter.patch(
+  '/settings/me',
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(res, await settingsService.updateSettingsMe(req.session!.userId, req.body ?? {}));
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+settingsRouter.post(
+  '/settings/sms/test',
+  requirePermission(PERMISSION.MANAGE_SYSTEM_SETTINGS),
+  asyncHandler(async (req, res) => {
+    try {
+      const phone = typeof req.body?.phone === 'string' ? req.body.phone : '';
+      sendData(res, await settingsService.sendTestSms(req.session!.userId, phone));
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+settingsRouter.get(
+  '/settings/sms/balance',
+  requirePermission(PERMISSION.MANAGE_SYSTEM_SETTINGS),
+  asyncHandler(async (_req, res) => {
+    try {
+      sendData(res, await settingsService.getSmsBalance());
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+settingsRouter.post(
+  '/settings/email/test',
+  requirePermission(PERMISSION.MANAGE_SYSTEM_SETTINGS),
+  asyncHandler(async (req, res) => {
+    try {
+      const email = typeof req.body?.email === 'string' ? req.body.email : '';
+      sendData(res, await settingsService.sendTestEmail(req.session!.userId, email));
     } catch (error) {
       mapError(error);
     }

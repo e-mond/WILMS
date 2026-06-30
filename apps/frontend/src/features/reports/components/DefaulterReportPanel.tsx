@@ -1,8 +1,7 @@
 'use client';
 
 import { CurrencyAmount, DataTable, KpiCard } from '@/components/data-display';
-import { EmptyState } from '@/components/feedback/EmptyState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { ExecutiveKpiGrid, ManagementToolbar } from '@/components/layout/executive';
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
 import { WILMS_REPORT_TYPE } from '@/features/export';
@@ -13,16 +12,22 @@ import { formatPesewasForCsv } from '@/utils/export-csv';
 const CSV_HEADERS = ['Borrower', 'Community', 'Group', 'Missed Weeks', 'Outstanding (GHS)', 'Last Payment'];
 
 export function DefaulterReportPanel() {
-  const { data, isLoading, isError } = useDefaulterReport();
+  const { data, isLoading, isError, refetch } = useDefaulterReport();
 
-  if (isLoading) {
-    return <LoadingSpinner label="Generating defaulter report" className="py-wilms-8" />;
-  }
+  return (
+    <QueryStatePanel
+      isLoading={isLoading}
+      isError={isError || !data}
+      errorMessage="Unable to generate report. Try again shortly."
+      onRetry={() => void refetch()}
+      variant="table"
+    >
+      {data ? <DefaulterReportContent data={data} /> : null}
+    </QueryStatePanel>
+  );
+}
 
-  if (isError || !data) {
-    return <EmptyState title="Unable to generate report" description="Try again shortly." />;
-  }
-
+function DefaulterReportContent({ data }: { data: NonNullable<ReturnType<typeof useDefaulterReport>['data']> }) {
   const csvRows = data.rows.map((row) => [
     row.borrowerName,
     row.community,

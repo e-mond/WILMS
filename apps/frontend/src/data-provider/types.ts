@@ -68,6 +68,10 @@ export const DEMO_MODE_MESSAGE = 'Demo Mode Active — mock data is in use';
  * Build-time webpack alias uses the same rules (see next.config.mjs).
  */
 export function resolveDataProviderMode(): DataProviderMode {
+  if (process.env.NODE_ENV === 'production') {
+    return 'api';
+  }
+
   if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
     return 'mock';
   }
@@ -88,11 +92,7 @@ export function resolveDataProviderMode(): DataProviderMode {
     return 'api';
   }
 
-  if (process.env.NODE_ENV !== 'production') {
-    return 'mock';
-  }
-
-  return 'api';
+  return 'mock';
 }
 
 export function isDemoMode(): boolean {

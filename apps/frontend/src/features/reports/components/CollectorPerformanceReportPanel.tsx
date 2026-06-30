@@ -1,8 +1,7 @@
 'use client';
 
 import { CurrencyAmount, DataTable } from '@/components/data-display';
-import { EmptyState } from '@/components/feedback/EmptyState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { ManagementToolbar } from '@/components/layout/executive';
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
 import { WILMS_REPORT_TYPE } from '@/features/export';
@@ -13,16 +12,28 @@ import { formatPesewasForCsv } from '@/utils/export-csv';
 const CSV_HEADERS = ['Collector', 'Expected (GHS)', 'Collected (GHS)', 'Rate %', 'Missed Borrowers', 'Variance (GHS)'];
 
 export function CollectorPerformanceReportPanel() {
-  const { data, isLoading, isError } = useCollectorPerformanceReport();
+  const { data, isLoading, isError, refetch } = useCollectorPerformanceReport();
 
-  if (isLoading) {
-    return <LoadingSpinner label="Generating collector performance report" className="py-wilms-8" />;
-  }
+  return (
+    <QueryStatePanel
+      isLoading={isLoading}
+      isError={isError || !data}
+      errorMessage="Unable to generate report. Try again shortly."
+      onRetry={() => void refetch()}
+      variant="table"
+    >
+      {data ? (
+        <CollectorPerformanceReportContent data={data} />
+      ) : null}
+    </QueryStatePanel>
+  );
+}
 
-  if (isError || !data) {
-    return <EmptyState title="Unable to generate report" description="Try again shortly." />;
-  }
-
+function CollectorPerformanceReportContent({
+  data,
+}: {
+  data: NonNullable<ReturnType<typeof useCollectorPerformanceReport>['data']>;
+}) {
   const csvRows = data.rows.map((row) => [
     row.collectorName,
     formatPesewasForCsv(row.expectedPesewas),

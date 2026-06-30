@@ -1,8 +1,9 @@
 'use client';
 
 import { useOfflineStatus } from '@/hooks/useOfflineStatus';
+import { useSystemStatus } from '@/hooks/useSystemStatus';
 import { cn } from '@/utils/cn';
-import { Wifi, WifiOff } from 'lucide-react';
+import { AlertTriangle, Wifi, WifiOff } from 'lucide-react';
 
 export interface ConnectionStatusChipProps {
   compact?: boolean;
@@ -10,9 +11,23 @@ export interface ConnectionStatusChipProps {
 
 export function ConnectionStatusChip({ compact = false }: ConnectionStatusChipProps) {
   const { isOnline } = useOfflineStatus();
-  const label = isOnline ? 'Online' : 'Offline';
+  const { status, label } = useSystemStatus();
 
-  const StatusIcon = isOnline ? Wifi : WifiOff;
+  const StatusIcon =
+    status === 'offline' ? WifiOff : status === 'degraded' ? AlertTriangle : Wifi;
+
+  const toneClass =
+    status === 'healthy'
+      ? compact
+        ? 'text-status-active'
+        : 'border-status-active bg-status-active-light text-status-active'
+      : status === 'degraded'
+        ? compact
+          ? 'text-warning'
+          : 'border-warning bg-warning-light text-warning'
+        : compact
+          ? 'text-text-muted'
+          : 'border-border bg-muted text-text-muted';
 
   return (
     <span
@@ -21,13 +36,7 @@ export function ConnectionStatusChip({ compact = false }: ConnectionStatusChipPr
         compact
           ? 'h-11 w-11 min-h-[44px] min-w-[44px] justify-center border-transparent bg-transparent p-0'
           : 'gap-wilms-2 px-wilms-2 py-wilms-1 text-small',
-        isOnline
-          ? compact
-            ? 'text-status-active'
-            : 'border-status-active bg-status-active-light text-status-active'
-          : compact
-            ? 'text-text-muted'
-            : 'border-border bg-muted text-text-muted',
+        isOnline ? toneClass : compact ? 'text-text-muted' : 'border-border bg-muted text-text-muted',
       )}
       role="status"
       aria-label={label}
