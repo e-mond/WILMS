@@ -23,10 +23,10 @@ import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { cn } from '@/utils/cn';
 
 const KPI_ICON_NAMES: Record<string, DashboardKpiIconName> = {
-  pool: 'pool',
-  disbursed: 'disbursed',
-  collected: 'collected',
+  'collected-today': 'collected',
+  'collected-total': 'collected',
   outstanding: 'outstanding',
+  'active-borrowers': 'pool',
 };
 
 const QUICK_ACTIONS = [
@@ -94,10 +94,21 @@ function SuperAdminDashboardContent({
               label={kpi.label}
               icon={KPI_ICON_NAMES[kpi.id] ? <DashboardKpiIcon name={KPI_ICON_NAMES[kpi.id]} /> : null}
               value={
-                <CurrencyAmount
-                  value={kpi.amountPesewas}
-                  className={DASHBOARD_VALUE_TONE_CLASS[kpi.valueTone ?? 'default']}
-                />
+                kpi.valueKind === 'count' ? (
+                  <span
+                    className={cn(
+                      'text-heading-2 font-bold',
+                      DASHBOARD_VALUE_TONE_CLASS[kpi.valueTone ?? 'default'],
+                    )}
+                  >
+                    {kpi.amountPesewas.toLocaleString()}
+                  </span>
+                ) : (
+                  <CurrencyAmount
+                    value={kpi.amountPesewas}
+                    className={DASHBOARD_VALUE_TONE_CLASS[kpi.valueTone ?? 'default']}
+                  />
+                )
               }
               trend={kpi.trendLabel}
               trendDirection={kpi.trendDirection}
