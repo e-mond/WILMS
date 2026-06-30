@@ -5,6 +5,7 @@ import { AppLockRequiredGate } from '@/components/auth/AppLockRequiredGate';
 import { SessionExpiryHandler } from '@/components/auth/SessionExpiryHandler';
 import { SkipToContent } from '@/components/accessibility/SkipToContent';
 import { FocusOnRouteChange } from '@/components/accessibility/FocusOnRouteChange';
+import { RouteTransitionLoader } from '@/components/feedback/RouteTransitionLoader';
 import { AppBootstrap } from '@/components/providers/AppBootstrap';
 import { PermissionProvider } from '@/components/providers/PermissionProvider';
 import { QueryProvider } from '@/components/providers/QueryProvider';
@@ -62,6 +63,7 @@ export default function RootLayout({
             <QueryProvider>
               <PermissionProvider>
                 <AppBootstrap>
+                <RouteTransitionLoader />
                 <FocusOnRouteChange />
                 <SessionExpiryHandler />
                 <AppLockHandler />
