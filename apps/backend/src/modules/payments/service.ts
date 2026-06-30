@@ -13,6 +13,7 @@ import { pesewasToDecimal } from '../../domain/money.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import { runWithIdempotency } from '../../infrastructure/idempotency/run-with-idempotency.js';
 import * as borrowerRepo from '../../repositories/borrower.repository.js';
+import { maybeSendPaymentConfirmationSms } from '../../infrastructure/sms/notifications.js';
 import * as ledgerRepo from '../../repositories/ledger.repository.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import * as paymentRepo from '../../repositories/payment.repository.js';
@@ -237,6 +238,15 @@ async function postPayment(
     targetEntityId: result.id,
     targetEntityType: 'payment',
   });
+
+  const borrower = await borrowerRepo.getBorrower(input.borrowerId);
+  if (borrower?.phone) {
+    void maybeSendPaymentConfirmationSms({
+      borrowerPhone: borrower.phone,
+      amountPesewas: input.amountPesewas,
+      paymentDate: input.paymentDate,
+    });
+  }
 
   return {
     id: result.id,

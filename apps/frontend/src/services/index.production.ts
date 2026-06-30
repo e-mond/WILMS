@@ -1,15 +1,9 @@
 /**
- * Production service exports — uses API provider when configured, otherwise mock fallback
- * for staging/demo deployments without NEXT_PUBLIC_API_BASE_URL.
+ * Production builds always use the API data provider — mock/demo mode is disabled.
  */
-export { apiDataProvider as dataProvider } from '@/data-provider/ApiDataProvider';
-export { mockDataProvider as mockFallbackProvider } from '@/data-provider/MockDataProvider';
-
 import { apiDataProvider } from '@/data-provider/ApiDataProvider';
-import { mockDataProvider } from '@/data-provider/MockDataProvider';
-import { resolveDataProviderMode } from '@/data-provider/types';
 
-const activeProvider = resolveDataProviderMode() === 'mock' ? mockDataProvider : apiDataProvider;
+export { apiDataProvider as dataProvider } from '@/data-provider/ApiDataProvider';
 
 export const {
   adjustmentService,
@@ -37,4 +31,4 @@ export const {
   settingsService,
   transactionService,
   uploadService,
-} = activeProvider;
+} = apiDataProvider;

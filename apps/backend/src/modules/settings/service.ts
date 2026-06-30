@@ -8,17 +8,17 @@ import { users } from '../../db/schema/users.js';
 import { hashPassword } from '../../lib/password.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
 import * as userRepo from '../../repositories/user.repository.js';
+import * as systemSettingsRepo from '../../repositories/system-settings.repository.js';
+import { getSmsProvider } from '../../infrastructure/sms/index.js';
+import { fetchSmsNotifyGhBalance } from '../../infrastructure/sms/smsnotifygh-adapter.js';
+import { getMailProvider } from '../../infrastructure/mail/index.js';
+import {
+  DEFAULT_SYSTEM_SETTINGS,
+  mapSystemSettingsRow,
+  type SystemSettingsDto,
+} from './settings-mapper.js';
 
-export interface SystemSettings {
-  adminFeePesewas: number;
-  reconciliationVarianceThresholdPercent: number;
-  smsNotificationsEnabled: boolean;
-  emailNotificationsEnabled: boolean;
-  paymentReminderDaysBefore: number;
-  minGroupSize: number;
-  maxGroupSize: number;
-  updatedAt: string;
-}
+export type SystemSettings = SystemSettingsDto;
 
 export interface SettingsUserRecord {
   id: string;
@@ -70,8 +70,51 @@ export interface UpdateSettingsUserInput {
 }
 
 export interface UpdateSystemSettingsInput {
+  adminFeePesewas?: number;
+  reconciliationVarianceThresholdPercent?: number;
+  smsNotificationsEnabled?: boolean;
+  emailNotificationsEnabled?: boolean;
+  paymentReminderDaysBefore?: number;
   minGroupSize?: number;
   maxGroupSize?: number;
+  organisationName?: string;
+  systemName?: string;
+  primaryColour?: string;
+  accentColour?: string;
+  logoAsset?: string;
+  sessionTimeoutMinutes?: number;
+  twoFactorRequired?: boolean;
+  ipAllowlistEnabled?: boolean;
+  failedLoginLockoutAttempts?: number;
+  passwordPolicy?: string;
+  maxLoanAmountPesewas?: number;
+  defaultLoanDurationWeeks?: number;
+  allowLoanRollovers?: boolean;
+  latePaymentGraceDays?: number;
+  smsProvider?: string;
+  smsSenderId?: string;
+  missedPaymentSmsEnabled?: boolean;
+  approvalSmsEnabled?: boolean;
+  supervisorEscalationsEnabled?: boolean;
+  immutableAuditTrail?: boolean;
+  auditExportEnabled?: boolean;
+  monitoringAlertsEnabled?: boolean;
+  gpsVerificationEnabled?: boolean;
+  emailProviderLabel?: string;
+}
+
+export interface SettingsMeProfile {
+  id: string;
+  displayName: string;
+  email: string;
+  role: string;
+  roleLabel: string;
+  phone?: string;
+}
+
+export interface UpdateSettingsMeInput {
+  displayName?: string;
+  email?: string;
 }
 
 export interface CreateRoleInput {
@@ -172,16 +215,7 @@ const REGISTRATION_LEGAL_CONFIG: RegistrationLegalConfig = {
   updatedAt: '2026-06-01T08:00:00.000Z',
 };
 
-let systemSettings: SystemSettings = {
-  adminFeePesewas: 5000,
-  reconciliationVarianceThresholdPercent: 5,
-  smsNotificationsEnabled: true,
-  emailNotificationsEnabled: true,
-  paymentReminderDaysBefore: 1,
-  minGroupSize: 5,
-  maxGroupSize: 10,
-  updatedAt: '2026-06-01T08:00:00.000Z',
-};
+let systemSettings: SystemSettings = { ...DEFAULT_SYSTEM_SETTINGS };
 
 const memoryRoles: RoleDefinition[] = [
   {
@@ -252,14 +286,16 @@ function mapDemoUserToSettingsRecord(user: (typeof DEMO_USERS)[number]): Setting
   };
 }
 
-export function getSettings(): SystemSettings {
-  return { ...systemSettings };
+export async function getSettings(): Promise<SystemSettings> {
+  if (!isDatabaseEnabled()) {
+    return { ...systemSettings };
+  }
+
+  const row = await systemSettingsRepo.getSystemSettingsRow();
+  return mapSystemSettingsRow(row);
 }
 
-export function updateSettings(input: UpdateSystemSettingsInput): SystemSettings {
-  const minGroupSize = input.minGroupSize ?? systemSettings.minGroupSize;
-  const maxGroupSize = input.maxGroupSize ?? systemSettings.maxGroupSize;
-
+function validateGroupSizeRules(minGroupSize: number, maxGroupSize: number): void {
   if (minGroupSize < 1) {
     throw new Error('VALIDATION:Minimum group size must be at least 1.');
   }
@@ -267,15 +303,153 @@ export function updateSettings(input: UpdateSystemSettingsInput): SystemSettings
   if (maxGroupSize < minGroupSize) {
     throw new Error('VALIDATION:Maximum group size cannot be less than minimum group size.');
   }
+}
 
-  systemSettings = {
-    ...systemSettings,
+export async function updateSettings(input: UpdateSystemSettingsInput): Promise<SystemSettings> {
+  const current = await getSettings();
+  const minGroupSize = input.minGroupSize ?? current.minGroupSize;
+  const maxGroupSize = input.maxGroupSize ?? current.maxGroupSize;
+  validateGroupSizeRules(minGroupSize, maxGroupSize);
+
+  if (!isDatabaseEnabled()) {
+    systemSettings = {
+      ...current,
+      ...input,
+      minGroupSize,
+      maxGroupSize,
+      updatedAt: new Date().toISOString(),
+    };
+    return { ...systemSettings };
+  }
+
+  const row = await systemSettingsRepo.updateSystemSettingsRow({
+    ...input,
     minGroupSize,
     maxGroupSize,
-    updatedAt: new Date().toISOString(),
-  };
+  });
 
-  return { ...systemSettings };
+  return mapSystemSettingsRow(row);
+}
+
+export async function getSettingsMe(userId: string): Promise<SettingsMeProfile> {
+  if (!isDatabaseEnabled()) {
+    const demo = DEMO_USERS.find((user) => user.id === userId);
+    if (!demo) {
+      throw new Error('NOT_FOUND');
+    }
+    const presentation = resolveRolePresentation(demo.role);
+    return {
+      id: demo.id,
+      displayName: demo.displayName,
+      email: demo.email,
+      role: demo.role,
+      roleLabel: presentation.roleLabel,
+    };
+  }
+
+  const row = await userRepo.getUserById(userId);
+  if (!row) {
+    throw new Error('NOT_FOUND');
+  }
+
+  const presentation = resolveRolePresentation(row.role);
+  return {
+    id: row.id,
+    displayName: row.displayName,
+    email: row.email,
+    role: row.role,
+    roleLabel: presentation.roleLabel,
+    phone: row.phone ?? undefined,
+  };
+}
+
+export async function updateSettingsMe(
+  userId: string,
+  input: UpdateSettingsMeInput,
+): Promise<SettingsMeProfile> {
+  if (!isDatabaseEnabled()) {
+    const demo = DEMO_USERS.find((user) => user.id === userId);
+    if (!demo) {
+      throw new Error('NOT_FOUND');
+    }
+    const presentation = resolveRolePresentation(demo.role);
+    return {
+      id: demo.id,
+      displayName: input.displayName?.trim() ?? demo.displayName,
+      email: input.email?.trim().toLowerCase() ?? demo.email,
+      role: demo.role,
+      roleLabel: presentation.roleLabel,
+    };
+  }
+
+  const row = await userRepo.getUserById(userId);
+  if (!row) {
+    throw new Error('NOT_FOUND');
+  }
+
+  const db = getDb();
+  await db
+    .update(users)
+    .set({
+      displayName: input.displayName?.trim() ?? row.displayName,
+      email: input.email?.trim().toLowerCase() ?? row.email,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, userId));
+
+  return getSettingsMe(userId);
+}
+
+export async function sendTestSms(userId: string, phone: string): Promise<{ ok: true }> {
+  const normalizedPhone = phone.trim();
+  if (!normalizedPhone) {
+    throw new Error('VALIDATION:Phone number is required for test SMS.');
+  }
+
+  const provider = getSmsProvider();
+  if (!provider.isConfigured()) {
+    throw new Error('VALIDATION:SMS provider is not configured. Set SMS_PROVIDER and credentials.');
+  }
+
+  const settings = await getSettings();
+  const profile = await getSettingsMe(userId);
+
+  await provider.send({
+    to: normalizedPhone,
+    body: `WILMS test SMS for ${profile.displayName}. Sender: ${settings.smsSenderId}. SMSNotifyGH is configured.`,
+  });
+
+  return { ok: true };
+}
+
+export async function sendTestEmail(userId: string, email: string): Promise<{ ok: true }> {
+  const normalizedEmail = email.trim();
+  if (!normalizedEmail) {
+    throw new Error('VALIDATION:Email address is required for test email.');
+  }
+
+  const mail = getMailProvider();
+  if (!mail.isConfigured()) {
+    throw new Error(
+      'VALIDATION:Mail provider is not configured. Set MAIL_PROVIDER=gmail and GMAIL_* credentials.',
+    );
+  }
+
+  const profile = await getSettingsMe(userId);
+
+  await mail.send({
+    to: normalizedEmail,
+    subject: 'WILMS test email',
+    text: `Hello ${profile.displayName}, this is a test email from WILMS via Gmail SMTP.`,
+    html: `<p>Hello <strong>${profile.displayName}</strong>,</p><p>This is a test email from WILMS via Gmail SMTP.</p>`,
+  });
+
+  return { ok: true };
+}
+
+export async function getSmsBalance(): Promise<{ balance: string }> {
+  const result = await fetchSmsNotifyGhBalance();
+  return { balance: result.balance };
 }
 
 export async function listUsers(currentUserId?: string): Promise<SettingsUserRecord[]> {

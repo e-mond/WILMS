@@ -53,4 +53,21 @@ test.describe('PWA installability', () => {
     expect(icon192.ok()).toBeTruthy();
     expect(icon512.ok()).toBeTruthy();
   });
+
+  test('apple mobile web app meta is present', async ({ page }) => {
+    await waitForLoginForm(page);
+
+    const appleCapable = page.locator('meta[name="apple-mobile-web-app-capable"]');
+    await expect(appleCapable).toHaveAttribute('content', 'yes');
+  });
+
+  test('manifest includes maskable icon purpose', async ({ page }) => {
+    const response = await page.request.get('/manifest.webmanifest');
+    const manifest = (await response.json()) as {
+      icons: Array<{ purpose?: string }>;
+    };
+
+    const hasMaskable = manifest.icons.some((icon) => icon.purpose?.includes('maskable'));
+    expect(hasMaskable).toBeTruthy();
+  });
 });
