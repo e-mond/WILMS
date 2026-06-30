@@ -1,6 +1,6 @@
 # WILMS Deployment Guide
 
-**Last updated:** P14.5G (v0.2.1)
+**Last updated:** P14.6.3 (v0.2.2)
 
 ---
 
@@ -60,13 +60,15 @@ WILMS_SMOKE_PASSWORD=... \
 npm run smoke:production
 ```
 
-Expected: **15/15** checks (v0.2.1+).
+Expected: **17/17** checks (v0.2.2).
+
+Set `WILMS_GIT_COMMIT` on Railway so `/health` reports the deployed SHA.
 
 ---
 
 ## Rollback
 
-Redeploy previous Railway/Vercel deployment. No schema rollback for v0.2.1 (no new migrations).
+Redeploy previous Railway/Vercel deployment. v0.2.2 adds migration `0007_offline_sync` (8/8); rollback requires schema consideration.
 
 See `docs/page-validation/P14.5G-rollback-guide.md`.
 
@@ -74,5 +76,6 @@ See `docs/page-validation/P14.5G-rollback-guide.md`.
 
 ## References
 
+- `docs/page-validation/P14.6.3-production-acceptance.md`
 - `docs/page-validation/P14.5G-deployment-report.md`
 - `docs/page-validation/P14.5C-deployment-architecture.md`

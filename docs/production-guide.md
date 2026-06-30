@@ -1,6 +1,6 @@
 # WILMS Production Guide
 
-**Last updated:** P14.5G (v0.2.1)
+**Last updated:** P14.6.3 (v0.2.2)
 
 ---
 
@@ -16,11 +16,11 @@
 
 ## Baseline (verified)
 
-- Migrations: **7/7** applied
+- Migrations: **8/8** applied (includes `0007_offline_sync`)
 - Database: Neon PostgreSQL connected
 - Uploads: Cloudinary connected
 - Sessions: HMAC tokens working
-- Smoke tests: 12/12 (v0.2.0); **15/15** after v0.2.1 deploy
+- Smoke tests: **17/17** (v0.2.2)
 
 ---
 
@@ -32,11 +32,11 @@
 {
   "data": {
     "status": "ok",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "gitCommit": "...",
     "uptimeSeconds": 1234,
     "environment": "production",
-    "migrations": { "expected": 7, "applied": 7, "status": "ok" },
+    "migrations": { "expected": 8, "applied": 8, "status": "ok" },
     "runtime": {
       "nodeVersion": "v20.x",
       "deployedAt": "ISO-8601",
@@ -52,7 +52,7 @@ No secrets exposed.
 
 ## Version Display
 
-UI shows `WILMS v0.2.1` from root `package.json`:
+UI shows `WILMS v0.2.2` from root `package.json`:
 
 - Login page
 - Sidebar footer
@@ -89,5 +89,6 @@ Output: `.wilms-production-credentials.json` (gitignored, distribute out-of-band
 | Hardening | `page-validation/P14.5G-production-hardening-report.md` |
 | Security | `security-guide.md`, `page-validation/P14.5G-security-audit.md` |
 | Deployment | `deployment-guide.md`, `page-validation/P14.5G-deployment-report.md` |
-| Release notes | `page-validation/P14.5G-release-notes.md` |
+| Release notes | `docs/releases/v0.2.2.md`, `CHANGELOG.md` |
+| Recovery | `page-validation/P14.6.3-production-acceptance.md` |
 | Future work | `page-validation/P14.5G-future-roadmap.md` |
