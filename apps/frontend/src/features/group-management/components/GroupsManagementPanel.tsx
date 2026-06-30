@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 import { CurrencyAmount, DataTable, GroupRiskBadge, KpiCard } from '@/components/data-display';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import {
@@ -36,10 +37,32 @@ const RISK_FILTERS = [
 
 export function GroupsManagementPanel() {
   const toast = useToast();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const riskFromUrl = searchParams.get('risk') ?? '';
   const { data, isLoading, isError, refetch } = useGroups();
   const [searchQuery, setSearchQuery] = useState('');
-  const [riskFilter, setRiskFilter] = useState('');
+  const [riskFilter, setRiskFilter] = useState(riskFromUrl);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setRiskFilter(riskFromUrl);
+  }, [riskFromUrl]);
+
+  function handleRiskFilterChange(nextRisk: string) {
+    setRiskFilter(nextRisk);
+
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (nextRisk) {
+      params.set('risk', nextRisk);
+    } else {
+      params.delete('risk');
+    }
+
+    const query = params.toString();
+    router.replace(query ? `/groups?${query}` : '/groups', { scroll: false });
+  }
 
   const filteredGroups = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -143,7 +166,7 @@ export function GroupsManagementPanel() {
             ariaLabel="Filter groups by risk level"
             options={RISK_FILTERS}
             value={riskFilter}
-            onChange={setRiskFilter}
+            onChange={handleRiskFilterChange}
           />
         }
         actions={
