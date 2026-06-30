@@ -2,7 +2,8 @@
 
 | Version | Date | Phase | Summary |
 |---------|------|-------|---------|
-| **0.2.1** | 2026-06-20 | P14.5G | CSRF, health expansion, version UI, security docs |
+| **0.2.2** | 2026-06-30 | P14.6 | **Current production** — CI/CD, offline sync, P14.6.3 recovery |
+| **0.2.1** | 2026-06-20 | P14.5G | CSRF, health, version UI |
 | **0.2.0** | 2026-06-29 | P14.5E/F | Live deploy Vercel + Railway, domain migration, smoke harness |
 | **0.1.0** | — | P14.3–P14.5 | Initial certified monorepo, financial core |
 
