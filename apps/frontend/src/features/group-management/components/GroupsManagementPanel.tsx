@@ -3,8 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { CurrencyAmount, DataTable, GroupRiskBadge, KpiCard } from '@/components/data-display';
-import { EmptyState } from '@/components/feedback/EmptyState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import {
   ExecutiveKpiGrid,
   FilterPillBar,
@@ -37,7 +36,7 @@ const RISK_FILTERS = [
 
 export function GroupsManagementPanel() {
   const toast = useToast();
-  const { data, isLoading, isError } = useGroups();
+  const { data, isLoading, isError, refetch } = useGroups();
   const [searchQuery, setSearchQuery] = useState('');
   const [riskFilter, setRiskFilter] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -75,14 +74,6 @@ export function GroupsManagementPanel() {
 
   useShellAsideContent(asideContent);
 
-  if (isLoading) {
-    return <LoadingSpinner label="Loading groups" className="py-wilms-8" />;
-  }
-
-  if (isError || !data) {
-    return <EmptyState title="Unable to load groups" description="Try again shortly." />;
-  }
-
   const csvRows = filteredGroups.map((group) => [
     group.id,
     group.name,
@@ -97,6 +88,14 @@ export function GroupsManagementPanel() {
   ]);
 
   return (
+    <QueryStatePanel
+      isLoading={isLoading}
+      isError={isError || !data}
+      errorMessage="Unable to load groups. Try again shortly."
+      onRetry={() => void refetch()}
+      variant="table"
+    >
+      {data ? (
     <div className="space-y-wilms-4">
       <ExecutiveKpiGrid>
         <KpiCard
@@ -262,5 +261,7 @@ export function GroupsManagementPanel() {
         <Pagination page={page} pageCount={pageCount} onPageChange={setPage} ariaLabel="Groups pagination" />
       </div>
     </div>
+      ) : null}
+    </QueryStatePanel>
   );
 }

@@ -87,8 +87,10 @@ import type { ReportsHubMetadata, ReportCategory } from '@/types/reports';
 import type {
   CreateSettingsUserInput,
   SettingsActivityEntry,
+  SettingsMeProfile,
   SettingsUserRecord,
   SystemSettings,
+  UpdateSettingsMeInput,
   UpdateSettingsUserInput,
   UpdateSystemSettingsInput,
 } from '@/types/settings';
@@ -311,6 +313,11 @@ export interface IAdjustmentService {
 export interface ISettingsService {
   getSettings(): Promise<SystemSettings>;
   updateSettings(input: UpdateSystemSettingsInput): Promise<SystemSettings>;
+  getSettingsMe(): Promise<SettingsMeProfile>;
+  updateSettingsMe(input: UpdateSettingsMeInput): Promise<SettingsMeProfile>;
+  sendTestSms(phone: string): Promise<{ ok: true }>;
+  getSmsBalance(): Promise<{ balance: string }>;
+  sendTestEmail(email: string): Promise<{ ok: true }>;
   listUsers(): Promise<SettingsUserRecord[]>;
   getUserProfile(userId: string): Promise<SettingsUserProfile>;
   getSettingsActivity(): Promise<SettingsActivityEntry[]>;

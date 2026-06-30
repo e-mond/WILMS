@@ -15,6 +15,7 @@ import { DemoModeBanner } from '@/components/feedback/DemoModeBanner';
 import { isDemoMode } from '@/data-provider/types';
 import { ToastContainer } from '@/components/feedback/ToastContainer';
 import { PwaInstallBanner } from '@/components/pwa/PwaInstallBanner';
+import { PwaIosInstallPrompt } from '@/components/pwa/PwaIosInstallPrompt';
 import { ServiceWorkerRegistrar } from '@/components/pwa/ServiceWorkerRegistrar';
 import { getServerSession } from '@/lib/auth/server-session';
 import '@/styles/globals.css';
@@ -41,6 +42,7 @@ export default function RootLayout({
       <head>
         <ThemeScript />
         <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-title" content="WILMS" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
@@ -54,6 +56,7 @@ export default function RootLayout({
           </>
         ) : null}
         <PwaInstallBanner />
+        <PwaIosInstallPrompt />
         <AuthHydrator session={session}>
           <ThemeProvider>
             <QueryProvider>

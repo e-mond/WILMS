@@ -4,8 +4,8 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { CurrencyAmount, DataTable, KpiCard } from '@/components/data-display';
 import { ExecutiveKpiGrid, ManagementToolbar } from '@/components/layout/executive';
+import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { EmptyState } from '@/components/feedback/EmptyState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
@@ -53,7 +53,7 @@ export function DailyCollectionReportPanel() {
     [collectorsQuery.data],
   );
 
-  const { data, isLoading, isError } = useDailyCollectionReport({
+  const { data, isLoading, isError, refetch } = useDailyCollectionReport({
     date: reportDate,
     collectorId: collectorFilter || undefined,
   });
@@ -88,20 +88,15 @@ export function DailyCollectionReportPanel() {
 
   useShellAsideContent(asideContent);
 
-  if (isLoading) {
-    return <LoadingSpinner label="Generating daily collection report" className="py-wilms-8" />;
-  }
-
-  if (isError || !data) {
-    return (
-      <EmptyState
-        title="Unable to generate report"
-        description="Check your connection and try again."
-      />
-    );
-  }
-
   return (
+    <QueryStatePanel
+      isLoading={isLoading}
+      isError={isError || !data}
+      errorMessage="Check your connection and try again."
+      onRetry={() => void refetch()}
+      variant="table"
+    >
+      {data ? (
     <div className="space-y-wilms-4">
       <ExecutiveKpiGrid>
         <KpiCard variant="executive" label="Borrowers Due" value={data.summary.borrowersDueCount} />
@@ -249,5 +244,7 @@ export function DailyCollectionReportPanel() {
         />
       )}
     </div>
+      ) : null}
+    </QueryStatePanel>
   );
 }

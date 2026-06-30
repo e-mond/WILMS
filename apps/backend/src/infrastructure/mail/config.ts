@@ -1,4 +1,4 @@
-export type MailProviderName = 'smtp' | 'resend' | 'none';
+export type MailProviderName = 'smtp' | 'gmail' | 'resend' | 'none';
 
 export interface MailConfig {
   provider: MailProviderName;
@@ -16,18 +16,32 @@ export interface MailConfig {
 }
 
 export function getMailConfig(): MailConfig {
-  const provider = (process.env.MAIL_PROVIDER ?? 'none').toLowerCase() as MailProviderName;
-  const normalized: MailProviderName =
-    provider === 'smtp' || provider === 'resend' ? provider : 'none';
+  const rawProvider = (process.env.MAIL_PROVIDER ?? 'none').toLowerCase();
+  const provider: MailProviderName =
+    rawProvider === 'smtp' || rawProvider === 'gmail' || rawProvider === 'resend'
+      ? (rawProvider as MailProviderName)
+      : 'none';
+
+  const gmailUser = process.env.GMAIL_USER?.trim() ?? '';
+  const gmailAppPassword = process.env.GMAIL_APP_PASSWORD?.trim() ?? '';
+
+  const smtpHost =
+    process.env.SMTP_HOST?.trim() ||
+    (provider === 'gmail' || gmailUser ? 'smtp.gmail.com' : '');
+  const smtpUser = process.env.SMTP_USER?.trim() || gmailUser;
+  const smtpPassword = process.env.SMTP_PASSWORD?.trim() || gmailAppPassword;
+  const smtpPort = Number(process.env.SMTP_PORT ?? (smtpHost === 'smtp.gmail.com' ? 587 : 587));
 
   return {
-    provider: normalized,
-    fromAddress: process.env.MAIL_FROM?.trim() || 'noreply@wilms.local',
+    provider: provider === 'gmail' ? 'smtp' : provider,
+    fromAddress:
+      process.env.MAIL_FROM?.trim() ||
+      (gmailUser ? gmailUser : 'noreply@wilms.local'),
     smtp: {
-      host: process.env.SMTP_HOST?.trim() ?? '',
-      port: Number(process.env.SMTP_PORT ?? 587),
-      user: process.env.SMTP_USER?.trim() ?? '',
-      password: process.env.SMTP_PASSWORD?.trim() ?? '',
+      host: smtpHost,
+      port: smtpPort,
+      user: smtpUser,
+      password: smtpPassword,
       secure: process.env.SMTP_SECURE === 'true',
     },
     resend: {

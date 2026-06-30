@@ -8,8 +8,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { PERMISSION } from '@/constants/permissions';
-import { EmptyState } from '@/components/feedback/EmptyState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { ExecutiveKpiGrid, FilterPillBar, ManagementToolbar } from '@/components/layout/executive';
 import {
   buildRiskFlagsExportDocument,
@@ -89,7 +88,7 @@ function sortFlags(flags: RiskFlagSummary[], sortKey: SortKey, direction: SortDi
 export function RiskFlagsPanel() {
   const generatedBy = useWilmsExportActor();
   const { escalateToBlacklist, markResolved, assignOfficer, raiseFlag } = useRiskFlagActions();
-  const { data, isLoading, isError } = useRiskFlags();
+  const { data, isLoading, isError, refetch } = useRiskFlags();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -187,11 +186,25 @@ export function RiskFlagsPanel() {
   }
 
   if (isLoading) {
-    return <LoadingSpinner label="Loading risk flags" className="py-wilms-8" />;
+    return (
+      <QueryStatePanel isLoading isError={false} variant="table">
+        {null}
+      </QueryStatePanel>
+    );
   }
 
   if (isError || !data) {
-    return <EmptyState title="Unable to load risk flags" description="Try again shortly." />;
+    return (
+      <QueryStatePanel
+        isLoading={false}
+        isError
+        errorMessage="Unable to load risk flags. Try again shortly."
+        onRetry={() => void refetch()}
+        variant="table"
+      >
+        {null}
+      </QueryStatePanel>
+    );
   }
 
   const sortHeader = (label: string, key: SortKey): ReactNode => (

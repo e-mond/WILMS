@@ -7,9 +7,11 @@ import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { PERMISSION } from '@/constants/permissions';
 import { useSettingsUserProfile } from '@/features/settings/hooks/useSettingsUserProfile';
+import { useSettingsUserMutations } from '@/features/settings/hooks/useSettingsUserMutations';
 import { formatSettingsUserStatus } from '@/utils/settings-user-presentation';
 import { formatDisplayDate } from '@/utils/format-date';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
+import { useToast } from '@/hooks/useToast';
 
 export interface SettingsUserProfileModalProps {
   userId: string | null;
@@ -18,6 +20,23 @@ export interface SettingsUserProfileModalProps {
 
 export function SettingsUserProfileModal({ userId, onClose }: SettingsUserProfileModalProps) {
   const { data, isLoading } = useSettingsUserProfile(userId);
+  const { disableUser } = useSettingsUserMutations();
+  const toast = useToast();
+
+  async function handleSuspendAccount() {
+    if (!data) {
+      return;
+    }
+
+    try {
+      await disableUser.mutateAsync(data.id);
+      toast.success('Account suspended');
+      onClose();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Try again shortly.';
+      toast.error('Unable to suspend account', { message });
+    }
+  }
 
   return (
     <Modal isOpen={Boolean(userId)} onClose={onClose} title="User Profile">
@@ -196,27 +215,33 @@ export function SettingsUserProfileModal({ userId, onClose }: SettingsUserProfil
             <h4 className="text-body font-semibold text-text-primary">Security actions</h4>
             <div className="mt-wilms-3 flex flex-wrap gap-wilms-2">
               <PermissionGate permission={PERMISSION.RESET_PASSWORD}>
-                <Button type="button" variant="secondary" size="sm">
+                <Button type="button" variant="secondary" size="sm" disabled title="Password reset is managed by your identity provider">
                   Reset password
                 </Button>
               </PermissionGate>
               <PermissionGate permission={PERMISSION.RESET_PIN}>
-                <Button type="button" variant="secondary" size="sm">
+                <Button type="button" variant="secondary" size="sm" disabled title="PIN reset is available on collector devices">
                   Reset PIN
                 </Button>
               </PermissionGate>
               <PermissionGate permission={PERMISSION.FORCE_LOGOUT}>
-                <Button type="button" variant="secondary" size="sm">
+                <Button type="button" variant="secondary" size="sm" disabled title="Force logout API coming soon">
                   Force logout
                 </Button>
               </PermissionGate>
               <PermissionGate permission={PERMISSION.SUSPEND_USERS}>
-                <Button type="button" variant="danger" size="sm">
+                <Button
+                  type="button"
+                  variant="danger"
+                  size="sm"
+                  disabled={disableUser.isPending || data.status === 'SUSPENDED'}
+                  onClick={() => void handleSuspendAccount()}
+                >
                   Suspend account
                 </Button>
               </PermissionGate>
               <PermissionGate permission={PERMISSION.ENABLE_MFA}>
-                <Button type="button" variant="ghost" size="sm">
+                <Button type="button" variant="ghost" size="sm" disabled title="MFA enrollment API coming soon">
                   Enable MFA
                 </Button>
               </PermissionGate>

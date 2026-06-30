@@ -4,8 +4,11 @@ import { Avatar } from '@/components/data-display';
 import { DetailSidebarCard } from '@/components/layout/executive';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
 import { useSettingsActivity } from '@/features/settings/hooks/useSettingsActivity';
+import { useSystemStatus } from '@/hooks/useSystemStatus';
+import { isDemoMode } from '@/data-provider/types';
 import { formatDisplayDate } from '@/utils/format-date';
 import { getAppVersionLabel } from '@/lib/app-version';
+import { getWilmsEnvironment } from '@/features/export/utils/environment';
 import { resolvePersonPhotoUrl } from '@/utils/person-photo';
 
 export interface SettingsAsidePanelProps {
@@ -13,8 +16,30 @@ export interface SettingsAsidePanelProps {
   activeSectionLabel: string;
 }
 
+function formatEnvironmentLabel(environment?: string): string {
+  const clientEnv = getWilmsEnvironment();
+  if (isDemoMode()) {
+    return `Demo · ${clientEnv}`;
+  }
+  if (environment) {
+    return environment.charAt(0).toUpperCase() + environment.slice(1);
+  }
+  return clientEnv;
+}
+
+function formatCoreServicesLabel(status: string): string {
+  if (status === 'healthy') {
+    return 'Operational';
+  }
+  if (status === 'degraded') {
+    return 'Degraded';
+  }
+  return 'Offline';
+}
+
 export function SettingsAsidePanel({ updatedAt, activeSectionLabel }: SettingsAsidePanelProps) {
   const { data: activity, isLoading } = useSettingsActivity();
+  const { status, environment } = useSystemStatus();
 
   return (
     <>
@@ -22,11 +47,21 @@ export function SettingsAsidePanel({ updatedAt, activeSectionLabel }: SettingsAs
         <dl className="mt-wilms-3 space-y-wilms-2 text-small">
           <div>
             <dt className="text-text-muted">Environment</dt>
-            <dd className="font-semibold">Demo · Development</dd>
+            <dd className="font-semibold">{formatEnvironmentLabel(environment)}</dd>
           </div>
           <div>
             <dt className="text-text-muted">Core services</dt>
-            <dd className="font-semibold text-status-active">Operational</dd>
+            <dd
+              className={
+                status === 'healthy'
+                  ? 'font-semibold text-status-active'
+                  : status === 'degraded'
+                    ? 'font-semibold text-warning'
+                    : 'font-semibold text-text-muted'
+              }
+            >
+              {formatCoreServicesLabel(status)}
+            </dd>
           </div>
           <div>
             <dt className="text-text-muted">Application version</dt>
