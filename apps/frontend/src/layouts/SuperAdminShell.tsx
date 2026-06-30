@@ -20,7 +20,6 @@ export function SuperAdminShell({ children }: SuperAdminShellProps) {
       mobileNavDrawerTitle="Super Admin navigation"
       sidebarVariant="executive"
       navVariant="executive"
-      showLiveBadge
     >
       <ExecutiveThemeInitializer />
       {children}

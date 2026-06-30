@@ -20,7 +20,6 @@ export function RegistrationOfficerShell({ children }: RegistrationOfficerShellP
       mobileNavDrawerTitle="Registration Officer navigation"
       sidebarVariant="executive"
       navVariant="executive"
-      showLiveBadge
     >
       <ExecutiveThemeInitializer />
       {children}

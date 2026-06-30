@@ -1,5 +1,9 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import {
+  sanitizeProxyRequestHeaders,
+  sanitizeProxyResponseHeaders,
+} from '@/lib/api/proxy-headers';
 import { rejectInvalidCsrf } from '@/lib/auth/csrf-server';
 import { SESSION_COOKIE_NAME } from '@/lib/auth/session';
 
@@ -27,10 +31,7 @@ async function proxyRequest(request: Request, pathSegments: string[]): Promise<R
   const upstreamPath = `/${pathSegments.join('/')}${new URL(request.url).search}`;
   const upstreamUrl = `${apiUpstream}${upstreamPath}`;
   const sessionCookie = cookies().get(SESSION_COOKIE_NAME)?.value;
-  const headers = new Headers(request.headers);
-
-  headers.delete('host');
-  headers.delete('connection');
+  const headers = sanitizeProxyRequestHeaders(request.headers);
 
   if (sessionCookie) {
     headers.set('authorization', `Bearer ${sessionCookie}`);
@@ -51,7 +52,7 @@ async function proxyRequest(request: Request, pathSegments: string[]): Promise<R
 
   return new NextResponse(body, {
     status: upstreamResponse.status,
-    headers: upstreamResponse.headers,
+    headers: sanitizeProxyResponseHeaders(upstreamResponse.headers),
   });
 }
 

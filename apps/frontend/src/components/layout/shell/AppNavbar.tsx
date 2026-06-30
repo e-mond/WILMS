@@ -15,14 +15,12 @@ import { Menu } from 'lucide-react';
 
 export interface AppNavbarProps {
   profile?: ShellProfile;
-  showLiveBadge?: boolean;
   variant?: 'standard' | 'executive';
   className?: string;
   showMobileNavTrigger?: boolean;
 }
 
 export function AppNavbar({
-  showLiveBadge = false,
   variant = 'executive',
   className,
   showMobileNavTrigger = true,
@@ -61,19 +59,6 @@ export function AppNavbar({
               {breadcrumbs.length > 0 ? breadcrumbs[breadcrumbs.length - 1]?.label : 'Overview'}
             </h1>
           )}
-
-          {showLiveBadge ? (
-            <span
-              data-live-badge="true"
-              className="hidden shrink-0 items-center gap-1.5 rounded-md border border-status-active/40 bg-status-active-light px-2.5 py-0.5 text-xs font-semibold text-status-active lg:inline-flex"
-            >
-              <span
-                className="h-1.5 w-1.5 rounded-full bg-status-active animate-pulse"
-                aria-hidden="true"
-              />
-              Online
-            </span>
-          ) : null}
         </div>
 
         <div className="hidden justify-self-center md:block">{user ? <GlobalSearchTrigger variant="desktop" /> : null}</div>

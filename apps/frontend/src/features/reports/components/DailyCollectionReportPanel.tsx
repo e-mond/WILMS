@@ -39,25 +39,7 @@ export function DailyCollectionReportPanel() {
 
   const collectorsQuery = useQuery({
     queryKey: ['collectors-filter'],
-    queryFn: async (): Promise<CollectorListResponse> => {
-      try {
-        return await collectorManagementService.listCollectors();
-      } catch {
-        return {
-          generatedAt: new Date().toISOString(),
-          summary: {
-            totalCollectors: 0,
-            avgCollectionRatePercent: 0,
-            belowSeventyPercent: 0,
-            activeToday: 0,
-          },
-          rateDistribution: { topPerformers: 0, onTrack: 0, needsAttention: 0 },
-          collectors: [],
-          alerts: [],
-        };
-      }
-    },
-    retry: false,
+    queryFn: (): Promise<CollectorListResponse> => collectorManagementService.listCollectors(),
   });
 
   const collectorFilterOptions = useMemo(

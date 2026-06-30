@@ -50,8 +50,6 @@ export function CollectorShell({ children }: CollectorShellProps) {
 
         navVariant="executive"
 
-        showLiveBadge
-
         showAppAside={false}
 
         enableMobileNavDrawer={false}

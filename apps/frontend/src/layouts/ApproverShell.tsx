@@ -20,7 +20,6 @@ export function ApproverShell({ children }: ApproverShellProps) {
       brandTitle="WILMS Approver"
       sidebarVariant="executive"
       navVariant="executive"
-      showLiveBadge
     >
       <ExecutiveThemeInitializer />
       {children}
