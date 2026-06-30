@@ -19,7 +19,7 @@ function resolveAppLockIdleMs(): number {
 
   return Number.isFinite(configuredIdleMs) && configuredIdleMs > 0
     ? configuredIdleMs
-    : 5 * 60 * 1000;
+    : 9 * 60 * 1000;
 }
 
 /** Idle time before the lock screen appears (field device security). */

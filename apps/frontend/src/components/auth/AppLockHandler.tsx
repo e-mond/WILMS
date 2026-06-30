@@ -31,8 +31,12 @@ export function AppLockHandler() {
     !isPublicPath(pathname);
 
   useEffect(() => {
-    syncUser(user?.id ?? null);
-  }, [syncUser, user?.id]);
+    if (!isHydrated || !user?.id) {
+      return;
+    }
+
+    syncUser(user.id);
+  }, [isHydrated, syncUser, user?.id]);
 
   useEffect(() => {
     if (!shouldWatch) {
@@ -91,7 +95,12 @@ export function AppLockHandler() {
     }
 
     const handleVisibility = () => {
-      if (document.visibilityState === 'hidden') {
+      if (document.visibilityState !== 'visible') {
+        return;
+      }
+
+      const elapsed = Date.now() - useAppLockStore.getState().lastActivityAt;
+      if (elapsed >= APP_LOCK_IDLE_MS) {
         lock();
       }
     };
