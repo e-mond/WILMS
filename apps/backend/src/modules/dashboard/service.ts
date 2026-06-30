@@ -1,9 +1,10 @@
 import { BORROWER_STATUS } from '@wilms/shared-contracts';
-import { listBorrowers, listGroups, listPayments } from '../../db/persistence.js';
+import { listBorrowers, listPayments } from '../../db/persistence.js';
 import { isDatabaseEnabled } from '../../db/client.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import * as userRepo from '../../repositories/user.repository.js';
 import { decimalToPesewas } from '../../domain/money.js';
+import { listGroupsResponse } from '../groups/service.js';
 
 export interface DashboardSummary {
   generatedAt: string;
@@ -11,6 +12,7 @@ export interface DashboardSummary {
     id: string;
     label: string;
     amountPesewas: number;
+    valueKind?: 'currency' | 'count';
     trendLabel?: string;
     trendDirection?: 'up' | 'down' | 'neutral';
     trendTone?: 'gold' | 'success' | 'danger' | 'default';
@@ -49,11 +51,13 @@ export interface DashboardSummary {
 }
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {
-  const [borrowers, payments, groups] = await Promise.all([
+  const [borrowers, payments, groupsResponse] = await Promise.all([
     listBorrowers(),
     listPayments(),
-    listGroups(),
+    listGroupsResponse(),
   ]);
+
+  const groups = groupsResponse.groups;
 
   const today = new Date().toISOString().slice(0, 10);
   const todayPayments = payments.filter((payment) => payment.paymentDate === today);
@@ -139,6 +143,33 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   }
 
   const totalGroups = groups.length;
+  const { riskDistribution } = groupsResponse;
+  const groupRisk: DashboardSummary['groupRisk'] = [
+    {
+      label: 'Low risk',
+      count: riskDistribution.lowRisk,
+      percent: totalGroups > 0 ? Math.round((riskDistribution.lowRisk / totalGroups) * 100) : 0,
+      tone: 'low',
+    },
+    {
+      label: 'At risk',
+      count: riskDistribution.atRisk,
+      percent: totalGroups > 0 ? Math.round((riskDistribution.atRisk / totalGroups) * 100) : 0,
+      tone: 'atRisk',
+    },
+    {
+      label: 'Flagged',
+      count: riskDistribution.flagged,
+      percent: totalGroups > 0 ? Math.round((riskDistribution.flagged / totalGroups) * 100) : 0,
+      tone: 'flagged',
+    },
+    {
+      label: 'Suspended',
+      count: riskDistribution.suspended,
+      percent: totalGroups > 0 ? Math.round((riskDistribution.suspended / totalGroups) * 100) : 0,
+      tone: 'suspended',
+    },
+  ];
 
   return {
     generatedAt: new Date().toISOString(),
@@ -167,17 +198,13 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
         id: 'active-borrowers',
         label: 'Active borrowers',
         amountPesewas: borrowerSegments.find((segment) => segment.id === 'active')?.count ?? 0,
+        valueKind: 'count',
         valueTone: 'default',
       },
     ],
     borrowerSegments,
     collectorPerformance,
-    groupRisk: [
-      { label: 'Low risk', count: totalGroups, percent: totalGroups > 0 ? 100 : 0, tone: 'low' },
-      { label: 'At risk', count: 0, percent: 0, tone: 'atRisk' },
-      { label: 'Flagged', count: 0, percent: 0, tone: 'flagged' },
-      { label: 'Suspended', count: 0, percent: 0, tone: 'suspended' },
-    ],
+    groupRisk,
     totalGroups,
     cycleMetrics: [
       { label: 'Active groups', value: String(totalGroups) },

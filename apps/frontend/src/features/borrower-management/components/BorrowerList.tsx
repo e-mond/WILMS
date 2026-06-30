@@ -23,6 +23,7 @@ import { useBorrowers } from '@/features/borrower-management/hooks/useBorrowers'
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import type { BorrowerSummary } from '@/types/borrower';
 import { BORROWER_STATUS } from '@/types/borrower';
+import { resolveBorrowerDisplayId } from '@/utils/format-borrower-display-id';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
 
 const STATUS_FILTERS = BORROWER_STATUS_FILTER_OPTIONS.map((option) => ({
@@ -125,7 +126,7 @@ export function BorrowerList() {
   }
 
   const csvRows = filteredBorrowers.map((borrower) => [
-    borrower.id,
+    resolveBorrowerDisplayId(borrower),
     borrower.fullName,
     borrower.phone,
     borrower.groupName,
@@ -202,7 +203,11 @@ export function BorrowerList() {
               {
                 id: 'id',
                 header: 'Borrower ID',
-                cell: (row) => <span className="font-semibold text-brand-primary">{row.id}</span>,
+                cell: (row) => (
+                  <span className="font-semibold text-brand-primary">
+                    {resolveBorrowerDisplayId(row)}
+                  </span>
+                ),
               },
               {
                 id: 'name',

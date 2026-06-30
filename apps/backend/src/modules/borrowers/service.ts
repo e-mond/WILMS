@@ -11,6 +11,7 @@ import {
 } from '../../db/persistence.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
 import { processApprovedBorrower } from '../group-formation/service.js';
+import { formatBorrowerDisplayId } from './display-id.js';
 
 const AUDIT_ACTION = {
   BORROWER_REGISTERED: 'borrower.registered',
@@ -24,9 +25,13 @@ function officerName(officerId: string): string {
   return DEMO_USERS.find((user) => user.id === officerId)?.displayName ?? officerId;
 }
 
-function toSummary(record: BorrowerRecord) {
+function toSummary(record: BorrowerRecord, sequence?: number) {
   return {
     id: record.id,
+    displayId: formatBorrowerDisplayId(
+      { community: record.community, registeredAt: record.registeredAt },
+      sequence ?? 1,
+    ),
     fullName: record.fullName,
     phone: record.phone,
     status: record.status,
@@ -102,7 +107,11 @@ function assertPending(record: BorrowerRecord | undefined): BorrowerRecord {
 }
 
 export async function listBorrowerSummaries() {
-  return (await listBorrowers()).map(toSummary);
+  const records = await listBorrowers();
+  const sorted = [...records].sort((left, right) => left.registeredAt.localeCompare(right.registeredAt));
+  const sequenceById = new Map(sorted.map((record, index) => [record.id, index + 1]));
+
+  return records.map((record) => toSummary(record, sequenceById.get(record.id)));
 }
 
 export async function listPendingApplications() {

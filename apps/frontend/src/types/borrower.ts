@@ -5,6 +5,7 @@ import type { RegistrationWorkflowStatus } from '@/constants/registration-workfl
 
 export interface BorrowerSummary {
   id: string;
+  displayId?: string;
   fullName: string;
   phone: string;
   status: BorrowerStatus;

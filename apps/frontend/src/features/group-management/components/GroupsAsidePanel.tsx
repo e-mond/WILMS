@@ -106,10 +106,13 @@ export function GroupsAsidePanel({ data, selected }: GroupsAsidePanelProps) {
 
             return (
               <li key={key} className="flex items-center justify-between">
-                <span className="flex items-center gap-wilms-2">
+                <Link
+                  href={`/groups?risk=${level}`}
+                  className="flex min-w-0 flex-1 items-center gap-wilms-2 hover:text-brand-primary"
+                >
                   <span className={`h-2 w-6 rounded-sm ${GROUP_RISK_DISPLAY[level].barClass}`} />
                   {GROUP_RISK_DISPLAY[level].label}
-                </span>
+                </Link>
                 <span className="font-semibold">{count}</span>
               </li>
             );

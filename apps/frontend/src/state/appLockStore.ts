@@ -124,7 +124,9 @@ export const useAppLockStore = create<AppLockState>()(
       }),
       onRehydrateStorage: () => (state) => {
         state?.markHydrated();
-        state?.unlock();
+        if (state?.isEnabled) {
+          state.recordActivity();
+        }
       },
     },
   ),

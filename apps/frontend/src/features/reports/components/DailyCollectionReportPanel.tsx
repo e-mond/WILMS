@@ -30,7 +30,7 @@ const CSV_HEADERS = [
 ];
 
 function defaultReportDate(): string {
-  return '2026-05-23';
+  return new Date().toISOString().slice(0, 10);
 }
 
 export function DailyCollectionReportPanel() {
