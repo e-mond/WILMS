@@ -1,6 +1,6 @@
 {
   "name": "@wilms/api",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "type": "module",
   "scripts": {
@@ -38,7 +38,8 @@
     "cert:reconciliation:concurrency": "tsx src/verification/cert-reconciliation-concurrency.ts",
     "cert:reconciliation:perf": "tsx src/verification/cert-reconciliation-performance.ts",
     "cert:demo:stakeholder": "tsx src/verification/demo-stakeholder-cert.ts",
-    "smoke:production": "tsx src/verification/production-smoke.ts"
+    "smoke:production": "tsx src/verification/production-smoke.ts",
+    "smoke:staging": "tsx src/verification/production-smoke.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

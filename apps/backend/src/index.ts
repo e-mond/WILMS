@@ -3,6 +3,7 @@ import type { Server } from 'node:http';
 import { createApp } from './http/app.js';
 import { env } from './config/env.js';
 import { validateEnvironment } from './config/validate-env.js';
+import { assertProductionMockDisabled } from './config/mock-guard.js';
 import { isDatabaseEnabled } from './db/client.js';
 import { logger } from './infrastructure/logging/logger.js';
 import { getMailProvider } from './infrastructure/mail/index.js';
@@ -10,6 +11,8 @@ import { getSmsProvider } from './infrastructure/sms/index.js';
 import { validateUploadEnvironment } from './infrastructure/uploads/index.js';
 
 const envReport = validateEnvironment();
+
+assertProductionMockDisabled();
 
 process.env.WILMS_DEPLOYED_AT ??= new Date().toISOString();
 

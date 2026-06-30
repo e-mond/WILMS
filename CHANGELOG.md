@@ -2,6 +2,25 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [0.2.2] - 2026-06-30
+
+### Added
+- Staged CI/CD: enhanced `ci.yml`, `deploy-staging.yml`, manual-approval `deploy-production.yml`
+- Bundle and performance budget scripts (`bundle:budget-check`, `perf:budget-check`)
+- Offline sync backend: `POST /sync/offline/batch`, conflict review endpoints, migration `0007_offline_sync`
+- Version consistency script (`verify:version`)
+- Route-level loading states (collector, approver)
+- P14.6 audit and validation documentation
+
+### Security
+- Production mock-flag guard on API startup
+- Secret scan (gitleaks) and `npm audit` in CI
+- `apiClient` no longer redirects to session-expired on 401 while on `/login`
+
+### Changed
+- Offline payment replay routes through sync API (financial ops queued for review)
+- PWA install banner only calls `preventDefault` when custom UI will show
+
 ## [0.2.1] - 2026-06-20
 
 ### Added

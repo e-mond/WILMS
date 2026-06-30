@@ -16,6 +16,7 @@ import { loanPoolsRouter } from '../modules/loan-pools/routes.js';
 import { paymentsRouter } from '../modules/payments/routes.js';
 import { reconciliationRouter } from '../modules/reconciliation/routes.js';
 import { reportsRouter } from '../modules/reports/routes.js';
+import { syncRouter } from '../modules/sync/routes.js';
 import { uploadsRouter } from '../modules/uploads/routes.js';
 
 function mountBusinessRoutes(app: express.Application, basePath = '') {
@@ -29,6 +30,7 @@ function mountBusinessRoutes(app: express.Application, basePath = '') {
   app.use(`${prefix}`, auditRouter);
   app.use(`${prefix}`, reconciliationRouter);
   app.use(`${prefix}`, reportsRouter);
+  app.use(`${prefix}`, syncRouter);
   app.use(`${prefix}`, uploadsRouter);
 }
 
