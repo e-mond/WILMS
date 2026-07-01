@@ -1,5 +1,5 @@
 import { MOCK_LOAN_POOLS } from '@/mocks/loan-pools';
-import type { LoanPoolDetail } from '@/types/loan-pool';
+import { LOAN_POOL_STATUS, type LoanPoolDetail, type CreateLoanPoolInput } from '@/types/loan-pool';
 import type { ILoanPoolService } from '@/types/services';
 import { simulateDelay } from '@/services/mock/delay';
 import { buildLoanPoolListResponse } from '@/utils/loan-pool-list';
@@ -35,6 +35,28 @@ const loanPoolServiceMock: ILoanPoolService = {
       ],
     };
 
+    return detail;
+  },
+
+  async createLoanPool(input: CreateLoanPoolInput) {
+    await simulateDelay();
+    const detail: LoanPoolDetail = {
+      id: `pool-${Date.now()}`,
+      name: input.name,
+      region: input.region,
+      source: input.source,
+      capitalPesewas: input.capitalPesewas,
+      disbursedPesewas: 0,
+      collectedPesewas: 0,
+      outstandingPesewas: 0,
+      utilisationPercent: 0,
+      status: LOAN_POOL_STATUS.LAUNCHING,
+      groupCount: 0,
+      cycleLabel: input.cycleLabel,
+      lastReplenishedAt: new Date().toISOString().slice(0, 10),
+      repaymentRatePercent: 0,
+      recentActivity: [],
+    };
     return detail;
   },
 };

@@ -103,3 +103,11 @@ export interface GroupListResponse {
 }
 
 export type { GroupDetail } from '@/types/group-detail';
+
+export interface CreateGroupInput {
+  name: string;
+  community: string;
+  displayName?: string;
+  collectorUserId?: string;
+  memberBorrowerIds?: string[];
+}

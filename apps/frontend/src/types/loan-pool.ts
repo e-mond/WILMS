@@ -52,3 +52,11 @@ export interface LoanPoolAllocationSegment {
   poolName: string;
   percent: number;
 }
+
+export interface CreateLoanPoolInput {
+  name: string;
+  region: string;
+  source: string;
+  capitalPesewas: number;
+  cycleLabel: string;
+}

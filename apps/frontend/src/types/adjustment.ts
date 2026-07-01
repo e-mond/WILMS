@@ -34,6 +34,12 @@ export interface AdjustmentListResponse {
   requests: AdjustmentRequest[];
 }
 
+export interface AdjustmentCatalogResponse {
+  generatedAt: string;
+  count: number;
+  adjustments: AdjustmentRequest[];
+}
+
 export interface RejectAdjustmentInput {
   reason: string;
 }

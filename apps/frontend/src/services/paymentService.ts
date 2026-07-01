@@ -24,6 +24,10 @@ const paymentService: IPaymentService = {
     return apiClient.get<PaymentTransaction | null>(`/payments/same-day?${query.toString()}`);
   },
 
+  getPayment(paymentId: string): Promise<PaymentTransaction> {
+    return apiClient.get<PaymentTransaction>(`/payments/${paymentId}`);
+  },
+
   async editPayment(paymentId: string, input: EditPaymentInput): Promise<PaymentTransaction> {
     const gps = input.gps ?? (await captureGps());
 
@@ -44,6 +48,13 @@ const paymentService: IPaymentService = {
       collectorId: input.collectorId,
       gps,
     });
+  },
+
+  reversePayment(
+    paymentId: string,
+    input: { reason: string; actorId: string; actorDisplayName: string },
+  ): Promise<PaymentTransaction> {
+    return apiClient.post<PaymentTransaction>(`/payments/${paymentId}/reverse`, input);
   },
 };
 
