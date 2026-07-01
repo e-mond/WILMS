@@ -1,63 +1,49 @@
 # RC1.1 — Final Acceptance
 
 **Date:** 2026-07-01  
-**Target tag:** `v1.0.0` (readiness)
+**Branch:** `release/rc1-1-production-stabilization`  
+**Target:** v1.0.0 readiness (tag pending approval)
 
 ---
 
-## Phase 1 — Production hotfix (COMPLETE)
+## Deliverables
 
-| Deliverable | Status |
-|-------------|--------|
-| CI: `CollectorsMobileCardList` / `COL-011` display ID | COMPLETE |
-| Router RBAC scoping (403 root cause) | COMPLETE |
-| Collector portal self-access guard | COMPLETE |
-| Admin-fee approver API removal for collectors | COMPLETE |
-| Backend RBAC integration tests (10 new) | COMPLETE |
-| Merge to `main` | COMPLETE (`8e0df23`) |
-| Railway + Vercel deploy | COMPLETE |
-| Production smoke 24/24 | COMPLETE |
-
----
-
-## Phase 2 — RC1.1 documentation (this branch)
-
-| Document | Status |
-|----------|--------|
-| `RC1.1-api-matrix.md` | COMPLETE |
-| `RC1.1-technical-debt.md` | COMPLETE |
-| `RC1.1-security-audit.md` | COMPLETE |
-| `RC1.1-performance-audit.md` | COMPLETE |
-| `RC1.1-cleanup-report.md` | COMPLETE |
-| `RC1.1-production-verification.md` | COMPLETE |
-| `README.md` / `PROJECT_STATUS.md` / `CHANGELOG.md` | COMPLETE |
+| Deliverable | Document | Status |
+|-------------|----------|--------|
+| API Coverage Report | `RC1.1-api-coverage-report.md` | COMPLETE |
+| Security Audit | `RC1.1-security-audit.md` | COMPLETE |
+| Repository Audit | `RC1.1-repository-audit.md` | COMPLETE |
+| Technical Debt | `RC1.1-technical-debt.md` | COMPLETE |
+| Architecture Sync | `RC1.1-architecture-sync.md` | COMPLETE |
+| Testing Report | `RC1.1-testing-report.md` | COMPLETE |
+| Production Verification | `RC1.1-production-verification.md` | COMPLETE |
+| Deployment Report | `RC1.1-deployment-report.md` | COMPLETE |
+| RBAC Matrix | `RC1.1-rbac-matrix.md` | COMPLETE |
+| Console Classification | `RC1.1-console-classification.md` | COMPLETE |
+| Module audits (4) | `RC1.1-*-audit.md` | COMPLETE |
+| Implementation Matrix | `RC1.1-implementation-matrix.md` | COMPLETE |
+| README / PROJECT_STATUS | repo root | COMPLETE |
 
 ---
 
-## Acceptance criteria for v1.0.0
+## Golden rules compliance
 
-| Criterion | Met |
-|-----------|-----|
-| Zero placeholder UI in production pages | Yes |
-| API integrity 132/132 | Yes |
-| All 5 roles authenticate | Yes (inherited) |
-| Collector portal live (no mocks) | Yes |
-| Production smoke green | Yes |
-| No P0 security regressions | Yes |
-
----
-
-## Tag readiness
-
-```bash
-git tag v1.0.0
-git push origin v1.0.0
-```
-
-Apply tag after stakeholder sign-off on production verification checklist.
+| Rule | Status |
+|------|--------|
+| No hidden errors | Error states with retry |
+| No fake data in prod | Mock guard + ApiDataProvider |
+| No placeholders | 0 hits in coverage gate |
+| No TODOs in features | 0 |
+| Evidence-backed conclusions | All docs cite commands/tests |
 
 ---
 
-## Verdict
+## Acceptance
 
-**RC1.1 ACCEPTED** — Ready for v1.0.0 tag pending stakeholder approval.
+**RC1.1 STABILIZATION ACCEPTED** for PR review.
+
+Pending after merge:
+- Production deploy + smoke
+- Stakeholder sign-off for `v1.0.0` tag
+
+**Do not merge automatically.**
