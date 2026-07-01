@@ -20,6 +20,7 @@ import { DashboardCycleSnapshot } from '@/features/super-admin-dashboard/compone
 import { DashboardExpenseSummary } from '@/features/super-admin-dashboard/components/DashboardExpenseSummary';
 import { useDashboardSummary } from '@/features/super-admin-dashboard/hooks/useDashboardSummary';
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
+import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { cn } from '@/utils/cn';
 
 const KPI_ICON_NAMES: Record<string, DashboardKpiIconName> = {
@@ -52,6 +53,7 @@ const QUICK_ACTIONS = [
 
 export function SuperAdminDashboard() {
   const { data, isLoading, isError, refetch } = useDashboardSummary();
+  const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
   const alertsAside = useMemo(
     () => (data ? <DashboardAlertsAside alerts={data.recentAlerts} /> : null),
     [data]
@@ -62,6 +64,8 @@ export function SuperAdminDashboard() {
   return (
     <QueryStatePanel
       isLoading={isLoading}
+      showLoading={showLoading}
+      isTimedOut={isTimedOut}
       isError={isError || !data}
       errorMessage="Unable to load dashboard. Check your connection and try again."
       onRetry={() => void refetch()}

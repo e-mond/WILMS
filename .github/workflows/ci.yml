@@ -36,6 +36,9 @@ jobs:
       - name: API coverage
         run: npm run verify:api-coverage
 
+      - name: Mock import guard
+        run: npm run verify:mock-guard
+
       - name: Build frontend
         run: npm run build
         env:

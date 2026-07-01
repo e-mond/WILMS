@@ -28,11 +28,17 @@ function formatEnvironmentLabel(environment?: string): string {
 }
 
 function formatCoreServicesLabel(status: string): string {
-  if (status === 'healthy') {
+  if (status === 'online') {
     return 'Operational';
   }
   if (status === 'degraded') {
     return 'Degraded';
+  }
+  if (status === 'reconnecting') {
+    return 'Reconnecting';
+  }
+  if (status === 'syncPending') {
+    return 'Sync pending';
   }
   return 'Offline';
 }
@@ -53,9 +59,9 @@ export function SettingsAsidePanel({ updatedAt, activeSectionLabel }: SettingsAs
             <dt className="text-text-muted">Core services</dt>
             <dd
               className={
-                status === 'healthy'
+                status === 'online'
                   ? 'font-semibold text-status-active'
-                  : status === 'degraded'
+                  : status === 'degraded' || status === 'syncPending'
                     ? 'font-semibold text-warning'
                     : 'font-semibold text-text-muted'
               }

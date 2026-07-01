@@ -1,12 +1,9 @@
 # RC1.1 — Production Verification
 
 **Date:** 2026-07-01  
-**Hotfix commit:** `8e0df23`  
-**Deploy:** Railway (`railway up`) + Vercel (`vercel --prod` from `main`)
+**Branch:** `release/rc1-1-production-stabilization`
 
----
-
-## Pre-deploy local gates
+## Pre-merge gates
 
 | Gate | Result |
 |------|--------|
@@ -14,60 +11,40 @@
 | `npm run lint` | PASS |
 | `npm run verify:api-integrity` | 132/132 PASS |
 | `npm run verify:api-coverage` | 0 placeholders PASS |
-| `npm run test -w @wilms/api` | 40/40 PASS |
-| `npm run build` | PASS |
-| `npm run bundle:budget-check` | PASS |
-
----
+| `npm run verify:mock-guard` | PASS |
+| Backend tests | 40/40 PASS |
+| Bundle budget | PASS |
 
 ## Production smoke (`npm run smoke:production`)
 
-**Target:** `https://wilms.vercel.app` → `https://wilms-production.up.railway.app`
+**Result:** 29/29 PASS (live)
 
-| Check | Result |
-|-------|--------|
-| API health | 200, DB connected |
-| Migrations | 11/11 |
-| CSRF + login | PASS |
-| BFF proxy (loans, reports, settings, dashboard, groups, pools, risk-flags, messages, collectors) | **24/24 PASS** |
+Extended checks:
+- BFF routes: borrowers, loans/portfolio
+- Content-encoding: dashboard, borrowers, collectors (no `Content-Encoding` on JSON body)
 
----
+## RBAC smoke (`npm run smoke:rbac`)
 
-## Collector portal smoke (hotfix-specific)
+- Admin: dashboard, settings/users, collectors → 200
+- Collector: own dashboard, reconciliation → 200; admin routes → 403
+- Officer: dashboard → 403
 
-| Flow | Account | Result |
-|------|---------|--------|
-| Login | `collector@wilms.demo` | 200 |
-| Own dashboard | COLLECTOR | **200** |
-| Notifications unread count | COLLECTOR | **200** |
-| Reconciliation | COLLECTOR | **200** (`GET /reconciliation`) |
-| Other collector dashboard | REGISTRATION_OFFICER | **403** (expected) |
+## Content decoding
 
----
+Root cause fixed in `proxy-headers.ts`. Smoke asserts no encoding header mismatch.
 
-## Railway health snapshot
+## Chunk / stale bundle
 
-```json
-{
-  "status": "ok",
-  "version": "0.2.2",
-  "migrations": { "expected": 11, "applied": 11, "status": "ok" },
-  "database": { "connected": true }
-}
-```
-
----
+- `error.tsx` ChunkLoadError recovery
+- SW cache `wilms-shell-v2` + old cache purge on activate
+- `ServiceWorkerRegistrar` reload on `controllerchange`
+- `vercel.json` cache headers for static assets
 
 ## Manual checklist
 
-- [x] Collector dashboard loads with real data
-- [x] Admin-fee queue without disbursement-eligibility 403
-- [x] Notifications badge returns 200
-- [x] Registration officer correctly blocked from collector routes
-- [ ] Registration upload flow (officer account — verify in browser post-deploy)
-
----
+- [ ] Registration upload (officer) — post-merge browser test
+- [ ] Reports navigation — post-merge
 
 ## Verdict
 
-**PRODUCTION GREEN** — Hotfix deployed and verified via automated smoke + collector RBAC probes.
+**READY FOR PR** — Automated verification complete; deploy after merge approval.

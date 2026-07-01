@@ -3,7 +3,7 @@
 import { useOfflineStatus } from '@/hooks/useOfflineStatus';
 import { useSystemStatus } from '@/hooks/useSystemStatus';
 import { cn } from '@/utils/cn';
-import { AlertTriangle, Wifi, WifiOff } from 'lucide-react';
+import { AlertTriangle, CloudOff, RefreshCw, Upload, Wifi } from 'lucide-react';
 
 export interface ConnectionStatusChipProps {
   compact?: boolean;
@@ -14,20 +14,36 @@ export function ConnectionStatusChip({ compact = false }: ConnectionStatusChipPr
   const { status, label } = useSystemStatus();
 
   const StatusIcon =
-    status === 'offline' ? WifiOff : status === 'degraded' ? AlertTriangle : Wifi;
+    status === 'offline'
+      ? CloudOff
+      : status === 'reconnecting'
+        ? RefreshCw
+        : status === 'syncPending'
+          ? Upload
+          : status === 'degraded'
+            ? AlertTriangle
+            : Wifi;
 
   const toneClass =
-    status === 'healthy'
+    status === 'online'
       ? compact
         ? 'text-status-active'
         : 'border-status-active bg-status-active-light text-status-active'
-      : status === 'degraded'
+      : status === 'syncPending'
         ? compact
           ? 'text-warning'
           : 'border-warning bg-warning-light text-warning'
-        : compact
-          ? 'text-text-muted'
-          : 'border-border bg-muted text-text-muted';
+        : status === 'reconnecting'
+          ? compact
+            ? 'text-text-muted'
+            : 'border-border bg-muted text-text-muted'
+          : status === 'degraded'
+            ? compact
+              ? 'text-warning'
+              : 'border-warning bg-warning-light text-warning'
+            : compact
+              ? 'text-text-muted'
+              : 'border-border bg-muted text-text-muted';
 
   return (
     <span
@@ -36,7 +52,8 @@ export function ConnectionStatusChip({ compact = false }: ConnectionStatusChipPr
         compact
           ? 'h-11 w-11 min-h-[44px] min-w-[44px] justify-center border-transparent bg-transparent p-0'
           : 'gap-wilms-2 px-wilms-2 py-wilms-1 text-small',
-        isOnline ? toneClass : compact ? 'text-text-muted' : 'border-border bg-muted text-text-muted',
+        isOnline || status === 'reconnecting' ? toneClass : compact ? 'text-text-muted' : 'border-border bg-muted text-text-muted',
+        status === 'reconnecting' && 'animate-pulse',
       )}
       role="status"
       aria-label={label}

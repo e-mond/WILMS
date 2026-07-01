@@ -6,7 +6,7 @@
 
 **Current release:** v0.2.2 (v1.0.0 tag readiness)  
 
-**Active phase:** RC1.1 — production hotfix complete; final acceptance on `release/rc1-production-final`
+**Active phase:** RC1.1 — production stabilization on `release/rc1-1-production-stabilization`
 
 
 
@@ -18,7 +18,7 @@
 
 
 
-RC1.1 production hotfix (`8e0df23`) resolves collector portal 403s, CI display-ID failure, and admin-fee RBAC mismatch. API integrity 132/132, production smoke 24/24, collector portal verified live.
+RC1.1 stabilization: BFF encoding smoke, RBAC matrix, mock import guard, loading UX rollout, connection status chip, stale-bundle mitigation. API integrity 132/132, backend 40/40 tests, mock guard CI.
 
 
 

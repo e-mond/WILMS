@@ -1,45 +1,49 @@
 # RC1.1 — Security Audit
 
 **Date:** 2026-07-01  
-**Scope:** Post hotfix `8e0df23`
+**Scope:** Full RC1.1 stabilization branch
 
----
+## Dependency scan
 
-## Hotfix security impact
+```bash
+npm audit --audit-level=critical  # 0 critical (CI gate)
+npm audit --audit-level=high      # 9 high — documented below
+```
 
-| Control | Before | After |
-|---------|--------|-------|
-| Collector self-access | Router blocked all collector routes | `assertCollectorAccess` enforces owner-or-admin |
-| Cross-collector access | Possible if router passed | 403 when `session.userId !== collectorId` |
-| Permission bleed | Router `use()` denied unrelated APIs | Scoped per-route only |
-| CSRF on uploads | Missing bootstrap caused 403 | `ensureCsrfToken()` in `apiClient` (inherited from PR #41) |
-| Admin-fee data leak | Collector UI called approver eligibility | Gated behind `APPROVE_LOANS` |
+| Advisory | Package | Severity | Remediation |
+|----------|---------|----------|-------------|
+| SQL identifier escaping | drizzle-orm <0.45.2 | high | Upgrade post-v1.0.0 (breaking) |
+| Next.js advisories | next 14.x | high | Upgrade to 15+ planned (TD-01) |
+| Playwright SSL | playwright <1.55.1 | high | Dev dependency — upgrade e2e |
+| form-data CRLF | form-data | high | `npm audit fix` when safe |
+| glob CLI | glob | high | eslint-config-next chain — defer |
 
----
+**Critical:** 0 — CI blocks merge on critical findings.
 
-## Unchanged controls (verified)
+## Application controls
 
-- Helmet + HSTS in production
-- CORS `credentials: true` with explicit origin
-- BFF CSRF on login/logout and mutating `/api/wilms/*`
-- `requireAuth` on business routes
-- gitleaks + `npm audit --audit-level=critical` in CI
-- Cloudinary upload validation
-- Production mock guard (`NEXT_PUBLIC_USE_MOCK=false`)
+| Control | Status |
+|---------|--------|
+| Helmet + HSTS | PASS |
+| CORS explicit origin | PASS |
+| BFF CSRF | PASS |
+| RBAC per-route | PASS (hotfix) |
+| Collector self-access | PASS |
+| Upload validation (Cloudinary) | PASS |
+| gitleaks in CI | PASS |
+| Production mock guard | PASS |
+| Mock import guard (features) | PASS |
 
----
+## OWASP-oriented review
 
-## Production smoke (security-relevant)
-
-| Check | Result |
-|-------|--------|
-| CSRF blocks login without token | 403 |
-| Session cookie HttpOnly | PASS |
-| Unauthenticated API `/loans` | 401 |
-| Officer blocked from collector dashboard | 403 |
-
----
+| Risk | Mitigation |
+|------|------------|
+| XSS | React escaping; CSP nonce support in Next config |
+| SQL injection | Drizzle parameterized queries; upgrade advisory tracked |
+| CSRF | BFF synchronizer token |
+| Broken access control | RBAC middleware + integration tests |
+| Security misconfiguration | Env validation on API startup |
 
 ## Verdict
 
-**PASS** — Hotfix tightens collector portal isolation without weakening existing controls.
+**PASS** — No critical findings; highs documented with remediation plan.
