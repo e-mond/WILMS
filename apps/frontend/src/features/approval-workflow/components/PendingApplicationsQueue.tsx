@@ -3,10 +3,11 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { DataTable, KpiCard, StatusBadge } from '@/components/data-display';
-import { ExecutiveKpiGrid, ManagementToolbar } from '@/components/layout/executive';
+import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { EmptyState } from '@/components/feedback/EmptyState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { ExecutiveKpiGrid, ManagementToolbar } from '@/components/layout/executive';
 import { Input } from '@/components/ui/Input';
+import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { usePendingApplications } from '@/features/approval-workflow/hooks/usePendingApplications';
 import { groupPendingApplicationsByCommunityAndDate } from '@/utils/approval-queue-grouping';
 import { BORROWER_STATUS } from '@/types/borrower';
@@ -32,7 +33,8 @@ function filterPendingApplications(
 }
 
 export function PendingApplicationsQueue() {
-  const { data, isLoading, isError } = usePendingApplications();
+  const { data, isLoading, isError, refetch } = usePendingApplications();
+  const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedCommunities, setExpandedCommunities] = useState<Record<string, boolean>>({});
 
@@ -46,25 +48,34 @@ export function PendingApplicationsQueue() {
     [filteredApplications],
   );
 
-  if (isLoading) {
-    return <LoadingSpinner label="Loading pending applications" className="py-wilms-8" />;
-  }
-
-  if (isError) {
+  if (isLoading || isError) {
     return (
-      <EmptyState
-        title="Unable to load pending applications"
-        description="Check your connection and try again."
-      />
+      <QueryStatePanel
+        isLoading={isLoading}
+        showLoading={showLoading}
+        isTimedOut={isTimedOut}
+        isError={isError}
+        errorMessage="Unable to load pending applications. Check your connection and try again."
+        onRetry={() => void refetch()}
+        variant="table"
+      >
+        {null}
+      </QueryStatePanel>
     );
   }
 
   if (!data?.length) {
     return (
-      <EmptyState
-        title="No pending applications"
-        description="New borrower registrations will appear here for your review."
-      />
+      <QueryStatePanel
+        isLoading={false}
+        isError={false}
+        isEmpty
+        emptyTitle="No pending applications"
+        emptyDescription="New borrower registrations will appear here for your review."
+        variant="table"
+      >
+        {null}
+      </QueryStatePanel>
     );
   }
 

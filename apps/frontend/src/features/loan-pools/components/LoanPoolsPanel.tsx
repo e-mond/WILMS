@@ -20,6 +20,7 @@ import { LoanPoolsMobileCardList } from '@/features/loan-pools/components/LoanPo
 import { useLoanPools } from '@/features/loan-pools/hooks/useLoanPools';
 import { useCreateLoanPool } from '@/features/loan-pools/hooks/useCreateLoanPool';
 import { usePaginatedRows } from '@/hooks/usePaginatedRows';
+import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { LOAN_POOL_STATUS, type LoanPoolSummary } from '@/types/loan-pool';
 import { ghsInputToPesewas } from '@/utils/reconciliation.schema';
@@ -35,6 +36,7 @@ const POOL_STATUS_FILTERS = [
 
 export function LoanPoolsPanel() {
   const { data, isLoading, isError, refetch } = useLoanPools();
+  const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
   const createLoanPool = useCreateLoanPool();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -125,6 +127,8 @@ export function LoanPoolsPanel() {
     <>
     <QueryStatePanel
       isLoading={isLoading}
+      showLoading={showLoading}
+      isTimedOut={isTimedOut}
       isError={isError || !data}
       errorMessage="Unable to load loan pools. Try again shortly."
       onRetry={() => void refetch()}
