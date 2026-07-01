@@ -167,6 +167,12 @@ async function resolveUserId(email: string): Promise<string> {
 }
 
 export async function seedFinancialCore(): Promise<void> {
+  if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DEMO_SEED !== 'true') {
+    throw new Error(
+      'Demo financial seed is disabled in production. Set ALLOW_DEMO_SEED=true to override.',
+    );
+  }
+
   const db = getDb();
   const officerId = await resolveUserId('officer@wilms.demo');
   const approverId = await resolveUserId('approver@wilms.demo');

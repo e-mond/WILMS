@@ -19,12 +19,22 @@ import { listPortfolioEntries } from '../loans/service.js';
 import { listCollectors } from '../collectors/service.js';
 import { listGroupsResponse } from '../groups/service.js';
 
+type ReportCategory = 'collection' | 'portfolio' | 'risk' | 'compliance' | 'operations';
+
+const REPORT_CATEGORY_LABELS: Record<ReportCategory, string> = {
+  collection: 'Collection',
+  portfolio: 'Portfolio',
+  risk: 'Risk',
+  compliance: 'Compliance',
+  operations: 'Operations',
+};
+
 const REPORTS = [
   {
     id: 'daily-collection',
     title: 'Daily Collection Report',
     generatedAt: new Date().toISOString(),
-    category: 'OPERATIONS',
+    category: 'collection' as ReportCategory,
     description: 'Collections recorded by date and collector.',
     recordCount: 0,
     route: '/reports/daily-collection',
@@ -33,21 +43,85 @@ const REPORTS = [
     id: 'loan-portfolio',
     title: 'Loan Portfolio Report',
     generatedAt: new Date().toISOString(),
-    category: 'FINANCIAL',
+    category: 'portfolio' as ReportCategory,
     description: 'Active and closed loan portfolio summary.',
     recordCount: 0,
     route: '/reports/loan-portfolio',
   },
   {
+    id: 'defaulters',
+    title: 'Defaulter Report',
+    generatedAt: new Date().toISOString(),
+    category: 'risk' as ReportCategory,
+    description: 'Borrowers with consecutive missed payments and arrears.',
+    recordCount: 0,
+    route: '/reports/defaulters',
+  },
+  {
+    id: 'collector-performance',
+    title: 'Collector Performance Report',
+    generatedAt: new Date().toISOString(),
+    category: 'operations' as ReportCategory,
+    description: 'Collection rates and field performance by collector.',
+    recordCount: 0,
+    route: '/reports/collector-performance',
+  },
+  {
+    id: 'group-risk',
+    title: 'Group Risk Report',
+    generatedAt: new Date().toISOString(),
+    category: 'risk' as ReportCategory,
+    description: 'Group exposure, missed payments, and risk distribution.',
+    recordCount: 0,
+    route: '/reports/group-risk',
+  },
+  {
+    id: 'financial-ledger',
+    title: 'Financial Ledger Report',
+    generatedAt: new Date().toISOString(),
+    category: 'compliance' as ReportCategory,
+    description: 'Immutable transaction ledger for disbursements and repayments.',
+    recordCount: 0,
+    route: '/reports/financial-ledger',
+  },
+  {
     id: 'audit-log',
     title: 'Audit Log Report',
     generatedAt: new Date().toISOString(),
-    category: 'COMPLIANCE',
+    category: 'compliance' as ReportCategory,
     description: 'Immutable audit trail export.',
     recordCount: 0,
     route: '/reports/audit-log',
   },
 ];
+
+function buildCategoryBreakdown() {
+  const counts = REPORTS.reduce(
+    (accumulator, entry) => {
+      accumulator[entry.category] = (accumulator[entry.category] ?? 0) + 1;
+      return accumulator;
+    },
+    {} as Record<ReportCategory, number>,
+  );
+
+  return (Object.keys(REPORT_CATEGORY_LABELS) as ReportCategory[]).map((category) => ({
+    id: category,
+    label: REPORT_CATEGORY_LABELS[category],
+    count: counts[category] ?? 0,
+  }));
+}
+
+function buildReportsHubMetadata() {
+  return {
+    scheduledReports: [] as { id: string; title: string; scheduleLabel: string }[],
+    recentExports: [] as { id: string; label: string }[],
+    lastComplianceExport: {
+      exportedAt: new Date().toISOString(),
+      exportedBy: 'System',
+    },
+    categoryBreakdown: buildCategoryBreakdown(),
+  };
+}
 
 export const reportsRouter = Router();
 
@@ -64,11 +138,7 @@ reportsRouter.get(
 reportsRouter.get(
   '/reports/hub',
   asyncHandler(async (_req, res) => {
-    const allPayments = await listPayments();
-    sendData(res, {
-      totalCollectionsPesewas: allPayments.reduce((sum, payment) => sum + payment.amountPesewas, 0),
-      reportCount: REPORTS.length,
-    });
+    sendData(res, buildReportsHubMetadata());
   }),
 );
 

@@ -3,6 +3,7 @@
 import { CurrencyAmount, DataTable, KpiCard } from '@/components/data-display';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { ExecutiveKpiGrid, ManagementToolbar } from '@/components/layout/executive';
+import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
 import { WILMS_REPORT_TYPE } from '@/features/export';
 import { useDefaulterReport } from '@/features/reports/hooks/useDefaulterReport';
@@ -13,10 +14,13 @@ const CSV_HEADERS = ['Borrower', 'Community', 'Group', 'Missed Weeks', 'Outstand
 
 export function DefaulterReportPanel() {
   const { data, isLoading, isError, refetch } = useDefaulterReport();
+  const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
 
   return (
     <QueryStatePanel
       isLoading={isLoading}
+      showLoading={showLoading}
+      isTimedOut={isTimedOut}
       isError={isError || !data}
       errorMessage="Unable to generate report. Try again shortly."
       onRetry={() => void refetch()}
@@ -28,7 +32,8 @@ export function DefaulterReportPanel() {
 }
 
 function DefaulterReportContent({ data }: { data: NonNullable<ReturnType<typeof useDefaulterReport>['data']> }) {
-  const csvRows = data.rows.map((row) => [
+  const rows = data.rows ?? [];
+  const csvRows = rows.map((row) => [
     row.borrowerName,
     row.community,
     row.groupName,
@@ -71,7 +76,7 @@ function DefaulterReportContent({ data }: { data: NonNullable<ReturnType<typeof 
       <DataTable<DefaulterReportRow>
         variant="executive"
         caption="Defaulter report"
-        data={data.rows}
+        data={rows}
         getRowId={(row) => row.id}
         columns={[
           { id: 'borrower', header: 'Borrower', cell: (row) => row.borrowerName },

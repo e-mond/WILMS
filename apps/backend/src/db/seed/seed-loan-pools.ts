@@ -51,6 +51,12 @@ const POOL_SEED = [
  * Idempotent: skips pools that already exist by fixed UUID.
  */
 export async function seedLoanPools(): Promise<void> {
+  if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DEMO_SEED !== 'true') {
+    throw new Error(
+      'Demo loan pool seed is disabled in production. Set ALLOW_DEMO_SEED=true to override.',
+    );
+  }
+
   const db = getDb();
 
   for (const poolSeed of POOL_SEED) {
