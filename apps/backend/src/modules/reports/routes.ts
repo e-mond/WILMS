@@ -126,10 +126,10 @@ function buildReportsHubMetadata() {
 export const reportsRouter = Router();
 
 reportsRouter.use(requireAuth);
-reportsRouter.use(requirePermission(PERMISSION.VIEW_REPORTS));
 
 reportsRouter.get(
   '/reports',
+  requirePermission(PERMISSION.VIEW_REPORTS),
   asyncHandler(async (_req, res) => {
     sendData(res, REPORTS);
   }),
@@ -137,6 +137,7 @@ reportsRouter.get(
 
 reportsRouter.get(
   '/reports/hub',
+  requirePermission(PERMISSION.VIEW_REPORTS),
   asyncHandler(async (_req, res) => {
     sendData(res, buildReportsHubMetadata());
   }),
@@ -144,6 +145,7 @@ reportsRouter.get(
 
 reportsRouter.get(
   '/reports/daily-collection',
+  requirePermission(PERMISSION.VIEW_REPORTS),
   asyncHandler(async (req, res) => {
     const date = String(req.query.date ?? new Date().toISOString().slice(0, 10));
     const collectorId = req.query.collectorId ? String(req.query.collectorId) : undefined;
@@ -206,6 +208,7 @@ reportsRouter.get(
 
 reportsRouter.get(
   '/reports/loan-portfolio',
+  requirePermission(PERMISSION.VIEW_REPORTS),
   asyncHandler(async (req, res) => {
     const entries = await listPortfolioEntries();
     const report = buildLoanPortfolioReport(entries, {
@@ -219,6 +222,7 @@ reportsRouter.get(
 
 reportsRouter.get(
   '/reports/defaulters',
+  requirePermission(PERMISSION.VIEW_REPORTS),
   asyncHandler(async (_req, res) => {
     const [loanRows, borrowers, payments] = await Promise.all([
       loanRepo.listLoans(),
@@ -232,6 +236,7 @@ reportsRouter.get(
 
 reportsRouter.get(
   '/reports/collector-performance',
+  requirePermission(PERMISSION.VIEW_REPORTS),
   asyncHandler(async (_req, res) => {
     const collectorList = await listCollectors();
     const report = buildCollectorPerformanceReport(collectorList.collectors);
@@ -241,6 +246,7 @@ reportsRouter.get(
 
 reportsRouter.get(
   '/reports/group-risk',
+  requirePermission(PERMISSION.VIEW_REPORTS),
   asyncHandler(async (_req, res) => {
     const groupList = await listGroupsResponse();
     const report = buildGroupRiskReport(groupList.groups);
@@ -250,6 +256,7 @@ reportsRouter.get(
 
 reportsRouter.get(
   '/reports/financial-ledger',
+  requirePermission(PERMISSION.VIEW_REPORTS),
   asyncHandler(async (req, res) => {
     const payments = await listPayments();
     const report = buildFinancialLedgerReport(payments, {

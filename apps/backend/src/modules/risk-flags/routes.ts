@@ -41,10 +41,10 @@ function mapError(error: unknown): never {
 export const riskFlagsRouter = Router();
 
 riskFlagsRouter.use(requireAuth);
-riskFlagsRouter.use(requirePermission(PERMISSION.REVIEW_RISK_FLAGS));
 
 riskFlagsRouter.get(
   '/risk-flags',
+  requirePermission(PERMISSION.REVIEW_RISK_FLAGS),
   asyncHandler(async (_req, res) => {
     sendData(res, await riskFlagService.listRiskFlags());
   }),
@@ -53,6 +53,7 @@ riskFlagsRouter.get(
 riskFlagsRouter.post(
   '/risk-flags',
   validateBody(createRiskFlagSchema),
+  requirePermission(PERMISSION.REVIEW_RISK_FLAGS),
   asyncHandler(async (req, res) => {
     try {
       sendData(
@@ -72,6 +73,7 @@ riskFlagsRouter.post(
 
 riskFlagsRouter.get(
   '/risk-flags/:id',
+  requirePermission(PERMISSION.REVIEW_RISK_FLAGS),
   asyncHandler(async (req, res) => {
     try {
       sendData(res, await riskFlagService.getRiskFlag(req.params.id!));
@@ -83,6 +85,7 @@ riskFlagsRouter.get(
 
 riskFlagsRouter.patch(
   '/risk-flags/:id/escalate',
+  requirePermission(PERMISSION.REVIEW_RISK_FLAGS),
   asyncHandler(async (req, res) => {
     try {
       sendData(
@@ -102,6 +105,7 @@ riskFlagsRouter.patch(
 riskFlagsRouter.patch(
   '/risk-flags/:id/resolve',
   validateBody(resolveRiskFlagSchema),
+  requirePermission(PERMISSION.REVIEW_RISK_FLAGS),
   asyncHandler(async (req, res) => {
     try {
       sendData(
@@ -122,6 +126,7 @@ riskFlagsRouter.patch(
 riskFlagsRouter.patch(
   '/risk-flags/:id/assign',
   validateBody(assignRiskFlagSchema),
+  requirePermission(PERMISSION.REVIEW_RISK_FLAGS),
   asyncHandler(async (req, res) => {
     try {
       sendData(

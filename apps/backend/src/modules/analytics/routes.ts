@@ -9,10 +9,10 @@ import * as analyticsService from './service.js';
 export const analyticsRouter = Router();
 
 analyticsRouter.use(requireAuth);
-analyticsRouter.use(requirePermission(PERMISSION.VIEW_REPORTS));
 
 analyticsRouter.get(
   '/analytics/collections',
+  requirePermission(PERMISSION.VIEW_REPORTS),
   asyncHandler(async (req, res) => {
     sendData(
       res,

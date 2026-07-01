@@ -30,10 +30,10 @@ function mapError(error: unknown): never {
 export const collectorsRouter = Router();
 
 collectorsRouter.use(requireAuth);
-collectorsRouter.use(requirePermission(PERMISSION.VIEW_ALL_COLLECTORS));
 
 collectorsRouter.get(
   '/collectors',
+  requirePermission(PERMISSION.VIEW_ALL_COLLECTORS),
   asyncHandler(async (_req, res) => {
     sendData(res, await collectorService.listCollectors());
   }),
@@ -62,6 +62,7 @@ collectorsRouter.post(
 
 collectorsRouter.get(
   '/collectors/:id',
+  requirePermission(PERMISSION.VIEW_ALL_COLLECTORS),
   asyncHandler(async (req, res) => {
     try {
       sendData(res, await collectorService.getCollector(req.params.id!));
