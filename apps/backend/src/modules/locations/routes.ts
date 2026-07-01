@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { asyncHandler } from '../../http/async-handler.js';
 import { sendData } from '../../http/response.js';
+import { PERMISSION } from '../../infrastructure/permissions/matrix.js';
 import { requireAuth } from '../../middleware/authenticate.js';
+import { requirePermission } from '../../middleware/require-permission.js';
 import {
   getGhanaCities,
   getGhanaDistricts,
@@ -11,6 +13,17 @@ import {
 export const locationsRouter = Router();
 
 locationsRouter.use(requireAuth);
+locationsRouter.use(
+  requirePermission(
+    PERMISSION.ACCESS_REGISTRATION_PORTAL,
+    PERMISSION.REGISTER_BORROWERS,
+    PERMISSION.ACCESS_COLLECTOR_PORTAL,
+    PERMISSION.ACCESS_APPROVER_PORTAL,
+    PERMISSION.ACCESS_AUDITOR_PORTAL,
+    PERMISSION.VIEW_REPORTS,
+    PERMISSION.GPS_VERIFICATION,
+  ),
+);
 
 locationsRouter.get(
   '/locations/regions',

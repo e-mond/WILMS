@@ -8,6 +8,8 @@ import { NotificationInboxTrigger } from '@/components/layout/shell/navbar/Notif
 import { ShellMobileOverflowMenu } from '@/components/layout/shell/navbar/ShellMobileOverflowMenu';
 import { UserProfileMenu } from '@/components/layout/shell/navbar/UserProfileMenu';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { PermissionGate } from '@/components/auth/PermissionGate';
+import { PERMISSION } from '@/constants/permissions';
 import { useAuth } from '@/hooks/useAuth';
 import { resolveSettingsHref } from '@/utils/settings-route';
 import { Settings } from 'lucide-react';
@@ -43,7 +45,18 @@ export function ShellNavbarActions({
   if (mobileSimplified) {
     return (
       <div className="flex shrink-0 flex-nowrap items-center gap-1">
-        {user ? <NotificationInboxTrigger /> : null}
+        {user ? (
+          <PermissionGate
+            permissions={[
+              PERMISSION.VIEW_REPORTS,
+              PERMISSION.ACCESS_APPROVER_PORTAL,
+              PERMISSION.ACCESS_AUDITOR_PORTAL,
+              PERMISSION.ACCESS_COLLECTOR_PORTAL,
+            ]}
+          >
+            <NotificationInboxTrigger />
+          </PermissionGate>
+        ) : null}
         {user ? <UserProfileMenu compact /> : null}
         {user ? <ShellMobileOverflowMenu /> : null}
       </div>
@@ -56,7 +69,18 @@ export function ShellNavbarActions({
         {!compact ? <ConnectionStatusChip compact={compact} /> : null}
         {user && !hideSearch && !compact ? <GlobalSearchTrigger variant="desktop" /> : null}
         {user && !hideSearch && compact ? <GlobalSearchTrigger /> : null}
-        {user ? <NotificationInboxTrigger /> : null}
+        {user ? (
+          <PermissionGate
+            permissions={[
+              PERMISSION.VIEW_REPORTS,
+              PERMISSION.ACCESS_APPROVER_PORTAL,
+              PERMISSION.ACCESS_AUDITOR_PORTAL,
+              PERMISSION.ACCESS_COLLECTOR_PORTAL,
+            ]}
+          >
+            <NotificationInboxTrigger />
+          </PermissionGate>
+        ) : null}
         {!compact ? (
           <Link
             href={settingsHref}

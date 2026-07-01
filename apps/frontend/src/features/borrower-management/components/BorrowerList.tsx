@@ -5,12 +5,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { DataTable, KpiCard, StatusBadge, Avatar } from '@/components/data-display';
 import { EmptyState } from '@/components/feedback/EmptyState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import {
   ExecutiveKpiGrid,
   FilterPillBar,
   ManagementToolbar,
 } from '@/components/layout/executive';
+import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { Input } from '@/components/ui/Input';
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
 import { WILMS_REPORT_TYPE } from '@/features/export';
@@ -35,7 +36,8 @@ export function BorrowerList() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const statusFromUrl = searchParams.get('status') ?? '';
-  const { data, isLoading, isError } = useBorrowers();
+  const { data, isLoading, isError, refetch } = useBorrowers();
+  const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState(statusFromUrl);
 
@@ -103,8 +105,26 @@ export function BorrowerList() {
 
   useShellAsideContent(asideContent);
 
-  if (isLoading) {
-    return <LoadingSpinner label="Loading borrowers" className="py-wilms-8" />;
+  if (isTimedOut && isLoading) {
+    return (
+      <QueryStatePanel
+        isLoading
+        isTimedOut
+        isError={false}
+        onRetry={() => void refetch()}
+        variant="inline"
+      >
+        {null}
+      </QueryStatePanel>
+    );
+  }
+
+  if (showLoading && isLoading) {
+    return (
+      <QueryStatePanel isLoading showLoading isError={false} variant="inline">
+        {null}
+      </QueryStatePanel>
+    );
   }
 
   if (isError) {

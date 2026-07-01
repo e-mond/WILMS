@@ -4,12 +4,16 @@ import { CardSkeleton } from '@/components/feedback/CardSkeleton';
 import { TableSkeleton } from '@/components/feedback/TableSkeleton';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
 import { Button } from '@/components/ui/Button';
+import { LOADING_TIMEOUT_MESSAGE } from '@/constants/loading-policy';
 
 export interface QueryStatePanelProps {
   isLoading: boolean;
+  showLoading?: boolean;
   isFetching?: boolean;
   isError: boolean;
+  isTimedOut?: boolean;
   errorMessage?: string;
+  timeoutMessage?: string;
   isEmpty?: boolean;
   emptyTitle?: string;
   emptyDescription?: string;
@@ -20,9 +24,12 @@ export interface QueryStatePanelProps {
 
 export function QueryStatePanel({
   isLoading,
+  showLoading,
   isFetching = false,
   isError,
+  isTimedOut = false,
   errorMessage,
+  timeoutMessage = LOADING_TIMEOUT_MESSAGE,
   isEmpty = false,
   emptyTitle = 'No data yet',
   emptyDescription,
@@ -30,7 +37,22 @@ export function QueryStatePanel({
   variant = 'table',
   children,
 }: QueryStatePanelProps) {
-  if (isLoading) {
+  const displayLoading = showLoading ?? isLoading;
+
+  if (isTimedOut && (isLoading || isFetching)) {
+    return (
+      <div className="rounded-lg border border-border bg-background p-6 text-center">
+        <p className="text-sm text-text-muted">{timeoutMessage}</p>
+        {onRetry ? (
+          <Button type="button" variant="secondary" className="mt-4" onClick={onRetry}>
+            Retry
+          </Button>
+        ) : null}
+      </div>
+    );
+  }
+
+  if (displayLoading) {
     if (variant === 'cards') {
       return (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

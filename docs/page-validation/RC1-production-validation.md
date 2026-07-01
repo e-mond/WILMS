@@ -39,4 +39,15 @@
 
 ---
 
+## Demo data cleanup (production operator)
+
+```bash
+node apps/backend/scripts/cleanup-demo-financial-data.mjs          # dry-run
+node apps/backend/scripts/cleanup-demo-financial-data.mjs --execute
+```
+
+See `docs/page-validation/RC1-registration-hardening.md`.
+
+---
+
 **Verdict:** Local acceptance matrix PASS. Production smoke pending deploy.

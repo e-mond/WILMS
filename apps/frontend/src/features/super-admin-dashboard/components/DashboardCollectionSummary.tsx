@@ -2,7 +2,8 @@
 
 import { CurrencyAmount, KpiCard } from '@/components/data-display';
 import { ExecutiveKpiGrid } from '@/components/layout/executive';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
+import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { useCollectionMetrics } from '@/features/analytics/hooks/useCollectionMetrics';
 import { COLLECTION_PERIOD } from '@/types/collection-metrics';
 
@@ -15,8 +16,33 @@ export function DashboardCollectionSummary({ compact = false }: DashboardCollect
   const weekly = useCollectionMetrics({ period: COLLECTION_PERIOD.WEEKLY });
   const monthly = useCollectionMetrics({ period: COLLECTION_PERIOD.MONTHLY });
 
-  if (daily.isLoading || weekly.isLoading || monthly.isLoading) {
-    return <LoadingSpinner label="Loading collection metrics" className="py-wilms-4" />;
+  const isLoading = daily.isLoading || weekly.isLoading || monthly.isLoading;
+  const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
+
+  if (isTimedOut && isLoading) {
+    return (
+      <QueryStatePanel
+        isLoading
+        isTimedOut
+        isError={false}
+        onRetry={() => {
+          void daily.refetch();
+          void weekly.refetch();
+          void monthly.refetch();
+        }}
+        variant="inline"
+      >
+        {null}
+      </QueryStatePanel>
+    );
+  }
+
+  if (showLoading && isLoading) {
+    return (
+      <QueryStatePanel isLoading showLoading isError={false} variant="inline">
+        {null}
+      </QueryStatePanel>
+    );
   }
 
   const periods = [

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { validateBorrowerId } from '@wilms/shared-validation';
 import {
   BORROWER_GENDER,
   BORROWER_ID_TYPE,
@@ -11,7 +12,27 @@ const phoneSchema = z
   .min(1, 'Phone number is required.')
   .regex(/^(\+233|0)\d{9}$/, 'Enter a valid Ghana phone number (+233 or 0 prefix).');
 
-export const personalDetailsSchema = z.object({
+function refineBorrowerId(
+  ctx: z.RefinementCtx,
+  idType: string | undefined,
+  idNumber: string | undefined,
+  path: 'idNumber' | 'guarantorIdNumber',
+) {
+  if (!idType || !idNumber?.trim()) {
+    return;
+  }
+
+  const validation = validateBorrowerId(idType, idNumber);
+  if (!validation.valid) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: validation.error ?? 'Invalid ID number.',
+      path: [path],
+    });
+  }
+}
+
+const personalDetailsBaseSchema = z.object({
   fullName: z.string().trim().min(1, 'Full name is required.'),
   dateOfBirth: z.string().min(1, 'Date of birth is required.'),
   gender: z.enum(
@@ -35,6 +56,10 @@ export const personalDetailsSchema = z.object({
   idDocumentUploadId: z.string().optional(),
 });
 
+export const personalDetailsSchema = personalDetailsBaseSchema.superRefine((data, ctx) => {
+  refineBorrowerId(ctx, data.idType, data.idNumber, 'idNumber');
+});
+
 export const addressSchema = z.object({
   houseAddress: z.string().trim().min(1, 'House address is required.'),
   gpsAddress: z.string().trim().min(1, 'GPS address is required.'),
@@ -49,7 +74,7 @@ export const businessSchema = z.object({
   typeOfWork: z.string().trim().min(1, 'Type of work is required.'),
 });
 
-export const guarantorSchema = z.object({
+const guarantorBaseSchema = z.object({
   guarantorName: z.string().trim().min(1, 'Guarantor full name is required.'),
   guarantorPhone: phoneSchema,
   guarantorRelationship: z.string().trim().min(1, 'Relationship is required.'),
@@ -66,6 +91,10 @@ export const guarantorSchema = z.object({
       'Guarantor photo must be 5 MB or smaller.',
     ),
   guarantorPhotoUploadId: z.string().optional(),
+});
+
+export const guarantorSchema = guarantorBaseSchema.superRefine((data, ctx) => {
+  refineBorrowerId(ctx, data.guarantorIdType, data.guarantorIdNumber, 'guarantorIdNumber');
 });
 
 export const photoSchema = z.object({
@@ -91,12 +120,16 @@ export const signatureSchema = z.object({
   guarantorThumbprintManualPlaceholder: z.boolean().optional(),
 });
 
-export const borrowerRegistrationSchema = personalDetailsSchema
+export const borrowerRegistrationSchema = personalDetailsBaseSchema
   .merge(addressSchema)
   .merge(businessSchema)
-  .merge(guarantorSchema)
+  .merge(guarantorBaseSchema)
   .merge(photoSchema)
   .merge(signatureSchema)
+  .superRefine((data, ctx) => {
+    refineBorrowerId(ctx, data.idType, data.idNumber, 'idNumber');
+    refineBorrowerId(ctx, data.guarantorIdType, data.guarantorIdNumber, 'guarantorIdNumber');
+  })
   .refine((data) => data.guarantorPhone !== data.phone, {
     message: 'Guarantor phone must differ from borrower phone.',
     path: ['guarantorPhone'],
@@ -119,10 +152,10 @@ export const REGISTRATION_STEP_SCHEMAS = [
 ] as const;
 
 export const REGISTRATION_STEP_FIELD_NAMES = [
-  Object.keys(personalDetailsSchema.shape),
+  Object.keys(personalDetailsBaseSchema.shape),
   Object.keys(addressSchema.shape),
   Object.keys(businessSchema.shape),
-  Object.keys(guarantorSchema.shape),
+  Object.keys(guarantorBaseSchema.shape),
   ['photo'],
   [
     'borrowerSignatureUploadId',

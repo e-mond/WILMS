@@ -4,8 +4,9 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { CurrencyAmount, DataTable, KpiCard } from '@/components/data-display';
 import { EmptyState } from '@/components/feedback/EmptyState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { ExecutiveKpiGrid, FilterPillBar, ManagementToolbar } from '@/components/layout/executive';
+import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { ExportDownloadIcon } from '@/components/icons/ExportDownloadIcon';
 import { ReportsAsidePanel } from '@/features/reports/components/ReportsAsidePanel';
 import {
@@ -62,8 +63,12 @@ function resolveReportKpis(summary: DashboardSummary) {
 
 export function ReportsIndexPanel({ categoryFilterMode = 'default' }: ReportsIndexPanelProps) {
   const generatedBy = useWilmsExportActor();
-  const { data, isLoading, isError } = useReportsIndex();
-  const { data: dashboardSummary, isLoading: isDashboardLoading } = useDashboardSummary();
+  const { data, isLoading, isError, refetch } = useReportsIndex();
+  const { data: dashboardSummary, isLoading: isDashboardLoading, refetch: refetchDashboard } =
+    useDashboardSummary();
+  const { showLoading, isTimedOut } = useQueryLoadingPolicy({
+    isLoading: isLoading || isDashboardLoading,
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
@@ -122,10 +127,6 @@ export function ReportsIndexPanel({ categoryFilterMode = 'default' }: ReportsInd
   );
   useShellAsideContent(asideContent);
 
-  if (isLoading) {
-    return <LoadingSpinner label="Loading reports" className="py-wilms-8" />;
-  }
-
   if (isError || !data) {
     return (
       <EmptyState
@@ -135,12 +136,43 @@ export function ReportsIndexPanel({ categoryFilterMode = 'default' }: ReportsInd
     );
   }
 
+  if (isTimedOut && (isLoading || isDashboardLoading)) {
+    return (
+      <QueryStatePanel
+        isLoading
+        isTimedOut
+        isError={false}
+        onRetry={() => {
+          void refetch();
+          void refetchDashboard();
+        }}
+        variant="inline"
+      >
+        {null}
+      </QueryStatePanel>
+    );
+  }
+
+  if (showLoading && (isLoading || isDashboardLoading || !reportKpis)) {
+    return (
+      <QueryStatePanel isLoading showLoading isError={false} variant="inline">
+        {null}
+      </QueryStatePanel>
+    );
+  }
+
+  if (!reportKpis) {
+    return (
+      <EmptyState
+        title="Unable to load report metrics"
+        description="Check your connection and try again."
+      />
+    );
+  }
+
   return (
     <div className="space-y-wilms-4">
-      {isDashboardLoading || !reportKpis ? (
-        <LoadingSpinner label="Loading report metrics" className="py-wilms-4" />
-      ) : (
-        <ExecutiveKpiGrid>
+      <ExecutiveKpiGrid>
           <KpiCard
             variant="executive"
             label="Total Collections"
@@ -166,7 +198,6 @@ export function ReportsIndexPanel({ categoryFilterMode = 'default' }: ReportsInd
             valueClassName="text-executive-gold"
           />
         </ExecutiveKpiGrid>
-      )}
 
       <ManagementToolbar
         search={

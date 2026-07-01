@@ -9,12 +9,13 @@ import {
   LoanStatusBadge,
 } from '@/components/data-display';
 import { EmptyState } from '@/components/feedback/EmptyState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import {
   ExecutiveKpiGrid,
   FilterPillBar,
   ManagementToolbar,
 } from '@/components/layout/executive';
+import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { PERMISSION } from '@/constants/permissions';
@@ -45,7 +46,8 @@ const STATUS_FILTERS = LOAN_STATUS_FILTER_OPTIONS.map((option) => ({
 }));
 
 export function LoanPortfolioList() {
-  const { data, isLoading, isError } = useLoanPortfolio();
+  const { data, isLoading, isError, refetch } = useLoanPortfolio();
+  const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [cycleBatchFilter, setCycleBatchFilter] = useState('');
@@ -84,8 +86,26 @@ export function LoanPortfolioList() {
 
   useShellAsideContent(asideContent);
 
-  if (isLoading) {
-    return <LoadingSpinner label="Loading loan portfolio" className="py-wilms-8" />;
+  if (isTimedOut && isLoading) {
+    return (
+      <QueryStatePanel
+        isLoading
+        isTimedOut
+        isError={false}
+        onRetry={() => void refetch()}
+        variant="inline"
+      >
+        {null}
+      </QueryStatePanel>
+    );
+  }
+
+  if (showLoading && isLoading) {
+    return (
+      <QueryStatePanel isLoading showLoading isError={false} variant="inline">
+        {null}
+      </QueryStatePanel>
+    );
   }
 
   if (isError) {
