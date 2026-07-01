@@ -3,7 +3,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { CurrencyAmount, KpiCard } from '@/components/data-display';
 import { ExecutiveKpiGrid } from '@/components/layout/executive';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
+import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { expenseService } from '@/services';
 
 export interface DashboardExpenseSummaryProps {
@@ -11,13 +12,32 @@ export interface DashboardExpenseSummaryProps {
 }
 
 export function DashboardExpenseSummary({ compact = false }: DashboardExpenseSummaryProps) {
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['dashboard-expense-summary'],
     queryFn: () => expenseService.getExpenseSummary(),
   });
+  const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
 
-  if (isLoading) {
-    return <LoadingSpinner label="Loading expense summary" className="py-wilms-4" />;
+  if (isTimedOut && isLoading) {
+    return (
+      <QueryStatePanel
+        isLoading
+        isTimedOut
+        isError={false}
+        onRetry={() => void refetch()}
+        variant="inline"
+      >
+        {null}
+      </QueryStatePanel>
+    );
+  }
+
+  if (showLoading && isLoading) {
+    return (
+      <QueryStatePanel isLoading showLoading isError={false} variant="inline">
+        {null}
+      </QueryStatePanel>
+    );
   }
 
   if (isError || !data) {

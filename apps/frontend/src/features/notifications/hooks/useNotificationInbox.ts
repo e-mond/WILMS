@@ -1,8 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { notificationService } from '@/services';
+import { ApiError } from '@/types/api';
 
 export const notificationInboxQueryKey = ['notification-inbox'] as const;
 export const notificationUnreadCountQueryKey = ['notification-unread-count'] as const;
+
+function shouldRetryNotificationQuery(failureCount: number, error: unknown): boolean {
+  if (error instanceof ApiError && error.status === 403) {
+    return false;
+  }
+
+  return failureCount < 1;
+}
 
 export function useNotificationInbox(enabled = true) {
   return useQuery({
@@ -10,6 +19,7 @@ export function useNotificationInbox(enabled = true) {
     queryFn: () => notificationService.listInbox(),
     enabled,
     staleTime: 30_000,
+    retry: shouldRetryNotificationQuery,
   });
 }
 
@@ -19,6 +29,7 @@ export function useNotificationUnreadCount(enabled = true) {
     queryFn: () => notificationService.getUnreadCount(),
     enabled,
     staleTime: 30_000,
+    retry: shouldRetryNotificationQuery,
   });
 }
 

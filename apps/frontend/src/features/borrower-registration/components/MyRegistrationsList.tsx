@@ -10,8 +10,9 @@ import {
   ManagementToolbar,
 } from '@/components/layout/executive';
 import { EmptyState } from '@/components/feedback/EmptyState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { PermissionGate } from '@/components/auth/PermissionGate';
+import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { PERMISSION } from '@/constants/permissions';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -81,7 +82,8 @@ export function MyRegistrationsList() {
   const router = useRouter();
   const generatedBy = useWilmsExportActor();
   const { user } = useAuth();
-  const { data, isLoading, isError } = useMyRegistrations(user?.id);
+  const { data, isLoading, isError, refetch } = useMyRegistrations(user?.id);
+  const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
   const deleteMutation = useDeleteRegistration(user?.id);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -126,8 +128,26 @@ export function MyRegistrationsList() {
     }
   };
 
-  if (isLoading) {
-    return <LoadingSpinner label="Loading registrations" className="py-wilms-8" />;
+  if (isTimedOut && isLoading) {
+    return (
+      <QueryStatePanel
+        isLoading
+        isTimedOut
+        isError={false}
+        onRetry={() => void refetch()}
+        variant="inline"
+      >
+        {null}
+      </QueryStatePanel>
+    );
+  }
+
+  if (showLoading && isLoading) {
+    return (
+      <QueryStatePanel isLoading showLoading isError={false} variant="inline">
+        {null}
+      </QueryStatePanel>
+    );
   }
 
   if (isError) {

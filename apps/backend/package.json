@@ -14,6 +14,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:seed": "tsx src/db/seed/run-seed.ts",
+    "db:seed:reference": "tsx src/db/seed/run-seed-reference.ts",
+    "db:seed:demo": "tsx src/db/seed/run-seed-demo.ts",
     "verify:financial": "tsx src/verification/run-all.ts",
     "verify:live": "tsx src/verification/live-integration.ts",
     "perf:baseline": "tsx src/verification/performance-baseline.ts",

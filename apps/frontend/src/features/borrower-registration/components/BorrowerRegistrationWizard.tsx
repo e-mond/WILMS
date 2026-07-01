@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
+import { BORROWER_ID_PLACEHOLDERS, formatGhanaCardInput } from '@wilms/shared-validation';
 import { Alert } from '@/components/feedback/Alert';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { FormField, MultiStepForm, PhotoUploadField } from '@/components/forms';
@@ -42,6 +43,7 @@ import { PERMISSION } from '@/constants/permissions';
 import { UPLOAD_PURPOSE } from '@/types/upload';
 import { useAuth } from '@/hooks/useAuth';
 import { borrowerService, locationService } from '@/services';
+import { getGhanaRegions } from '@/services/mock/factories/ghana-locations.factory';
 import type { RegistrationConflictReport } from '@/types/borrower-conflicts';
 import type { BorrowerRegistrationFormValues } from '@/types/borrower-registration';
 import type { GuarantorEligibilityResult } from '@/types/guarantor-eligibility';
@@ -112,19 +114,34 @@ export function BorrowerRegistrationWizard() {
 
   const reviewSummary = watch();
   const watchedIdentityFields = watch(['fullName', 'phone', 'idType', 'idNumber']);
+  const watchedIdType = watch('idType');
+  const watchedGuarantorIdType = watch('guarantorIdType');
   const watchedRegion = watch('region');
   const watchedDistrict = watch('district');
   const [locationFeedback, setLocationFeedback] = useState<string | null>(null);
   const [isLocating, setIsLocating] = useState(false);
 
-  const { data: regions = [] } = useQuery({
+  const {
+    data: regions = [],
+    isError: isRegionsError,
+    refetch: refetchRegions,
+  } = useQuery({
     queryKey: ['locations', 'regions'],
     queryFn: () => locationService.getRegions(),
+    retry: (failureCount, error) => {
+      if (error instanceof ApiError && error.status === 403) {
+        return false;
+      }
+
+      return failureCount < 1;
+    },
   });
 
+  const regionOptions = isRegionsError ? getGhanaRegions() : regions;
+
   const selectedRegionId = useMemo(
-    () => regions.find((region) => region.name === watchedRegion)?.id ?? '',
-    [regions, watchedRegion],
+    () => regionOptions.find((region) => region.name === watchedRegion)?.id ?? '',
+    [regionOptions, watchedRegion],
   );
 
   const { data: districts = [] } = useQuery({
@@ -462,7 +479,25 @@ export function BorrowerRegistrationWizard() {
             </Select>
           </FormField>
           <FormField label="ID number" htmlFor="idNumber" required error={errors.idNumber?.message}>
-            <Input id="idNumber" hasError={Boolean(errors.idNumber)} {...idNumberField} />
+            <Input
+              id="idNumber"
+              hasError={Boolean(errors.idNumber)}
+              placeholder={
+                watchedIdType
+                  ? BORROWER_ID_PLACEHOLDERS[watchedIdType as keyof typeof BORROWER_ID_PLACEHOLDERS]
+                  : 'Select ID type first'
+              }
+              {...idNumberField}
+              onBlur={(event) => {
+                void idNumberField.onBlur(event);
+                if (getValues('idType') === BORROWER_ID_TYPE.GHANA_CARD) {
+                  setValue('idNumber', formatGhanaCardInput(event.target.value), {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                }
+              }}
+            />
           </FormField>
           <FormField
             label="ID document attachment"
@@ -519,6 +554,7 @@ export function BorrowerRegistrationWizard() {
                 id="gpsAddress"
                 hasError={Boolean(errors.gpsAddress)}
                 className="min-w-0 flex-1"
+                placeholder="GA-XXX-XXXX or coordinates"
                 {...register('gpsAddress')}
               />
               <Button
@@ -538,6 +574,18 @@ export function BorrowerRegistrationWizard() {
             ) : null}
           </FormField>
           <FormField label="Region" htmlFor="region" required error={errors.region?.message}>
+            {isRegionsError ? (
+              <div className="mb-wilms-2 rounded-md border border-warning/30 bg-warning/5 p-wilms-2 text-small text-text-muted">
+                Unable to load regions from the server. Showing offline reference list.{' '}
+                <button
+                  type="button"
+                  className="font-semibold text-brand-primary hover:underline"
+                  onClick={() => void refetchRegions()}
+                >
+                  Retry
+                </button>
+              </div>
+            ) : null}
             <Controller
               name="region"
               control={control}
@@ -547,7 +595,7 @@ export function BorrowerRegistrationWizard() {
                   hasError={Boolean(errors.region)}
                   value={selectedRegionId}
                   onChange={(event) => {
-                    const region = regions.find((entry) => entry.id === event.target.value);
+                    const region = regionOptions.find((entry) => entry.id === event.target.value);
                     field.onChange(region?.name ?? '');
                     setValue('district', '', { shouldDirty: true });
                     setValue('city', '', { shouldDirty: true });
@@ -555,7 +603,7 @@ export function BorrowerRegistrationWizard() {
                   onBlur={field.onBlur}
                 >
                   <option value="">Select region</option>
-                  {regions.map((region) => (
+                  {regionOptions.map((region) => (
                     <option key={region.id} value={region.id}>
                       {region.name}
                     </option>
@@ -722,7 +770,23 @@ export function BorrowerRegistrationWizard() {
             <Input
               id="guarantorIdNumber"
               hasError={Boolean(errors.guarantorIdNumber)}
-              {...register('guarantorIdNumber')}
+              placeholder={
+                watchedGuarantorIdType
+                  ? BORROWER_ID_PLACEHOLDERS[
+                      watchedGuarantorIdType as keyof typeof BORROWER_ID_PLACEHOLDERS
+                    ]
+                  : 'Select ID type first'
+              }
+              {...register('guarantorIdNumber', {
+                onBlur: (event) => {
+                  if (getValues('guarantorIdType') === BORROWER_ID_TYPE.GHANA_CARD) {
+                    setValue('guarantorIdNumber', formatGhanaCardInput(event.target.value), {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    });
+                  }
+                },
+              })}
             />
           </FormField>
           <FormField
