@@ -290,7 +290,9 @@ export function CollectorsManagementPanel() {
                         />
                         <div>
                           <p className="font-semibold text-text-primary">{row.displayName}</p>
-                          <p className="text-small font-semibold text-executive-gold">{row.id}</p>
+                          <p className="text-small font-semibold text-executive-gold">
+                            {resolveCollectorDisplayId(row)}
+                          </p>
                         </div>
                       </div>
                     ),

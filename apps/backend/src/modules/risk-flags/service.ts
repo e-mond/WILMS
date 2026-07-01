@@ -1,4 +1,5 @@
 import { eq, isNull } from 'drizzle-orm';
+import { formatEntityDisplayId } from '@wilms/shared-utils';
 import { uuidv7 } from 'uuidv7';
 import { isDatabaseEnabled, getDb } from '../../db/client.js';
 import { riskFlags } from '../../db/schema/risk-flags.js';
