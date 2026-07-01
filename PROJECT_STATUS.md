@@ -4,9 +4,9 @@
 
 **Last updated:** 2026-07-01  
 
-**Current release:** v0.2.2  
+**Current release:** v0.2.2 (v1.0.0 tag readiness)  
 
-**Active phase:** P14.RC1 — **Phase 2** production hardening (`rc1/phase-2-production-hardening`)
+**Active phase:** RC1.1 — production hotfix complete; final acceptance on `release/rc1-production-final`
 
 
 
@@ -18,7 +18,7 @@
 
 
 
-P14.RC1 Phase 2 completes API coverage: risk flag CRUD, group/pool/collector creation, in-app messaging, notification dispatch, zero placeholder UI, 135/135 API integrity, and extended production smoke.
+RC1.1 production hotfix (`8e0df23`) resolves collector portal 403s, CI display-ID failure, and admin-fee RBAC mismatch. API integrity 132/132, production smoke 24/24, collector portal verified live.
 
 
 
@@ -63,95 +63,64 @@ See `docs/page-validation/RC1-registration-hardening.md`.
 
 
 
-## Production (inherited P14.6.4)
+## RC1.1 production hotfix (2026-07-01)
 
+| Fix | Summary |
+|-----|---------|
+| Router RBAC bleed | Per-route guards — collectors no longer 403 on notifications, uploads, capture-sessions |
+| Collector portal | `assertCollectorAccess()` — self + admin only |
+| Display ID CI | `resolveCollectorDisplayId` respects `COL-011` style IDs |
+| Admin-fee 403 | Removed approver-only disbursement call from collector view |
+| Synthetic amounts | No fake reconciliation totals when DB disabled |
 
-
-| Item | Status |
-
-|------|--------|
-
-| Railway API @ migrations 11/11 | ✅ (0010 messages) |
-
-| Vercel frontend + BFF | ✅ (redeploy after PR #35) |
-
-| Authentication (5 roles) + CSRF | ✅ |
-
-| Smoke tests | Re-run after RC1 deploy |
-
-
+Evidence: `docs/page-validation/RC1.1-production-verification.md`
 
 ---
 
+## Production
 
+| Item | Status |
+|------|--------|
+| Railway API @ migrations 11/11 | ✅ |
+| Vercel frontend + BFF @ `8e0df23` | ✅ |
+| Authentication (5 roles) + CSRF | ✅ |
+| Production smoke | ✅ 24/24 |
+| Collector portal live | ✅ |
+
+---
 
 ## Pending
 
-
-
 | Item | Owner |
-
 |------|-------|
-
-| Deploy RC1 to Vercel + Railway | Engineering |
-
-| `npm run smoke:production` after deploy | CI / operator |
-
-| Git tag `v0.2.2-rc1` after stakeholder sign-off | Engineering |
-
-| Repository temp file cleanup (approval gate) | Engineering |
-
-
+| Git tag `v1.0.0` after stakeholder sign-off | Engineering |
+| `gh pr create` for RC1.1 docs branch | Engineering |
 
 ---
-
-
 
 ## Quick verification
 
-
-
 ```bash
-
-npm run verify:api-integrity    # expect 135/135 PASS
+npm run verify:api-integrity    # expect 132/132 PASS
 npm run verify:api-coverage     # expect 0 placeholder hits
-
 npm run type-check
-
 npm run build
-
-npm run test -w @wilms/api      # expect 16/16
-
-npm run smoke:production        # after deploy
-
+npm run test -w @wilms/api      # expect 40/40
+npm run smoke:production
 ```
 
-
-
 ---
-
-
 
 ## Documentation index
 
-
-
 | Release | Entry point |
-
 |---------|-------------|
-
+| RC1.1 | `docs/page-validation/RC1.1-final-acceptance.md` |
 | P14.RC1 | `docs/page-validation/RC1-final-acceptance.md` |
-
 | P14.6.4 | `docs/page-validation/P14.6.4-production-readiness.md` |
-
-| P14.6.3 | `docs/page-validation/P14.6.3-production-acceptance.md` |
-
-
 
 ---
 
-
-
-**Verdict:** RC1 code complete. **Release Candidate Accepted** pending production deploy verification and stakeholder approval.
+**Verdict:** RC1.1 hotfix deployed and verified. **v1.0.0 tag readiness** — pending stakeholder approval.
 
 
