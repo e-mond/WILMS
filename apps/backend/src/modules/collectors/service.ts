@@ -1,9 +1,14 @@
 import { and, eq, isNull, sql } from 'drizzle-orm';
+import { USER_ROLE } from '@wilms/shared-rbac';
+import { uuidv7 } from 'uuidv7';
 import { isDatabaseEnabled, getDb } from '../../db/client.js';
 import { financialReconciliations } from '../../db/schema/financial-reconciliations.js';
 import { groups } from '../../db/schema/groups.js';
+import { collectors, users } from '../../db/schema/users.js';
 import { listPayments } from '../../db/persistence.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
+import { hashPassword } from '../../lib/password.js';
+import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import * as userRepo from '../../repositories/user.repository.js';
 import { formatCollectorDisplayId } from '@wilms/shared-utils';
 
@@ -323,4 +328,96 @@ export async function getCollector(id: string): Promise<CollectorDetail> {
     flagsRaised: [],
     activityHistory: payments,
   };
+}
+
+const DEFAULT_INVITE_PASSWORD = 'ChangeMe1!';
+
+async function nextCollectorCode(): Promise<string> {
+  const db = getDb();
+  const rows = await db.select({ collectorCode: collectors.collectorCode }).from(collectors);
+  let max = 0;
+  for (const row of rows) {
+    const match = /^COL-(\d+)$/.exec(row.collectorCode);
+    if (match) {
+      max = Math.max(max, Number.parseInt(match[1]!, 10));
+    }
+  }
+  return `COL-${String(max + 1).padStart(3, '0')}`;
+}
+
+export interface OnboardCollectorInput {
+  displayName: string;
+  email: string;
+  zone: string;
+  phone?: string;
+  assignedRegion?: string;
+}
+
+export async function onboardCollector(
+  input: OnboardCollectorInput,
+  actorId: string,
+  actorDisplayName?: string,
+): Promise<CollectorDetail> {
+  if (!isDatabaseEnabled()) {
+    throw new Error('VALIDATION:Database persistence is required to onboard collectors.');
+  }
+
+  const displayName = input.displayName.trim();
+  const email = input.email.trim().toLowerCase();
+  const zone = input.zone.trim();
+
+  if (!displayName) {
+    throw new Error('VALIDATION:Display name is required.');
+  }
+  if (!email || !email.includes('@')) {
+    throw new Error('VALIDATION:A valid email address is required.');
+  }
+  if (!zone) {
+    throw new Error('VALIDATION:Zone is required.');
+  }
+
+  const existing = await userRepo.findUserByEmail(email);
+  if (existing) {
+    throw new Error('VALIDATION:A user with this email already exists.');
+  }
+
+  const userId = uuidv7();
+  const collectorId = uuidv7();
+  const collectorCode = await nextCollectorCode();
+  const passwordHash = await hashPassword(DEFAULT_INVITE_PASSWORD);
+  const now = new Date();
+
+  const db = getDb();
+  await db.insert(users).values({
+    id: userId,
+    email,
+    passwordHash,
+    displayName,
+    phone: input.phone?.trim() ?? null,
+    zone,
+    region: input.assignedRegion?.trim() ?? null,
+    role: USER_ROLE.COLLECTOR,
+    status: 'INVITED',
+  });
+
+  await db.insert(collectors).values({
+    id: collectorId,
+    userId,
+    collectorCode,
+    assignedRegion: input.assignedRegion?.trim() ?? null,
+    status: 'ACTIVE',
+    joinedAt: now,
+    lastActiveAt: now,
+  });
+
+  appendAuditEntry({
+    action: 'collector.onboarded',
+    actorId,
+    actorDisplayName,
+    targetEntityId: userId,
+    targetEntityType: 'user',
+    reason: `Onboarded collector ${collectorCode}`,
+  });
+
+  return getCollector(userId);
 }

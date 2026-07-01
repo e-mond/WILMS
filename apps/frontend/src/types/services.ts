@@ -40,6 +40,7 @@ import type {
   LoanPortfolioEntry,
   LoanProgressSummary,
   LoanSummary,
+  RejectLoanInput,
 } from '@/types/loan';
 import type { LoanSchedule } from '@/types/loan-schedule';
 import type { CollectorDashboard } from '@/types/collector-dashboard';
@@ -55,8 +56,8 @@ import type {
   LoanPortfolioReport,
   LoanPortfolioReportParams,
 } from '@/types/reports';
-import type { CollectorDetail, CollectorListResponse } from '@/types/collector-management';
-import type { GroupDetail, GroupListResponse } from '@/types/group';
+import type { CollectorDetail, CollectorListResponse, OnboardCollectorInput } from '@/types/collector-management';
+import type { GroupDetail, GroupListResponse, CreateGroupInput } from '@/types/group';
 import type {
   AddGroupMemberInput,
   FlagGroupInput,
@@ -68,8 +69,9 @@ import type {
   TransferGroupMemberInput,
   UpdateGroupDisplayNameInput,
 } from '@/types/group-detail';
-import type { LoanPoolDetail, LoanPoolListResponse } from '@/types/loan-pool';
+import type { LoanPoolDetail, LoanPoolListResponse, CreateLoanPoolInput } from '@/types/loan-pool';
 import type {
+  AdjustmentCatalogResponse,
   AdjustmentListResponse,
   AdjustmentRequest,
   CreateAdjustmentInput,
@@ -82,7 +84,7 @@ import type {
   QueueOverpaymentReviewInput,
   ResolveOverpaymentReviewInput,
 } from '@/types/overpayment-review';
-import type { SubmitReconciliationInput } from '@/types/reconciliation';
+import type { SubmitReconciliationInput, ReconciliationHistoryEntry } from '@/types/reconciliation';
 import type { ReportsHubMetadata, ReportCategory } from '@/types/reports';
 import type {
   CreateSettingsUserInput,
@@ -116,7 +118,7 @@ import type {
 } from '@/types/expense';
 import type { PaymentEntryContext } from '@/types/payment-entry';
 import type { EditPaymentInput, PaymentTransaction, RecordPaymentInput } from '@/types/payment';
-import type { RiskFlagDetail, RiskFlagListResponse } from '@/types/risk-flag';
+import type { RiskFlagDetail, RiskFlagListResponse, CreateRiskFlagInput, ResolveRiskFlagInput, AssignRiskFlagInput } from '@/types/risk-flag';
 import type {
   AdminFeeStatus,
   AwaitingAdminFeeBorrower,
@@ -130,6 +132,17 @@ import type {
   PhotoCaptureSession,
 } from '@/types/photo-capture-session';
 import type { UploadFileInput, UploadRecord } from '@/types/upload';
+import type {
+  CreateMessageThreadInput,
+  MessageDto,
+  MessageThreadDetail,
+  MessageThreadSummary,
+  SendMessageInput,
+} from '@/types/message';
+import type {
+  ResolveSyncConflictInput,
+  SyncConflictListResponse,
+} from '@/types/sync-conflict';
 
 export interface IPhotoCaptureSessionService {
   createSession(input: CreatePhotoCaptureSessionInput): Promise<PhotoCaptureSession>;
@@ -179,6 +192,8 @@ export interface ILoanService {
   getLoanProgress(loanId: string): Promise<LoanProgressSummary>;
   listLoanPaymentLog(loanId: string): Promise<LoanPaymentLogEntry[]>;
   createLoan(input: CreateLoanInput): Promise<LoanDetail>;
+  approveLoan(loanId: string): Promise<LoanDetail>;
+  rejectLoan(loanId: string, input: RejectLoanInput): Promise<LoanDetail>;
   disburseLoan(loanId: string): Promise<LoanDetail>;
   getDisbursementEligibility(borrowerId: string): Promise<DisbursementEligibility>;
 }
@@ -196,18 +211,25 @@ export interface IPaymentService {
     collectorId: string,
     referenceDate?: string,
   ): Promise<PaymentTransaction | null>;
+  getPayment(paymentId: string): Promise<PaymentTransaction>;
   recordPayment(input: RecordPaymentInput): Promise<PaymentTransaction>;
   editPayment(paymentId: string, input: EditPaymentInput): Promise<PaymentTransaction>;
+  reversePayment(
+    paymentId: string,
+    input: { reason: string; actorId: string; actorDisplayName: string },
+  ): Promise<PaymentTransaction>;
 }
 
 export interface ILoanPoolService {
   listLoanPools(): Promise<LoanPoolListResponse>;
   getLoanPool(id: string): Promise<LoanPoolDetail>;
+  createLoanPool(input: CreateLoanPoolInput): Promise<LoanPoolDetail>;
 }
 
 export interface IGroupService {
   listGroups(): Promise<GroupListResponse>;
   getGroup(id: string): Promise<GroupDetail>;
+  createGroup(input: CreateGroupInput): Promise<GroupDetail>;
   flagGroup(input: FlagGroupInput): Promise<GroupDetail>;
   reassignCollector(input: ReassignGroupCollectorInput): Promise<GroupDetail>;
   validateMembershipRemoval(input: GroupMembershipChangeInput): Promise<GroupMembershipChangeResult>;
@@ -222,11 +244,16 @@ export interface IGroupService {
 export interface ICollectorManagementService {
   listCollectors(): Promise<CollectorListResponse>;
   getCollector(id: string): Promise<CollectorDetail>;
+  onboardCollector(input: OnboardCollectorInput): Promise<CollectorDetail>;
 }
 
 export interface IRiskFlagService {
   listRiskFlags(): Promise<RiskFlagListResponse>;
   getRiskFlag(id: string): Promise<RiskFlagDetail>;
+  createRiskFlag(input: CreateRiskFlagInput): Promise<RiskFlagDetail>;
+  escalateRiskFlag(id: string): Promise<RiskFlagDetail>;
+  resolveRiskFlag(id: string, input?: ResolveRiskFlagInput): Promise<RiskFlagDetail>;
+  assignRiskFlag(id: string, input: AssignRiskFlagInput): Promise<RiskFlagDetail>;
 }
 
 export interface IOverpaymentReviewService {
@@ -267,6 +294,9 @@ export interface IDashboardService {
 export interface IReconciliationService {
   getCollectorReconciliation(collectorId: string, date: string): Promise<ReconciliationSummary>;
   submitReconciliation(input: SubmitReconciliationInput): Promise<ReconciliationSummary>;
+  listReconciliations(filter?: { collectorId?: string }): Promise<ReconciliationSummary[]>;
+  getReconciliation(id: string): Promise<ReconciliationSummary>;
+  getReconciliationHistory(id: string): Promise<ReconciliationHistoryEntry[]>;
 }
 
 export interface ReportSummary {
@@ -292,6 +322,8 @@ export interface IReportService {
 
 export interface IAdjustmentService {
   listPendingAdjustments(): Promise<AdjustmentListResponse>;
+  listAdjustments(): Promise<AdjustmentCatalogResponse>;
+  getAdjustment(id: string): Promise<AdjustmentRequest>;
   createAdjustment(
     input: CreateAdjustmentInput,
     actorId: string,
@@ -412,4 +444,29 @@ export interface ILocationService {
   getDistricts(regionId: string): Promise<LocationDistrict[]>;
   getCities(districtId: string): Promise<LocationCity[]>;
   getCurrentLocation(): Promise<CurrentLocationResult>;
+}
+
+export interface OfflineSyncBatchResult {
+  results: Array<{
+    idempotencyKey: string;
+    status: 'DUPLICATE' | 'QUEUED_FOR_REVIEW' | 'APPLIED';
+    operationId: string;
+    conflictId?: string;
+  }>;
+}
+
+export interface IOfflineSyncService {
+  submitOfflinePaymentBatch(
+    items: import('@/types/offline-queue').OfflinePaymentQueueItem[],
+  ): Promise<OfflineSyncBatchResult>;
+  listSyncConflicts(): Promise<SyncConflictListResponse>;
+  approveSyncConflict(conflictId: string, input?: ResolveSyncConflictInput): Promise<unknown>;
+  rejectSyncConflict(conflictId: string, input?: ResolveSyncConflictInput): Promise<unknown>;
+}
+
+export interface IMessageService {
+  listThreads(): Promise<MessageThreadSummary[]>;
+  getThread(threadId: string): Promise<MessageThreadDetail>;
+  createThread(input: CreateMessageThreadInput): Promise<MessageThreadDetail>;
+  sendMessage(input: SendMessageInput): Promise<MessageDto>;
 }

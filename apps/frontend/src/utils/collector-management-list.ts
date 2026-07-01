@@ -1,9 +1,9 @@
 import { COLLECTOR_EXPECTED_PESEWAS_FALLBACK, COLLECTOR_ZONE_OPTIONS } from '@/constants/collectors-reference-scale';
 import { DEMO_ACCOUNTS } from '@/constants/demo-accounts';
 import { USER_ROLE } from '@/constants/roles';
-import { getCollectorsDemoDataset } from '@/services/mock/factories/collectors-demo.factory';
 import {
   COLLECTOR_STATUS,
+  type CollectorAlert,
   type CollectorListResponse,
   type CollectorSummary,
 } from '@/types/collector-management';
@@ -66,6 +66,7 @@ export function buildCollectorSummaries(
 
 export function buildCollectorListResponse(
   collectors: CollectorSummary[],
+  alerts: CollectorAlert[] = [],
 ): CollectorListResponse {
   const avgCollectionRatePercent =
     collectors.length === 0
@@ -106,6 +107,6 @@ export function buildCollectorListResponse(
     },
     rateDistribution,
     collectors,
-    alerts: getCollectorsDemoDataset().alerts,
+    alerts,
   };
 }
