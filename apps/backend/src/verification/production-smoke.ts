@@ -192,6 +192,20 @@ async function main(): Promise<void> {
   });
   record('bff-proxy-reports', reportsRes.status === 200, `status=${reportsRes.status}`);
 
+  // RC1 Phase 2 — high-traffic BFF routes
+  for (const [name, path] of [
+    ['bff-proxy-settings-me', '/settings/me'],
+    ['bff-proxy-dashboard', '/dashboard/summary'],
+    ['bff-proxy-groups', '/groups'],
+    ['bff-proxy-loan-pools', '/loan-pools'],
+    ['bff-proxy-risk-flags', '/risk-flags'],
+    ['bff-proxy-messages', '/messages/threads'],
+    ['bff-proxy-collectors', '/collectors'],
+  ] as const) {
+    const res = await fetch(`${appUrl}/api/wilms${path}`, { headers: authHeaders });
+    record(name, res.status === 200, `status=${res.status}`);
+  }
+
   // Mock flag — cannot read Vercel env from here; verify HTML has no demo banner text
   const homeHtml = await (await fetch(`${appUrl}/login`)).text();
   record(
