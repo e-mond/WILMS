@@ -1,7 +1,9 @@
 import type { loanPools, poolAllocations } from '../../db/schema/loan-pools.js';
+import { formatPoolDisplayId } from '@wilms/shared-utils';
 
 export interface LoanPoolSummaryDto {
   id: string;
+  displayId: string;
   name: string;
   region: string;
   source: string;
@@ -47,9 +49,17 @@ export interface LoanPoolListResponseDto {
   allocation: LoanPoolAllocationSegmentDto[];
 }
 
-export function mapPoolRowToSummary(row: typeof loanPools.$inferSelect): LoanPoolSummaryDto {
+export function mapPoolRowToSummary(
+  row: typeof loanPools.$inferSelect,
+  sequence = 1,
+): LoanPoolSummaryDto {
   return {
     id: row.id,
+    displayId: formatPoolDisplayId({
+      region: row.region,
+      name: row.name,
+      sequence,
+    }),
     name: row.name,
     region: row.region,
     source: row.source,

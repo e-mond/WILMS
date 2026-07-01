@@ -23,6 +23,7 @@ import {
   type RiskFlagListResponse,
   type RiskFlagSummary,
 } from '@/types/risk-flag';
+import { resolveEntityDisplayId } from '@/utils/entity-display-id';
 import { formatDisplayDate } from '@/utils/format-date';
 
 const FLAG_TYPE_TONE = {
@@ -69,7 +70,7 @@ export function RiskFlagsAsidePanel({
         <DetailSidebarCard
           eyebrow={selected.id}
           title={selected.entityName}
-          subtitle={`${selected.entityId} · ${selected.community}`}
+          subtitle={`${resolveEntityDisplayId(selected)} · ${selected.community}`}
         >
           <div className="mt-wilms-3 flex flex-wrap gap-wilms-2">
             <FlagBadge flagType={selected.flagType} />

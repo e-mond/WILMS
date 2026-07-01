@@ -8,6 +8,7 @@ import * as userRepo from '../../repositories/user.repository.js';
 export interface RiskFlagSummary {
   id: string;
   entityId: string;
+  entityDisplayId: string;
   entityName: string;
   entityType: string;
   groupName?: string;
@@ -51,6 +52,11 @@ function rowToSummary(row: typeof riskFlags.$inferSelect): RiskFlagSummary {
   return {
     id: row.id,
     entityId: row.entityId,
+    entityDisplayId: formatEntityDisplayId({
+      entityType: row.entityType,
+      entityId: row.entityId,
+      entityName: row.entityName,
+    }),
     entityName: row.entityName,
     entityType: row.entityType,
     groupName: row.groupName ?? undefined,

@@ -1,6 +1,7 @@
 import { CurrencyAmount, UtilisationBar } from '@/components/data-display';
 import type { LoanPoolSummary } from '@/types/loan-pool';
 import { cn } from '@/utils/cn';
+import { resolvePoolDisplayId } from '@/utils/entity-display-id';
 
 export interface LoanPoolsMobileCardListProps {
   pools: LoanPoolSummary[];
@@ -36,7 +37,7 @@ export function LoanPoolsMobileCardList({
             <div className="flex items-start justify-between gap-wilms-3">
               <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold text-text-primary">{pool.name}</p>
-                <p className="text-small font-semibold text-executive-gold">{pool.id}</p>
+                <p className="text-small font-semibold text-executive-gold">{resolvePoolDisplayId(pool)}</p>
                 <p className="mt-wilms-1 truncate text-small text-text-muted">
                   {pool.region} · {pool.source}
                 </p>

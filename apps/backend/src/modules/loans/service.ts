@@ -65,7 +65,13 @@ async function getBorrowerName(borrowerId: string): Promise<string> {
 export async function listLoans(status?: string): Promise<LoanDetailDto[]> {
   requireDatabase();
   const rows = await loanRepo.listLoans(status ? { externalStatus: status } : undefined);
-  return rows.map(mapLoanRowToDetail);
+  const batchCounters = new Map<string, number>();
+
+  return rows.map((row) => {
+    const nextSequence = (batchCounters.get(row.cycleBatch) ?? 0) + 1;
+    batchCounters.set(row.cycleBatch, nextSequence);
+    return mapLoanRowToDetail(row, nextSequence);
+  });
 }
 
 export async function getLoan(id: string): Promise<LoanDetailDto> {
@@ -74,7 +80,7 @@ export async function getLoan(id: string): Promise<LoanDetailDto> {
   if (!row) {
     throw new Error('NOT_FOUND');
   }
-  return mapLoanRowToDetail(row);
+  return mapLoanRowToDetail(row, 1);
 }
 
 export async function createLoan(input: CreateLoanBody, actorId: string): Promise<LoanDetailDto> {
@@ -410,11 +416,15 @@ export async function listPortfolioEntries() {
       .map((record) => [record.id, record]),
   );
 
+  const batchCounters = new Map<string, number>();
   const entries = rows.map((row) => {
-    const detail = mapLoanRowToDetail(row);
+    const nextSequence = (batchCounters.get(row.cycleBatch) ?? 0) + 1;
+    batchCounters.set(row.cycleBatch, nextSequence);
+    const detail = mapLoanRowToDetail(row, nextSequence);
     const borrower = borrowerById.get(row.borrowerId);
     return {
       id: detail.id,
+      displayId: detail.displayId,
       borrowerId: detail.borrowerId,
       borrowerName: borrower?.fullName ?? 'Unknown borrower',
       community: borrower?.community ?? '—',

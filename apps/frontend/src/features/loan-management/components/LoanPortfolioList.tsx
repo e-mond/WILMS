@@ -33,6 +33,7 @@ import {
 } from '@/utils/portfolio';
 import type { LoanPortfolioEntry } from '@/types/loan';
 import { formatPesewasForCsv } from '@/utils/export-csv';
+import { resolveLoanDisplayId } from '@/utils/entity-display-id';
 
 const CYCLE_FILTER_OPTIONS = [
   { value: '', label: 'All cycles' },
@@ -250,7 +251,9 @@ export function LoanPortfolioList() {
               {
                 id: 'loanId',
                 header: 'Loan ID',
-                cell: (row) => <span className="font-semibold text-brand-primary">{row.id}</span>,
+                cell: (row) => (
+                  <span className="font-semibold text-brand-primary">{resolveLoanDisplayId(row)}</span>
+                ),
               },
               {
                 id: 'borrower',

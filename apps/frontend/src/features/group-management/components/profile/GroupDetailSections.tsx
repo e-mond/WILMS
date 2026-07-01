@@ -25,7 +25,6 @@ export function GroupInformationSection({ group }: GroupInformationSectionProps)
             ),
           },
           { label: 'Group Name', value: group.name },
-          { label: 'Group ID', value: <span className="font-semibold text-executive-gold">{group.id}</span> },
           { label: 'Group Status', value: group.statusLabel },
           { label: 'Creation Date', value: formatDisplayDate(group.formedAt) },
           { label: 'Community / Zone', value: group.community },

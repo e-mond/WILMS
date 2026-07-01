@@ -26,6 +26,7 @@ import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { GROUP_RISK_LEVEL, type GroupSummary } from '@/types/group';
 import { collectorRateTextClass } from '@/utils/collector-rate-display';
 import { formatDisplayDate } from '@/utils/format-date';
+import { resolveGroupDisplayId } from '@/utils/entity-display-id';
 import { formatPesewasForCsv } from '@/utils/export-csv';
 
 const RISK_FILTERS = [
@@ -75,6 +76,7 @@ export function GroupsManagementPanel() {
       const matchesSearch =
         !query ||
         group.name.toLowerCase().includes(query) ||
+        resolveGroupDisplayId(group).toLowerCase().includes(query) ||
         group.id.toLowerCase().includes(query) ||
         group.community.toLowerCase().includes(query);
       const matchesRisk = !riskFilter || group.riskLevel === riskFilter;
@@ -224,7 +226,7 @@ export function GroupsManagementPanel() {
                 className="font-semibold text-executive-gold hover:underline"
                 onClick={(event) => event.stopPropagation()}
               >
-                {row.id}
+                {resolveGroupDisplayId(row)}
               </Link>
             ),
           },
