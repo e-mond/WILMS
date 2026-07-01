@@ -11,6 +11,8 @@ async function ensureCsrfToken(): Promise<void> {
   await fetch('/api/auth/csrf', { credentials: 'include' });
 }
 
+export { ensureCsrfToken };
+
 const authService: IAuthService = {
   async login(input: LoginInput): Promise<LoginResult> {
     await ensureCsrfToken();

@@ -28,7 +28,9 @@ import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { LOAN_STATUS } from '@/types/loan';
 import { formatDisplayDate } from '@/utils/format-date';
 import { resolveBorrowerDisplayId } from '@/utils/format-borrower-display-id';
+import { resolveBorrowerRisk } from '@/utils/borrower-risk';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
+import { resolveLoanDisplayId } from '@/utils/entity-display-id';
 
 export interface BorrowerProfilePanelProps {
   borrowerId: string;
@@ -54,6 +56,7 @@ export function BorrowerProfilePanel({ borrowerId }: BorrowerProfilePanelProps) 
     }
 
     const activeLoan = loans?.find((loan) => loan.id === activeLoanId);
+    const risk = resolveBorrowerRisk(borrower.risk);
 
     return (
       <>
@@ -103,7 +106,7 @@ export function BorrowerProfilePanel({ borrowerId }: BorrowerProfilePanelProps) 
             <dl className="mt-wilms-3 space-y-wilms-2 text-small">
               <div>
                 <dt className="text-text-muted">Loan ID</dt>
-                <dd className="font-semibold">{activeLoan.id}</dd>
+                <dd className="font-semibold">{resolveLoanDisplayId(activeLoan)}</dd>
               </div>
               <div>
                 <dt className="text-text-muted">Outstanding</dt>
@@ -118,19 +121,19 @@ export function BorrowerProfilePanel({ borrowerId }: BorrowerProfilePanelProps) 
           <dl className="mt-wilms-3 space-y-wilms-2 text-small">
             <div>
               <dt className="text-text-muted">Risk rating</dt>
-              <dd className="font-semibold">{borrower.risk.riskRating}</dd>
+              <dd className="font-semibold">{risk.riskRating}</dd>
             </div>
             <div>
               <dt className="text-text-muted">Missed payments</dt>
-              <dd className="font-semibold">{borrower.risk.missedPaymentCount}</dd>
+              <dd className="font-semibold">{risk.missedPaymentCount}</dd>
             </div>
             <div>
               <dt className="text-text-muted">Default status</dt>
-              <dd className="font-semibold">{borrower.risk.defaultStatus}</dd>
+              <dd className="font-semibold">{risk.defaultStatus}</dd>
             </div>
             <div>
               <dt className="text-text-muted">Blacklist status</dt>
-              <dd className="font-semibold">{borrower.risk.blacklistStatus}</dd>
+              <dd className="font-semibold">{risk.blacklistStatus}</dd>
             </div>
           </dl>
         </DetailSidebarCard>
@@ -160,6 +163,7 @@ export function BorrowerProfilePanel({ borrowerId }: BorrowerProfilePanelProps) 
 
   const loanHistory = loans ?? [];
   const activeLoan = loanHistory.find((loan) => loan.id === activeLoanId);
+  const risk = resolveBorrowerRisk(borrower.risk);
 
   return (
     <div className="space-y-wilms-4" data-print-profile="borrower">
@@ -203,7 +207,7 @@ export function BorrowerProfilePanel({ borrowerId }: BorrowerProfilePanelProps) 
             />
           }
         />
-        <KpiCard variant="executive" label="Risk rating" value={borrower.risk.riskRating} />
+        <KpiCard variant="executive" label="Risk rating" value={risk.riskRating} />
         <KpiCard
           variant="executive"
           label="Registered"
@@ -251,7 +255,7 @@ export function BorrowerProfilePanel({ borrowerId }: BorrowerProfilePanelProps) 
             <ProfileFieldGrid
               columns={3}
               items={[
-                { label: 'Current Loan', value: activeLoan.id },
+                { label: 'Current Loan', value: resolveLoanDisplayId(activeLoan) },
                 {
                   label: 'Loan Amount',
                   value: <CurrencyAmount value={activeLoan.amountPesewas} />,
@@ -312,17 +316,17 @@ export function BorrowerProfilePanel({ borrowerId }: BorrowerProfilePanelProps) 
         <ProfileFieldGrid
           columns={3}
           items={[
-            { label: 'Risk Rating', value: borrower.risk.riskRating },
-            { label: 'Missed Payment Count', value: borrower.risk.missedPaymentCount },
-            { label: 'Default Status', value: borrower.risk.defaultStatus },
-            { label: 'Blacklist Status', value: borrower.risk.blacklistStatus },
+            { label: 'Risk Rating', value: risk.riskRating },
+            { label: 'Missed Payment Count', value: risk.missedPaymentCount },
+            { label: 'Default Status', value: risk.defaultStatus },
+            { label: 'Blacklist Status', value: risk.blacklistStatus },
             {
               label: 'Flags',
-              value: borrower.risk.flags.length ? borrower.risk.flags.join(', ') : 'None',
+              value: risk.flags.length ? risk.flags.join(', ') : 'None',
             },
             {
               label: 'Notes',
-              value: borrower.risk.notes.length ? borrower.risk.notes.join(' ') : 'None',
+              value: risk.notes.length ? risk.notes.join(' ') : 'None',
             },
           ]}
         />
@@ -335,7 +339,7 @@ export function BorrowerProfilePanel({ borrowerId }: BorrowerProfilePanelProps) 
           data={loanHistory}
           getRowId={(row) => row.id}
           columns={[
-            { id: 'id', header: 'Loan ID', cell: (row) => row.id },
+            { id: 'id', header: 'Loan ID', cell: (row) => resolveLoanDisplayId(row) },
             {
               id: 'amount',
               header: 'Amount',
