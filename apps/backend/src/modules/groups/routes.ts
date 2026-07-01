@@ -1,11 +1,21 @@
 import { Router } from 'express';
+import { z } from 'zod';
 import { asyncHandler } from '../../http/async-handler.js';
 import { AppError, ERROR_CODE } from '../../http/errors.js';
 import { sendData } from '../../http/response.js';
 import { PERMISSION } from '../../infrastructure/permissions/matrix.js';
 import { requireAuth } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/require-permission.js';
+import { validateBody } from '../../middleware/validate-body.js';
 import * as groupService from './service.js';
+
+const createGroupSchema = z.object({
+  name: z.string().min(1),
+  community: z.string().min(1),
+  displayName: z.string().optional(),
+  collectorUserId: z.string().uuid().optional(),
+  memberBorrowerIds: z.array(z.string().uuid()).optional(),
+});
 
 function mapError(error: unknown): never {
   if (error instanceof Error) {
@@ -28,6 +38,26 @@ groupsRouter.get(
   '/groups',
   asyncHandler(async (_req, res) => {
     sendData(res, await groupService.listGroupsResponse());
+  }),
+);
+
+groupsRouter.post(
+  '/groups',
+  validateBody(createGroupSchema),
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(
+        res,
+        await groupService.createGroup(
+          req.body,
+          req.session!.userId,
+          req.session!.displayName,
+        ),
+        201,
+      );
+    } catch (error) {
+      mapError(error);
+    }
   }),
 );
 

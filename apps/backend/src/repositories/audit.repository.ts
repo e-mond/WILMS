@@ -25,6 +25,13 @@ const ACTION_MAP = {
   'reconciliation.submitted': 'RECONCILIATION_SUBMITTED',
   'user.logged-in': 'SETTINGS_EXPORTED',
   'user.login-failed': 'SETTINGS_EXPORTED',
+  'risk-flag.raised': 'RISK_FLAG_RAISED',
+  'risk-flag.escalated': 'RISK_FLAG_ESCALATED',
+  'risk-flag.resolved': 'RISK_FLAG_RESOLVED',
+  'risk-flag.assigned': 'RISK_FLAG_ASSIGNED',
+  'loan-pool.created': 'LOAN_POOL_REPLENISHED',
+  'group.created': 'GROUP_MEMBER_ADDED',
+  'collector.onboarded': 'SETTINGS_EXPORTED',
 } as const satisfies Record<string, string>;
 
 const TARGET_MAP = {
@@ -37,6 +44,8 @@ const TARGET_MAP = {
   reversal: 'REVERSAL',
   reconciliation: 'RECONCILIATION',
   settings: 'SETTINGS',
+  'risk-flag': 'RISK_FLAG',
+  'loan-pool': 'LOAN_POOL',
 } as const satisfies Record<string, string>;
 
 export async function appendAuditEntry(

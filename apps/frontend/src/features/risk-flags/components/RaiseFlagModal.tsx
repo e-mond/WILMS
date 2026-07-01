@@ -8,6 +8,7 @@ import { Select } from '@/components/ui/Select';
 import { FLAG_ENTITY_TYPE, FLAG_TYPE } from '@/types/risk-flag';
 
 export interface RaiseFlagFormValues {
+  entityId: string;
   entityName: string;
   entityType: string;
   flagType: string;
@@ -27,6 +28,7 @@ export function RaiseFlagModal({
   onClose,
   onSubmit,
 }: RaiseFlagModalProps) {
+  const [entityId, setEntityId] = useState('');
   const [entityName, setEntityName] = useState('');
   const [entityType, setEntityType] = useState<string>(FLAG_ENTITY_TYPE.BORROWER);
   const [flagType, setFlagType] = useState<string>(FLAG_TYPE.MISSED_PAYMENT);
@@ -46,9 +48,10 @@ export function RaiseFlagModal({
             type="button"
             variant="danger"
             size="sm"
-            disabled={isSubmitting || !entityName.trim() || !community.trim()}
+            disabled={isSubmitting || !entityId.trim() || !entityName.trim() || !community.trim()}
             onClick={() =>
               onSubmit({
+                entityId: entityId.trim(),
                 entityName: entityName.trim(),
                 entityType,
                 flagType,
@@ -62,6 +65,18 @@ export function RaiseFlagModal({
       }
     >
       <div className="space-y-wilms-4">
+        <div>
+          <label htmlFor="raise-flag-entity-id" className="text-small font-semibold text-text-primary">
+            Entity ID
+          </label>
+          <Input
+            id="raise-flag-entity-id"
+            className="mt-wilms-2"
+            value={entityId}
+            onChange={(event) => setEntityId(event.target.value)}
+            placeholder="UUID of borrower, group, or application"
+          />
+        </div>
         <div>
           <label htmlFor="raise-flag-entity" className="text-small font-semibold text-text-primary">
             Entity name

@@ -131,6 +131,29 @@ const reconciliationServiceMock: IReconciliationService = {
 
     return buildReconciliationSummary(input.collectorId, input.date);
   },
+
+  async listReconciliations() {
+    await simulateDelay();
+    return [];
+  },
+
+  async getReconciliation(id: string) {
+    await simulateDelay();
+    void id;
+    return {
+      collectorId: 'collector-001',
+      date: new Date().toISOString().slice(0, 10),
+      expectedPesewas: 0,
+      actualPesewas: 0,
+      variancePesewas: 0,
+      submitted: false,
+    };
+  },
+
+  async getReconciliationHistory() {
+    await simulateDelay();
+    return [];
+  },
 };
 
 export function resetMockReconciliationSubmissions(): void {

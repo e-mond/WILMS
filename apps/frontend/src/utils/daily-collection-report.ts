@@ -1,4 +1,3 @@
-import { DEMO_ACCOUNTS } from '@/constants/demo-accounts';
 import { LOAN_STATUS, type LoanPortfolioEntry } from '@/types/loan';
 import type { DailyCollectionReport, DailyCollectionReportRow } from '@/types/reports';
 import { TRANSACTION_TYPE, type FinancialTransaction } from '@/types/transaction';
@@ -20,10 +19,12 @@ export interface BuildDailyCollectionReportInput {
   collectorId?: string;
 }
 
-function resolveCollectorName(collectorId: string): string {
-  return DEMO_ACCOUNTS.find((account) => account.id === collectorId)?.displayName ?? 'Collector';
+function resolveCollectorName(collectorId: string, collectorName?: string): string {
+  if (collectorName?.trim()) {
+    return collectorName.trim();
+  }
+  return collectorId ? `Collector ${collectorId.slice(0, 8)}` : 'Collector';
 }
-
 function resolveBorrowerContext(
   borrowerId: string,
   loanId: string | undefined,

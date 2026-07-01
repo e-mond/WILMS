@@ -175,6 +175,25 @@ const adjustmentServiceMock: IAdjustmentService = {
 
     return updated;
   },
+
+  async listAdjustments() {
+    await simulateDelay();
+    const requests = getAdjustmentRequests();
+    return {
+      generatedAt: new Date().toISOString(),
+      count: requests.length,
+      adjustments: requests,
+    };
+  },
+
+  async getAdjustment(id: string) {
+    await simulateDelay();
+    const request = getAdjustmentRequest(id);
+    if (!request) {
+      throw new ApiError('Adjustment request not found.', API_ERROR_CODE.NOT_FOUND, 404);
+    }
+    return request;
+  },
 };
 
 export function resetMockAdjustments(): void {

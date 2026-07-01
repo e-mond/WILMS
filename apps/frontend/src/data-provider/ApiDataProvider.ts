@@ -22,6 +22,8 @@ import expenseServiceImpl from '@/services/expenseService';
 import photoCaptureSessionServiceImpl from '@/services/photoCaptureSessionService';
 import groupFormationServiceImpl from '@/services/groupFormationService';
 import locationServiceImpl from '@/services/locationService';
+import messageServiceImpl from '@/services/messageService';
+import offlineSyncServiceImpl from '@/services/offlineSyncService';
 import uploadServiceImpl from '@/services/uploadService';
 import type { IDataProvider } from '@/data-provider/types';
 
@@ -39,6 +41,8 @@ export const apiDataProvider: IDataProvider = {
   borrowerService: borrowerServiceImpl,
   loanService: loanServiceImpl,
   locationService: locationServiceImpl,
+  messageService: messageServiceImpl,
+  offlineSyncService: offlineSyncServiceImpl,
   paymentService: paymentServiceImpl,
   reconciliationService: reconciliationServiceImpl,
   reportService: reportServiceImpl,

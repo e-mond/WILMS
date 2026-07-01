@@ -30,6 +30,12 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: API integrity
+        run: npm run verify:api-integrity
+
+      - name: API coverage
+        run: npm run verify:api-coverage
+
       - name: Build frontend
         run: npm run build
         env:

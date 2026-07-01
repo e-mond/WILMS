@@ -1,4 +1,4 @@
-import type { GroupDetail, GroupListResponse } from '@/types/group';
+import type { GroupDetail, GroupListResponse, CreateGroupInput } from '@/types/group';
 import type {
   AddGroupMemberInput,
   FlagGroupInput,
@@ -20,6 +20,10 @@ const groupService: IGroupService = {
 
   getGroup(id: string): Promise<GroupDetail> {
     return apiClient.get<GroupDetail>(`/groups/${id}`);
+  },
+
+  createGroup(input: CreateGroupInput): Promise<GroupDetail> {
+    return apiClient.post<GroupDetail>('/groups', input);
   },
 
   flagGroup(input: FlagGroupInput): Promise<GroupDetail> {

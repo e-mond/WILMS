@@ -10,18 +10,19 @@ import {
 } from '@/components/layout/executive';
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
 import { WILMS_REPORT_TYPE } from '@/features/export';
-import { EmptyState } from '@/components/feedback/EmptyState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
 import { Pagination } from '@/components/ui/Pagination';
 import { LoanPoolsAsidePanel } from '@/features/loan-pools/components/LoanPoolsAsidePanel';
 import { LoanPoolsMobileCardList } from '@/features/loan-pools/components/LoanPoolsMobileCardList';
 import { useLoanPools } from '@/features/loan-pools/hooks/useLoanPools';
+import { useCreateLoanPool } from '@/features/loan-pools/hooks/useCreateLoanPool';
 import { usePaginatedRows } from '@/hooks/usePaginatedRows';
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
-import { useToast } from '@/hooks/useToast';
 import { LOAN_POOL_STATUS, type LoanPoolSummary } from '@/types/loan-pool';
+import { ghsInputToPesewas } from '@/utils/reconciliation.schema';
 import { formatPesewasForCsv } from '@/utils/export-csv';
 
 const POOL_STATUS_FILTERS = [
@@ -32,11 +33,17 @@ const POOL_STATUS_FILTERS = [
 ];
 
 export function LoanPoolsPanel() {
-  const toast = useToast();
-  const { data, isLoading, isError } = useLoanPools();
+  const { data, isLoading, isError, refetch } = useLoanPools();
+  const createLoanPool = useCreateLoanPool();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [poolName, setPoolName] = useState('');
+  const [poolRegion, setPoolRegion] = useState('');
+  const [poolSource, setPoolSource] = useState('');
+  const [capitalGhs, setCapitalGhs] = useState('');
+  const [cycleLabel, setCycleLabel] = useState('');
 
   const filteredPools = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -100,15 +107,7 @@ export function LoanPoolsPanel() {
 
   useShellAsideContent(asideContent);
 
-  if (isLoading) {
-    return <LoadingSpinner label="Loading loan pools" className="py-wilms-8" />;
-  }
-
-  if (isError || !data) {
-    return <EmptyState title="Unable to load loan pools" description="Try again shortly." />;
-  }
-
-  const csvRows = filteredPools.map((pool) => [
+  const csvRows = (data?.pools ?? filteredPools).map((pool) => [
     pool.id,
     pool.name,
     pool.region,
@@ -122,6 +121,15 @@ export function LoanPoolsPanel() {
   ]);
 
   return (
+    <>
+    <QueryStatePanel
+      isLoading={isLoading}
+      isError={isError || !data}
+      errorMessage="Unable to load loan pools. Try again shortly."
+      onRetry={() => void refetch()}
+      variant="table"
+    >
+      {data ? (
     <div className="space-y-wilms-4">
       <ExecutiveKpiGrid>
         <KpiCard
@@ -197,9 +205,7 @@ export function LoanPoolsPanel() {
               type="button"
               variant="primary"
               size="sm"
-              onClick={() =>
-                toast.info('New Pool', { message: 'Pool creation workflow is not yet available.' })
-              }
+              onClick={() => setCreateModalOpen(true)}
             >
               + New Pool
             </Button>
@@ -269,5 +275,89 @@ export function LoanPoolsPanel() {
         <Pagination page={page} pageCount={pageCount} onPageChange={setPage} ariaLabel="Loan pools pagination" />
       </div>
     </div>
+      ) : null}
+    </QueryStatePanel>
+
+      <Modal
+        isOpen={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        title="Create Loan Pool"
+        footer={
+          <>
+            <Button type="button" variant="secondary" size="sm" onClick={() => setCreateModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              disabled={
+                createLoanPool.isPending ||
+                !poolName.trim() ||
+                !poolRegion.trim() ||
+                !poolSource.trim() ||
+                !capitalGhs.trim() ||
+                !cycleLabel.trim() ||
+                Number.isNaN(Number(capitalGhs)) ||
+                Number(capitalGhs) <= 0
+              }
+              onClick={() => {
+                void createLoanPool
+                  .mutateAsync({
+                    name: poolName.trim(),
+                    region: poolRegion.trim(),
+                    source: poolSource.trim(),
+                    capitalPesewas: ghsInputToPesewas(capitalGhs),
+                    cycleLabel: cycleLabel.trim(),
+                  })
+                  .then(() => {
+                    setCreateModalOpen(false);
+                    setPoolName('');
+                    setPoolRegion('');
+                    setPoolSource('');
+                    setCapitalGhs('');
+                    setCycleLabel('');
+                  });
+              }}
+            >
+              {createLoanPool.isPending ? 'Creating…' : 'Create Pool'}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-wilms-4">
+          <div>
+            <label htmlFor="pool-name" className="text-small font-semibold text-text-primary">
+              Pool name
+            </label>
+            <Input id="pool-name" className="mt-wilms-2" value={poolName} onChange={(e) => setPoolName(e.target.value)} />
+          </div>
+          <div>
+            <label htmlFor="pool-region" className="text-small font-semibold text-text-primary">
+              Region
+            </label>
+            <Input id="pool-region" className="mt-wilms-2" value={poolRegion} onChange={(e) => setPoolRegion(e.target.value)} />
+          </div>
+          <div>
+            <label htmlFor="pool-source" className="text-small font-semibold text-text-primary">
+              Funding source
+            </label>
+            <Input id="pool-source" className="mt-wilms-2" value={poolSource} onChange={(e) => setPoolSource(e.target.value)} />
+          </div>
+          <div>
+            <label htmlFor="pool-capital" className="text-small font-semibold text-text-primary">
+              Capital (GHS)
+            </label>
+            <Input id="pool-capital" className="mt-wilms-2" value={capitalGhs} onChange={(e) => setCapitalGhs(e.target.value)} placeholder="100000" />
+          </div>
+          <div>
+            <label htmlFor="pool-cycle" className="text-small font-semibold text-text-primary">
+              Cycle label
+            </label>
+            <Input id="pool-cycle" className="mt-wilms-2" value={cycleLabel} onChange={(e) => setCycleLabel(e.target.value)} placeholder="Jul 2026" />
+          </div>
+        </div>
+      </Modal>
+    </>
   );
 }
