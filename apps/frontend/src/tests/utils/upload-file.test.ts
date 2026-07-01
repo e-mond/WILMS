@@ -1,8 +1,9 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { UPLOAD_PURPOSE } from '@/types/upload';
-import { uploadFileViaService } from '@/utils/upload-file';
 import uploadServiceMock from '@/services/mock/uploadService.mock';
 import { resetUploadStore } from '@/services/mock/upload.store';
+
+vi.mock('@/services', async () => import('@/services/index.development'));
 
 describe('upload-file utils', () => {
   beforeEach(() => {
@@ -10,6 +11,7 @@ describe('upload-file utils', () => {
   });
 
   it('uploads files through the upload service', async () => {
+    const { uploadFileViaService } = await import('@/utils/upload-file');
     const file = new File(['hello'], 'receipt.png', { type: 'image/png' });
     const record = await uploadFileViaService({
       file,
