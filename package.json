@@ -28,5 +28,8 @@
     "perf:budget-check": "node scripts/perf-budget-check.mjs",
     "verify:version": "node scripts/verify-version-consistency.mjs",
     "verify:api-integrity": "node scripts/rc1-api-integrity.mjs"
+  },
+  "devDependencies": {
+    "vitest": "3.2.6"
   }
 }
