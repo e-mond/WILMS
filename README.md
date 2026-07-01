@@ -178,7 +178,7 @@ Detail: `docs/page-validation/P14.3B-remaining-work-roadmap.md` (current) · his
 
 ### Prerequisites
 
-- Node.js 20+, npm 9+
+- Node.js 22+, npm 9+
 - Neon account (optional — backend falls back to in-memory store)
 
 ### Install
@@ -404,7 +404,7 @@ Detail: `docs/deployment-guide.md` · `docs/security-guide.md` · `docs/producti
 | Service | URL | Version (health/HTML) |
 |---------|-----|------------------------|
 | Frontend | https://wilms.vercel.app | **0.2.2** |
-| API | https://wilms-production.up.railway.app | **0.2.2** — migrations **8/8** |
+| API | https://wilms-production.up.railway.app | **0.2.2** — migrations **10/10** |
 
 P14.6.3 recovery complete — production synchronized. See `docs/page-validation/P14.6.3-production-acceptance.md`.
 

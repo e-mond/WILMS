@@ -1,6 +1,6 @@
 # RC1 — Final Acceptance
 
-**Date:** 2026-06-30  
+**Date:** 2026-07-01  
 **Release candidate tag:** `v0.2.2-rc1`
 
 ---
@@ -14,6 +14,9 @@
 | GATE 3 | `RC1-functional-audit.md` | COMPLETE |
 | GATE 4 | Loading, responsive, version, session, notifications, console audits | COMPLETE |
 | GATE 5 | Production validation, repository cleanup classification | COMPLETE |
+| GATE 6 | PR #35 hotfix — Vercel/CI lint (`vitest.d.ts`) | COMPLETE |
+| GATE 7 | RC1 audit set (api, auth, email, sms, security, perf, system) | COMPLETE |
+| GATE 8 | CI Node.js 22, production UX string cleanup | COMPLETE |
 
 ---
 
@@ -24,6 +27,9 @@
 3. **Version drift** — `OfficeShell` hardcoded `v2.4.1` removed
 4. **Online badge** — Static navbar badge removed; `ConnectionStatusChip` retained
 5. **Silent API fallbacks** — Removed per golden rule
+6. **Vercel build** — jest-dom vitest types without custom `vitest.d.ts` (PR #35)
+7. **Dashboard mock data** — Live group risk KPIs (PR #33)
+8. **Settings 404** — BFF URL normalization (PR #33)
 
 ---
 
