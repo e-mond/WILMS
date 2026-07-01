@@ -2,6 +2,23 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [Unreleased] — RC1.1 / v1.0.0 readiness
+
+### Fixed
+- Router-level RBAC blocking unrelated API paths for collectors (403 on notifications, capture-sessions, collector dashboard)
+- Collector portal self-access: `assertCollectorAccess()` on dashboard and borrowers routes
+- `resolveCollectorDisplayId` now preserves readable IDs like `COL-011` (CI fix)
+- Admin-fee collector panel no longer calls approver-only `/disbursement-eligibility`
+- Removed synthetic reconciliation amounts when database is disabled
+
+### Added
+- Collector portal RBAC integration tests (`access.test.ts`, `rbac.test.ts`)
+- `entity-display-id.test.ts` unit tests
+- RC1.1 audit documentation (`docs/page-validation/RC1.1-*.md`)
+
+### Security
+- Per-route permission guards replace router-level `use(requirePermission)` on collectors, reports, groups, dashboard, analytics, risk-flags, photo-capture
+
 ## [0.2.2] - 2026-06-30
 
 ### Added
