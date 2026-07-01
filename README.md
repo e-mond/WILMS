@@ -36,7 +36,7 @@ WILMS supports registration officers, approvers, collectors, auditors, and super
 | P14.3B — Reconciliation | **Certified** | functional 24/24, RBAC 6/6, concurrency PASS |
 | P14.3B — Uploads | **Certified** | `cert:upload:env` + `cert:upload:smoke` PASS (Cloudinary) |
 | Notifications (SMS/email) | **Deferred** | Adapters only; no workflow call sites (`docs/audit/P14.3B-feature-completion-matrix.md`) |
-| **Current phase** | **P14.RC1 Phase 2** | Production hardening — API completion, zero placeholders (`PROJECT_STATUS.md`) |
+| **Current phase** | **RC1.1** | Production hotfix + v1.0.0 readiness (`docs/page-validation/RC1.1-final-acceptance.md`) |
 
 ---
 
