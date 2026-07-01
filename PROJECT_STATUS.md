@@ -26,6 +26,20 @@ P14.RC1 stabilizes production with live dashboard data, settings API persistence
 
 
 
+## RC1 production bugfix sprint (2026-06-20)
+
+| Fix | Summary |
+|-----|---------|
+| Reports hub crash | `GET /reports/hub` returns full `ReportsHubMetadata`; aside panel guards |
+| Officer 403 noise | Locations permission includes registration portal; inbox hidden for officers; graceful 403 retry |
+| Demo seed cleanup | `cleanup-demo-financial-data.mjs`; `db:seed:reference` / `db:seed:demo`; production guard |
+| Registration IDs | Shared Ghana Card / Voter / Passport validators + GPS geolocation |
+| Loading policy | 300ms debounce, 30s timeout via `useQueryLoadingPolicy` |
+
+See `docs/page-validation/RC1-registration-hardening.md`.
+
+---
+
 ## RC1 completed
 
 

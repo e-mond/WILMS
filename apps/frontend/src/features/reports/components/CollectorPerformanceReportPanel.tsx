@@ -3,6 +3,7 @@
 import { CurrencyAmount, DataTable } from '@/components/data-display';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { ManagementToolbar } from '@/components/layout/executive';
+import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
 import { WILMS_REPORT_TYPE } from '@/features/export';
 import { useCollectorPerformanceReport } from '@/features/reports/hooks/useCollectorPerformanceReport';
@@ -13,10 +14,13 @@ const CSV_HEADERS = ['Collector', 'Expected (GHS)', 'Collected (GHS)', 'Rate %',
 
 export function CollectorPerformanceReportPanel() {
   const { data, isLoading, isError, refetch } = useCollectorPerformanceReport();
+  const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
 
   return (
     <QueryStatePanel
       isLoading={isLoading}
+      showLoading={showLoading}
+      isTimedOut={isTimedOut}
       isError={isError || !data}
       errorMessage="Unable to generate report. Try again shortly."
       onRetry={() => void refetch()}
@@ -34,7 +38,8 @@ function CollectorPerformanceReportContent({
 }: {
   data: NonNullable<ReturnType<typeof useCollectorPerformanceReport>['data']>;
 }) {
-  const csvRows = data.rows.map((row) => [
+  const rows = data.rows ?? [];
+  const csvRows = rows.map((row) => [
     row.collectorName,
     formatPesewasForCsv(row.expectedPesewas),
     formatPesewasForCsv(row.collectedPesewas),
@@ -46,7 +51,7 @@ function CollectorPerformanceReportContent({
   return (
     <div className="space-y-wilms-4">
       <ManagementToolbar
-        search={<p className="text-small text-text-muted">{data.rows.length} collectors in report</p>}
+        search={<p className="text-small text-text-muted">{rows.length} collectors in report</p>}
         actions={
           <ExportCsvButton
             label="Export"
@@ -62,7 +67,7 @@ function CollectorPerformanceReportContent({
       <DataTable<CollectorPerformanceReportRow>
         variant="executive"
         caption="Collector performance report"
-        data={data.rows}
+        data={rows}
         getRowId={(row) => row.collectorId}
         columns={[
           { id: 'name', header: 'Collector', cell: (row) => row.collectorName },

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { DataTable, GroupRiskBadge } from '@/components/data-display';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { ManagementToolbar } from '@/components/layout/executive';
+import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
 import { WILMS_REPORT_TYPE } from '@/features/export';
 import { useGroupRiskReport } from '@/features/reports/hooks/useGroupRiskReport';
@@ -14,10 +15,13 @@ const CSV_HEADERS = ['Group', 'Community', 'Rate %', 'Risk', 'Active Members', '
 
 export function GroupRiskReportPanel() {
   const { data, isLoading, isError, refetch } = useGroupRiskReport();
+  const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
 
   return (
     <QueryStatePanel
       isLoading={isLoading}
+      showLoading={showLoading}
+      isTimedOut={isTimedOut}
       isError={isError || !data}
       errorMessage="Unable to generate report. Try again shortly."
       onRetry={() => void refetch()}
@@ -33,7 +37,8 @@ function GroupRiskReportContent({
 }: {
   data: NonNullable<ReturnType<typeof useGroupRiskReport>['data']>;
 }) {
-  const csvRows = data.rows.map((row) => [
+  const rows = data.rows ?? [];
+  const csvRows = rows.map((row) => [
     row.groupName,
     row.community,
     String(row.collectionRatePercent),
@@ -45,7 +50,7 @@ function GroupRiskReportContent({
   return (
     <div className="space-y-wilms-4">
       <ManagementToolbar
-        search={<p className="text-small text-text-muted">{data.rows.length} groups assessed</p>}
+        search={<p className="text-small text-text-muted">{rows.length} groups assessed</p>}
         actions={
           <ExportCsvButton
             label="Export"
@@ -61,7 +66,7 @@ function GroupRiskReportContent({
       <DataTable<GroupRiskReportRow>
         variant="executive"
         caption="Group risk report"
-        data={data.rows}
+        data={rows}
         getRowId={(row) => row.groupId}
         columns={[
           {

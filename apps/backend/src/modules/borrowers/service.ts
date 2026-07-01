@@ -1,4 +1,5 @@
 import { env } from '../../config/env.js';
+import { normalizeBorrowerId, validateBorrowerId } from '@wilms/shared-validation';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import {
   BORROWER_STATUS,
@@ -23,6 +24,17 @@ const AUDIT_ACTION = {
 
 function officerName(officerId: string): string {
   return DEMO_USERS.find((user) => user.id === officerId)?.displayName ?? officerId;
+}
+
+function assertValidBorrowerId(idType: string, idNumber: string): string {
+  const normalized = normalizeBorrowerId(idType, idNumber);
+  const validation = validateBorrowerId(idType, normalized);
+
+  if (!validation.valid) {
+    throw new Error(`VALIDATION:${validation.error ?? 'Invalid ID number.'}`);
+  }
+
+  return normalized;
 }
 
 function toSummary(record: BorrowerRecord, sequence?: number) {
@@ -173,13 +185,20 @@ export async function getBorrowerReviewDetail(id: string) {
 }
 
 export async function registerBorrower(payload: Record<string, unknown>, actorId: string) {
+  const idType = String(payload.idType ?? 'GHANA_CARD');
+  const idNumber = assertValidBorrowerId(idType, String(payload.idNumber ?? ''));
+
+  if (payload.guarantorIdType && payload.guarantorIdNumber) {
+    assertValidBorrowerId(String(payload.guarantorIdType), String(payload.guarantorIdNumber));
+  }
+
   const id = nextBorrowerId();
   const record: BorrowerRecord = {
     id,
     fullName: String(payload.fullName ?? ''),
     phone: String(payload.phone ?? ''),
-    idType: String(payload.idType ?? 'GHANA_CARD'),
-    idNumber: String(payload.idNumber ?? ''),
+    idType,
+    idNumber,
     status: BORROWER_STATUS.PENDING,
     hasActiveLoan: false,
     groupName: '',
@@ -321,8 +340,9 @@ export async function checkPhone(phone: string) {
 }
 
 export async function checkId(idType: string, idNumber: string) {
+  const normalized = normalizeBorrowerId(idType, idNumber);
   const duplicate = (await listBorrowers()).some(
-    (record) => record.idType === idType && record.idNumber === idNumber,
+    (record) => record.idType === idType && record.idNumber === normalized,
   );
   return { available: !duplicate, duplicate };
 }
