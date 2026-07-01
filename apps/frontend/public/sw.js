@@ -1,4 +1,4 @@
-const CACHE_NAME = 'wilms-shell-v1';
+const CACHE_NAME = 'wilms-shell-v2';
 const PAYMENT_SYNC_TAG = 'wilms-payment-sync';
 const PAYMENT_SYNC_MESSAGE = 'WILMS_PAYMENT_SYNC';
 const SHELL_URLS = ['/login', '/manifest.webmanifest'];
@@ -17,10 +17,18 @@ self.addEventListener('activate', (event) => {
     caches
       .keys()
       .then((keys) =>
-        Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))),
+        Promise.all(
+          keys.filter((key) => key.startsWith('wilms-shell-') && key !== CACHE_NAME).map((key) => caches.delete(key)),
+        ),
       )
       .then(() => self.clients.claim()),
   );
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('fetch', (event) => {
