@@ -15,3 +15,14 @@ export interface ReconciliationSubmission {
   varianceFlagged: boolean;
   submittedAt: string;
 }
+
+export interface ReconciliationHistoryEntry {
+  id: string;
+  reconciliationId: string;
+  eventType: string;
+  actorUserId: string;
+  beforeSnapshot?: unknown;
+  afterSnapshot: unknown;
+  reason?: string | null;
+  createdAt: string;
+}

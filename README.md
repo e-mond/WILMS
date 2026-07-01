@@ -36,7 +36,7 @@ WILMS supports registration officers, approvers, collectors, auditors, and super
 | P14.3B — Reconciliation | **Certified** | functional 24/24, RBAC 6/6, concurrency PASS |
 | P14.3B — Uploads | **Certified** | `cert:upload:env` + `cert:upload:smoke` PASS (Cloudinary) |
 | Notifications (SMS/email) | **Deferred** | Adapters only; no workflow call sites (`docs/audit/P14.3B-feature-completion-matrix.md`) |
-| **Current phase** | **P14.6.1** | Production acceptance — **BLOCKED** (prod v0.2.1; P14.6 not on `main`) |
+| **Current phase** | **P14.RC1 Phase 2** | Production hardening — API completion, zero placeholders (`PROJECT_STATUS.md`) |
 
 ---
 
@@ -404,7 +404,7 @@ Detail: `docs/deployment-guide.md` · `docs/security-guide.md` · `docs/producti
 | Service | URL | Version (health/HTML) |
 |---------|-----|------------------------|
 | Frontend | https://wilms.vercel.app | **0.2.2** |
-| API | https://wilms-production.up.railway.app | **0.2.2** — migrations **10/10** |
+| API | https://wilms-production.up.railway.app | **0.2.2** — migrations **11/11** (0000–0010) |
 
 P14.6.3 recovery complete — production synchronized. See `docs/page-validation/P14.6.3-production-acceptance.md`.
 

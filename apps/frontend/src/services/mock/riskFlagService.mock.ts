@@ -1,4 +1,5 @@
-import type { RiskFlagDetail } from '@/types/risk-flag';
+import type { RiskFlagDetail, CreateRiskFlagInput } from '@/types/risk-flag';
+import { FLAG_STATUS } from '@/types/risk-flag';
 import type { IRiskFlagService } from '@/types/services';
 import { getRiskFlagsDemoDataset } from '@/services/mock/factories/risk-flags-demo.factory';
 import { simulateDelay } from '@/services/mock/delay';
@@ -28,6 +29,36 @@ const riskFlagServiceMock: IRiskFlagService = {
     };
 
     return detail;
+  },
+
+  async createRiskFlag(input: CreateRiskFlagInput) {
+    await simulateDelay();
+    const detail: RiskFlagDetail = {
+      id: `flag-${Date.now()}`,
+      entityId: input.entityId,
+      entityName: input.entityName,
+      entityType: input.entityType,
+      flagType: input.flagType,
+      community: input.community,
+      officerName: input.officerName ?? 'Super Admin',
+      raisedAt: new Date().toISOString(),
+      arrearsPesewas: input.arrearsPesewas ?? 0,
+      status: FLAG_STATUS.OPEN,
+      timeline: [],
+    };
+    return detail;
+  },
+
+  async escalateRiskFlag(id: string) {
+    return this.getRiskFlag(id);
+  },
+
+  async resolveRiskFlag(id: string) {
+    return this.getRiskFlag(id);
+  },
+
+  async assignRiskFlag(id: string) {
+    return this.getRiskFlag(id);
   },
 };
 

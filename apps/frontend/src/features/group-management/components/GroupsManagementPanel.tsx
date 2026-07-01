@@ -17,11 +17,12 @@ import { GroupsAsidePanel } from '@/features/group-management/components/GroupsA
 import { GROUPS_REFERENCE_PAGE_SIZE } from '@/constants/groups-reference-scale';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
 import { Pagination } from '@/components/ui/Pagination';
 import { useGroups } from '@/features/group-management/hooks/useGroups';
+import { useCreateGroup } from '@/features/group-management/hooks/useCreateGroup';
 import { usePaginatedRows } from '@/hooks/usePaginatedRows';
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
-import { useToast } from '@/hooks/useToast';
 import { GROUP_RISK_LEVEL, type GroupSummary } from '@/types/group';
 import { collectorRateTextClass } from '@/utils/collector-rate-display';
 import { formatDisplayDate } from '@/utils/format-date';
@@ -36,14 +37,17 @@ const RISK_FILTERS = [
 ];
 
 export function GroupsManagementPanel() {
-  const toast = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
   const riskFromUrl = searchParams.get('risk') ?? '';
   const { data, isLoading, isError, refetch } = useGroups();
+  const createGroup = useCreateGroup();
   const [searchQuery, setSearchQuery] = useState('');
   const [riskFilter, setRiskFilter] = useState(riskFromUrl);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupCommunity, setNewGroupCommunity] = useState('');
 
   useEffect(() => {
     setRiskFilter(riskFromUrl);
@@ -111,6 +115,7 @@ export function GroupsManagementPanel() {
   ]);
 
   return (
+    <>
     <QueryStatePanel
       isLoading={isLoading}
       isError={isError || !data}
@@ -195,9 +200,7 @@ export function GroupsManagementPanel() {
               type="button"
               variant="primary"
               size="sm"
-              onClick={() =>
-                toast.info('New Group', { message: 'Group creation workflow is not yet available.' })
-              }
+              onClick={() => setCreateModalOpen(true)}
             >
               + New Group
             </Button>
@@ -286,5 +289,68 @@ export function GroupsManagementPanel() {
     </div>
       ) : null}
     </QueryStatePanel>
+
+      <Modal
+        isOpen={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        title="Create Group"
+        footer={
+          <>
+            <Button type="button" variant="secondary" size="sm" onClick={() => setCreateModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              disabled={
+                createGroup.isPending || !newGroupName.trim() || !newGroupCommunity.trim()
+              }
+              onClick={() => {
+                void createGroup
+                  .mutateAsync({
+                    name: newGroupName.trim(),
+                    community: newGroupCommunity.trim(),
+                  })
+                  .then(() => {
+                    setCreateModalOpen(false);
+                    setNewGroupName('');
+                    setNewGroupCommunity('');
+                  });
+              }}
+            >
+              {createGroup.isPending ? 'Creating…' : 'Create Group'}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-wilms-4">
+          <div>
+            <label htmlFor="new-group-name" className="text-small font-semibold text-text-primary">
+              Group name
+            </label>
+            <Input
+              id="new-group-name"
+              className="mt-wilms-2"
+              value={newGroupName}
+              onChange={(event) => setNewGroupName(event.target.value)}
+              placeholder="Sunrise Women"
+            />
+          </div>
+          <div>
+            <label htmlFor="new-group-community" className="text-small font-semibold text-text-primary">
+              Community
+            </label>
+            <Input
+              id="new-group-community"
+              className="mt-wilms-2"
+              value={newGroupCommunity}
+              onChange={(event) => setNewGroupCommunity(event.target.value)}
+              placeholder="Madina"
+            />
+          </div>
+        </div>
+      </Modal>
+    </>
   );
 }
