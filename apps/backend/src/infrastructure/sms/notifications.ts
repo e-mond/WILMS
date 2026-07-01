@@ -1,4 +1,5 @@
 import { getSettings } from '../../modules/settings/service.js';
+import { buildPaymentConfirmationSmsBody } from '../notifications/templates.js';
 import { getSmsProvider } from './index.js';
 
 function normalizeGhanaPhone(phone: string): string {
@@ -28,10 +29,12 @@ export async function maybeSendPaymentConfirmationSms(input: {
       return;
     }
 
-    const amountGhs = (input.amountPesewas / 100).toFixed(2);
     await provider.send({
       to: normalizeGhanaPhone(input.borrowerPhone),
-      body: `WILMS: Payment of GHS ${amountGhs} received on ${input.paymentDate}. Thank you.`,
+      body: buildPaymentConfirmationSmsBody({
+        amountPesewas: input.amountPesewas,
+        paymentDate: input.paymentDate,
+      }),
     });
   } catch (error) {
     console.error('[sms] payment confirmation failed:', error);

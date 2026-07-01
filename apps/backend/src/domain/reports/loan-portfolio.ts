@@ -2,6 +2,7 @@ const LOAN_STATUS_ACTIVE = 'ACTIVE';
 
 export interface LoanPortfolioEntry {
   id: string;
+  displayId: string;
   borrowerId: string;
   borrowerName: string;
   community: string;
@@ -49,7 +50,8 @@ function filterPortfolioEntries(
       entry.borrowerName.toLowerCase().includes(normalizedQuery) ||
       entry.community.toLowerCase().includes(normalizedQuery) ||
       entry.groupName.toLowerCase().includes(normalizedQuery) ||
-      entry.id.toLowerCase().includes(normalizedQuery);
+      entry.id.toLowerCase().includes(normalizedQuery) ||
+      entry.displayId.toLowerCase().includes(normalizedQuery);
 
     return matchesStatus && matchesCycle && matchesSearch;
   });

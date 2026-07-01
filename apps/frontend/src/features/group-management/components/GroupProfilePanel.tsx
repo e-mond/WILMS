@@ -78,7 +78,7 @@ export function GroupProfilePanel({ groupId }: GroupProfilePanelProps) {
             <GroupRiskBadge riskLevel={data.riskLevel} />
           </div>
           <p className="mt-wilms-1 text-small text-text-muted">
-            {data.groupSystemId} · {data.id} · {data.community} · {data.statusLabel}
+            {data.groupSystemId} · {data.community} · {data.statusLabel}
           </p>
         </div>
         <GroupProfileActions group={data} onUpdated={() => void refetch()} />
