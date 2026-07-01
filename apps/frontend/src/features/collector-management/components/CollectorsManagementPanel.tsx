@@ -106,7 +106,7 @@ export function CollectorsManagementPanel() {
         selected={selected}
         onMessage={() =>
           toast.info('Message collector', {
-            message: 'In-app messaging is not enabled in demo.',
+            message: 'In-app messaging is not yet available.',
           })
         }
       />
@@ -213,7 +213,7 @@ export function CollectorsManagementPanel() {
               size="sm"
               onClick={() =>
                 toast.info('Add Collector', {
-                  message: 'Collector onboarding is not enabled in demo.',
+                  message: 'Collector onboarding is not yet available.',
                 })
               }
             >
