@@ -23,12 +23,14 @@
     "test:e2e:install": "npm run test:e2e:install -w @wilms/frontend",
     "test:e2e": "npm run test:e2e -w @wilms/frontend",
     "smoke:production": "npm run smoke:production -w @wilms/api",
+    "smoke:rbac": "npm run smoke:rbac -w @wilms/api",
     "smoke:staging": "npm run smoke:staging -w @wilms/api",
     "bundle:budget-check": "node scripts/bundle-budget-check.mjs",
     "perf:budget-check": "node scripts/perf-budget-check.mjs",
     "verify:version": "node scripts/verify-version-consistency.mjs",
     "verify:api-integrity": "node scripts/rc1-api-integrity.mjs",
-    "verify:api-coverage": "node scripts/rc1-api-coverage.mjs"
+    "verify:api-coverage": "node scripts/rc1-api-coverage.mjs",
+    "verify:mock-guard": "node scripts/rc1-mock-import-guard.mjs"
   },
   "devDependencies": {
     "vitest": "3.2.6"

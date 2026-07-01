@@ -22,6 +22,7 @@ import { Pagination } from '@/components/ui/Pagination';
 import { useGroups } from '@/features/group-management/hooks/useGroups';
 import { useCreateGroup } from '@/features/group-management/hooks/useCreateGroup';
 import { usePaginatedRows } from '@/hooks/usePaginatedRows';
+import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { GROUP_RISK_LEVEL, type GroupSummary } from '@/types/group';
 import { collectorRateTextClass } from '@/utils/collector-rate-display';
@@ -42,6 +43,7 @@ export function GroupsManagementPanel() {
   const searchParams = useSearchParams();
   const riskFromUrl = searchParams.get('risk') ?? '';
   const { data, isLoading, isError, refetch } = useGroups();
+  const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
   const createGroup = useCreateGroup();
   const [searchQuery, setSearchQuery] = useState('');
   const [riskFilter, setRiskFilter] = useState(riskFromUrl);
@@ -120,6 +122,8 @@ export function GroupsManagementPanel() {
     <>
     <QueryStatePanel
       isLoading={isLoading}
+      showLoading={showLoading}
+      isTimedOut={isTimedOut}
       isError={isError || !data}
       errorMessage="Unable to load groups. Try again shortly."
       onRetry={() => void refetch()}

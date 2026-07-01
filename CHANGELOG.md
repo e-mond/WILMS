@@ -2,7 +2,24 @@
 
 All notable changes to WILMS are documented in this file.
 
-## [Unreleased] — RC1.1 / v1.0.0 readiness
+## [Unreleased] — RC1.1 production stabilization
+
+### Added
+- `smoke:rbac` production RBAC probes
+- `verify:mock-guard` CI gate for features/
+- Content-encoding checks in `smoke:production`
+- Connection status: online, offline, reconnecting, sync pending
+- RC1.1 audit documentation set (20+ reports)
+
+### Fixed
+- Stale bundle: SW cache v2, controllerchange reload, vercel cache headers
+- Loading policy on super-admin, approver, collector management panels
+
+### Changed
+- `ConnectionStatusChip` labels aligned to spec (Online/Offline/Reconnecting/Sync pending)
+- CI: mock import guard step
+
+## [Unreleased] — RC1.1 / v1.0.0 readiness (hotfix)
 
 ### Fixed
 - Router-level RBAC blocking unrelated API paths for collectors (403 on notifications, capture-sessions, collector dashboard)

@@ -32,6 +32,7 @@ import {
   useMessageThread,
 } from '@/features/collector-management/hooks/useMessageCollector';
 import { usePaginatedRows } from '@/hooks/usePaginatedRows';
+import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { COLLECTOR_STATUS, type CollectorSummary } from '@/types/collector-management';
 import { collectorRateTextClass } from '@/utils/collector-rate-display';
@@ -74,6 +75,7 @@ function matchesCollectorFilter(collector: CollectorSummary, filter: string): bo
 
 export function CollectorsManagementPanel() {
   const { data, isLoading, isError, refetch } = useCollectorsManagement();
+  const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
   const onboardCollector = useOnboardCollector();
   const { createThread, sendMessage } = useMessageCollector();
   const [searchQuery, setSearchQuery] = useState('');
@@ -172,6 +174,8 @@ export function CollectorsManagementPanel() {
     <>
       <QueryStatePanel
         isLoading={isLoading}
+        showLoading={showLoading}
+        isTimedOut={isTimedOut}
         isError={isError || !data}
         errorMessage="Unable to load collectors. Try again shortly."
         onRetry={() => void refetch()}
