@@ -20,7 +20,15 @@ export function resolveCollectorDisplayId(
   collector: { id: string; displayId?: string },
   sequence?: number,
 ): string {
-  return collector.displayId ?? formatCollectorDisplayId({ sequence });
+  if (collector.displayId) {
+    return collector.displayId;
+  }
+
+  if (isReadableWilmsId(collector.id)) {
+    return collector.id.toUpperCase();
+  }
+
+  return formatCollectorDisplayId({ sequence });
 }
 
 export function resolveLoanDisplayId(loan: {

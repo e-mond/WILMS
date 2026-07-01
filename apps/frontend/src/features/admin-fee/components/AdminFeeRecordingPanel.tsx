@@ -17,6 +17,33 @@ import { useAdminFeeStatus } from '@/features/admin-fee/hooks/useAdminFeeStatus'
 import { useRecordAdminFee } from '@/features/admin-fee/hooks/useRecordAdminFee';
 import { ApiError } from '@/types/api';
 
+function AdminFeeDisbursementNotice({
+  borrowerId,
+  isPaid,
+}: {
+  borrowerId: string;
+  isPaid: boolean;
+}) {
+  if (isPaid) {
+    return (
+      <>
+        <Alert title="Disbursement unlocked" variant="success">
+          Admin fee confirmed. This borrower is eligible for loan disbursement.
+        </Alert>
+        <PermissionGate permission={PERMISSION.APPROVE_LOANS}>
+          <DisbursementGateAlert borrowerId={borrowerId} />
+        </PermissionGate>
+      </>
+    );
+  }
+
+  return (
+    <Alert title="Disbursement blocked" variant="warning">
+      Admin fee must be recorded before loan disbursement.
+    </Alert>
+  );
+}
+
 export interface AdminFeeRecordingPanelProps {
   borrowerId: string;
 }
@@ -102,11 +129,11 @@ export function AdminFeeRecordingPanel({ borrowerId }: AdminFeeRecordingPanelPro
             Fee of <CurrencyAmount value={data.requiredAmountPesewas} /> was recorded
             {data.recordedByCollectorName ? ` by ${data.recordedByCollectorName}` : ''}.
           </Alert>
-          <DisbursementGateAlert borrowerId={borrowerId} />
+          <AdminFeeDisbursementNotice borrowerId={borrowerId} isPaid />
         </div>
       ) : (
         <div className="space-y-wilms-4">
-          <DisbursementGateAlert borrowerId={borrowerId} />
+          <AdminFeeDisbursementNotice borrowerId={borrowerId} isPaid={false} />
           <PermissionGate permission={PERMISSION.RECORD_COLLECTIONS}>
             <Button
               type="button"

@@ -32,10 +32,10 @@ function mapError(error: unknown): never {
 export const groupsRouter = Router();
 
 groupsRouter.use(requireAuth);
-groupsRouter.use(requirePermission(PERMISSION.MANAGE_GROUPS));
 
 groupsRouter.get(
   '/groups',
+  requirePermission(PERMISSION.MANAGE_GROUPS),
   asyncHandler(async (_req, res) => {
     sendData(res, await groupService.listGroupsResponse());
   }),
@@ -44,6 +44,7 @@ groupsRouter.get(
 groupsRouter.post(
   '/groups',
   validateBody(createGroupSchema),
+  requirePermission(PERMISSION.MANAGE_GROUPS),
   asyncHandler(async (req, res) => {
     try {
       sendData(
@@ -63,6 +64,7 @@ groupsRouter.post(
 
 groupsRouter.get(
   '/groups/:id',
+  requirePermission(PERMISSION.MANAGE_GROUPS),
   asyncHandler(async (req, res) => {
     try {
       sendData(res, await groupService.getGroupDetail(req.params.id!));
@@ -74,6 +76,7 @@ groupsRouter.get(
 
 groupsRouter.post(
   '/groups/:id/flag',
+  requirePermission(PERMISSION.MANAGE_GROUPS),
   asyncHandler(async (req, res) => {
     try {
       sendData(res, await groupService.flagGroup({ groupId: req.params.id!, ...req.body }));
@@ -85,6 +88,7 @@ groupsRouter.post(
 
 groupsRouter.post(
   '/groups/:id/reassign-collector',
+  requirePermission(PERMISSION.MANAGE_GROUPS),
   asyncHandler(async (req, res) => {
     try {
       sendData(res, await groupService.reassignCollector({ groupId: req.params.id!, ...req.body }));
@@ -96,6 +100,7 @@ groupsRouter.post(
 
 groupsRouter.post(
   '/groups/:id/validate-removal',
+  requirePermission(PERMISSION.MANAGE_GROUPS),
   asyncHandler(async (req, res) => {
     try {
       sendData(
@@ -110,6 +115,7 @@ groupsRouter.post(
 
 groupsRouter.post(
   '/groups/:id/remove-member',
+  requirePermission(PERMISSION.MANAGE_GROUPS),
   asyncHandler(async (req, res) => {
     try {
       sendData(res, await groupService.removeMember({ groupId: req.params.id!, ...req.body }));
@@ -121,6 +127,7 @@ groupsRouter.post(
 
 groupsRouter.post(
   '/groups/:id/add-member',
+  requirePermission(PERMISSION.MANAGE_GROUPS),
   asyncHandler(async (req, res) => {
     try {
       sendData(res, await groupService.addMember({ groupId: req.params.id!, ...req.body }));
@@ -132,6 +139,7 @@ groupsRouter.post(
 
 groupsRouter.post(
   '/groups/:id/transfer-member',
+  requirePermission(PERMISSION.MANAGE_GROUPS),
   asyncHandler(async (req, res) => {
     try {
       sendData(res, await groupService.transferMember({ groupId: req.params.id!, ...req.body }));
@@ -143,6 +151,7 @@ groupsRouter.post(
 
 groupsRouter.post(
   '/groups/:id/replace-leader',
+  requirePermission(PERMISSION.MANAGE_GROUPS),
   asyncHandler(async (req, res) => {
     try {
       sendData(res, await groupService.replaceLeader({ groupId: req.params.id!, ...req.body }));
@@ -154,6 +163,7 @@ groupsRouter.post(
 
 groupsRouter.post(
   '/groups/:id/display-name',
+  requirePermission(PERMISSION.MANAGE_GROUPS),
   asyncHandler(async (req, res) => {
     try {
       sendData(res, await groupService.updateDisplayName({ groupId: req.params.id!, ...req.body }));
@@ -165,6 +175,7 @@ groupsRouter.post(
 
 groupsRouter.post(
   '/groups/:id/record-adjustment',
+  requirePermission(PERMISSION.MANAGE_GROUPS),
   asyncHandler(async (req, res) => {
     try {
       sendData(res, await groupService.recordAdjustment({ groupId: req.params.id!, ...req.body }));

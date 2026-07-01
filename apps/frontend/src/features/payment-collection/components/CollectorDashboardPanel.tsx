@@ -16,6 +16,7 @@ import { DetailSidebarCard, ExecutiveKpiGrid } from '@/components/layout/executi
 import { ExecutiveDetailLayout } from '@/components/layout/ExecutiveDetailLayout';
 import { useCollectorDashboard } from '@/features/payment-collection/hooks/useCollectorDashboard';
 import { useAuth } from '@/hooks/useAuth';
+import { ApiError } from '@/types/api';
 import {
   RECONCILIATION_STATUS,
   type CollectorDashboardBorrower,
@@ -146,17 +147,35 @@ function RecentPaymentRow({ payment }: { payment: CollectorRecentPayment }) {
 
 export function CollectorDashboardPanel() {
   const { user } = useAuth();
-  const { data, isLoading, isError } = useCollectorDashboard(user?.id);
+  const { data, isLoading, isError, error, refetch, isFetching } = useCollectorDashboard(user?.id);
 
   if (isLoading) {
     return <LoadingSpinner label="Loading collector dashboard" className="py-wilms-8" />;
   }
 
   if (isError || !data) {
+    const isForbidden = error instanceof ApiError && error.status === 403;
+
     return (
       <EmptyState
-        title="Unable to load dashboard"
-        description="Check your connection and try again."
+        title={isForbidden ? 'Access denied' : 'Unable to load dashboard'}
+        description={
+          isForbidden
+            ? 'Your account does not have permission to view this collector dashboard. Sign in as a collector or contact your administrator.'
+            : 'Check your connection and try again.'
+        }
+        action={
+          isForbidden ? undefined : (
+            <button
+              type="button"
+              className="text-small font-semibold text-brand-primary"
+              onClick={() => void refetch()}
+              disabled={isFetching}
+            >
+              {isFetching ? 'Retrying…' : 'Retry'}
+            </button>
+          )
+        }
       />
     );
   }

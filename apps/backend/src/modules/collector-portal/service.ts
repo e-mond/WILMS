@@ -141,7 +141,6 @@ export async function getCollectorDashboard(
       });
     }
   } else {
-    expectedPesewas = scopedBorrowers.length * 5000;
     for (const borrower of scopedBorrowers) {
       const collectedForBorrower = collectorPayments
         .filter((payment) => payment.borrowerId === borrower.id)
@@ -153,9 +152,9 @@ export async function getCollectorDashboard(
         community: borrower.community,
         groupName: borrower.groupName || '—',
         loanId: '',
-        expectedPesewas: 5000,
+        expectedPesewas: 0,
         collectedPesewas: collectedForBorrower,
-        paymentStatus: collectedForBorrower >= 5000 ? 'COLLECTED' : 'PENDING',
+        paymentStatus: collectedForBorrower > 0 ? 'COLLECTED' : 'PENDING',
       });
     }
   }

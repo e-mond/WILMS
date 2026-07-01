@@ -10,10 +10,10 @@ import * as photoCaptureService from './service.js';
 export const photoCaptureRouter = Router();
 
 photoCaptureRouter.use(requireAuth);
-photoCaptureRouter.use(requirePermission(PERMISSION.CAPTURE_DOCUMENTS));
 
 photoCaptureRouter.post(
   '/registration/capture-sessions',
+  requirePermission(PERMISSION.CAPTURE_DOCUMENTS),
   asyncHandler(async (req, res) => {
     sendData(res, photoCaptureService.createSession(req.body), 201);
   }),
@@ -21,6 +21,7 @@ photoCaptureRouter.post(
 
 photoCaptureRouter.get(
   '/registration/capture-sessions/:token',
+  requirePermission(PERMISSION.CAPTURE_DOCUMENTS),
   asyncHandler(async (req, res) => {
     const session = photoCaptureService.getSession(req.params.token!);
     if (!session) {
