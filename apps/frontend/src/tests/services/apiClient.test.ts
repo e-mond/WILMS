@@ -63,6 +63,8 @@ describe('apiClient', () => {
   });
 
   it('maps duplicate transaction responses to ApiError', async () => {
+    document.cookie = 'wilms_csrf=test-csrf-token';
+
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(
         JSON.stringify({
