@@ -69,11 +69,11 @@ No placeholder strings detected in production frontend code.
 
 ```
 RC1 API Integrity (static)
-Frontend apiClient calls: 135
+Frontend apiClient calls: 132
 Backend routes: 148
-Matched: 135
+Matched: 132
 Missing backend: 0
-Orphan backend routes: 20
+Orphan backend routes: 23
 Next.js pages: 46
 
 Orphan backend routes (document if intentional):
@@ -91,12 +91,12 @@ Orphan backend routes (document if intentional):
   GET /loan-pools/:id — loan-pools
   GET /borrowers/loan-eligible — loans
   GET /loans/:id — loans
+  GET /locations/regions — locations
+  GET /locations/regions/:id/districts — locations
+  GET /locations/districts/:id/cities — locations
   GET /messages/threads/:id — messages
   GET /reconciliations/:id — reconciliation
   GET /reports/daily-collection — reports
-  GET /risk-flags/:id — risk-flags
-  GET /uploads/signature — uploads
-  GET /uploads/:id/content — uploads
 
 PASS: all frontend apiClient paths have backend routes
 ```
