@@ -63,6 +63,7 @@ export interface CollectorMonthlyPerformance {
 
 export interface CollectorProfileGroupPerformance {
   id: string;
+  groupSystemId?: string;
   name: string;
   memberCount: number;
   repaymentTrend: string;
