@@ -8,6 +8,7 @@ import type {
   LoanPortfolioEntry,
   LoanProgressSummary,
   LoanSummary,
+  RejectLoanInput,
 } from '@/types/loan';
 import type { LoanSchedule } from '@/types/loan-schedule';
 import type { ILoanService } from '@/types/services';
@@ -52,6 +53,14 @@ const loanService: ILoanService = {
 
   createLoan(input: CreateLoanInput): Promise<LoanDetail> {
     return apiClient.post<LoanDetail>('/loans', input);
+  },
+
+  approveLoan(loanId: string): Promise<LoanDetail> {
+    return apiClient.patch<LoanDetail>(`/loans/${loanId}/approve`, {});
+  },
+
+  rejectLoan(loanId: string, input: RejectLoanInput): Promise<LoanDetail> {
+    return apiClient.patch<LoanDetail>(`/loans/${loanId}/reject`, input);
   },
 
   disburseLoan(loanId: string): Promise<LoanDetail> {

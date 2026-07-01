@@ -27,7 +27,8 @@
     "bundle:budget-check": "node scripts/bundle-budget-check.mjs",
     "perf:budget-check": "node scripts/perf-budget-check.mjs",
     "verify:version": "node scripts/verify-version-consistency.mjs",
-    "verify:api-integrity": "node scripts/rc1-api-integrity.mjs"
+    "verify:api-integrity": "node scripts/rc1-api-integrity.mjs",
+    "verify:api-coverage": "node scripts/rc1-api-coverage.mjs"
   },
   "devDependencies": {
     "vitest": "3.2.6"

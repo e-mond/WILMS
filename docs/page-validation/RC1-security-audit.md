@@ -1,33 +1,37 @@
-# RC1 Security Audit
+# RC1 Security Audit — Phase 2
 
 **Date:** 2026-07-01
 
 ## Dependency scan
 
-| Level | Count | CI gate |
-|-------|-------|---------|
-| Critical | **0** | `npm audit --audit-level=critical` — PASS |
-| High | 9 | Documented — no blind `npm audit fix --force` |
-| Moderate | 9 | Documented |
+```bash
+npm audit --audit-level=critical  # 0 critical (CI gate)
+npm audit --audit-level=high      # documented highs (Next 14, drizzle, playwright dev)
+```
 
-### Notable high findings (remediation planned)
+## Phase 2 fixes
 
-- `next@14.2.x` — multiple advisories; upgrade to Next 15+ requires dedicated migration sprint
-- `drizzle-orm` — SQL identifier escaping; evaluate upgrade to 0.45.2+ in separate PR
-- `playwright@1.48` — dev-only; upgrade in E2E maintenance window
+| Item | Fix |
+|------|-----|
+| `supervisor-alert` open to any auth user | RBAC guard added |
+| Placeholder security UI | Force logout / MFA buttons removed |
 
-## Application security
+## Unchanged controls
 
-| Control | Location | Status |
-|---------|----------|--------|
-| Helmet | `apps/backend/src/http/app.ts` | Enabled in production |
-| CORS | `env.corsOrigin` | Configured |
-| Rate limiting | `express-rate-limit` on auth | Verified |
-| CSRF | BFF proxy + server validation | Verified |
-| Auth middleware | `requireAuth`, `requirePermission` | All business routes |
-| Upload validation | Cloudinary adapter + size limits | Verified |
-| Secret scan | gitleaks in CI | PASS |
+- Helmet + HSTS (production)
+- CORS `credentials: true` with explicit origin
+- CSRF on BFF mutations
+- `requireAuth` + `requirePermission` on business routes
+- gitleaks in CI
+- Upload validation via Cloudinary adapter
+
+## Deferred (non-breaking)
+
+- Next.js 15 migration
+- Drizzle ≥0.45.2
+- Global API rate limit (login-only today)
+- Server-side session revocation
 
 ## Verdict
 
-No critical vulnerabilities. High/moderate items documented for post-RC1 remediation. CI security job passes.
+**PASS** — No new critical findings; supervisor-alert RBAC closed.

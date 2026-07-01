@@ -224,11 +224,6 @@ export function SettingsUserProfileModal({ userId, onClose }: SettingsUserProfil
                   Reset PIN
                 </Button>
               </PermissionGate>
-              <PermissionGate permission={PERMISSION.FORCE_LOGOUT}>
-                <Button type="button" variant="secondary" size="sm" disabled title="Force logout API coming soon">
-                  Force logout
-                </Button>
-              </PermissionGate>
               <PermissionGate permission={PERMISSION.SUSPEND_USERS}>
                 <Button
                   type="button"
@@ -238,11 +233,6 @@ export function SettingsUserProfileModal({ userId, onClose }: SettingsUserProfil
                   onClick={() => void handleSuspendAccount()}
                 >
                   Suspend account
-                </Button>
-              </PermissionGate>
-              <PermissionGate permission={PERMISSION.ENABLE_MFA}>
-                <Button type="button" variant="ghost" size="sm" disabled title="MFA enrollment API coming soon">
-                  Enable MFA
                 </Button>
               </PermissionGate>
             </div>

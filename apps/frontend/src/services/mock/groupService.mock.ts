@@ -10,6 +10,7 @@ import type {
   TransferGroupMemberInput,
   UpdateGroupDisplayNameInput,
 } from '@/types/group-detail';
+import type { CreateGroupInput } from '@/types/group';
 import { MOCK_GROUP_MEMBERS } from '@/mocks/group-members';
 import type { IGroupService } from '@/types/services';
 import { ApiError, API_ERROR_CODE } from '@/types/api';
@@ -192,6 +193,26 @@ const groupServiceMock: IGroupService = {
     }
 
     return groupDetailCache.get(id)!;
+  },
+
+  async createGroup(input: CreateGroupInput) {
+    await simulateDelay();
+    const detail = buildGroupDetail({
+      id: `grp-${Date.now()}`,
+      name: input.name,
+      community: input.community,
+      displayName: input.displayName ?? input.name,
+      officerName: 'Super Admin',
+      leaderName: '—',
+      formedAt: new Date().toISOString().slice(0, 10),
+      memberCount: input.memberBorrowerIds?.length ?? 0,
+      activeMemberCount: input.memberBorrowerIds?.length ?? 0,
+      disbursedPesewas: 0,
+      collectedPesewas: 0,
+      collectionRatePercent: 0,
+    });
+    groupDetailCache.set(detail.id, detail);
+    return detail;
   },
 
   async flagGroup(input: FlagGroupInput) {
