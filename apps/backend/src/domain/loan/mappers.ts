@@ -1,9 +1,11 @@
 import { decimalToPesewas, parseDecimal } from '../money.js';
+import { formatLoanDisplayId } from '@wilms/shared-utils';
 import type { loans } from '../../db/schema/loans.js';
 import type { loanSchedules } from '../../db/schema/loan-schedules.js';
 
 export interface LoanDetailDto {
   id: string;
+  displayId: string;
   borrowerId: string;
   amountPesewas: number;
   durationWeeks: number;
@@ -15,13 +17,21 @@ export interface LoanDetailDto {
   outstandingPesewas: number;
 }
 
-export function mapLoanRowToDetail(row: typeof loans.$inferSelect): LoanDetailDto {
+export function mapLoanRowToDetail(
+  row: typeof loans.$inferSelect,
+  sequence = 1,
+): LoanDetailDto {
   const amountPesewas = decimalToPesewas(row.principalAmount);
   const outstandingPesewas = decimalToPesewas(row.loanBalance);
   const weeklyPaymentPesewas = decimalToPesewas(row.installmentAmount);
 
   return {
     id: row.id,
+    displayId: formatLoanDisplayId({
+      cycleBatch: row.cycleBatch,
+      startDate: row.startDate,
+      sequence,
+    }),
     borrowerId: row.borrowerId,
     amountPesewas,
     durationWeeks: row.durationWeeks,

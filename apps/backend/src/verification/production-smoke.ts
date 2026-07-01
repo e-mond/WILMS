@@ -206,6 +206,9 @@ async function main(): Promise<void> {
     `status=${reportsHubRes.status} categories=${reportsHubBody.data?.categoryBreakdown?.length ?? 'missing'}`,
   );
 
+  const publicRegionsRes = await fetch(`${appUrl}/api/wilms/locations/regions`);
+  record('public-bff-locations-regions', publicRegionsRes.status === 200, `status=${publicRegionsRes.status}`);
+
   const officerEmail = process.env.WILMS_SMOKE_OFFICER_EMAIL;
   const officerPassword = process.env.WILMS_SMOKE_OFFICER_PASSWORD;
 
@@ -227,10 +230,10 @@ async function main(): Promise<void> {
       [CSRF_HEADER]: officerCookies.wilms_csrf ?? csrfCookies.wilms_csrf ?? '',
     };
 
-    const regionsRes = await fetch(`${appUrl}/api/wilms/locations/regions`, {
+    const officerRegionsRes = await fetch(`${appUrl}/api/wilms/locations/regions`, {
       headers: officerHeaders,
     });
-    record('officer-bff-locations-regions', regionsRes.status === 200, `status=${regionsRes.status}`);
+    record('officer-bff-locations-regions', officerRegionsRes.status === 200, `status=${officerRegionsRes.status}`);
 
     const unreadRes = await fetch(`${appUrl}/api/wilms/notifications/inbox/unread-count`, {
       headers: officerHeaders,

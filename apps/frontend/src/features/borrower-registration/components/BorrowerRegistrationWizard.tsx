@@ -43,7 +43,6 @@ import { PERMISSION } from '@/constants/permissions';
 import { UPLOAD_PURPOSE } from '@/types/upload';
 import { useAuth } from '@/hooks/useAuth';
 import { borrowerService, locationService } from '@/services';
-import { getGhanaRegions } from '@/services/mock/factories/ghana-locations.factory';
 import type { RegistrationConflictReport } from '@/types/borrower-conflicts';
 import type { BorrowerRegistrationFormValues } from '@/types/borrower-registration';
 import type { GuarantorEligibilityResult } from '@/types/guarantor-eligibility';
@@ -121,23 +120,12 @@ export function BorrowerRegistrationWizard() {
   const [locationFeedback, setLocationFeedback] = useState<string | null>(null);
   const [isLocating, setIsLocating] = useState(false);
 
-  const {
-    data: regions = [],
-    isError: isRegionsError,
-    refetch: refetchRegions,
-  } = useQuery({
+  const { data: regions = [] } = useQuery({
     queryKey: ['locations', 'regions'],
     queryFn: () => locationService.getRegions(),
-    retry: (failureCount, error) => {
-      if (error instanceof ApiError && error.status === 403) {
-        return false;
-      }
-
-      return failureCount < 1;
-    },
   });
 
-  const regionOptions = isRegionsError ? getGhanaRegions() : regions;
+  const regionOptions = regions;
 
   const selectedRegionId = useMemo(
     () => regionOptions.find((region) => region.name === watchedRegion)?.id ?? '',
@@ -574,18 +562,6 @@ export function BorrowerRegistrationWizard() {
             ) : null}
           </FormField>
           <FormField label="Region" htmlFor="region" required error={errors.region?.message}>
-            {isRegionsError ? (
-              <div className="mb-wilms-2 rounded-md border border-warning/30 bg-warning/5 p-wilms-2 text-small text-text-muted">
-                Unable to load regions from the server. Showing offline reference list.{' '}
-                <button
-                  type="button"
-                  className="font-semibold text-brand-primary hover:underline"
-                  onClick={() => void refetchRegions()}
-                >
-                  Retry
-                </button>
-              </div>
-            ) : null}
             <Controller
               name="region"
               control={control}

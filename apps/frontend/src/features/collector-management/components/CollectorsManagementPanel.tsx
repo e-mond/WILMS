@@ -32,6 +32,7 @@ import { COLLECTOR_STATUS, type CollectorSummary } from '@/types/collector-manag
 import { collectorRateTextClass } from '@/utils/collector-rate-display';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
 import { formatPesewasForCsv } from '@/utils/export-csv';
+import { resolveCollectorDisplayId } from '@/utils/entity-display-id';
 
 const STATUS_FILTERS = [
   { value: '', label: 'All' },
@@ -81,6 +82,7 @@ export function CollectorsManagementPanel() {
         !query ||
         collector.displayName.toLowerCase().includes(query) ||
         collector.zone.toLowerCase().includes(query) ||
+        collector.displayId?.toLowerCase().includes(query) ||
         collector.id.toLowerCase().includes(query);
       const matchesStatus = matchesCollectorFilter(collector, statusFilter);
 
@@ -252,7 +254,9 @@ export function CollectorsManagementPanel() {
                 />
                 <div>
                   <p className="font-semibold text-text-primary">{row.displayName}</p>
-                  <p className="text-small font-semibold text-executive-gold">{row.id}</p>
+                  <p className="text-small font-semibold text-executive-gold">
+                    {resolveCollectorDisplayId(row)}
+                  </p>
                 </div>
               </div>
             ),

@@ -7,6 +7,7 @@ export type CollectorStatus = (typeof COLLECTOR_STATUS)[keyof typeof COLLECTOR_S
 
 export interface CollectorSummary {
   id: string;
+  displayId?: string;
   displayName: string;
   photoUrl?: string | null;
   zone: string;

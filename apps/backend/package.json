@@ -49,6 +49,7 @@
     "@wilms/shared-rbac": "*",
     "@wilms/shared-types": "*",
     "@wilms/shared-validation": "*",
+    "@wilms/shared-utils": "*",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.10.0",
     "cookie-parser": "^1.4.7",

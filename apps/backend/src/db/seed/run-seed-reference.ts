@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 import { PERMISSION, USER_ROLE } from '@wilms/shared-rbac';
 import { isDatabaseEnabled, getDb } from '../client.js';
 import { permissions, roles, userRoles } from '../schema/rbac.js';
-import { users as usersTable } from '../schema/users.js';
+import { collectors, users as usersTable } from '../schema/users.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
 import { hashPassword } from '../../lib/password.js';
 import { seedAdjustmentReasons } from './seed-adjustments.js';
@@ -81,6 +81,21 @@ async function seedRbac(): Promise<void> {
       await db
         .insert(userRoles)
         .values({ userId: inserted.id, roleId: roleRecord.id })
+        .onConflictDoNothing();
+    }
+
+    if (user.role === USER_ROLE.COLLECTOR && inserted) {
+      await db
+        .insert(collectors)
+        .values({
+          id: uuidv7(),
+          userId: inserted.id,
+          collectorCode: 'COL-001',
+          assignedRegion: 'Greater Accra',
+          status: 'ACTIVE',
+          joinedAt: new Date(),
+          lastActiveAt: new Date(),
+        })
         .onConflictDoNothing();
     }
   }

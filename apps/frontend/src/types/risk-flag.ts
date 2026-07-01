@@ -30,6 +30,7 @@ export type FlagStatus = (typeof FLAG_STATUS)[keyof typeof FLAG_STATUS];
 export interface RiskFlagSummary {
   id: string;
   entityId: string;
+  entityDisplayId?: string;
   entityName: string;
   entityType: FlagEntityType;
   groupName?: string;

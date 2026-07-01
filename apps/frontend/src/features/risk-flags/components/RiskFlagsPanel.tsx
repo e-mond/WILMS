@@ -29,6 +29,7 @@ import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { buildDefaultFlagTimeline } from '@/utils/risk-flag-list';
 import { FLAG_STATUS, FLAG_TYPE, type RiskFlagSummary } from '@/types/risk-flag';
 import { formatDisplayDate } from '@/utils/format-date';
+import { resolveEntityDisplayId } from '@/utils/entity-display-id';
 
 const STATUS_FILTERS = [
   { value: '', label: 'All' },
@@ -314,7 +315,7 @@ export function RiskFlagsPanel() {
             cell: (row) => (
               <div className="text-left">
                 <p className="font-semibold text-text-primary">{row.entityName}</p>
-                <p className="text-small text-text-muted">{row.entityId}</p>
+                <p className="text-small text-text-muted">{resolveEntityDisplayId(row)}</p>
               </div>
             ),
           },
