@@ -41,6 +41,10 @@ export interface CreateLoanInput {
   startDate: string;
 }
 
+export interface RejectLoanInput {
+  reason: string;
+}
+
 export interface LoanPortfolioEntry {
   id: string;
   borrowerId: string;

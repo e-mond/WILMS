@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import {
   ActivityFeed,
   CurrencyAmount,
@@ -9,10 +10,16 @@ import {
 } from '@/components/data-display';
 import { DetailSidebarCard } from '@/components/layout/executive';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
+import { Textarea } from '@/components/ui/Textarea';
 import { GROUP_RISK_DISPLAY } from '@/constants/group-risk-display';
 import { GROUP_RISK_LEVEL, type GroupListResponse, type GroupSummary } from '@/types/group';
 import { buildGroupMemberLabels } from '@/utils/group-member-labels';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
+import { groupService } from '@/services';
+import { useQueryClient } from '@tanstack/react-query';
+import { groupsQueryKey } from '@/features/group-management/hooks/useGroups';
 
 export interface GroupsAsidePanelProps {
   data: GroupListResponse;
@@ -21,9 +28,39 @@ export interface GroupsAsidePanelProps {
 
 export function GroupsAsidePanel({ data, selected }: GroupsAsidePanelProps) {
   const toast = useToast();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [flagModalOpen, setFlagModalOpen] = useState(false);
+  const [flagReason, setFlagReason] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const outstandingPesewas = selected
     ? Math.max(selected.disbursedPesewas - selected.collectedPesewas, 0)
     : 0;
+
+  async function handleFlagGroup() {
+    if (!selected || !flagReason.trim() || !user) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await groupService.flagGroup({
+        groupId: selected.id,
+        reason: flagReason.trim(),
+        actorUserId: user.id,
+      });
+      toast.success('Group flagged', { message: 'Audit record created for this action.' });
+      setFlagModalOpen(false);
+      setFlagReason('');
+      void queryClient.invalidateQueries({ queryKey: groupsQueryKey });
+    } catch {
+      toast.error('Unable to flag group', { message: 'Try again shortly.' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <>
@@ -34,15 +71,7 @@ export function GroupsAsidePanel({ data, selected }: GroupsAsidePanelProps) {
           subtitle={selected.community}
           actions={
             <>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() =>
-                  toast.info('Flag Group', {
-                    message: 'Group flagging workflow is not yet available.',
-                  })
-                }
-              >
+              <Button variant="secondary" size="sm" onClick={() => setFlagModalOpen(true)}>
                 Flag Group
               </Button>
               <Link
@@ -123,6 +152,40 @@ export function GroupsAsidePanel({ data, selected }: GroupsAsidePanelProps) {
       <DetailSidebarCard title="Recent Group Activity">
         <ActivityFeed items={data.recentActivity} className="mt-wilms-3" />
       </DetailSidebarCard>
+
+      {selected ? (
+        <Modal
+          isOpen={flagModalOpen}
+          onClose={() => setFlagModalOpen(false)}
+          title="Flag Group"
+          footer={
+            <>
+              <Button variant="ghost" size="sm" onClick={() => setFlagModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                disabled={!flagReason.trim() || isSubmitting}
+                onClick={() => void handleFlagGroup()}
+              >
+                {isSubmitting ? 'Flagging…' : 'Confirm Flag'}
+              </Button>
+            </>
+          }
+        >
+          <p className="text-body text-text-muted">
+            Flagging {selected.name} creates an audit record and preserves historical data.
+          </p>
+          <Textarea
+            aria-label="Reason for flagging group"
+            className="mt-wilms-3"
+            placeholder="Enter reason..."
+            value={flagReason}
+            onChange={(event) => setFlagReason(event.target.value)}
+          />
+        </Modal>
+      ) : null}
     </>
   );
 }

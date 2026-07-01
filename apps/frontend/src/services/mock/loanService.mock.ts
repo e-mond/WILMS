@@ -379,6 +379,29 @@ const loanServiceMock: ILoanService = {
     return buildDisbursementEligibility(borrowerId);
   },
 
+  async approveLoan(loanId: string): Promise<LoanDetail> {
+    await simulateDelay();
+    const loanIndex = mockLoans.findIndex((entry) => entry.id === loanId);
+    if (loanIndex === -1) {
+      throw new ApiError('Loan not found.', API_ERROR_CODE.NOT_FOUND, 404);
+    }
+    const loan = { ...mockLoans[loanIndex], status: LOAN_STATUS.PENDING_DISBURSEMENT };
+    mockLoans = [...mockLoans.slice(0, loanIndex), loan, ...mockLoans.slice(loanIndex + 1)];
+    return loan;
+  },
+
+  async rejectLoan(loanId: string, input: { reason: string }): Promise<LoanDetail> {
+    await simulateDelay();
+    void input.reason;
+    const loanIndex = mockLoans.findIndex((entry) => entry.id === loanId);
+    if (loanIndex === -1) {
+      throw new ApiError('Loan not found.', API_ERROR_CODE.NOT_FOUND, 404);
+    }
+    const loan = { ...mockLoans[loanIndex], status: LOAN_STATUS.WRITTEN_OFF };
+    mockLoans = [...mockLoans.slice(0, loanIndex), loan, ...mockLoans.slice(loanIndex + 1)];
+    return loan;
+  },
+
   async disburseLoan(loanId: string): Promise<LoanDetail> {
     await simulateDelay();
     const loanIndex = mockLoans.findIndex((entry) => entry.id === loanId);
