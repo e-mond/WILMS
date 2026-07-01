@@ -198,7 +198,7 @@ export function LoanPoolsPanel() {
               variant="primary"
               size="sm"
               onClick={() =>
-                toast.info('New Pool', { message: 'Pool creation workflow is not enabled in demo.' })
+                toast.info('New Pool', { message: 'Pool creation workflow is not yet available.' })
               }
             >
               + New Pool
