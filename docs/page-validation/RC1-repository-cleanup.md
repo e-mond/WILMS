@@ -1,32 +1,39 @@
-# RC1 — Repository Cleanup
+# RC1 Repository Cleanup Report
 
-**Gate:** GATE 5  
-**Date:** 2026-06-30
+**Date:** 2026-07-01  
+**Scope:** `apps/frontend/src`, `apps/backend/src` (excluding `mock/`, `tests/`, `verification/`)
 
----
+## Scan results
 
-## Classification
+| Pattern | Frontend features | Backend modules |
+|---------|-------------------|-----------------|
+| `TODO` / `FIXME` / `HACK` | 0 | 0 |
+| `console.log` (production code) | 0 | 0 (verification scripts only) |
+| `debugger` | 0 | 0 |
 
-| Item | Action | Status |
-|------|--------|--------|
-| `test-output*.txt`, `vitest-*.txt` (root) | Archive → delete | Pending user approval |
-| `P14.6.1*` / `P14.6.2*` validation docs | Keep in `docs/page-validation/` | Reference |
-| `P14.6.4-*.md` (12 files) | Keep as baseline | Reference |
-| `RC1-*.md` (this set) | Active RC1 deliverables | Keep |
-| `.vscode/settings.json` | Local IDE config | Do not commit |
+## Production mock isolation
 
----
+| Area | Status |
+|------|--------|
+| `src/services/mock/` | Dev/test only — webpack + vitest aliases |
+| `src/mocks/` | Imported only via mock services |
+| Production build | Forces `index.production.ts` → `ApiDataProvider` |
 
-## Archive target
+## Demo strings removed (RC1)
 
-`docs/archive/rc1/` — for obsolete temp artifacts after user approval STOP gate.
+Updated production UI toasts that referenced "demo":
+- `GroupsManagementPanel` — New Group
+- `GroupsAsidePanel` — Flag Group
+- `LoanPoolsPanel` — New Pool
+- `CollectorsManagementPanel` — messaging, onboarding
 
----
+## Untracked files (KEEP — pending approval)
 
-## No deletes executed
+| Path | Classification |
+|------|----------------|
+| `docs/page-validation/P14.6.*.md` | ARCHIVE — superseded by RC1 docs |
+| Root test output files (`vitest-*.txt`, `test-output.*`) | SAFE TO DELETE (local artifacts) |
 
-Per plan STOP gate: delete only after archive + explicit approval.
+## Verdict
 
----
-
-**Verdict:** Classification complete. Awaiting approval for physical cleanup.
+No production mock leakage detected. Cleanup of local artifact files deferred pending operator approval.

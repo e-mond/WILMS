@@ -39,7 +39,7 @@ export function GroupsAsidePanel({ data, selected }: GroupsAsidePanelProps) {
                 size="sm"
                 onClick={() =>
                   toast.info('Flag Group', {
-                    message: 'Group flagging workflow connects in production.',
+                    message: 'Group flagging workflow is not yet available.',
                   })
                 }
               >

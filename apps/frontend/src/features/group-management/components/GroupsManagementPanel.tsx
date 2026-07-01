@@ -196,7 +196,7 @@ export function GroupsManagementPanel() {
               variant="primary"
               size="sm"
               onClick={() =>
-                toast.info('New Group', { message: 'Group creation workflow is not enabled in demo.' })
+                toast.info('New Group', { message: 'Group creation workflow is not yet available.' })
               }
             >
               + New Group
