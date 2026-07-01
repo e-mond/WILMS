@@ -75,6 +75,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@/services/index.production': path.resolve(__dirname, './src/services/index.development.ts'),
       '@wilms/shared-contracts': path.resolve(__dirname, '../../packages/shared-contracts/src/index.ts'),
       '@wilms/shared-rbac': path.resolve(__dirname, '../../packages/shared-rbac/src/index.ts'),
       '@wilms/shared-types': path.resolve(__dirname, '../../packages/shared-types/src/index.ts'),

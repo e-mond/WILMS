@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import reportServiceMock from '@/services/mock/reportService.mock';
 import { resetMockBorrowerRegistrations } from '@/services/mock/borrowerService.mock';
@@ -9,11 +9,16 @@ import { TestQueryProvider } from '@/tests/utils/test-query-client';
 
 const mockGetDailyCollectionReport = vi.hoisted(() => vi.fn());
 
-vi.mock('@/services', () => ({
-  reportService: {
-    getDailyCollectionReport: mockGetDailyCollectionReport,
-  },
-}));
+vi.mock('@/services', async () => {
+  const development = await import('@/services/index.development');
+
+  return {
+    ...development,
+    reportService: {
+      getDailyCollectionReport: mockGetDailyCollectionReport,
+    },
+  };
+});
 
 import { DailyCollectionReportPanel } from '@/features/reports/components/DailyCollectionReportPanel';
 
@@ -35,6 +40,11 @@ describe('DailyCollectionReportPanel', () => {
         <DailyCollectionReportPanel />
       </TestQueryProvider>,
     );
+
+    const dateInput = await screen.findByLabelText('Report date');
+    fireEvent.change(dateInput, {
+      target: { value: '2026-05-23' },
+    });
 
     expect(
       await screen.findByRole('table', { name: 'Daily collection report' }),
