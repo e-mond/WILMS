@@ -41,6 +41,7 @@
     "cert:reconciliation:perf": "tsx src/verification/cert-reconciliation-performance.ts",
     "cert:demo:stakeholder": "tsx src/verification/demo-stakeholder-cert.ts",
     "smoke:production": "tsx src/verification/production-smoke.ts",
+    "smoke:rbac": "tsx src/verification/rbac-production-smoke.ts",
     "smoke:staging": "tsx src/verification/production-smoke.ts"
   },
   "dependencies": {

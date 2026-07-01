@@ -201,9 +201,35 @@ async function main(): Promise<void> {
     ['bff-proxy-risk-flags', '/risk-flags'],
     ['bff-proxy-messages', '/messages/threads'],
     ['bff-proxy-collectors', '/collectors'],
+    ['bff-proxy-borrowers', '/borrowers'],
+    ['bff-proxy-loans-portfolio', '/loans/portfolio'],
   ] as const) {
     const res = await fetch(`${appUrl}/api/wilms${path}`, { headers: authHeaders });
     record(name, res.status === 200, `status=${res.status}`);
+  }
+
+  // RC1.1 — BFF responses must return parseable JSON (guards ERR_CONTENT_DECODING_FAILED)
+  for (const [name, path] of [
+    ['bff-encoding-dashboard', '/dashboard/summary'],
+    ['bff-encoding-borrowers', '/borrowers'],
+    ['bff-encoding-collectors', '/collectors'],
+  ] as const) {
+    const res = await fetch(`${appUrl}/api/wilms${path}`, {
+      headers: { ...authHeaders, 'Accept-Encoding': 'gzip, deflate, br' },
+    });
+    const encoding = res.headers.get('content-encoding');
+    let jsonOk = false;
+    try {
+      await res.clone().json();
+      jsonOk = true;
+    } catch {
+      jsonOk = false;
+    }
+    record(
+      name,
+      res.status === 200 && jsonOk,
+      `status=${res.status} encoding=${encoding ?? 'none'} json=${jsonOk ? 'ok' : 'fail'}`,
+    );
   }
 
   // Mock flag — cannot read Vercel env from here; verify HTML has no demo banner text
