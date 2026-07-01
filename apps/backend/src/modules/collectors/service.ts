@@ -305,6 +305,7 @@ export async function getCollector(id: string): Promise<CollectorDetail> {
 
     assignedGroups = rows.map((group) => ({
       id: group.id,
+      groupSystemId: group.systemId,
       name: group.displayName,
       memberCount: 0,
       repaymentTrend: 'Stable',

@@ -11,5 +11,6 @@ export function useLoanSchedule(loanId: string) {
   return useQuery({
     queryKey: loanScheduleQueryKey(loanId),
     queryFn: () => loanService.getLoanSchedule(loanId),
+    enabled: Boolean(loanId),
   });
 }

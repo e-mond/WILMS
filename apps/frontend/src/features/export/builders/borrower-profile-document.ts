@@ -10,6 +10,7 @@ import {
   formatPesewasForExport,
   formatPercentForExport,
 } from '@/features/export/utils/formatters';
+import { resolveBorrowerRisk } from '@/utils/borrower-risk';
 
 export type BorrowerExportVariant = 'full' | 'loan-summary' | 'payment-history';
 
@@ -51,6 +52,7 @@ export function buildBorrowerProfileExportDocument(input: BorrowerProfileExportI
   const reportId = generateReportId(WILMS_REPORT_TYPE.BORROWER_PROFILE);
   const generatedAt = formatExportTimestamp();
   const { borrower, activeLoan, progress, paymentLog, scheduleWeeks, loans } = input;
+  const risk = resolveBorrowerRisk(borrower.risk);
 
   const titleByVariant: Record<BorrowerExportVariant, string> = {
     full: `Borrower Profile — ${borrower.fullName}`,
@@ -141,17 +143,17 @@ export function buildBorrowerProfileExportDocument(input: BorrowerProfileExportI
       title: 'Risk Summary',
       type: 'summary',
       summaryItems: [
-        { label: 'Risk Rating', value: borrower.risk.riskRating },
-        { label: 'Missed Payment Count', value: String(borrower.risk.missedPaymentCount) },
-        { label: 'Default Status', value: borrower.risk.defaultStatus },
-        { label: 'Blacklist Status', value: borrower.risk.blacklistStatus },
+        { label: 'Risk Rating', value: risk.riskRating },
+        { label: 'Missed Payment Count', value: String(risk.missedPaymentCount) },
+        { label: 'Default Status', value: risk.defaultStatus },
+        { label: 'Blacklist Status', value: risk.blacklistStatus },
         {
           label: 'Flags',
-          value: borrower.risk.flags.length ? borrower.risk.flags.join(', ') : 'None',
+          value: risk.flags.length ? risk.flags.join(', ') : 'None',
         },
         {
           label: 'Notes',
-          value: borrower.risk.notes.length ? borrower.risk.notes.join(' ') : 'None',
+          value: risk.notes.length ? risk.notes.join(' ') : 'None',
         },
       ],
     });
