@@ -5,6 +5,7 @@ import { sendData } from '../../http/response.js';
 import { PERMISSION } from '../../infrastructure/permissions/matrix.js';
 import { requireAuth } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/require-permission.js';
+import { validateBody } from '../../middleware/validate-body.js';
 import * as poolService from './service.js';
 
 function mapError(error: unknown): never {
@@ -27,6 +28,27 @@ loanPoolsRouter.get(
   asyncHandler(async (_req, res) => {
     try {
       sendData(res, await poolService.listLoanPools());
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+loanPoolsRouter.post(
+  '/loan-pools',
+  requirePermission(PERMISSION.VIEW_FINANCIAL_REPORTS, PERMISSION.MANAGE_SYSTEM_SETTINGS),
+  validateBody(poolService.createLoanPoolSchema),
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(
+        res,
+        await poolService.createLoanPool(
+          req.body,
+          req.session!.userId,
+          req.session!.displayName,
+        ),
+        201,
+      );
     } catch (error) {
       mapError(error);
     }

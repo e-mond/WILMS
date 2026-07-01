@@ -1,6 +1,9 @@
 import { eq, isNull } from 'drizzle-orm';
+import { uuidv7 } from 'uuidv7';
 import { isDatabaseEnabled, getDb } from '../../db/client.js';
 import { riskFlags } from '../../db/schema/risk-flags.js';
+import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
+import * as userRepo from '../../repositories/user.repository.js';
 
 export interface RiskFlagSummary {
   id: string;
@@ -150,4 +153,185 @@ export async function getRiskFlag(id: string): Promise<RiskFlagDetail> {
       },
     ],
   };
+}
+
+function requireDatabase(): void {
+  if (!isDatabaseEnabled()) {
+    throw new Error('VALIDATION:Database persistence is required for risk flag operations.');
+  }
+}
+
+export interface CreateRiskFlagInput {
+  entityId: string;
+  entityName: string;
+  entityType: string;
+  flagType: string;
+  community: string;
+  reason?: string;
+  officerName?: string;
+  arrearsPesewas?: number;
+}
+
+export async function createRiskFlag(
+  input: CreateRiskFlagInput,
+  actorId: string,
+  actorDisplayName?: string,
+): Promise<RiskFlagDetail> {
+  requireDatabase();
+
+  const id = uuidv7();
+  const now = new Date();
+
+  const db = getDb();
+  await db.insert(riskFlags).values({
+    id,
+    entityId: input.entityId,
+    entityName: input.entityName.trim(),
+    entityType: input.entityType as typeof riskFlags.$inferInsert.entityType,
+    flagType: input.flagType as typeof riskFlags.$inferInsert.flagType,
+    community: input.community.trim(),
+    officerName: input.officerName?.trim() ?? '—',
+    raisedAt: now,
+    arrearsPesewas: input.arrearsPesewas ?? 0,
+    status: 'OPEN',
+    reason: input.reason?.trim() ?? null,
+  });
+
+  appendAuditEntry({
+    action: 'risk-flag.raised',
+    actorId,
+    actorDisplayName,
+    targetEntityId: id,
+    targetEntityType: 'risk-flag',
+    reason: input.reason,
+  });
+
+  return getRiskFlag(id);
+}
+
+export async function escalateRiskFlag(
+  id: string,
+  actorId: string,
+  actorDisplayName?: string,
+): Promise<RiskFlagDetail> {
+  requireDatabase();
+
+  const db = getDb();
+  const [row] = await db
+    .select()
+    .from(riskFlags)
+    .where(eq(riskFlags.id, id))
+    .limit(1);
+
+  if (!row || row.deletedAt) {
+    throw new Error('NOT_FOUND');
+  }
+
+  if (row.status === 'RESOLVED') {
+    throw new Error('VALIDATION:Resolved risk flags cannot be escalated.');
+  }
+
+  await db
+    .update(riskFlags)
+    .set({
+      flagType: 'BLACKLISTED',
+      status: 'CRITICAL',
+      updatedAt: new Date(),
+    })
+    .where(eq(riskFlags.id, id));
+
+  appendAuditEntry({
+    action: 'risk-flag.escalated',
+    actorId,
+    actorDisplayName,
+    targetEntityId: id,
+    targetEntityType: 'risk-flag',
+  });
+
+  return getRiskFlag(id);
+}
+
+export async function resolveRiskFlag(
+  id: string,
+  actorId: string,
+  reason?: string,
+  actorDisplayName?: string,
+): Promise<RiskFlagDetail> {
+  requireDatabase();
+
+  const db = getDb();
+  const [row] = await db
+    .select()
+    .from(riskFlags)
+    .where(eq(riskFlags.id, id))
+    .limit(1);
+
+  if (!row || row.deletedAt) {
+    throw new Error('NOT_FOUND');
+  }
+
+  await db
+    .update(riskFlags)
+    .set({
+      status: 'RESOLVED',
+      reason: reason?.trim() ?? row.reason,
+      updatedAt: new Date(),
+    })
+    .where(eq(riskFlags.id, id));
+
+  appendAuditEntry({
+    action: 'risk-flag.resolved',
+    actorId,
+    actorDisplayName,
+    targetEntityId: id,
+    targetEntityType: 'risk-flag',
+    reason,
+  });
+
+  return getRiskFlag(id);
+}
+
+export async function assignRiskFlag(
+  id: string,
+  assignedToUserId: string,
+  actorId: string,
+  actorDisplayName?: string,
+): Promise<RiskFlagDetail> {
+  requireDatabase();
+
+  const assignee = await userRepo.getUserById(assignedToUserId);
+  if (!assignee) {
+    throw new Error('VALIDATION:Assigned user not found.');
+  }
+
+  const db = getDb();
+  const [row] = await db
+    .select()
+    .from(riskFlags)
+    .where(eq(riskFlags.id, id))
+    .limit(1);
+
+  if (!row || row.deletedAt) {
+    throw new Error('NOT_FOUND');
+  }
+
+  await db
+    .update(riskFlags)
+    .set({
+      assignedToUserId,
+      status: row.status === 'OPEN' ? 'UNDER_REVIEW' : row.status,
+      updatedAt: new Date(),
+    })
+    .where(eq(riskFlags.id, id));
+
+  appendAuditEntry({
+    action: 'risk-flag.assigned',
+    actorId,
+    actorDisplayName,
+    targetEntityId: id,
+    targetEntityType: 'risk-flag',
+    reason: `Assigned to ${assignee.displayName}`,
+  });
+
+  return getRiskFlag(id);
 }

@@ -848,6 +848,21 @@ export async function createUser(input: CreateSettingsUserInput): Promise<Settin
 
   const record = mapUserRowToSettingsRecord(row);
   record.lastLoginLabel = 'Invited';
+
+  const mail = getMailProvider();
+  if (mail.isConfigured()) {
+    void mail
+      .send({
+        to: email,
+        subject: 'WILMS account invited',
+        text: `Hello ${displayName},\n\nYour WILMS account has been invited. Your temporary password is: ${DEFAULT_INVITE_PASSWORD}\n\nPlease log in and change your password.`,
+        html: `<p>Hello <strong>${displayName}</strong>,</p><p>Your WILMS account has been invited.</p><p>Your temporary password is: <strong>${DEFAULT_INVITE_PASSWORD}</strong></p><p>Please log in and change your password.</p>`,
+      })
+      .catch((error) => {
+        console.error('[mail] welcome email failed:', error);
+      });
+  }
+
   return record;
 }
 
