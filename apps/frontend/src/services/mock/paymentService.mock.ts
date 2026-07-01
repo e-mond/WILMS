@@ -282,6 +282,20 @@ const paymentServiceMock: IPaymentService = {
 
     return transaction;
   },
+
+  async getPayment(paymentId: string) {
+    await simulateDelay();
+    const payment = findPaymentTransaction(paymentId);
+    if (!payment) {
+      throw new ApiError('Payment not found.', API_ERROR_CODE.NOT_FOUND, 404);
+    }
+    return payment;
+  },
+
+  async reversePayment(paymentId: string) {
+    await simulateDelay();
+    return this.getPayment(paymentId);
+  },
 };
 
 export function resetMockPaymentTransactions(): void {

@@ -4,6 +4,9 @@ import { USER_ROLE } from '@wilms/shared-rbac';
 import { isDatabaseEnabled, getDb } from '../../db/client.js';
 import { notifications } from '../../db/schema/notifications.js';
 import { users } from '../../db/schema/users.js';
+import { getSettings } from '../settings/service.js';
+import { getMailProvider } from '../../infrastructure/mail/index.js';
+import { getSmsProvider } from '../../infrastructure/sms/index.js';
 
 export interface NotificationInboxItem {
   id: string;
@@ -71,6 +74,65 @@ function resolveSeverity(event: string): 'INFO' | 'WARNING' | 'CRITICAL' {
     return 'WARNING';
   }
   return 'INFO';
+}
+
+function normalizeGhanaPhone(phone: string): string {
+  const digits = phone.replace(/\D/g, '');
+  if (digits.startsWith('233')) {
+    return digits;
+  }
+  if (digits.startsWith('0')) {
+    return `233${digits.slice(1)}`;
+  }
+  return digits;
+}
+
+async function maybeSendSmsNotification(phone: string, message: string): Promise<void> {
+  try {
+    const settings = await getSettings();
+    if (!settings.smsNotificationsEnabled) {
+      return;
+    }
+
+    const provider = getSmsProvider();
+    if (!provider.isConfigured()) {
+      return;
+    }
+
+    await provider.send({
+      to: normalizeGhanaPhone(phone),
+      body: message,
+    });
+  } catch (error) {
+    console.error('[sms] notification delivery failed:', error);
+  }
+}
+
+async function maybeSendEmailNotification(
+  email: string,
+  subject: string,
+  message: string,
+): Promise<void> {
+  try {
+    const settings = await getSettings();
+    if (!settings.emailNotificationsEnabled) {
+      return;
+    }
+
+    const mail = getMailProvider();
+    if (!mail.isConfigured()) {
+      return;
+    }
+
+    await mail.send({
+      to: email,
+      subject,
+      text: message,
+      html: `<p>${message.replace(/\n/g, '<br/>')}</p>`,
+    });
+  } catch (error) {
+    console.error('[mail] notification delivery failed:', error);
+  }
 }
 
 export async function listInbox(userId: string): Promise<NotificationInboxItem[]> {
@@ -149,24 +211,35 @@ export async function sendNotification(
   if (!isDatabaseEnabled()) {
     const items = memoryInbox.get(userId) ?? [];
     memoryInbox.set(userId, [inboxItem, ...items]);
-    return delivery;
+  } else {
+    const db = getDb();
+    await db.insert(notifications).values({
+      id: delivery.id,
+      userId,
+      title: inboxItem.title,
+      body: inboxItem.body,
+      event: input.event as typeof notifications.$inferInsert.event,
+      channel: input.channels[0] ?? null,
+      severity: inboxItem.severity,
+      href: inboxItem.href ?? null,
+      borrowerId: input.borrowerId ?? null,
+      loanId: input.loanId ?? null,
+      isRead: false,
+      sentAt: new Date(delivery.sentAt),
+    });
   }
 
-  const db = getDb();
-  await db.insert(notifications).values({
-    id: delivery.id,
-    userId,
-    title: inboxItem.title,
-    body: inboxItem.body,
-    event: input.event as typeof notifications.$inferInsert.event,
-    channel: input.channels[0] ?? null,
-    severity: inboxItem.severity,
-    href: inboxItem.href ?? null,
-    borrowerId: input.borrowerId ?? null,
-    loanId: input.loanId ?? null,
-    isRead: false,
-    sentAt: new Date(delivery.sentAt),
-  });
+  if (input.channels.includes('SMS') && input.recipientPhone) {
+    void maybeSendSmsNotification(input.recipientPhone, input.message);
+  }
+
+  if (input.channels.includes('EMAIL') && input.recipientEmail) {
+    void maybeSendEmailNotification(
+      input.recipientEmail,
+      input.event.replace(/_/g, ' '),
+      input.message,
+    );
+  }
 
   return delivery;
 }

@@ -6,7 +6,7 @@
 
 **Current release:** v0.2.2  
 
-**Active phase:** P14.RC1 — **Release Candidate 1** (production finalization branch)
+**Active phase:** P14.RC1 — **Phase 2** production hardening (`rc1/phase-2-production-hardening`)
 
 
 
@@ -18,7 +18,7 @@
 
 
 
-P14.RC1 stabilizes production with live dashboard data, settings API persistence, BFF proxy fixes, vitest security patches, Vercel build fix (PR #35), and comprehensive RC1 audit documentation.
+P14.RC1 Phase 2 completes API coverage: risk flag CRUD, group/pool/collector creation, in-app messaging, notification dispatch, zero placeholder UI, 135/135 API integrity, and extended production smoke.
 
 
 
@@ -48,14 +48,14 @@ See `docs/page-validation/RC1-registration-hardening.md`.
 
 |------|----------|
 
-| API integrity 112/112 | `npm run verify:api-integrity`, `RC1-api-audit.md` |
-| Hotfix PR #35 — Vercel/CI lint | jest-dom vitest types, `.eslintignore` for tests |
-| Dashboard live data + settings 404 fix | PR #33 |
-| Vitest 3.2.6 security patch | PR #34 — 0 critical audit findings |
-| App lock 9-min idle + route loader | PR #33 |
-| Borrower display IDs (BWR-*) | PR #33 |
-| CI Node.js 22 | `.github/workflows/ci.yml` |
-| RC1 audit documentation (14 reports) | `docs/page-validation/RC1-*.md` |
+| API integrity 135/135 | `npm run verify:api-integrity` |
+| API coverage gate | `npm run verify:api-coverage` — 0 placeholders |
+| Phase 2 — risk flag CRUD | `POST/PATCH /risk-flags/*` |
+| Phase 2 — group/pool/collector create | `POST /groups`, `/loan-pools`, `/collectors` |
+| Phase 2 — in-app messaging | `0010_messages` migration, `/messages/threads` |
+| Phase 2 — notification dispatch | SMS/email in `sendNotification` + invite email |
+| RC1 Phase 2 audit docs | `RC1-*-audit.md`, `RC1-release-notes.md` |
+| API integrity 112/112 (Phase 1) | `RC1-api-audit.md` |
 
 
 
@@ -71,7 +71,7 @@ See `docs/page-validation/RC1-registration-hardening.md`.
 
 |------|--------|
 
-| Railway API @ migrations 10/10 | ✅ |
+| Railway API @ migrations 11/11 | ✅ (0010 messages) |
 
 | Vercel frontend + BFF | ✅ (redeploy after PR #35) |
 
@@ -113,7 +113,8 @@ See `docs/page-validation/RC1-registration-hardening.md`.
 
 ```bash
 
-npm run verify:api-integrity    # expect 112/112 PASS
+npm run verify:api-integrity    # expect 135/135 PASS
+npm run verify:api-coverage     # expect 0 placeholder hits
 
 npm run type-check
 

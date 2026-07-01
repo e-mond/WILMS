@@ -84,3 +84,22 @@ export interface RiskFlagDetail extends RiskFlagSummary {
   totalMembers?: number;
   timeline: FlagTimelineEvent[];
 }
+
+export interface CreateRiskFlagInput {
+  entityId: string;
+  entityName: string;
+  entityType: FlagEntityType;
+  flagType: FlagType;
+  community: string;
+  reason?: string;
+  officerName?: string;
+  arrearsPesewas?: number;
+}
+
+export interface ResolveRiskFlagInput {
+  reason?: string;
+}
+
+export interface AssignRiskFlagInput {
+  assignedToUserId: string;
+}

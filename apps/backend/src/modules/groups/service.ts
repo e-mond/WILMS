@@ -8,6 +8,8 @@ import { listBorrowers, listGroups, listPayments } from '../../db/persistence.js
 import type { BorrowerRecord, GroupRecord } from '../../db/store.js';
 import * as userRepo from '../../repositories/user.repository.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
+import { groupRepository } from '../../repositories/index.js';
+import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 
 type GroupRiskLevel = 'LOW_RISK' | 'AT_RISK' | 'FLAGGED' | 'SUSPENDED';
 type GroupStatus = 'ACTIVE' | 'AT_RISK' | 'FLAGGED' | 'SUSPENDED';
@@ -696,4 +698,94 @@ export async function listActiveLoansForBorrowers(borrowerIds: string[]) {
   }
   const loans = await loanRepo.listLoans({ externalStatus: 'ACTIVE' });
   return loans.filter((loan) => borrowerIds.includes(loan.borrowerId));
+}
+
+function normalizeCommunity(community: string): string {
+  return community.trim().toLowerCase();
+}
+
+async function buildGroupSystemId(community: string): Promise<string> {
+  const now = new Date();
+  const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const sequence = await groupRepository.nextGroupSequence(
+    `${normalizeCommunity(community)}:${monthKey}`,
+  );
+  const communityCode = community.slice(0, 3).toUpperCase();
+  return `GRP-${communityCode}-${monthKey.replace('-', '')}-${String(sequence).padStart(3, '0')}`;
+}
+
+export interface CreateGroupInput {
+  name: string;
+  community: string;
+  displayName?: string;
+  collectorUserId?: string;
+  memberBorrowerIds?: string[];
+}
+
+export async function createGroup(
+  input: CreateGroupInput,
+  actorId: string,
+  actorDisplayName?: string,
+): Promise<GroupDetail> {
+  if (!isDatabaseEnabled()) {
+    throw new Error('VALIDATION:Database persistence is required to create groups.');
+  }
+
+  const name = input.name.trim();
+  const community = input.community.trim();
+  if (!name || !community) {
+    throw new Error('VALIDATION:Group name and community are required.');
+  }
+
+  const memberIds = input.memberBorrowerIds ?? [];
+  if (memberIds.length > env.maxGroupSize) {
+    throw new Error(`VALIDATION:Groups cannot exceed ${env.maxGroupSize} members.`);
+  }
+
+  if (input.collectorUserId) {
+    const collector = await userRepo.getUserById(input.collectorUserId);
+    if (!collector) {
+      throw new Error('VALIDATION:Collector not found.');
+    }
+  }
+
+  const groupId = groupRepository.nextGroupId();
+  const systemId = await buildGroupSystemId(community);
+  const displayName = input.displayName?.trim() ?? `${community} Group ${systemId.split('-').pop()}`;
+  const now = new Date();
+  const leaderBorrowerId = memberIds[0] ?? null;
+
+  const db = getDb();
+  await db.insert(groups).values({
+    id: groupId,
+    systemId,
+    name,
+    displayName,
+    community,
+    status: 'ACTIVE',
+    collectorUserId: input.collectorUserId ?? null,
+    leaderBorrowerId,
+    formedAt: now,
+  });
+
+  if (memberIds.length > 0) {
+    await db.insert(groupMembers).values(
+      memberIds.map((borrowerId, index) => ({
+        groupId,
+        borrowerId,
+        role: index === 0 ? ('LEADER' as const) : ('MEMBER' as const),
+      })),
+    );
+  }
+
+  appendAuditEntry({
+    action: 'group.created',
+    actorId,
+    actorDisplayName,
+    targetEntityId: groupId,
+    targetEntityType: 'group',
+    reason: `Created group ${displayName}`,
+  });
+
+  return getGroupDetail(groupId);
 }

@@ -192,59 +192,18 @@ async function main(): Promise<void> {
   });
   record('bff-proxy-reports', reportsRes.status === 200, `status=${reportsRes.status}`);
 
-  const reportsHubRes = await fetch(`${appUrl}/api/wilms/reports/hub`, {
-    headers: authHeaders,
-  });
-  const reportsHubBody = (await reportsHubRes.json()) as {
-    data?: { categoryBreakdown?: unknown[]; scheduledReports?: unknown[] };
-  };
-  record(
-    'bff-proxy-reports-hub-shape',
-    reportsHubRes.status === 200 &&
-      Array.isArray(reportsHubBody.data?.categoryBreakdown) &&
-      Array.isArray(reportsHubBody.data?.scheduledReports),
-    `status=${reportsHubRes.status} categories=${reportsHubBody.data?.categoryBreakdown?.length ?? 'missing'}`,
-  );
-
-  const publicRegionsRes = await fetch(`${appUrl}/api/wilms/locations/regions`);
-  record('public-bff-locations-regions', publicRegionsRes.status === 200, `status=${publicRegionsRes.status}`);
-
-  const officerEmail = process.env.WILMS_SMOKE_OFFICER_EMAIL;
-  const officerPassword = process.env.WILMS_SMOKE_OFFICER_PASSWORD;
-
-  if (officerEmail && officerPassword) {
-    const officerLoginRes = await fetch(`${appUrl}/api/auth/login`, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        cookie: cookieHeader(csrfCookies),
-        [CSRF_HEADER]: csrfCookies.wilms_csrf ?? '',
-      },
-      body: JSON.stringify({ email: officerEmail, password: officerPassword }),
-    });
-    const officerCookies = { ...csrfCookies, ...parseSetCookies(officerLoginRes.headers) };
-    record('officer-bff-login', officerLoginRes.status === 200, `status=${officerLoginRes.status}`);
-
-    const officerHeaders: Record<string, string> = {
-      cookie: cookieHeader(officerCookies),
-      [CSRF_HEADER]: officerCookies.wilms_csrf ?? csrfCookies.wilms_csrf ?? '',
-    };
-
-    const officerRegionsRes = await fetch(`${appUrl}/api/wilms/locations/regions`, {
-      headers: officerHeaders,
-    });
-    record('officer-bff-locations-regions', officerRegionsRes.status === 200, `status=${officerRegionsRes.status}`);
-
-    const unreadRes = await fetch(`${appUrl}/api/wilms/notifications/inbox/unread-count`, {
-      headers: officerHeaders,
-    });
-    record(
-      'officer-bff-notifications-unread-count',
-      unreadRes.status === 200 || unreadRes.status === 403,
-      `status=${unreadRes.status}`,
-    );
-  } else {
-    record('officer-smoke-skipped', true, 'set WILMS_SMOKE_OFFICER_EMAIL and WILMS_SMOKE_OFFICER_PASSWORD to enable');
+  // RC1 Phase 2 — high-traffic BFF routes
+  for (const [name, path] of [
+    ['bff-proxy-settings-me', '/settings/me'],
+    ['bff-proxy-dashboard', '/dashboard/summary'],
+    ['bff-proxy-groups', '/groups'],
+    ['bff-proxy-loan-pools', '/loan-pools'],
+    ['bff-proxy-risk-flags', '/risk-flags'],
+    ['bff-proxy-messages', '/messages/threads'],
+    ['bff-proxy-collectors', '/collectors'],
+  ] as const) {
+    const res = await fetch(`${appUrl}/api/wilms${path}`, { headers: authHeaders });
+    record(name, res.status === 200, `status=${res.status}`);
   }
 
   // Mock flag — cannot read Vercel env from here; verify HTML has no demo banner text

@@ -54,22 +54,6 @@ export function buildGroupListResponseFromSummaries(groups: GroupSummary[]): Gro
     },
     riskDistribution,
     groups,
-    recentActivity: [
-      {
-        id: 'act-1',
-        message: 'GRP-0033 flagged for missed payments',
-        recordedAt: new Date(Date.now() - 3_600_000).toISOString(),
-      },
-      {
-        id: 'act-2',
-        message: 'GRP-0029 completed Cycle 7',
-        recordedAt: new Date(Date.now() - 86_400_000).toISOString(),
-      },
-      {
-        id: 'act-3',
-        message: 'GRP-0041 officer reassigned to Abena Owusu',
-        recordedAt: new Date(Date.now() - 172_800_000).toISOString(),
-      },
-    ],
+    recentActivity: [],
   };
 }
