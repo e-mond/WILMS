@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
     "test": "vitest run --shard=1/2 && vitest run --shard=2/2",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
