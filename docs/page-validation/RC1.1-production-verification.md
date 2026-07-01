@@ -17,6 +17,8 @@
 
 ## Production smoke (`npm run smoke:production`)
 
+**Result:** 29/29 PASS (live)
+
 Extended checks:
 - BFF routes: borrowers, loans/portfolio
 - Content-encoding: dashboard, borrowers, collectors (no `Content-Encoding` on JSON body)
