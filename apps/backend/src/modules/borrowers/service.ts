@@ -1,6 +1,7 @@
 import { env } from '../../config/env.js';
 import { normalizeBorrowerId, validateBorrowerId } from '@wilms/shared-validation';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
+import { isDatabaseEnabled } from '../../db/client.js';
 import {
   BORROWER_STATUS,
   deleteBorrower,
@@ -12,6 +13,8 @@ import {
 } from '../../db/persistence.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
 import { processApprovedBorrower } from '../group-formation/service.js';
+import * as loanService from '../loans/service.js';
+import { buildBorrowerRiskSummary } from './borrower-risk.js';
 import { formatBorrowerDisplayId } from './display-id.js';
 
 const AUDIT_ACTION = {
@@ -90,6 +93,21 @@ function toDetail(record: BorrowerRecord) {
     registeredAt: record.registeredAt,
     idType: record.idType,
     idNumber: record.idNumber,
+    nationalId: record.idNumber,
+    alternativePhone: record.profile.guarantorPhone,
+    email: record.profile.email,
+    gpsAddress: record.profile.gpsAddress,
+    houseAddress: record.profile.houseAddress,
+    dateOfBirth: record.profile.dateOfBirth,
+    gender: record.profile.gender,
+    nationality: record.profile.nationality,
+    businessName: record.profile.businessName,
+    typeOfWork: record.profile.typeOfWork,
+    city: record.profile.city,
+    region: record.profile.region,
+    district: record.profile.district,
+    guarantorName: record.profile.guarantorName,
+    guarantorPhone: record.profile.guarantorPhone,
   };
 }
 
@@ -172,6 +190,39 @@ export async function getBorrowerDetail(id: string) {
   }
 
   return toDetail(record);
+}
+
+export async function getBorrowerFullProfile(id: string) {
+  const record = await getBorrower(id);
+
+  if (!record) {
+    throw new Error('NOT_FOUND');
+  }
+
+  const detail = toDetail(record);
+  let loans: Awaited<ReturnType<typeof loanService.listBorrowerLoans>> = [];
+  let progress: Awaited<ReturnType<typeof loanService.getLoanProgress>> | null = null;
+
+  if (isDatabaseEnabled()) {
+    loans = await loanService.listBorrowerLoans(id);
+    const activeLoan =
+      loans.find((loan) => loan.status === 'ACTIVE') ?? loans[0];
+
+    if (activeLoan) {
+      try {
+        progress = await loanService.getLoanProgress(activeLoan.id);
+      } catch {
+        progress = null;
+      }
+    }
+  }
+
+  return {
+    ...detail,
+    loans,
+    progress,
+    risk: buildBorrowerRiskSummary(record, loans, progress),
+  };
 }
 
 export async function getBorrowerReviewDetail(id: string) {

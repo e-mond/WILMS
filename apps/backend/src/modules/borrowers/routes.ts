@@ -182,8 +182,7 @@ borrowersRouter.get(
   '/borrowers/:id/full-profile',
   asyncHandler(async (req, res) => {
     try {
-      const detail = await borrowerService.getBorrowerDetail(req.params.id!);
-      sendData(res, { ...detail, loans: [], progress: null });
+      sendData(res, await borrowerService.getBorrowerFullProfile(req.params.id!));
     } catch (error) {
       mapError(error);
     }

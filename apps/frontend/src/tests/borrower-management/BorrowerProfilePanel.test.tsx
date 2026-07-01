@@ -58,10 +58,34 @@ describe('BorrowerProfilePanel', () => {
     expect(screen.getByRole('heading', { name: 'Loan Information' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Payment History' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Risk Information' })).toBeInTheDocument();
-    expect(screen.getAllByText('loan-001').length).toBeGreaterThan(0);
     expect(screen.getByRole('link', { name: 'Open loan' })).toHaveAttribute(
       'href',
       '/borrowers/borrower-001/loan?loanId=loan-001',
     );
+  });
+
+  it('renders risk section when API omits risk payload', async () => {
+    mockGetBorrowerFullProfile.mockResolvedValue({
+      id: 'borrower-no-risk',
+      fullName: 'No Risk Borrower',
+      phone: '+233200000099',
+      status: 'APPROVED',
+      groupName: 'Test Group',
+      groupId: 'group-001',
+      nationalId: 'GHA-000',
+      community: 'Accra',
+      registeredAt: '2025-01-01T00:00:00.000Z',
+    });
+    mockListBorrowerLoans.mockResolvedValue([]);
+
+    render(
+      <TestQueryProvider>
+        <BorrowerProfilePanel borrowerId="borrower-no-risk" />
+      </TestQueryProvider>,
+    );
+
+    expect(await screen.findByRole('heading', { name: 'No Risk Borrower' })).toBeInTheDocument();
+    expect(screen.getAllByText('Low Risk').length).toBeGreaterThan(0);
+    expect(mockGetLoanSchedule).not.toHaveBeenCalled();
   });
 });

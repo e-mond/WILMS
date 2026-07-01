@@ -9,6 +9,7 @@ import { ExecutiveDetailLayout } from '@/components/layout/ExecutiveDetailLayout
 import { useCollector } from '@/features/collector-management/hooks/useCollector';
 import type { CollectorMonthlyPerformance } from '@/types/collector-management';
 import { formatDisplayDate } from '@/utils/format-date';
+import { resolveCollectorDisplayId, resolveGroupDisplayId } from '@/utils/entity-display-id';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
 
 export interface CollectorProfilePanelProps {
@@ -51,6 +52,9 @@ export function CollectorProfilePanel({ collectorId }: CollectorProfilePanelProp
         <div className="min-w-0 flex-1">
           <h1 className="text-heading-1 font-semibold text-text-primary">{data.displayName}</h1>
           <p className="text-body text-text-muted">Collector · {data.zone}</p>
+          <p className="mt-wilms-1 text-small font-semibold text-executive-gold">
+            {resolveCollectorDisplayId(data)}
+          </p>
           <p className="mt-wilms-1 text-small text-text-muted">
             Community coverage · Joined {formatDisplayDate(data.joinedAt)} · {data.cycleLabel}
           </p>
@@ -123,6 +127,11 @@ export function CollectorProfilePanel({ collectorId }: CollectorProfilePanelProp
             data={data.assignedGroups}
             getRowId={(row) => row.id}
             columns={[
+              {
+                id: 'groupId',
+                header: 'Group ID',
+                cell: (row) => resolveGroupDisplayId(row),
+              },
               { id: 'name', header: 'Group', cell: (row) => row.name },
               { id: 'members', header: 'Members', cell: (row) => row.memberCount },
               { id: 'trend', header: 'Repayment trend', cell: (row) => row.repaymentTrend },
