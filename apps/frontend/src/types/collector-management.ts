@@ -80,3 +80,11 @@ export interface CollectorDetail extends CollectorSummary {
   flagsRaised: CollectorProfileActivityEntry[];
   activityHistory: CollectorProfileActivityEntry[];
 }
+
+export interface OnboardCollectorInput {
+  displayName: string;
+  email: string;
+  zone: string;
+  phone?: string;
+  assignedRegion?: string;
+}

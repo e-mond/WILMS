@@ -1,34 +1,30 @@
-# RC1 — Session Audit
+# RC1 Session Audit — Phase 2
 
-**Gate:** GATE 4  
-**Date:** 2026-06-30
+**Date:** 2026-07-01
 
----
+## Client session
 
-## Coverage (inherited P14.6.3 + RC1)
+| Feature | Implementation | Verified |
+|---------|----------------|----------|
+| Idle app lock | 9 min (`app-lock.ts`) | E2E + code |
+| PIN storage | localStorage hash (`appLockStore`) | Client-only |
+| Session expiry redirect | `/session-expired` on 401 | E2E |
+| Remember me | `loginPreferencesStore` | Unit test |
+| CSRF | `wilms_csrf` + `x-wilms-csrf` | Production smoke |
 
-| Area | Evidence |
-|------|----------|
-| Login/logout | `e2e/logout.spec.ts`, `e2e/auth-and-theme.spec.ts` |
-| CSRF | Production smoke `csrf-blocks-login-without-token` 403 |
-| Session cookie HttpOnly | Smoke `session-cookie-httponly` |
-| Session expiry | `e2e/session-expired.spec.ts` |
-| App lock | `e2e/app-lock.spec.ts` |
-| Remember Me | `state/loginPreferencesStore.test.ts` |
+## Server session
 
----
+| Feature | Status |
+|---------|--------|
+| Login rate limit | 20/15min/IP |
+| Suspended user | Backend rejects |
+| Logout | Cookie clear only (documented risk) |
+| Token revocation | Not implemented |
 
-## Cookie flags (production)
+## Phase 2 smoke
 
-- Session: HttpOnly, Secure (production), SameSite=Lax
-- CSRF: readable by client for mutation headers
+Extended `production-smoke.ts` with 7 authenticated BFF route probes post-login.
 
----
+## Verdict
 
-## Multi-tab / refresh
-
-App lock state persisted via `appLockStore` (localStorage). Session via HttpOnly cookie survives refresh; expired sessions redirect to `/session-expired`.
-
----
-
-**Verdict:** PASS — no RC1 regressions identified.
+**PASS** — Session behavior documented; no regressions from Phase 2 API work.
