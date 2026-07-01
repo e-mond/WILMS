@@ -25,6 +25,7 @@ import { useRiskFlagActions } from '@/features/risk-flags/hooks/useRiskFlagActio
 import { useRiskFlagDetail } from '@/features/risk-flags/hooks/useRiskFlagDetail';
 import { useRiskFlags } from '@/features/risk-flags/hooks/useRiskFlags';
 import { usePaginatedRows } from '@/hooks/usePaginatedRows';
+import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { buildDefaultFlagTimeline } from '@/utils/risk-flag-list';
 import { FLAG_STATUS, FLAG_TYPE, type RiskFlagSummary } from '@/types/risk-flag';
@@ -90,6 +91,7 @@ export function RiskFlagsPanel() {
   const generatedBy = useWilmsExportActor();
   const { escalateToBlacklist, markResolved, assignOfficer, raiseFlag } = useRiskFlagActions();
   const { data, isLoading, isError, refetch } = useRiskFlags();
+  const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -188,7 +190,7 @@ export function RiskFlagsPanel() {
 
   if (isLoading) {
     return (
-      <QueryStatePanel isLoading isError={false} variant="table">
+      <QueryStatePanel isLoading showLoading={showLoading} isTimedOut={isTimedOut} isError={false} variant="table">
         {null}
       </QueryStatePanel>
     );
