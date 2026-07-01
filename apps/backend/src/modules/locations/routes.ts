@@ -12,19 +12,7 @@ import {
 
 export const locationsRouter = Router();
 
-locationsRouter.use(requireAuth);
-locationsRouter.use(
-  requirePermission(
-    PERMISSION.ACCESS_REGISTRATION_PORTAL,
-    PERMISSION.REGISTER_BORROWERS,
-    PERMISSION.ACCESS_COLLECTOR_PORTAL,
-    PERMISSION.ACCESS_APPROVER_PORTAL,
-    PERMISSION.ACCESS_AUDITOR_PORTAL,
-    PERMISSION.VIEW_REPORTS,
-    PERMISSION.GPS_VERIFICATION,
-  ),
-);
-
+/** Static Ghana reference data — no auth required (same dataset as registration offline fallback). */
 locationsRouter.get(
   '/locations/regions',
   asyncHandler(async (_req, res) => {
@@ -44,6 +32,19 @@ locationsRouter.get(
   asyncHandler(async (req, res) => {
     sendData(res, getGhanaCities(req.params.id!));
   }),
+);
+
+locationsRouter.use(requireAuth);
+locationsRouter.use(
+  requirePermission(
+    PERMISSION.ACCESS_REGISTRATION_PORTAL,
+    PERMISSION.REGISTER_BORROWERS,
+    PERMISSION.ACCESS_COLLECTOR_PORTAL,
+    PERMISSION.ACCESS_APPROVER_PORTAL,
+    PERMISSION.ACCESS_AUDITOR_PORTAL,
+    PERMISSION.VIEW_REPORTS,
+    PERMISSION.GPS_VERIFICATION,
+  ),
 );
 
 locationsRouter.get(

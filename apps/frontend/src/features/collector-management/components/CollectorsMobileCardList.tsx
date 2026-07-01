@@ -7,6 +7,7 @@ import { CollectorStreakIcon } from '@/components/icons/CollectorStreakIcon';
 import type { CollectorSummary } from '@/types/collector-management';
 import { collectorRateTextClass } from '@/utils/collector-rate-display';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
+import { resolveCollectorDisplayId } from '@/utils/entity-display-id';
 import { cn } from '@/utils/cn';
 
 export interface CollectorsMobileCardListProps {
@@ -57,7 +58,9 @@ export function CollectorsMobileCardList({
                 />
                 <div className="min-w-0">
                   <p className="truncate font-semibold text-text-primary">{collector.displayName}</p>
-                  <p className="text-small font-semibold text-executive-gold">{collector.id}</p>
+                  <p className="text-small font-semibold text-executive-gold">
+                    {resolveCollectorDisplayId(collector)}
+                  </p>
                   <p className="mt-wilms-1 truncate text-small text-text-muted">{collector.zone}</p>
                 </div>
               </div>

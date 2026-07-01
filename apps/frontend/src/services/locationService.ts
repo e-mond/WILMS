@@ -1,6 +1,11 @@
 import type { CurrentLocationResult, LocationCity, LocationDistrict, LocationRegion } from '@/types/location';
 import type { ILocationService } from '@/types/services';
 import { apiClient } from '@/utils/apiClient';
+import {
+  getGhanaCities,
+  getGhanaDistricts,
+  getGhanaRegions,
+} from '@/services/mock/factories/ghana-locations.factory';
 
 function readBrowserGeolocation(): Promise<CurrentLocationResult> {
   return new Promise((resolve, reject) => {
@@ -39,15 +44,15 @@ function readBrowserGeolocation(): Promise<CurrentLocationResult> {
 
 const locationService: ILocationService = {
   getRegions(): Promise<LocationRegion[]> {
-    return apiClient.get<LocationRegion[]>('/locations/regions');
+    return Promise.resolve(getGhanaRegions());
   },
 
   getDistricts(regionId: string): Promise<LocationDistrict[]> {
-    return apiClient.get<LocationDistrict[]>(`/locations/regions/${regionId}/districts`);
+    return Promise.resolve(getGhanaDistricts(regionId));
   },
 
   getCities(districtId: string): Promise<LocationCity[]> {
-    return apiClient.get<LocationCity[]>(`/locations/districts/${districtId}/cities`);
+    return Promise.resolve(getGhanaCities(districtId));
   },
 
   async getCurrentLocation(): Promise<CurrentLocationResult> {

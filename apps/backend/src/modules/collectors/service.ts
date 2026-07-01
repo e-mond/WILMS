@@ -5,6 +5,7 @@ import { groups } from '../../db/schema/groups.js';
 import { listPayments } from '../../db/persistence.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
 import * as userRepo from '../../repositories/user.repository.js';
+import { formatCollectorDisplayId } from '@wilms/shared-utils';
 
 export interface CollectorMonthlyPerformance {
   monthLabel: string;
@@ -13,6 +14,7 @@ export interface CollectorMonthlyPerformance {
 
 export interface CollectorSummary {
   id: string;
+  displayId: string;
   displayName: string;
   photoUrl?: string | null;
   zone: string;
@@ -76,6 +78,7 @@ const EMPTY_MONTHLY: CollectorMonthlyPerformance[] = [
 
 function buildCollectorSummary(input: {
   id: string;
+  displayId: string;
   displayName: string;
   zone: string;
   groupCount: number;
@@ -96,6 +99,7 @@ function buildCollectorSummary(input: {
 
   return {
     id: input.id,
+    displayId: input.displayId,
     displayName: input.displayName,
     photoUrl: null,
     zone: input.zone,
@@ -182,6 +186,7 @@ export async function listCollectors(): Promise<CollectorListResponse> {
 
   let collectorEntries: Array<{
     id: string;
+    displayId: string;
     displayName: string;
     zone: string;
     joinedAt: string;
@@ -191,8 +196,13 @@ export async function listCollectors(): Promise<CollectorListResponse> {
 
   if (isDatabaseEnabled()) {
     const rows = await userRepo.listCollectors();
-    collectorEntries = rows.map(({ user, collector }) => ({
+    collectorEntries = rows.map(({ user, collector }, index) => ({
       id: user.id,
+      displayId: formatCollectorDisplayId({
+        collectorCode: collector?.collectorCode,
+        staffId: user.staffId,
+        sequence: index + 1,
+      }),
       displayName: user.displayName,
       zone: user.zone ?? collector?.assignedRegion ?? '—',
       joinedAt: (collector?.joinedAt ?? user.createdAt).toISOString(),
@@ -200,8 +210,9 @@ export async function listCollectors(): Promise<CollectorListResponse> {
       status: collector?.status === 'AWAY' ? 'AWAY' : 'ACTIVE',
     }));
   } else {
-    collectorEntries = DEMO_USERS.filter((user) => user.role === 'COLLECTOR').map((user) => ({
+    collectorEntries = DEMO_USERS.filter((user) => user.role === 'COLLECTOR').map((user, index) => ({
       id: user.id,
+      displayId: formatCollectorDisplayId({ sequence: index + 1 }),
       displayName: user.displayName,
       zone: '—',
       joinedAt: new Date().toISOString(),
@@ -220,6 +231,7 @@ export async function listCollectors(): Promise<CollectorListResponse> {
     return {
       summary: buildCollectorSummary({
         id: entry.id,
+        displayId: entry.displayId,
         displayName: entry.displayName,
         zone: entry.zone,
         groupCount: groupInfo.groupCount,

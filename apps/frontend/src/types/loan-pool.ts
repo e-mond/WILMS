@@ -8,6 +8,7 @@ export type LoanPoolStatus = (typeof LOAN_POOL_STATUS)[keyof typeof LOAN_POOL_ST
 
 export interface LoanPoolSummary {
   id: string;
+  displayId?: string;
   name: string;
   region: string;
   source: string;

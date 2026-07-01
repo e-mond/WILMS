@@ -35,7 +35,7 @@ WILMS supports registration officers, approvers, collectors, auditors, and super
 | P14.3B — Payment Reversal | **Certified** | functional 10/10, concurrency PASS; perf measured (Neon latency) |
 | P14.3B — Reconciliation | **Certified** | functional 24/24, RBAC 6/6, concurrency PASS |
 | P14.3B — Uploads | **Certified** | `cert:upload:env` + `cert:upload:smoke` PASS (Cloudinary) |
-| Notifications (SMS/email) | **Deferred** | Adapters only; no workflow call sites (`docs/audit/P14.3B-feature-completion-matrix.md`) |
+| Notifications (SMS/email) | **Partial** | Payment SMS template + template unit tests; adapters wired for payment confirmation |
 | **Current phase** | **P14.6.1** | Production acceptance — **BLOCKED** (prod v0.2.1; P14.6 not on `main`) |
 
 ---
@@ -85,6 +85,32 @@ UI → @/services → apiClient → NEXT_PUBLIC_API_BASE_URL
 ```
 
 Development defaults to **mock services** unless `NEXT_PUBLIC_API_BASE_URL` is set and either `NODE_ENV=production` or `NEXT_PUBLIC_USE_MOCK=false` (`apps/frontend/src/data-provider/types.ts`).
+
+### Display IDs and production data
+
+Management screens show human-readable IDs from the API (`displayId`, `groupSystemId`, `collectorCode`) — not raw UUIDs:
+
+| Entity | Format example | Source |
+|--------|----------------|--------|
+| Borrower | `BWR-ACCR-202605-0001` | `displayId` on borrower records |
+| Collector | `COL-001` | `collectors.collector_code` (seeded in `db:seed:reference`) |
+| Group | `GRP-ACC-202603-001` | `groups.system_id` |
+| Loan | `LOAN-CYCLE1JA-202605-0002` | Derived from `cycleBatch` + `startDate` |
+| Pool | `POOL-GRE-001` | Derived from `region` + sequence |
+| Risk flag entity | `ENT-BOR-...` | Derived when `entityId` is a UUID |
+
+Ghana region/district/city dropdowns use bundled reference data (no auth API call). Dashboard KPIs in production come from `/dashboard/summary` and domain list endpoints — not mock factories.
+
+Remove demo financial rows from production with:
+
+```bash
+node apps/backend/scripts/cleanup-demo-financial-data.mjs --dry-run
+node apps/backend/scripts/cleanup-demo-financial-data.mjs --execute
+```
+
+SMS/email copy is centralized in `apps/backend/src/infrastructure/notifications/templates.ts` with unit tests in `apps/backend/src/tests/notifications/templates.test.ts`.
+
+**Browser console noise:** `background.js` / `proxy.js` errors (`disconnected port`, `Cannot destructure property 'url'`) come from browser extensions (password managers, devtools), not from WILMS application code.
 
 ---
 

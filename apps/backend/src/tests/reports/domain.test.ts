@@ -10,6 +10,7 @@ describe('loan-portfolio report', () => {
       [
         {
           id: 'loan-1',
+          displayId: 'LOAN-202601-202601-0001',
           borrowerId: 'b1',
           borrowerName: 'Ada',
           community: 'Tamale',
@@ -25,6 +26,7 @@ describe('loan-portfolio report', () => {
         },
         {
           id: 'loan-2',
+          displayId: 'LOAN-202512-202512-0001',
           borrowerId: 'b2',
           borrowerName: 'Esi',
           community: 'Accra',
@@ -54,6 +56,7 @@ describe('collector-performance report', () => {
     const report = buildCollectorPerformanceReport([
       {
         id: 'col-1',
+        displayId: 'COL-001',
         displayName: 'Collector One',
         photoUrl: null,
         zone: 'North',

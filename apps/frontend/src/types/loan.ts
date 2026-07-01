@@ -10,6 +10,7 @@ export type LoanStatus = (typeof LOAN_STATUS)[keyof typeof LOAN_STATUS];
 
 export interface LoanSummary {
   id: string;
+  displayId?: string;
   borrowerId: string;
   amountPesewas: number;
   durationWeeks: number;
@@ -43,6 +44,7 @@ export interface CreateLoanInput {
 
 export interface LoanPortfolioEntry {
   id: string;
+  displayId?: string;
   borrowerId: string;
   borrowerName: string;
   community: string;

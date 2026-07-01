@@ -23,6 +23,7 @@ import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { useToast } from '@/hooks/useToast';
 import { LOAN_POOL_STATUS, type LoanPoolSummary } from '@/types/loan-pool';
 import { formatPesewasForCsv } from '@/utils/export-csv';
+import { resolvePoolDisplayId } from '@/utils/entity-display-id';
 
 const POOL_STATUS_FILTERS = [
   { value: '', label: 'All' },
@@ -70,14 +71,14 @@ export function LoanPoolsPanel() {
         if (pool.status === LOAN_POOL_STATUS.NEAR_FULL) {
           events.push({
             id: `${pool.id}-near-capacity`,
-            message: `${pool.id} near capacity`,
+            message: `${resolvePoolDisplayId(pool)} near capacity`,
             recordedAt: `${pool.lastReplenishedAt}T17:30:00.000Z`,
           });
         }
 
         events.push({
           id: `${pool.id}-replenished`,
-          message: `${pool.id} replenished`,
+          message: `${resolvePoolDisplayId(pool)} replenished`,
           recordedAt: `${pool.lastReplenishedAt}T09:00:00.000Z`,
         });
 
@@ -109,7 +110,7 @@ export function LoanPoolsPanel() {
   }
 
   const csvRows = filteredPools.map((pool) => [
-    pool.id,
+    resolvePoolDisplayId(pool),
     pool.name,
     pool.region,
     pool.source,
@@ -222,7 +223,7 @@ export function LoanPoolsPanel() {
             cell: (row) => (
               <div className="text-left">
                 <p className="font-semibold text-text-primary">{row.name}</p>
-                <p className="text-small font-semibold text-executive-gold">{row.id}</p>
+                <p className="text-small font-semibold text-executive-gold">{resolvePoolDisplayId(row)}</p>
               </div>
             ),
           },

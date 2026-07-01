@@ -20,7 +20,13 @@ function requireDatabase(): void {
 export async function listLoanPools(): Promise<LoanPoolListResponseDto> {
   requireDatabase();
   const rows = await poolRepo.listPools();
-  const pools = rows.map(mapPoolRowToSummary);
+  const regionCounters = new Map<string, number>();
+  const pools = rows.map((row) => {
+    const regionKey = row.region.trim().toLowerCase();
+    const nextSequence = (regionCounters.get(regionKey) ?? 0) + 1;
+    regionCounters.set(regionKey, nextSequence);
+    return mapPoolRowToSummary(row, nextSequence);
+  });
   return buildListResponse(pools);
 }
 
@@ -35,7 +41,7 @@ export async function getLoanPool(id: string): Promise<LoanPoolDetailDto> {
   }
 
   const allocations = await poolRepo.listRecentAllocations(id, 10);
-  const summary = mapPoolRowToSummary(row);
+  const summary = mapPoolRowToSummary(row, 1);
 
   return {
     ...summary,
