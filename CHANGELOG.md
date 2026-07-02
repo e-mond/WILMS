@@ -2,6 +2,18 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [Unreleased] — RC1.2 pre-v1.0.0 validation
+
+### Added
+- RC1.2 evidence set (13 reports under `docs/page-validation/RC1.2-*.md`)
+- Lighthouse login audit artifact (`rc1.2-evidence/lighthouse-login.json`)
+- Production verification refresh (smoke 29/29, rbac 11/11)
+
+### Documented
+- Staging DB demo cleanup blocked (no staging `DATABASE_URL` in repo)
+- Dependency audit: 0 critical, 9 high (non-blocking)
+- Recommendation: **READY FOR RC2** pending staging cleanup + E2E re-run
+
 ## [Unreleased] — RC1.1 production stabilization
 
 ### Added

@@ -25,6 +25,8 @@ Extended checks:
 
 ## RBAC smoke (`npm run smoke:rbac`)
 
+**Result:** 11/11 PASS (live)
+
 - Admin: dashboard, settings/users, collectors → 200
 - Collector: own dashboard, reconciliation → 200; admin routes → 403
 - Officer: dashboard → 403
