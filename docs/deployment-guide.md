@@ -1,6 +1,6 @@
 # WILMS Deployment Guide
 
-**Last updated:** P14.6.3 (v0.2.2)
+**Last updated:** RC1.2 (v0.2.2)
 
 ---
 
@@ -55,12 +55,13 @@ Primary domain: `https://wilms.vercel.app`
 ```bash
 WILMS_APP_URL=https://wilms.vercel.app \
 WILMS_API_URL=https://wilms-production.up.railway.app \
-WILMS_SMOKE_EMAIL=... \
-WILMS_SMOKE_PASSWORD=... \
 npm run smoke:production
+
+WILMS_APP_URL=https://wilms.vercel.app \
+npm run smoke:rbac
 ```
 
-Expected: **17/17** checks (v0.2.2). After P14.6.4 backend deploy, migrations become **9/9** (`0008_admin_extensions`).
+Expected: **29/29** production checks + **11/11** RBAC probes (RC1.2). Migrations: **11/11** (`0000`–`0010`).
 
 ---
 
@@ -74,6 +75,7 @@ See `docs/page-validation/P14.5G-rollback-guide.md`.
 
 ## References
 
+- `docs/page-validation/RC1.2-final-report.md`
+- `docs/page-validation/RC1.1-production-verification.md`
 - `docs/page-validation/P14.6.3-production-acceptance.md`
 - `docs/page-validation/P14.5G-deployment-report.md`
-- `docs/page-validation/P14.5C-deployment-architecture.md`

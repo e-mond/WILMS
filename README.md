@@ -23,8 +23,8 @@ WILMS supports registration officers, approvers, collectors, auditors, and super
 
 | Area | Status | Evidence |
 |------|--------|----------|
-| Frontend UI | **RC1.1** | 46 routes; **214** unit tests; `verify:api-coverage` 0 placeholders |
-| Backend API | **RC1.1** | Express on Railway; **40/40** unit tests |
+| Frontend UI | **RC1.2** | 46 routes; **431** unit tests; `verify:api-coverage` 0 placeholders |
+| Backend API | **RC1.2** | Express on Railway; **40/40** unit tests |
 | Financial core | **Certified** | `verify:financial` **64/64** ×2 on shared Neon (`phase-5a.3-evidence/verify-financial-run*.txt`) |
 | Live integration | **Certified** | `verify:live` **23/23** ×2 (`phase-5a.3-evidence/verify-live-run*.txt`) |
 | Neon / Drizzle | **Operational** | Migrations `0000`–`0006`; seed when `DATABASE_URL` set |
@@ -36,7 +36,7 @@ WILMS supports registration officers, approvers, collectors, auditors, and super
 | P14.3B — Reconciliation | **Certified** | functional 24/24, RBAC 6/6, concurrency PASS |
 | P14.3B — Uploads | **Certified** | `cert:upload:env` + `cert:upload:smoke` PASS (Cloudinary) |
 | Notifications (SMS/email) | **Deferred** | Adapters only; no workflow call sites (`docs/audit/P14.3B-feature-completion-matrix.md`) |
-| **Current phase** | **RC1.1** | Production stabilization (`release/rc1-1-production-stabilization`) — `docs/page-validation/RC1.1-final-acceptance.md` |
+| **Current phase** | **RC1.2** | Pre-v1.0.0 validation — `docs/page-validation/RC1.2-final-report.md` (RC1.1 merged via PR #43) |
 
 ---
 
