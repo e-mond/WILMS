@@ -1,5 +1,6 @@
 import { API_BASE_URL, API_TIMEOUT_MS } from '@/config/api';
-import { csrfHeaders, readCsrfFromDocumentCookie } from '@/lib/auth/csrf';
+import { csrfHeaders } from '@/lib/auth/csrf';
+import { ensureCsrfToken } from '@/services/authService';
 import { isPublicPath } from '@/lib/auth/routes';
 import { triggerUnauthorizedHandler } from '@/lib/auth/unauthorized-handler';
 import { API_ERROR_CODE, ApiError } from '@/types/api';
@@ -97,14 +98,6 @@ async function parseJsonBody(response: Response): Promise<ApiErrorBody | null> {
 async function parseSuccessBody<T>(response: Response): Promise<T> {
   const json = (await response.json()) as unknown;
   return unwrapSuccessPayload<T>(json);
-}
-
-async function ensureCsrfToken(): Promise<void> {
-  if (typeof document === 'undefined' || readCsrfFromDocumentCookie()) {
-    return;
-  }
-
-  await fetch('/api/auth/csrf', { credentials: 'include' });
 }
 
 async function request<T>(

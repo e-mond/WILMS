@@ -4,7 +4,7 @@ import type { IAuthService } from '@/types/services';
 import { csrfHeaders, readCsrfFromDocumentCookie } from '@/lib/auth/csrf';
 
 async function ensureCsrfToken(): Promise<void> {
-  if (readCsrfFromDocumentCookie()) {
+  if (typeof document === 'undefined' || readCsrfFromDocumentCookie()) {
     return;
   }
 
