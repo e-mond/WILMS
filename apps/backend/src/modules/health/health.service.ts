@@ -5,6 +5,7 @@ import { sql } from 'drizzle-orm';
 import { env } from '../../config/env.js';
 import { getDb, isDatabaseEnabled } from '../../db/client.js';
 import { validateUploadEnvironment } from '../../infrastructure/uploads/env-validation.js';
+import { verifyCoreApplicationTables } from '../../db/schema-health.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const startedAt = Date.now();
@@ -64,10 +65,15 @@ export interface HealthReport {
     deployedAt: string | null;
     buildId: string | null;
   };
+  schema: {
+    status: 'ok' | 'degraded' | 'disabled';
+    missingTables: string[];
+  };
 }
 
 export async function buildHealthReport(): Promise<HealthReport> {
   const uploadReport = validateUploadEnvironment();
+  const schemaReport = await verifyCoreApplicationTables();
   const expectedMigrations = readExpectedMigrationCount();
   let dbConnected = false;
   let appliedMigrations: number | null = null;
@@ -114,13 +120,14 @@ export async function buildHealthReport(): Promise<HealthReport> {
   const degraded =
     (isDatabaseEnabled() && !dbConnected) ||
     migrationStatus === 'degraded' ||
+    schemaReport.status === 'degraded' ||
     (env.nodeEnv === 'production' && !uploadReport.valid);
 
   return {
     status: degraded ? 'degraded' : 'ok',
     service: 'wilms-api',
     version: readPackageVersion(),
-    gitCommit: process.env.WILMS_GIT_COMMIT?.trim() || null,
+    gitCommit: env.gitCommit ?? null,
     uptimeSeconds: Math.floor((Date.now() - startedAt) / 1000),
     environment: env.nodeEnv,
     timestamp: new Date().toISOString(),
@@ -152,6 +159,10 @@ export async function buildHealthReport(): Promise<HealthReport> {
         process.env.RAILWAY_GIT_COMMIT_SHA?.trim() ||
         process.env.VERCEL_GIT_COMMIT_SHA?.trim() ||
         null,
+    },
+    schema: {
+      status: schemaReport.status,
+      missingTables: schemaReport.missingTables,
     },
   };
 }

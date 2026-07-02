@@ -52,8 +52,8 @@ const QUICK_ACTIONS = [
 ];
 
 export function SuperAdminDashboard() {
-  const { data, isLoading, isError, refetch } = useDashboardSummary();
-  const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
+  const { data, isLoading, isError, error, refetch } = useDashboardSummary();
+  const { showLoading, isTimedOut, isForbidden } = useQueryLoadingPolicy({ isLoading, isError, error });
   const alertsAside = useMemo(
     () => (data ? <DashboardAlertsAside alerts={data.recentAlerts} /> : null),
     [data]
@@ -66,8 +66,9 @@ export function SuperAdminDashboard() {
       isLoading={isLoading}
       showLoading={showLoading}
       isTimedOut={isTimedOut}
-      isError={isError || !data}
-      errorMessage="Unable to load dashboard. Check your connection and try again."
+      isError={isError}
+      error={error}
+      isForbidden={isForbidden}
       onRetry={() => void refetch()}
       variant="cards"
     >

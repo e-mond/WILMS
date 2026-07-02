@@ -9,6 +9,7 @@ export function errorHandler(error: unknown, _req: Request, res: Response, _next
   }
 
   if (error instanceof Error) {
+    console.error('[api] unhandled error:', error.message, error.stack);
     sendError(res, 500, 'An unexpected error occurred.', 'SERVER');
     return;
   }

@@ -42,8 +42,8 @@ export function GroupsManagementPanel() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const riskFromUrl = searchParams.get('risk') ?? '';
-  const { data, isLoading, isError, refetch } = useGroups();
-  const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
+  const { data, isLoading, isError, error, refetch } = useGroups();
+  const { showLoading, isTimedOut, isForbidden } = useQueryLoadingPolicy({ isLoading, isError, error });
   const createGroup = useCreateGroup();
   const [searchQuery, setSearchQuery] = useState('');
   const [riskFilter, setRiskFilter] = useState(riskFromUrl);
@@ -124,8 +124,9 @@ export function GroupsManagementPanel() {
       isLoading={isLoading}
       showLoading={showLoading}
       isTimedOut={isTimedOut}
-      isError={isError || !data}
+      isError={isError} error={error}
       errorMessage="Unable to load groups. Try again shortly."
+      isForbidden={isForbidden}
       onRetry={() => void refetch()}
       variant="table"
     >

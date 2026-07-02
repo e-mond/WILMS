@@ -35,8 +35,8 @@ const POOL_STATUS_FILTERS = [
 ];
 
 export function LoanPoolsPanel() {
-  const { data, isLoading, isError, refetch } = useLoanPools();
-  const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
+  const { data, isLoading, isError, error, refetch } = useLoanPools();
+  const { showLoading, isTimedOut, isForbidden } = useQueryLoadingPolicy({ isLoading, isError, error });
   const createLoanPool = useCreateLoanPool();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -129,8 +129,9 @@ export function LoanPoolsPanel() {
       isLoading={isLoading}
       showLoading={showLoading}
       isTimedOut={isTimedOut}
-      isError={isError || !data}
-      errorMessage="Unable to load loan pools. Try again shortly."
+      isError={isError}
+      error={error}
+      isForbidden={isForbidden}
       onRetry={() => void refetch()}
       variant="table"
     >

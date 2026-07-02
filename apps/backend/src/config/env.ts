@@ -40,5 +40,9 @@ export const env = {
   databaseUrl: process.env.DATABASE_URL?.trim() || undefined,
   trustProxy: resolveTrustProxy(),
   trustProxyHops: Number(process.env.WILMS_TRUST_PROXY_HOPS ?? 1),
-  gitCommit: process.env.WILMS_GIT_COMMIT?.trim() || undefined,
+  gitCommit:
+    process.env.WILMS_GIT_COMMIT?.trim() ||
+    process.env.RAILWAY_GIT_COMMIT_SHA?.trim() ||
+    process.env.VERCEL_GIT_COMMIT_SHA?.trim() ||
+    undefined,
 };

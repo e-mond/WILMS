@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { CurrencyAmount, DataTable, KpiCard } from '@/components/data-display';
 import { EmptyState } from '@/components/feedback/EmptyState';
+import { resolveQueryErrorPresentation } from '@/utils/query-error-presentation';
+import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { ExecutiveKpiGrid, FilterPillBar, ManagementToolbar } from '@/components/layout/executive';
 import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
@@ -63,10 +65,10 @@ function resolveReportKpis(summary: DashboardSummary) {
 
 export function ReportsIndexPanel({ categoryFilterMode = 'default' }: ReportsIndexPanelProps) {
   const generatedBy = useWilmsExportActor();
-  const { data, isLoading, isError, refetch } = useReportsIndex();
+  const { data, isLoading, isError, error, refetch } = useReportsIndex();
   const { data: dashboardSummary, isLoading: isDashboardLoading, refetch: refetchDashboard } =
     useDashboardSummary();
-  const { showLoading, isTimedOut } = useQueryLoadingPolicy({
+  const { showLoading, isTimedOut, isForbidden } = useQueryLoadingPolicy({
     isLoading: isLoading || isDashboardLoading,
   });
   const [searchQuery, setSearchQuery] = useState('');
@@ -127,13 +129,15 @@ export function ReportsIndexPanel({ categoryFilterMode = 'default' }: ReportsInd
   );
   useShellAsideContent(asideContent);
 
-  if (isError || !data) {
+  if (isError) {
+    const presentation = resolveQueryErrorPresentation(error);
     return (
-      <EmptyState
-        title="Unable to load reports"
-        description="Check your connection and try again."
-      />
+      <EmptyState title={presentation.title} description={presentation.description} />
     );
+  }
+
+  if (!data) {
+    return <EmptyState {...EMPTY_STATE_COPY.reports} />;
   }
 
   if (isTimedOut && (isLoading || isDashboardLoading)) {
@@ -142,6 +146,7 @@ export function ReportsIndexPanel({ categoryFilterMode = 'default' }: ReportsInd
         isLoading
         isTimedOut
         isError={false}
+        isForbidden={isForbidden}
         onRetry={() => {
           void refetch();
           void refetchDashboard();
