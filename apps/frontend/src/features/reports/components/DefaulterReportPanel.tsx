@@ -13,16 +13,17 @@ import { formatPesewasForCsv } from '@/utils/export-csv';
 const CSV_HEADERS = ['Borrower', 'Community', 'Group', 'Missed Weeks', 'Outstanding (GHS)', 'Last Payment'];
 
 export function DefaulterReportPanel() {
-  const { data, isLoading, isError, refetch } = useDefaulterReport();
-  const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
+  const { data, isLoading, isError, error, refetch } = useDefaulterReport();
+  const { showLoading, isTimedOut, isForbidden } = useQueryLoadingPolicy({ isLoading, isError, error });
 
   return (
     <QueryStatePanel
       isLoading={isLoading}
       showLoading={showLoading}
       isTimedOut={isTimedOut}
-      isError={isError || !data}
+      isError={isError} error={error}
       errorMessage="Unable to generate report. Try again shortly."
+      isForbidden={isForbidden}
       onRetry={() => void refetch()}
       variant="table"
     >

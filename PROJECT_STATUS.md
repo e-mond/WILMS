@@ -2,15 +2,15 @@
 
 **Last updated:** 2026-07-02  
 **Current release:** v0.2.2 (v1.0.0 tag readiness)  
-**Active phase:** RC1.2 — pre-v1.0.0 validation on `release/rc1-1-production-stabilization`
+**Active phase:** RC1.3 — final certification on `release/rc1-3-final-certification`
 
 ---
 
 ## Executive summary
 
-RC1.2 gate-by-gate validation complete. Automated CI gates, API integrity 132/132, backend 40/40, frontend 431/431, production smoke 29/29, RBAC smoke 11/11. RC1.1 merged to `main` via PR #43. Blockers before `v1.0.0`: staging DB demo cleanup, local E2E re-run (disk `ENOSPC`), Lighthouse performance 89/90.
+RC1.3 final certification: intelligent empty/error states, page descriptions, production re-sync. **Production smoke 17/29** (list endpoints HTTP 500 post-DB rebuild). **v1.0.0: NOT READY.**
 
-**Recommendation:** `READY FOR RC2` — see `docs/page-validation/RC1.2-final-report.md`
+**Recommendation:** Fix production API 500s → full smoke → E2E → re-certify. See `docs/page-validation/RC1.3-final-certification.md`
 
 ---
 

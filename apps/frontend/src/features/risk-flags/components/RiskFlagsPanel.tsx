@@ -31,6 +31,7 @@ import { buildDefaultFlagTimeline } from '@/utils/risk-flag-list';
 import { FLAG_STATUS, FLAG_TYPE, type RiskFlagSummary } from '@/types/risk-flag';
 import { formatDisplayDate } from '@/utils/format-date';
 import { resolveEntityDisplayId } from '@/utils/entity-display-id';
+import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 
 const STATUS_FILTERS = [
   { value: '', label: 'All' },
@@ -90,8 +91,8 @@ function sortFlags(flags: RiskFlagSummary[], sortKey: SortKey, direction: SortDi
 export function RiskFlagsPanel() {
   const generatedBy = useWilmsExportActor();
   const { escalateToBlacklist, markResolved, assignOfficer, raiseFlag } = useRiskFlagActions();
-  const { data, isLoading, isError, refetch } = useRiskFlags();
-  const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
+  const { data, isLoading, isError, error, refetch } = useRiskFlags();
+  const { showLoading, isTimedOut, isForbidden } = useQueryLoadingPolicy({ isLoading, isError, error });
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -196,13 +197,29 @@ export function RiskFlagsPanel() {
     );
   }
 
-  if (isError || !data) {
+  if (isError) {
     return (
       <QueryStatePanel
         isLoading={false}
         isError
-        errorMessage="Unable to load risk flags. Try again shortly."
+        error={error}
+      isForbidden={isForbidden}
         onRetry={() => void refetch()}
+        variant="table"
+      >
+        {null}
+      </QueryStatePanel>
+    );
+  }
+
+  if (!data) {
+    return (
+      <QueryStatePanel
+        isLoading={false}
+        isError={false}
+        isEmpty
+        emptyTitle={EMPTY_STATE_COPY.riskFlags.title}
+        emptyDescription={EMPTY_STATE_COPY.riskFlags.description}
         variant="table"
       >
         {null}

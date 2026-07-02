@@ -26,7 +26,7 @@ import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { cn } from '@/utils/cn';
 
 export function SettingsPanel() {
-  const { data, isLoading, isError, refetch } = useSettings();
+  const { data, isLoading, isError, error, refetch } = useSettings();
   const [activeSection, setActiveSection] = useState<SettingsSection>(SETTINGS_SECTION.ORGANISATION);
 
   const activeSectionLabel =
@@ -45,7 +45,7 @@ export function SettingsPanel() {
   return (
     <QueryStatePanel
       isLoading={isLoading}
-      isError={isError || !data}
+      isError={isError} error={error}
       errorMessage="Unable to load settings. Check your connection and try again."
       onRetry={() => void refetch()}
       variant="inline"

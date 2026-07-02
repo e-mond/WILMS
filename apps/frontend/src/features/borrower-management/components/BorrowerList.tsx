@@ -6,6 +6,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { DataTable, KpiCard, StatusBadge, Avatar } from '@/components/data-display';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
+import { Button } from '@/components/ui/Button';
+import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import {
   ExecutiveKpiGrid,
   FilterPillBar,
@@ -26,6 +28,7 @@ import type { BorrowerSummary } from '@/types/borrower';
 import { BORROWER_STATUS } from '@/types/borrower';
 import { resolveBorrowerDisplayId } from '@/utils/format-borrower-display-id';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
+import { resolveQueryErrorPresentation } from '@/utils/query-error-presentation';
 
 const STATUS_FILTERS = BORROWER_STATUS_FILTER_OPTIONS.map((option) => ({
   value: option.value,
@@ -36,8 +39,8 @@ export function BorrowerList() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const statusFromUrl = searchParams.get('status') ?? '';
-  const { data, isLoading, isError, refetch } = useBorrowers();
-  const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
+  const { data, isLoading, isError, error, refetch } = useBorrowers();
+  const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading, isError, error });
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState(statusFromUrl);
 
@@ -128,21 +131,24 @@ export function BorrowerList() {
   }
 
   if (isError) {
+    const presentation = resolveQueryErrorPresentation(error);
     return (
       <EmptyState
-        title="Unable to load borrowers"
-        description="Check your connection and try again."
+        title={presentation.title}
+        description={presentation.description}
+        action={
+          presentation.canRetry ? (
+            <Button type="button" variant="secondary" onClick={() => void refetch()}>
+              Try again
+            </Button>
+          ) : null
+        }
       />
     );
   }
 
   if (!data?.length) {
-    return (
-      <EmptyState
-        title="No borrowers yet"
-        description="Registered borrowers will appear here after submission."
-      />
-    );
+    return <EmptyState {...EMPTY_STATE_COPY.borrowers} />;
   }
 
   const csvRows = filteredBorrowers.map((borrower) => [
