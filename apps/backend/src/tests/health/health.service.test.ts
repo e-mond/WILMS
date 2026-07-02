@@ -15,6 +15,10 @@ vi.mock('../../infrastructure/uploads/env-validation.js', () => ({
   }),
 }));
 
+vi.mock('../../db/schema-health.js', () => ({
+  verifyCoreApplicationTables: async () => ({ status: 'disabled', missingTables: [] }),
+}));
+
 describe('health.service', () => {
   it('returns ok when database is disabled in development', async () => {
     const report = await buildHealthReport();

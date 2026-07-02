@@ -11,6 +11,7 @@ import {
   formatPercentForExport,
 } from '@/features/export/utils/formatters';
 import { resolveBorrowerRisk } from '@/utils/borrower-risk';
+import { resolveLoanDisplayId } from '@/utils/entity-display-id';
 
 export type BorrowerExportVariant = 'full' | 'loan-summary' | 'payment-history';
 
@@ -88,7 +89,7 @@ export function buildBorrowerProfileExportDocument(input: BorrowerProfileExportI
       title: 'Loan Summary',
       type: 'summary',
       summaryItems: [
-        { label: 'Current Loan', value: activeLoan.id },
+        { label: 'Current Loan', value: resolveLoanDisplayId(activeLoan) },
         { label: 'Loan Amount', value: formatPesewasForExport(activeLoan.amountPesewas) },
         { label: 'Disbursement Date', value: formatExportDate(activeLoan.startDate) },
         { label: 'Outstanding Balance', value: formatPesewasForExport(activeLoan.outstandingPesewas) },

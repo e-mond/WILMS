@@ -10,6 +10,7 @@ import {
 } from '@/components/data-display';
 import { Alert } from '@/components/feedback/Alert';
 import { EmptyState } from '@/components/feedback/EmptyState';
+import { resolveQueryErrorPresentation } from '@/utils/query-error-presentation';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
 import { ExecutiveKpiGrid } from '@/components/layout/executive';
 import { ProfileSection } from '@/components/layout/executive/ProfileSection';
@@ -42,7 +43,7 @@ function formatRiskTimestamp(value: string): string {
 }
 
 export function GroupProfilePanel({ groupId }: GroupProfilePanelProps) {
-  const { data, isLoading, isError, refetch } = useGroup(groupId);
+  const { data, isLoading, isError, error, refetch } = useGroup(groupId);
 
   const asideContent = useMemo(
     () => (data ? <GroupProfileAsidePanel group={data} /> : null),
@@ -55,7 +56,14 @@ export function GroupProfilePanel({ groupId }: GroupProfilePanelProps) {
     return <LoadingSpinner label="Loading group profile" className="py-wilms-8" />;
   }
 
-  if (isError || !data) {
+  if (isError) {
+    const presentation = resolveQueryErrorPresentation(error);
+    return (
+      <EmptyState title={presentation.title} description={presentation.description} />
+    );
+  }
+
+  if (!data) {
     return (
       <EmptyState
         title="Group not found"

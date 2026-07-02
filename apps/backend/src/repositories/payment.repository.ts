@@ -18,7 +18,7 @@ function rowToRecord(row: typeof payments.$inferSelect): PaymentRecord {
     amountPesewas: row.amountPesewas,
     paymentDate: row.paymentDate,
     recordedAt: row.recordedAt.toISOString(),
-    gps: row.gps as PaymentRecord['gps'],
+    gps: (row.gps ?? { lat: 0, lng: 0, verified: false }) as PaymentRecord['gps'],
   };
 }
 

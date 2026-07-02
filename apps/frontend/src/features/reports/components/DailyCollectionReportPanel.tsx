@@ -53,7 +53,7 @@ export function DailyCollectionReportPanel() {
     [collectorsQuery.data],
   );
 
-  const { data, isLoading, isError, refetch } = useDailyCollectionReport({
+  const { data, isLoading, isError, error, refetch } = useDailyCollectionReport({
     date: reportDate,
     collectorId: collectorFilter || undefined,
   });
@@ -91,7 +91,7 @@ export function DailyCollectionReportPanel() {
   return (
     <QueryStatePanel
       isLoading={isLoading}
-      isError={isError || !data}
+      isError={isError} error={error}
       errorMessage="Check your connection and try again."
       onRetry={() => void refetch()}
       variant="table"

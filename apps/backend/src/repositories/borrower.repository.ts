@@ -8,7 +8,7 @@ import type { BorrowerRecord, BorrowerStatus } from '../db/store.js';
 type BorrowerProfile = BorrowerRecord['profile'];
 
 function rowToRecord(row: typeof borrowers.$inferSelect): BorrowerRecord {
-  const profile = row.profile as BorrowerProfile;
+  const profile = (row.profile ?? {}) as BorrowerProfile;
 
   return {
     id: row.id,

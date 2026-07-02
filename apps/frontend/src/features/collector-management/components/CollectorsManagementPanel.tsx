@@ -74,8 +74,8 @@ function matchesCollectorFilter(collector: CollectorSummary, filter: string): bo
 }
 
 export function CollectorsManagementPanel() {
-  const { data, isLoading, isError, refetch } = useCollectorsManagement();
-  const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
+  const { data, isLoading, isError, error, refetch } = useCollectorsManagement();
+  const { showLoading, isTimedOut, isForbidden } = useQueryLoadingPolicy({ isLoading, isError, error });
   const onboardCollector = useOnboardCollector();
   const { createThread, sendMessage } = useMessageCollector();
   const [searchQuery, setSearchQuery] = useState('');
@@ -176,8 +176,9 @@ export function CollectorsManagementPanel() {
         isLoading={isLoading}
         showLoading={showLoading}
         isTimedOut={isTimedOut}
-        isError={isError || !data}
+        isError={isError} error={error}
         errorMessage="Unable to load collectors. Try again shortly."
+      isForbidden={isForbidden}
         onRetry={() => void refetch()}
         variant="table"
       >
