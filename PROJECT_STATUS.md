@@ -1,79 +1,48 @@
 # WILMS — Project Status
 
-
-
-**Last updated:** 2026-07-01  
-
+**Last updated:** 2026-07-02  
 **Current release:** v0.2.2 (v1.0.0 tag readiness)  
-
-**Active phase:** RC1.1 — production stabilization on `release/rc1-1-production-stabilization`
-
-
+**Active phase:** RC1.2 — pre-v1.0.0 validation on `release/rc1-1-production-stabilization`
 
 ---
-
-
 
 ## Executive summary
 
+RC1.2 gate-by-gate validation complete. Automated CI gates, API integrity 132/132, backend 40/40, frontend 431/431, production smoke 29/29, RBAC smoke 11/11. RC1.1 merged to `main` via PR #43. Blockers before `v1.0.0`: staging DB demo cleanup, local E2E re-run (disk `ENOSPC`), Lighthouse performance 89/90.
 
-
-RC1.1 stabilization: BFF encoding smoke, RBAC matrix, mock import guard, loading UX rollout, connection status chip, stale-bundle mitigation. API integrity 132/132, backend 40/40 tests, mock guard CI.
-
-
+**Recommendation:** `READY FOR RC2` — see `docs/page-validation/RC1.2-final-report.md`
 
 ---
 
-
-
-## RC1 production bugfix sprint (2026-06-20)
+## RC1.1 production hotfix (2026-07-01) — merged
 
 | Fix | Summary |
 |-----|---------|
-| Reports hub crash | `GET /reports/hub` returns full `ReportsHubMetadata`; aside panel guards |
-| Officer 403 noise | Locations permission includes registration portal; inbox hidden for officers; graceful 403 retry |
-| Demo seed cleanup | `cleanup-demo-financial-data.mjs`; `db:seed:reference` / `db:seed:demo`; production guard |
-| Registration IDs | Shared Ghana Card / Voter / Passport validators + GPS geolocation |
-| Loading policy | 300ms debounce, 30s timeout via `useQueryLoadingPolicy` |
-
-See `docs/page-validation/RC1-registration-hardening.md`.
-
----
-
-## RC1 completed
-
-
-
-| Item | Evidence |
-
-|------|----------|
-
-| API integrity 135/135 | `npm run verify:api-integrity` |
-| API coverage gate | `npm run verify:api-coverage` — 0 placeholders |
-| Phase 2 — risk flag CRUD | `POST/PATCH /risk-flags/*` |
-| Phase 2 — group/pool/collector create | `POST /groups`, `/loan-pools`, `/collectors` |
-| Phase 2 — in-app messaging | `0010_messages` migration, `/messages/threads` |
-| Phase 2 — notification dispatch | SMS/email in `sendNotification` + invite email |
-| RC1 Phase 2 audit docs | `RC1-*-audit.md`, `RC1-release-notes.md` |
-| API integrity 112/112 (Phase 1) | `RC1-api-audit.md` |
-
-
-
----
-
-
-
-## RC1.1 production hotfix (2026-07-01)
-
-| Fix | Summary |
-|-----|---------|
-| Router RBAC bleed | Per-route guards — collectors no longer 403 on notifications, uploads, capture-sessions |
+| Router RBAC bleed | Per-route guards — collectors no longer 403 on unrelated routes |
 | Collector portal | `assertCollectorAccess()` — self + admin only |
 | Display ID CI | `resolveCollectorDisplayId` respects `COL-011` style IDs |
-| Admin-fee 403 | Removed approver-only disbursement call from collector view |
-| Synthetic amounts | No fake reconciliation totals when DB disabled |
+| PWA stale bundles | SW cache v2, controllerchange reload |
+| Connection status | Online / offline / reconnecting / sync pending chip |
 
-Evidence: `docs/page-validation/RC1.1-production-verification.md`
+Evidence: `docs/page-validation/RC1.1-final-acceptance.md`
+
+---
+
+## RC1.2 validation (2026-07-02)
+
+| Gate | Result |
+|------|--------|
+| Git audit | PASS |
+| Codebase health | PASS |
+| Dependencies (0 critical) | PASS |
+| Database (prod 11/11) | PARTIAL — staging cleanup blocked |
+| API 132/132 | PASS |
+| UI / E2E | FAIL (local ENOSPC) — manual matrix ≥90% |
+| Performance budgets | PASS — Lighthouse perf 89 |
+| Security + RBAC smoke | PASS |
+| Full test suite | PASS (excl. E2E) |
+
+Evidence: `docs/page-validation/RC1.2-*.md` (13 reports)
 
 ---
 
@@ -82,19 +51,21 @@ Evidence: `docs/page-validation/RC1.1-production-verification.md`
 | Item | Status |
 |------|--------|
 | Railway API @ migrations 11/11 | ✅ |
-| Vercel frontend + BFF @ `8e0df23` | ✅ |
-| Authentication (5 roles) + CSRF | ✅ |
-| Production smoke | ✅ 24/24 |
-| Collector portal live | ✅ |
+| Vercel frontend | ✅ |
+| Production smoke | ✅ 29/29 |
+| RBAC smoke | ✅ 11/11 |
+| Deploy SHA drift | ⚠️ `cf3ce10` on Railway vs merged `main` |
 
 ---
 
-## Pending
+## Pending before v1.0.0
 
 | Item | Owner |
 |------|-------|
+| Staging `cleanup-demo-financial-data.mjs` sign-off | Engineering |
+| Re-run `npm run test:e2e` on CI / clean disk | Engineering |
+| Production redeploy from `main` | Engineering |
 | Git tag `v1.0.0` after stakeholder sign-off | Engineering |
-| `gh pr create` for RC1.1 docs branch | Engineering |
 
 ---
 
@@ -103,10 +74,13 @@ Evidence: `docs/page-validation/RC1.1-production-verification.md`
 ```bash
 npm run verify:api-integrity    # expect 132/132 PASS
 npm run verify:api-coverage     # expect 0 placeholder hits
+npm run verify:mock-guard
 npm run type-check
 npm run build
 npm run test -w @wilms/api      # expect 40/40
-npm run smoke:production
+npm run test -w @wilms/frontend # expect 431
+npm run smoke:production        # expect 29/29
+npm run smoke:rbac              # expect 11/11
 ```
 
 ---
@@ -115,12 +89,10 @@ npm run smoke:production
 
 | Release | Entry point |
 |---------|-------------|
+| RC1.2 | `docs/page-validation/RC1.2-final-report.md` |
 | RC1.1 | `docs/page-validation/RC1.1-final-acceptance.md` |
-| P14.RC1 | `docs/page-validation/RC1-final-acceptance.md` |
-| P14.6.4 | `docs/page-validation/P14.6.4-production-readiness.md` |
+| RC1 | `docs/page-validation/RC1-final-acceptance.md` |
 
 ---
 
-**Verdict:** RC1.1 hotfix deployed and verified. **v1.0.0 tag readiness** — pending stakeholder approval.
-
-
+**Verdict:** `READY FOR RC2` — await staging DB cleanup, E2E re-run, and stakeholder approval before `v1.0.0` tag.
