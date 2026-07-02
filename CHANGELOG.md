@@ -2,6 +2,14 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [Unreleased] — RC1.3.2 post-deployment verification
+
+### Documented
+- RC1.3.2 evidence set (12 reports under `docs/page-validation/RC1.3.2-*.md`)
+- Live production smoke **17/29**, RBAC **7/11** (2026-07-02)
+- Railway deploy SHA drift: `cf3ce10` vs GitHub `main` `8a83278`
+- Verdict: **NOT PRODUCTION CERTIFIED**
+
 ## [Unreleased] — RC1.2 pre-v1.0.0 validation
 
 ### Added

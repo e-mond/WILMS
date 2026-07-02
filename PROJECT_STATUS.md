@@ -1,48 +1,34 @@
 # WILMS — Project Status
 
 **Last updated:** 2026-07-02  
-**Current release:** v0.2.2 (v1.0.0 tag readiness)  
-**Active phase:** RC1.2 — pre-v1.0.0 validation on `release/rc1-1-production-stabilization`
+**Current release:** v0.2.2  
+**Active phase:** RC1.3.2 — post-deployment verification on `main`
 
 ---
 
 ## Executive summary
 
-RC1.2 gate-by-gate validation complete. Automated CI gates, API integrity 132/132, backend 40/40, frontend 431/431, production smoke 29/29, RBAC smoke 11/11. RC1.1 merged to `main` via PR #43. Blockers before `v1.0.0`: staging DB demo cleanup, local E2E re-run (disk `ENOSPC`), Lighthouse performance 89/90.
+RC1.3.2 post-deployment verification complete. **NOT PRODUCTION CERTIFIED.**
 
-**Recommendation:** `READY FOR RC2` — see `docs/page-validation/RC1.2-final-report.md`
+Live evidence (2026-07-02T22:41Z): production smoke **17/29**, RBAC smoke **7/11**, Railway `/health` reports `gitCommit: cf3ce10` while GitHub `main` is `8a83278`. RC1.3 branch (`release/rc1-3-final-certification`) is **not merged** to `main`.
 
----
-
-## RC1.1 production hotfix (2026-07-01) — merged
-
-| Fix | Summary |
-|-----|---------|
-| Router RBAC bleed | Per-route guards — collectors no longer 403 on unrelated routes |
-| Collector portal | `assertCollectorAccess()` — self + admin only |
-| Display ID CI | `resolveCollectorDisplayId` respects `COL-011` style IDs |
-| PWA stale bundles | SW cache v2, controllerchange reload |
-| Connection status | Online / offline / reconnecting / sync pending chip |
-
-Evidence: `docs/page-validation/RC1.1-final-acceptance.md`
+**Recommendation:** Redeploy from merged `main` (include RC1.3 merge if approved), fix list-endpoint HTTP 500s, re-run RC1.3.2 gates. See `docs/page-validation/RC1.3.2-production-certification.md`.
 
 ---
 
-## RC1.2 validation (2026-07-02)
+## RC1.3.2 gates (2026-07-02)
 
 | Gate | Result |
 |------|--------|
-| Git audit | PASS |
-| Codebase health | PASS |
-| Dependencies (0 critical) | PASS |
-| Database (prod 11/11) | PARTIAL — staging cleanup blocked |
-| API 132/132 | PASS |
-| UI / E2E | FAIL (local ENOSPC) — manual matrix ≥90% |
-| Performance budgets | PASS — Lighthouse perf 89 |
-| Security + RBAC smoke | PASS |
-| Full test suite | PASS (excl. E2E) |
+| Git ↔ production SHA | **FAIL** |
+| Version 0.2.2 sync | **PASS** |
+| API integrity / coverage / mock guard | **PASS** (repo) |
+| Production smoke | **FAIL 17/29** |
+| RBAC smoke | **FAIL 7/11** |
+| Local type-check / lint / build / backend tests | **PASS** |
+| npm audit critical | **PASS (0 critical)** |
 
-Evidence: `docs/page-validation/RC1.2-*.md` (13 reports)
+Evidence: `docs/page-validation/RC1.3.2-*.md` (12 reports)
 
 ---
 
@@ -51,48 +37,45 @@ Evidence: `docs/page-validation/RC1.2-*.md` (13 reports)
 | Item | Status |
 |------|--------|
 | Railway API @ migrations 11/11 | ✅ |
-| Vercel frontend | ✅ |
-| Production smoke | ✅ 29/29 |
-| RBAC smoke | ✅ 11/11 |
-| Deploy SHA drift | ⚠️ `cf3ce10` on Railway vs merged `main` |
+| Vercel frontend login | ✅ 200 |
+| Production smoke | ❌ **17/29** |
+| RBAC smoke | ❌ **7/11** |
+| Deploy SHA | ❌ `cf3ce10` vs `main` `8a83278` |
+| RC1.3 merged | ❌ Not on `main` |
 
 ---
 
-## Pending before v1.0.0
+## Pending before PRODUCTION CERTIFIED / v1.0.0
 
 | Item | Owner |
 |------|-------|
-| Staging `cleanup-demo-financial-data.mjs` sign-off | Engineering |
-| Re-run `npm run test:e2e` on CI / clean disk | Engineering |
-| Production redeploy from `main` | Engineering |
-| Git tag `v1.0.0` after stakeholder sign-off | Engineering |
+| Merge RC1.3 → `main` (if approved) | Engineering |
+| Redeploy Railway + Vercel from same commit | Ops |
+| Fix production list API 500s | Engineering |
+| smoke 29/29 + rbac 11/11 | QA |
+| Re-run RC1.3.2 certification | Engineering |
+| Staging demo DB cleanup | Ops |
+| E2E full green | Engineering |
+| Git tag `v1.0.0` after sign-off | Engineering |
 
 ---
 
 ## Quick verification
 
 ```bash
+npm run verify:version          # expect 0.2.2 PASS
 npm run verify:api-integrity    # expect 132/132 PASS
-npm run verify:api-coverage     # expect 0 placeholder hits
-npm run verify:mock-guard
-npm run type-check
-npm run build
-npm run test -w @wilms/api      # expect 40/40
-npm run test -w @wilms/frontend # expect 431
-npm run smoke:production        # expect 29/29
-npm run smoke:rbac              # expect 11/11
+WILMS_APP_URL=https://wilms.vercel.app \
+WILMS_API_URL=https://wilms-production.up.railway.app \
+npm run smoke:production        # expect 29/29 (currently 17/29)
+npm run smoke:rbac              # expect 11/11 (currently 7/11)
+curl -s https://wilms-production.up.railway.app/health | jq .data.gitCommit
 ```
 
 ---
 
-## Documentation index
+## Prior phases
 
-| Release | Entry point |
-|---------|-------------|
-| RC1.2 | `docs/page-validation/RC1.2-final-report.md` |
-| RC1.1 | `docs/page-validation/RC1.1-final-acceptance.md` |
-| RC1 | `docs/page-validation/RC1-final-acceptance.md` |
-
----
-
-**Verdict:** `READY FOR RC2` — await staging DB cleanup, E2E re-run, and stakeholder approval before `v1.0.0` tag.
+- **RC1.2** — `docs/page-validation/RC1.2-final-report.md` — READY FOR RC2
+- **RC1.1** — merged PR #43 — production hotfixes
+- **RC1.3** — on branch `release/rc1-3-final-certification` — UX/empty states (not merged)
