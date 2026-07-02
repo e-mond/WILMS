@@ -5,4 +5,4 @@ export const LOADING_DEBOUNCE_MS = 300;
 export const LOADING_TIMEOUT_MS = 30_000;
 
 export const LOADING_TIMEOUT_MESSAGE =
-  'This is taking longer than expected. Check your connection and try again.';
+  'This is taking longer than expected. You can retry or wait a little longer.';

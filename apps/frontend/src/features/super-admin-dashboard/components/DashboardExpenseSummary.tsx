@@ -12,11 +12,11 @@ export interface DashboardExpenseSummaryProps {
 }
 
 export function DashboardExpenseSummary({ compact = false }: DashboardExpenseSummaryProps) {
-  const { data, isLoading, isError, refetch } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['dashboard-expense-summary'],
     queryFn: () => expenseService.getExpenseSummary(),
   });
-  const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
+  const { showLoading, isTimedOut, isForbidden } = useQueryLoadingPolicy({ isLoading, isError, error });
 
   if (isTimedOut && isLoading) {
     return (
@@ -24,6 +24,7 @@ export function DashboardExpenseSummary({ compact = false }: DashboardExpenseSum
         isLoading
         isTimedOut
         isError={false}
+      isForbidden={isForbidden}
         onRetry={() => void refetch()}
         variant="inline"
       >

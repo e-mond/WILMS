@@ -5,14 +5,18 @@ import { TableSkeleton } from '@/components/feedback/TableSkeleton';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
 import { Button } from '@/components/ui/Button';
 import { LOADING_TIMEOUT_MESSAGE } from '@/constants/loading-policy';
+import { resolveQueryErrorPresentation } from '@/utils/query-error-presentation';
 
 export interface QueryStatePanelProps {
   isLoading: boolean;
   showLoading?: boolean;
   isFetching?: boolean;
   isError: boolean;
+  error?: unknown;
+  isForbidden?: boolean;
   isTimedOut?: boolean;
   errorMessage?: string;
+  errorDescription?: string;
   timeoutMessage?: string;
   isEmpty?: boolean;
   emptyTitle?: string;
@@ -27,8 +31,11 @@ export function QueryStatePanel({
   showLoading,
   isFetching = false,
   isError,
+  error,
+  isForbidden = false,
   isTimedOut = false,
   errorMessage,
+  errorDescription,
   timeoutMessage = LOADING_TIMEOUT_MESSAGE,
   isEmpty = false,
   emptyTitle = 'No data yet',
@@ -38,6 +45,16 @@ export function QueryStatePanel({
   children,
 }: QueryStatePanelProps) {
   const displayLoading = showLoading ?? isLoading;
+  const presentation = isError ? resolveQueryErrorPresentation(error) : null;
+  const resolvedForbidden = isForbidden || presentation?.variant === 'forbidden';
+  const resolvedTitle =
+    errorMessage ??
+    (resolvedForbidden ? 'Access denied' : presentation?.title ?? 'Unable to load this data');
+  const resolvedDescription =
+    errorDescription ??
+    (resolvedForbidden
+      ? presentation?.description ?? 'You do not have permission to view this data.'
+      : presentation?.description ?? 'Please try again.');
 
   if (isTimedOut && (isLoading || isFetching)) {
     return (
@@ -74,14 +91,18 @@ export function QueryStatePanel({
 
   if (isError) {
     return (
-      <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6 text-center">
-        <p className="text-sm text-destructive">{errorMessage ?? 'Unable to load this data.'}</p>
-        {onRetry ? (
-          <Button type="button" variant="secondary" className="mt-4" onClick={onRetry}>
-            Try again
-          </Button>
-        ) : null}
-      </div>
+      <EmptyState
+        title={resolvedTitle}
+        description={resolvedDescription}
+        action={
+          onRetry && (presentation?.canRetry ?? !resolvedForbidden) ? (
+            <Button type="button" variant="secondary" onClick={onRetry}>
+              Try again
+            </Button>
+          ) : null
+        }
+        className="border-destructive/20 bg-destructive/5"
+      />
     );
   }
 

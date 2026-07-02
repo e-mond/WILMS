@@ -18,7 +18,7 @@ export function FinancialLedgerReportPanel() {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
 
-  const { data, isLoading, isError, refetch } = useFinancialLedgerReport({
+  const { data, isLoading, isError, error, refetch } = useFinancialLedgerReport({
     fromDate: fromDate || undefined,
     toDate: toDate || undefined,
   });
@@ -39,7 +39,7 @@ export function FinancialLedgerReportPanel() {
   return (
     <QueryStatePanel
       isLoading={isLoading}
-      isError={isError || !data}
+      isError={isError} error={error}
       errorMessage="Unable to generate report. Try again shortly."
       onRetry={() => void refetch()}
       variant="table"

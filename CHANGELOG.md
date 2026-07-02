@@ -2,6 +2,22 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [Unreleased] — RC1.3 final certification
+
+### Added
+- Intelligent query error presentation (`query-error-presentation.ts`)
+- Page-level business descriptions (`shell-page-description.ts`)
+- Shared empty-state copy constants
+- RC1.3 certification documentation (11 reports)
+
+### Fixed
+- Empty datasets no longer shown as connection errors (`isError || !data` anti-pattern)
+- `QueryStatePanel` differentiates forbidden, network, server, and empty states
+
+### Known
+- Production smoke 17/29 — list BFF routes HTTP 500 post-DB rebuild
+- v1.0.0 recommendation: **NO** until production stabilized
+
 ## [Unreleased] — RC1.2 pre-v1.0.0 validation
 
 ### Added

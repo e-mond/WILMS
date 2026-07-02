@@ -14,16 +14,17 @@ import type { GroupRiskLevel } from '@/types/group';
 const CSV_HEADERS = ['Group', 'Community', 'Rate %', 'Risk', 'Active Members', 'Total Members'];
 
 export function GroupRiskReportPanel() {
-  const { data, isLoading, isError, refetch } = useGroupRiskReport();
-  const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
+  const { data, isLoading, isError, error, refetch } = useGroupRiskReport();
+  const { showLoading, isTimedOut, isForbidden } = useQueryLoadingPolicy({ isLoading, isError, error });
 
   return (
     <QueryStatePanel
       isLoading={isLoading}
       showLoading={showLoading}
       isTimedOut={isTimedOut}
-      isError={isError || !data}
+      isError={isError} error={error}
       errorMessage="Unable to generate report. Try again shortly."
+      isForbidden={isForbidden}
       onRetry={() => void refetch()}
       variant="table"
     >

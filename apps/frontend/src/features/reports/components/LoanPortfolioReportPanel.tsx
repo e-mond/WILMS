@@ -54,7 +54,7 @@ export function LoanPortfolioReportPanel() {
   const [statusFilter, setStatusFilter] = useState('');
   const [cycleBatchFilter, setCycleBatchFilter] = useState('');
 
-  const { data, isLoading, isError, refetch } = useLoanPortfolioReport({
+  const { data, isLoading, isError, error, refetch } = useLoanPortfolioReport({
     search: searchQuery,
     status: statusFilter,
     cycleBatch: cycleBatchFilter,
@@ -80,7 +80,7 @@ export function LoanPortfolioReportPanel() {
   return (
     <QueryStatePanel
       isLoading={isLoading}
-      isError={isError || !data}
+      isError={isError} error={error}
       errorMessage="Unable to generate the loan portfolio report. Check your connection and try again."
       onRetry={() => void refetch()}
       isEmpty={Boolean(data && data.entries.length === 0)}

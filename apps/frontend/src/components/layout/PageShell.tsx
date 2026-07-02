@@ -1,5 +1,8 @@
+'use client';
+
 import type { ReactNode } from 'react';
 import { PageBreadcrumbs, type PageBreadcrumbsProps } from '@/components/layout/PageBreadcrumbs';
+import { useShellPageDescription } from '@/hooks/useShellPageDescription';
 import { cn } from '@/utils/cn';
 
 export interface PageShellProps {
@@ -9,6 +12,7 @@ export interface PageShellProps {
   children: ReactNode;
   variant?: 'default' | 'executive';
   className?: string;
+  showAutoDescription?: boolean;
 }
 
 export function PageShell({
@@ -18,8 +22,12 @@ export function PageShell({
   children,
   variant = 'default',
   className,
+  showAutoDescription = true,
 }: PageShellProps) {
+  const autoDescription = useShellPageDescription();
   const isExecutive = variant === 'executive';
+  const resolvedDescription =
+    description ?? (showAutoDescription ? autoDescription : undefined);
 
   return (
     <div
@@ -30,8 +38,8 @@ export function PageShell({
       )}
     >
       {!isExecutive && breadcrumbs?.length ? <PageBreadcrumbs items={breadcrumbs} /> : null}
-      {!isExecutive && description ? (
-        <p className="max-w-3xl text-body text-text-muted">{description}</p>
+      {resolvedDescription ? (
+        <p className="max-w-3xl text-body text-text-muted">{resolvedDescription}</p>
       ) : null}
       {actions ? <div className="flex justify-end">{actions}</div> : null}
       {children}
