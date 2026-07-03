@@ -168,8 +168,15 @@ export async function buildHealthReport(): Promise<HealthReport> {
 }
 
 export function healthHttpStatus(report: HealthReport): number {
-  if (report.status === 'degraded') {
+  // Railway deploy healthchecks require HTTP 2xx. Report schema/migration drift in the
+  // JSON body (report.status) but only fail the probe when the API cannot reach the DB.
+  if (report.database.configured && !report.database.connected) {
     return 503;
   }
+
+  if (report.environment === 'production' && !report.uploads.valid) {
+    return 503;
+  }
+
   return 200;
 }
