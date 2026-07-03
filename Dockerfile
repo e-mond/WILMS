@@ -16,6 +16,10 @@ RUN npm ci --include=dev
 COPY apps/backend apps/backend
 COPY packages packages
 
+ARG RAILWAY_GIT_COMMIT_SHA
+ARG GIT_COMMIT
+ENV WILMS_GIT_COMMIT=${RAILWAY_GIT_COMMIT_SHA:-${GIT_COMMIT}}
+
 ENV NODE_ENV=production
 
 CMD ["npm", "run", "start:prod", "-w", "@wilms/api"]

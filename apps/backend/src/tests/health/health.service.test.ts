@@ -33,4 +33,15 @@ describe('health.service', () => {
     expect(report).not.toHaveProperty('sessionSecret');
     expect(report.uploads).not.toHaveProperty('apiSecret');
   });
+
+  it('returns HTTP 200 when schema is degraded but database is connected', () => {
+    const report = {
+      status: 'degraded' as const,
+      database: { configured: true, connected: true, status: 'connected' as const },
+      uploads: { valid: true, requestedProvider: 'cloudinary', activeProvider: 'cloudinary', cloudinaryConfigured: true },
+      environment: 'production',
+      schema: { status: 'degraded' as const, missingTables: ['borrowers'] },
+    };
+    expect(healthHttpStatus(report as never)).toBe(200);
+  });
 });
