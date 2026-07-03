@@ -84,12 +84,16 @@ async function main(): Promise<void> {
   // API health
   const healthRes = await fetch(`${apiUrl}/health`);
   const healthEnvelope = (await healthRes.json()) as {
-    data?: { status?: string; database?: { connected?: boolean } };
+    data?: {
+      status?: string;
+      database?: { connected?: boolean };
+      schema?: { status?: string };
+    };
   };
   const healthJson = healthEnvelope.data ?? {};
   record(
     'api-health-status',
-    healthRes.status === 200 && healthJson.status === 'ok',
+    healthRes.status === 200 && (healthJson.status === 'ok' || healthJson.status === 'degraded'),
     `http=${healthRes.status} status=${healthJson.status ?? 'unknown'}`,
   );
   record(
@@ -103,9 +107,32 @@ async function main(): Promise<void> {
     gitCommit?: string | null;
     uptimeSeconds?: number;
     environment?: string;
+    status?: string;
     migrations?: { expected?: number; applied?: number | null; status?: string };
+    schema?: { status?: string; missingTables?: string[] };
     runtime?: { nodeVersion?: string; deployedAt?: string | null; buildId?: string | null };
   } | undefined;
+
+  record(
+    'api-health-gitCommit',
+    Boolean(healthData?.gitCommit?.trim()),
+    `gitCommit=${healthData?.gitCommit ?? 'null'}`,
+  );
+
+  const expectedGitCommit = process.env.WILMS_EXPECTED_GIT_COMMIT?.trim();
+  if (expectedGitCommit) {
+    const actual = healthData?.gitCommit?.trim().toLowerCase() ?? '';
+    const expected = expectedGitCommit.toLowerCase();
+    const matches =
+      actual === expected || actual.startsWith(expected) || expected.startsWith(actual);
+    record('api-health-gitCommit-expected', matches, `expected=${expectedGitCommit.slice(0, 12)}…`);
+  }
+
+  record(
+    'api-health-schema',
+    healthData?.schema?.status === 'ok',
+    `schema=${healthData?.schema?.status ?? 'missing'} missing=${healthData?.schema?.missingTables?.length ?? '?'}`,
+  );
 
   record(
     'api-health-version',

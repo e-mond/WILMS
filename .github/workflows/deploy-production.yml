@@ -96,6 +96,12 @@ jobs:
           WILMS_API_URL: ${{ secrets.WILMS_API_URL }}
           WILMS_APP_URL: ${{ secrets.WILMS_APP_URL }}
 
+      - name: Deploy sync (git commit)
+        run: node scripts/verify-deploy-sync.mjs
+        env:
+          WILMS_API_URL: ${{ secrets.WILMS_API_URL }}
+          EXPECTED_GIT_COMMIT: ${{ github.sha }}
+
       - name: Production smoke tests
         run: npm run smoke:production
         env:
@@ -103,6 +109,12 @@ jobs:
           WILMS_API_URL: ${{ secrets.WILMS_API_URL }}
           WILMS_SMOKE_EMAIL: ${{ secrets.WILMS_SMOKE_EMAIL }}
           WILMS_SMOKE_PASSWORD: ${{ secrets.WILMS_SMOKE_PASSWORD }}
+          WILMS_EXPECTED_GIT_COMMIT: ${{ github.sha }}
+
+      - name: RBAC smoke tests
+        run: npm run smoke:rbac
+        env:
+          WILMS_APP_URL: ${{ secrets.WILMS_APP_URL }}
 
       - name: Deployment complete
         run: echo "Production verification pipeline passed"
