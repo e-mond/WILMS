@@ -46,6 +46,10 @@ export function buildMissedPaymentSmsBody(input: MissedPaymentSmsInput): string 
   return `WILMS: Hi ${input.borrowerName}, you have ${input.weeksOverdue} missed payment(s). Outstanding: GHS ${amountGhs}. Please contact your collector.`;
 }
 
+export function buildBorrowerRegistrationApprovalSmsBody(input: { borrowerName: string }): string {
+  return `WILMS: Hi ${input.borrowerName}, your registration has been approved. Your collector will contact you about next steps.`;
+}
+
 export function buildPaymentConfirmationEmail(input: PaymentConfirmationEmailInput): {
   subject: string;
   text: string;

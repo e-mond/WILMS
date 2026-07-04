@@ -4,6 +4,7 @@ import type { SettingsUserRecord } from '@/types/settings';
 export const MOCK_SETTINGS_USERS: SettingsUserRecord[] = [
   {
     id: 'user-super-admin',
+    displayId: 'USR-000001',
     displayName: 'Ama Boateng',
     email: 'ama.boateng@wilms.demo',
     role: USER_ROLE.SUPER_ADMIN,
@@ -15,6 +16,7 @@ export const MOCK_SETTINGS_USERS: SettingsUserRecord[] = [
   },
   {
     id: 'user-admin',
+    displayId: 'USR-000002',
     displayName: 'Kweku Mensah',
     email: 'kweku.mensah@wilms.demo',
     role: USER_ROLE.SUPER_ADMIN,
@@ -25,6 +27,7 @@ export const MOCK_SETTINGS_USERS: SettingsUserRecord[] = [
   },
   {
     id: 'user-approver',
+    displayId: 'USR-000003',
     displayName: 'Akosua Darko',
     email: 'akosua.darko@wilms.demo',
     role: USER_ROLE.APPROVER,
@@ -35,6 +38,7 @@ export const MOCK_SETTINGS_USERS: SettingsUserRecord[] = [
   },
   {
     id: 'user-readonly',
+    displayId: 'USR-000004',
     displayName: 'Fiifi Boateng',
     email: 'fiifi.boateng@wilms.demo',
     role: USER_ROLE.REGISTRATION_OFFICER,
@@ -45,6 +49,7 @@ export const MOCK_SETTINGS_USERS: SettingsUserRecord[] = [
   },
   {
     id: 'user-auditor',
+    displayId: 'USR-000005',
     displayName: 'Yaa Owusu',
     email: 'auditor@wilms.demo',
     role: USER_ROLE.AUDITOR,

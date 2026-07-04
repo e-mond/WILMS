@@ -17,28 +17,28 @@ export const locationsRouter = Router();
 locationsRouter.get(
   '/locations/regions',
   asyncHandler(async (_req, res) => {
-    sendData(res, getGhanaRegions());
+    sendData(res, await getGhanaRegions());
   }),
 );
 
 locationsRouter.get(
   '/locations/regions/:id/districts',
   asyncHandler(async (req, res) => {
-    sendData(res, getGhanaDistricts(req.params.id!));
+    sendData(res, await getGhanaDistricts(req.params.id!));
   }),
 );
 
 locationsRouter.get(
   '/locations/districts/:id/cities',
   asyncHandler(async (req, res) => {
-    sendData(res, getGhanaCities(req.params.id!));
+    sendData(res, await getGhanaCities(req.params.id!));
   }),
 );
 
 locationsRouter.get(
   '/locations/search',
   asyncHandler(async (req, res) => {
-    sendData(res, searchGhanaLocations(String(req.query.q ?? '')));
+    sendData(res, await searchGhanaLocations(String(req.query.q ?? '')));
   }),
 );
 

@@ -110,6 +110,6 @@ describe('daily-collection-report.utils', () => {
 
     expect(report.summary.collectedPesewas).toBe(5000);
     expect(report.summary.borrowersDueCount).toBe(0);
-    expect(report.rows[0]?.collectorName).toBe('Collector user-col');
+    expect(report.rows[0]?.collectorName).toBe('COL-000');
   });
 });

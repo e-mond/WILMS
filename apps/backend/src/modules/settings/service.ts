@@ -1,5 +1,6 @@
 import { and, eq, isNull, sql } from 'drizzle-orm';
 import { PERMISSION, USER_ROLE, type UserRole } from '@wilms/shared-rbac';
+import { formatUserDisplayId } from '@wilms/shared-utils';
 import { uuidv7 } from 'uuidv7';
 import { isDatabaseEnabled, getDb } from '../../db/client.js';
 import { auditEntries } from '../../db/schema/audit.js';
@@ -22,6 +23,7 @@ export type SystemSettings = SystemSettingsDto;
 
 export interface SettingsUserRecord {
   id: string;
+  displayId: string;
   displayName: string;
   email: string;
   role: string;
@@ -257,10 +259,12 @@ function formatLastLoginLabel(lastLoginAt: Date | null | undefined): string {
 function mapUserRowToSettingsRecord(
   row: typeof users.$inferSelect,
   currentUserId?: string,
+  sequence?: number,
 ): SettingsUserRecord {
   const presentation = resolveRolePresentation(row.role);
   return {
     id: row.id,
+    displayId: formatUserDisplayId({ staffId: row.staffId ?? undefined, id: row.id, sequence }),
     displayName: row.displayName,
     email: row.email,
     role: row.role,
@@ -272,10 +276,14 @@ function mapUserRowToSettingsRecord(
   };
 }
 
-function mapDemoUserToSettingsRecord(user: (typeof DEMO_USERS)[number]): SettingsUserRecord {
+function mapDemoUserToSettingsRecord(
+  user: (typeof DEMO_USERS)[number],
+  sequence?: number,
+): SettingsUserRecord {
   const presentation = resolveRolePresentation(user.role);
   return {
     id: user.id,
+    displayId: formatUserDisplayId({ id: user.id, sequence }),
     displayName: user.displayName,
     email: user.email,
     role: user.role,
@@ -454,14 +462,17 @@ export async function getSmsBalance(): Promise<{ balance: string }> {
 
 export async function listUsers(currentUserId?: string): Promise<SettingsUserRecord[]> {
   if (!isDatabaseEnabled()) {
-    return DEMO_USERS.map((user) => ({
-      ...mapDemoUserToSettingsRecord(user),
+    return DEMO_USERS.map((user, index) => ({
+      ...mapDemoUserToSettingsRecord(user, index + 1),
       isCurrentUser: user.id === currentUserId,
     }));
   }
 
   const rows = await userRepo.listUsers();
-  return rows.map((row) => mapUserRowToSettingsRecord(row, currentUserId));
+  const sorted = [...rows].sort((left, right) => left.createdAt.getTime() - right.createdAt.getTime());
+  const sequenceById = new Map(sorted.map((row, index) => [row.id, index + 1]));
+
+  return rows.map((row) => mapUserRowToSettingsRecord(row, currentUserId, sequenceById.get(row.id)));
 }
 
 export async function getUserProfile(userId: string): Promise<SettingsUserProfile> {

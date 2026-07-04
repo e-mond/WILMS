@@ -1,4 +1,5 @@
 import {
+  formatBorrowerDisplayId,
   formatCollectorDisplayId,
   formatEntityDisplayId,
   formatGroupDisplayId,
@@ -10,6 +11,7 @@ import {
 } from '@wilms/shared-utils';
 
 export {
+  formatBorrowerDisplayId,
   formatCollectorDisplayId,
   formatEntityDisplayId,
   formatGroupDisplayId,
@@ -88,7 +90,24 @@ export function resolveGroupDisplayId(group: {
   return isReadableWilmsId(group.id) ? group.id : group.id;
 }
 
-export function resolveUserDisplayId(userId: string | null | undefined, sequence?: number): string {
+export function resolveUserDisplayId(
+  user:
+    | string
+    | null
+    | undefined
+    | { id: string; displayId?: string; staffId?: string | null },
+  sequence?: number,
+): string {
+  if (user && typeof user === 'object') {
+    if (user.displayId) {
+      return user.displayId;
+    }
+
+    return resolveUserDisplayId(user.id, sequence);
+  }
+
+  const userId = user;
+
   if (!userId?.trim()) {
     return formatUserDisplayId({ sequence });
   }
@@ -98,6 +117,24 @@ export function resolveUserDisplayId(userId: string | null | undefined, sequence
   }
 
   return formatUserDisplayId({ id: userId, sequence });
+}
+
+export function resolvePaymentDisplayId(
+  payment: { id: string; displayId?: string; recordedAt?: string },
+  sequence?: number,
+): string {
+  if (payment.displayId) {
+    return payment.displayId;
+  }
+
+  if (isReadableWilmsId(payment.id)) {
+    return payment.id.toUpperCase();
+  }
+
+  return formatPaymentDisplayId({
+    recordedAt: payment.recordedAt,
+    sequence,
+  });
 }
 
 export function resolveEntityDisplayId(flag: {

@@ -18,12 +18,23 @@ import { useAuditLogReport } from '@/features/reports/hooks/useAuditLogReport';
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { settingsService } from '@/services';
 import type { AuditEntry } from '@/types/services';
+import { resolveEntityDisplayId, resolveUserDisplayId } from '@/utils/entity-display-id';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
 
 const CSV_HEADERS = ['Timestamp', 'User', 'Action', 'Entity Type', 'Entity ID', 'Reason'];
 
 function resolveActorLabel(entry: AuditEntry): string {
-  return entry.actorDisplayName ?? entry.actorId;
+  return entry.actorDisplayName ?? entry.actorDisplayId ?? resolveUserDisplayId(entry.actorId);
+}
+
+function resolveTargetEntityLabel(entry: AuditEntry): string {
+  return (
+    entry.targetEntityDisplayId ??
+    resolveEntityDisplayId({
+      entityId: entry.targetEntityId,
+      entityType: entry.targetEntityType,
+    })
+  );
 }
 
 function formatAuditTimestamp(value: string): string {
@@ -72,7 +83,7 @@ export function AuditLogReportPanel() {
         resolveActorLabel(entry),
         AUDIT_ACTION_LABELS[entry.action],
         entry.targetEntityType,
-        entry.targetEntityId,
+        resolveTargetEntityLabel(entry),
         entry.reason ?? '—',
       ]),
     [data],
@@ -213,7 +224,7 @@ export function AuditLogReportPanel() {
             {
               id: 'targetEntityId',
               header: 'Entity ID',
-              cell: (entry) => entry.targetEntityId,
+              cell: (entry) => resolveTargetEntityLabel(entry),
             },
             {
               id: 'reason',

@@ -23,3 +23,4 @@ export * from './system-settings';
 export * from './messages';
 export * from './registration-drafts';
 export * from './photo-capture-sessions';
+export * from './ghana-locations';
