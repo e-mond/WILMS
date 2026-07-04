@@ -6,7 +6,7 @@ import { ShellNavLink } from '@/layouts/ShellNavLink';
 import { cn } from '@/utils/cn';
 
 export function filterOperationalBottomNavItems(navItems: ShellNavItem[]): ShellNavItem[] {
-  return navItems.filter((item) => !item.href.endsWith('/settings'));
+  return navItems;
 }
 
 export interface OperationalMobileHeaderProps {
@@ -30,7 +30,7 @@ export function OperationalBottomNavigation({ navItems, ariaLabel }: Operational
     <nav
       aria-label={ariaLabel}
       className={cn(
-        'fixed inset-x-0 bottom-0 z-50 md:hidden',
+        'fixed inset-x-0 bottom-0 z-[60] md:hidden',
         'pointer-events-none',
         'px-4 pb-[max(12px,env(safe-area-inset-bottom))]',
       )}

@@ -18,6 +18,11 @@ import { DashboardCollectorPerformance } from '@/features/super-admin-dashboard/
 import { DashboardCollectionSummary } from '@/features/super-admin-dashboard/components/DashboardCollectionSummary';
 import { DashboardCycleSnapshot } from '@/features/super-admin-dashboard/components/DashboardCycleSnapshot';
 import { DashboardExpenseSummary } from '@/features/super-admin-dashboard/components/DashboardExpenseSummary';
+import {
+  buildDashboardExportDocument,
+  useWilmsExportActor,
+  WilmsExportActions,
+} from '@/features/export';
 import { useDashboardSummary } from '@/features/super-admin-dashboard/hooks/useDashboardSummary';
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
@@ -86,8 +91,22 @@ function SuperAdminDashboardContent({
   data: NonNullable<ReturnType<typeof useDashboardSummary>['data']>;
   borrowerTotal: number;
 }) {
+  const generatedBy = useWilmsExportActor();
+  const exportDocument = useMemo(
+    () => buildDashboardExportDocument({ summary: data, generatedBy }),
+    [data, generatedBy],
+  );
+
   return (
     <div className="space-y-wilms-6">
+      <div className="flex flex-wrap items-center justify-end gap-wilms-2">
+        <WilmsExportActions
+          document={exportDocument}
+          filenameBase="executive-dashboard"
+          showIcons
+          permissions={[]}
+        />
+      </div>
       {/* Top Section: KPIs + Risk + Quick Actions */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         {/* KPIs */}

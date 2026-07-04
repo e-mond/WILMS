@@ -492,7 +492,8 @@ export function SmsSectionView({ settings }: { settings: SystemSettings }) {
   const { save, isPending } = useSettingsSave();
   const toast = useToast();
   const { data: me } = useSettingsMe();
-  const { data: integrationStatus } = useIntegrationStatus();
+  const { data: integrationStatusQuery } = useIntegrationStatus(settings.integrationStatus);
+  const integrationStatus = settings.integrationStatus ?? integrationStatusQuery;
   const smsRuntimeConfigured = integrationStatus?.sms.configured ?? false;
   const [smsProvider, setSmsProvider] = useState(settings.smsProvider);
   const [smsSenderId, setSmsSenderId] = useState(settings.smsSenderId);
@@ -739,7 +740,8 @@ export function IntegrationsSectionView({ settings }: { settings: SystemSettings
   const { save, isPending } = useSettingsSave();
   const toast = useToast();
   const { data: me } = useSettingsMe();
-  const { data: integrationStatus } = useIntegrationStatus();
+  const { data: integrationStatusQuery } = useIntegrationStatus(settings.integrationStatus);
+  const integrationStatus = settings.integrationStatus ?? integrationStatusQuery;
   const smsRuntimeConfigured = integrationStatus?.sms.configured ?? false;
   const mailRuntimeConfigured = integrationStatus?.mail.configured ?? false;
   const [gpsVerificationEnabled, setGpsVerificationEnabled] = useState(settings.gpsVerificationEnabled);
