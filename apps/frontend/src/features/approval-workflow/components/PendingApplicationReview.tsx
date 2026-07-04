@@ -85,11 +85,15 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
   const groupsQuery = useQuery({
     queryKey: ['groups', 'list', 'approver-review'],
     queryFn: () => groupService.listGroups(),
+    retry: 1,
+    throwOnError: false,
   });
 
   const collectorsQuery = useQuery({
     queryKey: ['collectors', 'list', 'approver-review'],
     queryFn: () => collectorManagementService.listCollectors(),
+    retry: 1,
+    throwOnError: false,
   });
 
   const guarantorEligibilityQuery = useQuery({
@@ -316,7 +320,15 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
 
       <BorrowerReviewProfile borrower={data} guarantorEligibility={guarantorEligibility} />
 
-
+      {groupsQuery.isError || collectorsQuery.isError ? (
+        <Alert title="Assignment lists unavailable" variant="warning">
+          {groupsQuery.isError && collectorsQuery.isError
+            ? 'Groups and collectors could not be loaded. You can still review this application.'
+            : groupsQuery.isError
+              ? 'Groups could not be loaded. Collector assignment remains available.'
+              : 'Collectors could not be loaded. Group assignment remains available.'}
+        </Alert>
+      ) : null}
 
       {isPending ? (
 

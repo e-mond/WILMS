@@ -60,7 +60,7 @@ export function ConnectionStatusChip({ compact = false }: ConnectionStatusChipPr
       aria-live="polite"
     >
       <StatusIcon className={cn('shrink-0', compact ? 'h-5 w-5' : 'h-4 w-4')} aria-hidden="true" />
-      {!compact ? <span className="whitespace-nowrap">{label}</span> : null}
+      {!compact ? <span className="hidden whitespace-nowrap sm:inline">{label}</span> : null}
     </span>
   );
 }

@@ -35,7 +35,12 @@ groupsRouter.use(requireAuth);
 
 groupsRouter.get(
   '/groups',
-  requirePermission(PERMISSION.MANAGE_GROUPS),
+  requirePermission(
+    PERMISSION.MANAGE_GROUPS,
+    PERMISSION.APPROVE_BORROWERS,
+    PERMISSION.REVIEW_APPLICATIONS,
+    PERMISSION.VIEW_REPORTS,
+  ),
   asyncHandler(async (_req, res) => {
     sendData(res, await groupService.listGroupsResponse());
   }),

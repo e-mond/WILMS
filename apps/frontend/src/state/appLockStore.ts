@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import {
   APP_LOCK_MAX_ATTEMPTS,
+  APP_LOCK_POST_LOGIN_GRACE_MS,
   APP_LOCK_STORAGE_KEY,
 } from '@/constants/app-lock';
 import { hashPinSync, verifyPinSync } from '@/lib/security/pin-hash';
@@ -14,6 +15,7 @@ interface AppLockState {
   isLocked: boolean;
   failedAttempts: number;
   lastActivityAt: number;
+  sessionStartedAt: number;
   setPin: (pin: string, userId: string) => void;
   clearPin: () => void;
   lock: () => void;
@@ -34,33 +36,42 @@ export const useAppLockStore = create<AppLockState>()(
       isLocked: false,
       failedAttempts: 0,
       lastActivityAt: Date.now(),
+      sessionStartedAt: Date.now(),
 
       setPin: (pin, userId) => {
+        const now = Date.now();
         set({
           isEnabled: true,
           pinHash: hashPinSync(pin, userId),
           pinUserId: userId,
           isLocked: false,
           failedAttempts: 0,
-          lastActivityAt: Date.now(),
+          lastActivityAt: now,
+          sessionStartedAt: now,
         });
       },
 
       clearPin: () => {
+        const now = Date.now();
         set({
           isEnabled: false,
           pinHash: null,
           pinUserId: null,
           isLocked: false,
           failedAttempts: 0,
-          lastActivityAt: Date.now(),
+          lastActivityAt: now,
+          sessionStartedAt: now,
         });
       },
 
       lock: () => {
-        const { isEnabled } = get();
+        const { isEnabled, sessionStartedAt } = get();
 
         if (!isEnabled) {
+          return;
+        }
+
+        if (Date.now() - sessionStartedAt < APP_LOCK_POST_LOGIN_GRACE_MS) {
           return;
         }
 
@@ -68,10 +79,12 @@ export const useAppLockStore = create<AppLockState>()(
       },
 
       unlock: () => {
+        const now = Date.now();
         set({
           isLocked: false,
           failedAttempts: 0,
-          lastActivityAt: Date.now(),
+          lastActivityAt: now,
+          sessionStartedAt: now,
         });
       },
 
@@ -125,7 +138,7 @@ export const useAppLockStore = create<AppLockState>()(
       onRehydrateStorage: () => (state) => {
         state?.markHydrated();
         if (state?.isEnabled) {
-          state.recordActivity();
+          state.unlock();
         }
       },
     },

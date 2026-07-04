@@ -31,3 +31,6 @@ export const APP_LOCK_ACTIVITY_EVENTS = [
   'touchstart',
   'scroll',
 ] as const;
+
+/** Grace period after sign-in or unlock before idle lock can trigger. */
+export const APP_LOCK_POST_LOGIN_GRACE_MS = 60_000;
