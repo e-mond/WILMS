@@ -70,6 +70,19 @@ export function SettingsAsidePanel({ updatedAt, activeSectionLabel }: SettingsAs
             </dd>
           </div>
           <div>
+            <dt className="text-text-muted">Documentation</dt>
+            <dd>
+              <a
+                href="https://github.com/e-mond/WILMS#readme"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-brand-primary hover:underline"
+              >
+                Project README →
+              </a>
+            </dd>
+          </div>
+          <div>
             <dt className="text-text-muted">Application version</dt>
             <dd className="font-semibold">{getAppVersionLabel() || '—'}</dd>
           </div>

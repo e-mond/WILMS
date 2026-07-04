@@ -28,7 +28,7 @@ WILMS supports registration officers, approvers, collectors, auditors, and super
 | Neon / Drizzle | **Operational** | Migrations `0000`–`0012` (Ghana locations); seed when `DATABASE_URL` set |
 | Notifications (SMS/email) | **Partial** | Payment, missed-payment, and approval SMS wired; test endpoints + smoke script |
 | Ghana locations | **RC1.4** | DB tables + bundled seeds (`npm run seed:ghana-locations`); JSON fallback offline |
-| **Current phase** | **RC1.4** | v1.0 certification on `release/rc1-4-v1-certification` — see `PROJECT_STATUS.md` |
+| **Current phase** | **RC1.4** | v1.0 certification merged to `main` — see `PROJECT_STATUS.md` and `docs/page-validation/RC1.4-v1-certification.md` |
 
 ---
 
@@ -143,8 +143,8 @@ SMS/email copy is centralized in `apps/backend/src/infrastructure/notifications/
 
 | Layer | Tool |
 |-------|------|
-| Unit | Vitest 2.1 — frontend **205** tests; backend **9** tests |
-| E2E | Playwright 1.48 — **61** tests across 14 spec files (Chromium) |
+| Unit | Vitest 2.1 — frontend unit tests; backend unit tests |
+| E2E | Playwright 1.48 — role journeys, accessibility, responsive shells, PWA |
 | Financial | Custom harness — `verify:financial` (backend) |
 
 ### Monorepo
@@ -187,8 +187,8 @@ npm workspaces + Turbo (`build`, `type-check`, `lint`, `test`)
 | Write-Offs | Partial via adjustment `WRITE_OFF` type; dedicated service deferred |
 | Financial Controls | Partial RBAC; admin fee not server-enforced on loan create/disburse |
 | Pool disburse/payment hooks | Schema ready; writers deferred |
+| SMS / email notification workflows | **Partial** — payment, missed-payment, and approval SMS wired; test endpoints + `smoke:notifications`; requires Railway env vars |
 | OTP / password reset | Not implemented — documented deferral (`docs/audit/P14.3B-security-audit.md`) |
-| SMS / email notification workflows | Infrastructure adapters only; Hubtel UI label, backend: Arkesel/Twilio |
 
 Detail: `docs/page-validation/P14.3B-remaining-work-roadmap.md` (current) · historical: `P14.3B-readiness-assessment.md`
 
@@ -308,26 +308,33 @@ See [docs/engineering/cloudinary-setup.md](docs/engineering/cloudinary-setup.md)
 npm run cert:upload:env -w @wilms/api   # Validate upload configuration (secrets masked)
 ```
 
-### Mail (infrastructure only)
+### Mail (Gmail SMTP or Resend)
 
 | Variable | Required | Default |
 |----------|----------|---------|
-| `MAIL_PROVIDER` | No | `none` |
-| `MAIL_FROM` | No | `noreply@wilms.local` |
-| `SMTP_HOST`, `SMTP_USER`, `SMTP_PASSWORD` | SMTP | — |
+| `MAIL_PROVIDER` | No | `none` — use `gmail`, `smtp`, or `resend` |
+| `MAIL_FROM` | Prod recommended | `noreply@wilms.local` |
+| `GMAIL_USER`, `GMAIL_APP_PASSWORD` | When `gmail` | — (maps to SMTP automatically) |
+| `SMTP_HOST`, `SMTP_USER`, `SMTP_PASSWORD` | When `smtp` | Gmail defaults when `GMAIL_*` set |
 | `SMTP_PORT` | No | `587` |
 | `SMTP_SECURE` | No | `false` |
-| `RESEND_API_KEY` | Resend | — |
+| `RESEND_API_KEY` | When `resend` | — |
 
-### SMS (infrastructure only)
+Settings → Integrations shows live provider status via `GET /settings/integrations/status`. Test email fails with **422** until credentials are set on Railway.
 
-**Product target:** Hubtel (shown in settings UI). **Runtime backend** supports `SMS_PROVIDER=none`, `arkesel`, or `twilio` only (`apps/backend/src/infrastructure/sms/config.ts`). Hubtel adapter not yet implemented.
+### SMS (SMSNotifyGH recommended for Ghana)
+
+**Product target:** SMSNotifyGH (settings UI label). **Runtime backend** supports `SMS_PROVIDER=none`, `smsnotifygh`, `arkesel`, or `twilio` (`apps/backend/src/infrastructure/sms/config.ts`).
 
 | Variable | Required | Default |
 |----------|----------|---------|
 | `SMS_PROVIDER` | No | `none` |
+| `SMSNOTIFYGH_API_KEY`, `SMSNOTIFYGH_SENDER_ID` | When `smsnotifygh` | — |
+| `SMSNOTIFYGH_API_URL` | No | `https://sms.smsnotifygh.com/smsapi` |
 | `ARKESEL_API_KEY`, `ARKESEL_SENDER_ID` | When `arkesel` | — |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER` | When `twilio` | — |
+
+Test SMS fails with **422** until `SMS_PROVIDER` and matching credentials are set on Railway (see `apps/backend/.env.production.example`).
 
 ### E2E / Playwright
 
@@ -348,9 +355,13 @@ Full inventory: `docs/page-validation/P14.3A.3-environment-discovery.md` · late
 npm run type-check          # TypeScript — frontend + backend
 npm run lint                # ESLint — frontend
 npm run build               # Next.js production build (42 routes)
-npm run test                # Vitest — frontend 205 tests (2 shards)
-npm run test -w @wilms/api  # Backend unit tests (9)
+npm run test                # Vitest — frontend unit tests
+npm run test -w @wilms/api  # Backend unit tests
 npm run test:e2e            # Playwright E2E (use CI=1 in CI)
+npm run verify:deploy-sync  # Compare local HEAD vs production /health
+npm run seed:ghana-locations # Ghana MMDA seed (after migration 0012)
+npm run smoke:notifications -w @wilms/api  # SMS/email smoke when credentials set
+npm run clean:local         # Remove local caches and build artifacts
 npm run verify:live -w @wilms/api        # Live integration (5B gate: 16/17)
 npm run verify:financial -w @wilms/api   # Financial harness
 npm run verify:pools -w @wilms/api       # Loan pool integrity (P14.3B Phase 1)
@@ -375,8 +386,12 @@ npm run cert:demo:stakeholder -w @wilms/api            # 4D.2 — end-to-end dem
 
 | Command | Validates |
 |---------|-----------|
-| `npm run test` | Frontend unit tests (205) |
-| `npm run test -w @wilms/api` | Backend unit tests (9) |
+| `npm run test` | Frontend unit tests |
+| `npm run test -w @wilms/api` | Backend unit tests |
+| `npm run verify:deploy-sync` | Local git SHA vs production `/health.gitCommit` |
+| `npm run smoke:notifications` | SMS/email provider smoke (requires credentials) |
+| `npm run seed:ghana-locations` | Import Ghana region/district/community data |
+| `npm run clean:local` | Clear `.next`, Turbo cache, Playwright artifacts |
 | `npm run verify:live` | Auth, RBAC, Neon persistence, loan workflows (requires API + seed) |
 | `npm run test:e2e` | Role journeys, accessibility, responsive shells, PWA |
 | `npm run verify:financial` | Unit calculations, RBAC HTTP checks, DB ledger/concurrency/idempotency (requires `DATABASE_URL` + seed) |
@@ -417,18 +432,18 @@ npm run verify:financial -w @wilms/api # Post-deploy verification
 
 ### Production environment
 
-Set secrets in the deployment platform — never commit `.env`. Required in production: `DATABASE_URL`, `WILMS_SESSION_SECRET` (≥32 chars), `WILMS_CORS_ORIGIN`, and Cloudinary credentials when using `UPLOAD_PROVIDER=cloudinary`. See `apps/backend/.env.production.example` and `apps/frontend/.env.production.example`.
+Set secrets in the deployment platform — never commit `.env`. Required in production: `DATABASE_URL`, `WILMS_SESSION_SECRET` (≥32 chars), `WILMS_CORS_ORIGIN`, Cloudinary when `UPLOAD_PROVIDER=cloudinary`, and **SMS/mail credentials** for notification test buttons and automated SMS. See `apps/backend/.env.production.example`.
 
 Detail: `docs/deployment-guide.md` · `docs/security-guide.md` · `docs/production-guide.md` · `docs/page-validation/P14.6-environment-and-credentials.md`
 
 ### Live production (current — v0.2.2)
 
-| Service | URL | Version (health/HTML) |
-|---------|-----|------------------------|
-| Frontend | https://wilms.vercel.app | **0.2.2** |
-| API | https://wilms-production.up.railway.app | **0.2.2** — migrations through **0012** after deploy |
+| Service | URL | Notes |
+|---------|-----|-------|
+| Frontend | https://wilms.vercel.app | Vercel — redeploy after `main` merge |
+| API | https://wilms-production.up.railway.app | Railway — migrations **13/13**, Ghana seeded |
 
-Set `WILMS_GIT_COMMIT` on Railway so `/health` reports the deployed SHA. Engineering docs: `docs/engineering/ghana-locations.md`, `docs/engineering/app-lock.md`.
+Set `WILMS_GIT_COMMIT` on Railway so `/health` reports the deployed SHA. Set `SMS_PROVIDER` + `MAIL_PROVIDER` on Railway for test SMS/email in Settings. Engineering docs: `docs/engineering/ghana-locations.md`, `docs/engineering/app-lock.md`. In-app link: Settings sidebar → **Project README**.
 
 ### P14.6.1 (superseded)
 
@@ -439,68 +454,57 @@ Historical investigation artifacts — see `docs/page-validation/P14.6.3-product
 
 ## Current Production Readiness
 
-**Authority:** P14.5A.3 Release Candidate Zero (`docs/page-validation/P14.5A.3-release-candidate.md`).  
-**Verdict:** **CONDITIONAL** — financial core is certified; full-portal production requires scope acceptance and DevOps sign-off.
+**Authority:** RC1.4 v1.0 certification (`docs/page-validation/RC1.4-v1-certification.md`).  
+**Verdict:** **CONDITIONAL** — financial core certified; notification providers require Railway env setup; full-portal scope boundaries unchanged from RC0.
 
 | Area | Rating | Evidence |
 |------|--------|----------|
-| Application (frontend + backend) | **Certified** | type-check, lint, build PASS; backend **11/11** (`phase-5a.3-evidence/`) |
+| Application (frontend + backend) | **Certified** | type-check, lint, build PASS |
 | Financial domains (reversal, reconciliation) | **Certified** | functional, RBAC, concurrency PASS |
-| Financial harness (`verify:financial`) | **Certified** | **64/64** ×2 |
-| Live integration (`verify:live`) | **Certified** | **23/23** ×2 |
-| Security controls | **Certified** | **11/11** harness (`P14.3B-phase-5b-security-certification.md`) |
-| Uploads (Cloudinary) | **Certified** | `cert:upload:env` + `cert:upload:smoke` PASS |
-| Performance certs (100-batch) | **Conditional** | Reversal measured (Neon ETIMEDOUT); reconciliation perf failed DNS during RC0 |
-| V1 scope (mock-only pages) | **Open** | 16+ admin/collector routes 404 in live API mode — P14.4A V2 deferral |
-| Staging / HTTPS / CORS | **Blocked** | RC-054/055 — not validated in staging |
-| Human release sign-off | **Blocked** | RC-058 — Product/Ops approval pending |
-| Production deployment | **Conditional** | Financial-core-only deploy viable with documented scope boundaries |
+| Ghana locations + readable IDs | **Implemented** | Migration 0012, export modal, display ID formatters |
+| Notifications (SMS workflows) | **Partial** | Payment/missed/approval SMS wired; **422 until Railway env set** |
+| Deploy sync | **Implemented** | `npm run verify:deploy-sync` |
+| V1 scope (mock-only pages) | **Open** | Some admin/collector routes 404 in live API mode |
+| Human release sign-off | **Blocked** | Product/Ops approval pending |
 
-Full blocker matrix: `docs/page-validation/P14.5A.3-release-candidate.md`
-
-**Historical:** Phase 5B scores (`50/63`, `16/17`) superseded by P14.5A.1/P14.5A.3 evidence.
+Historical RC0 matrix: `docs/page-validation/P14.5A.3-release-candidate.md`
 
 ---
 
 ## Known Limitations
 
-- **Mock-backed domains** — Dashboard, collectors, settings, notifications, search, and risk flags use mock services in development. Loans, payments, adjustments, loan pools, reversals, and reconciliation use live API when `NEXT_PUBLIC_USE_MOCK=false` (or production build) with backend running.
-- **V1 live scope** — 16+ UI routes call backend paths with no implementation (404 in live mode). Deploy financial-core routes only, or defer full-portal live deploy to V2 (`P14.4A-version1-scope.md`).
+- **Mock-backed domains** — Dashboard, collectors list, search, and risk flags may use mock services in development. Loans, payments, adjustments, loan pools, reversals, reconciliation, and settings use live API when `NEXT_PUBLIC_USE_MOCK=false` (or production build) with backend running.
+- **V1 live scope** — Some UI routes call backend paths with no implementation (404 in live mode). Deploy financial-core routes only, or defer full-portal live deploy to V2 (`P14.4A-version1-scope.md`).
 - **Report stubs** — Five report types return empty rows from backend stubs (loan portfolio, defaulters, ledger, collector performance, group risk).
-- **Loan pools** — Backend read API available in API mode; disburse/payment pool attribution not wired yet.
+- **Loan pools** — Backend read API available; disburse/payment pool attribution not wired yet.
 - **Dev default** — `npm run dev` uses mocks unless `NEXT_PUBLIC_USE_MOCK=false` and `NEXT_PUBLIC_API_BASE_URL` are set (see `.env.local.example`).
-- **Health endpoint** — Production `/health` includes DB, migrations, uploads, version, and uptime probes (P14.5A).
-- **Shared Neon certification** — Remote latency and connection timeouts affect perf batches; run `cert:reversal:seed-reset` or `cert:reconciliation:seed-reset` before repeated cert runs.
+- **SMS / email test (422)** — Settings test buttons require Railway env: `SMS_PROVIDER=smsnotifygh` + credentials, or `MAIL_PROVIDER=gmail` + `GMAIL_*`. UI shows provider status and setup hints; not a frontend bug.
+- **Notification sounds** — Hook added; login/logout sound toggle pending in settings UI.
+- **Shared Neon certification** — Remote latency affects perf batches; run seed-reset scripts before repeated cert runs.
 - **Audit writes** — Best-effort async; not transactional with business operations.
 - **Admin fee gate** — Enforced in mock UI only; not server-validated on loan create/disburse.
-- **HTTPS / CORS / trust proxy** — Require staging validation and deploy-time config (`WILMS_CORS_ORIGIN`, `WILMS_TRUST_PROXY`).
-- **Ghana location coverage** — Seed bundles 16 regions and a representative MMDA subset (not all ~261 districts); OSM-flagged communities where official data is missing.
-- **Export modal** — Single Export button on report pages; borrower profile print flow unchanged; PDF photo thumbnails not yet implemented.
-- **Deferred domains** — Approval email notifications, OTP, password reset — see `P14.3B-remaining-work-roadmap.md`.
+- **Ghana location coverage** — Seed bundles 16 regions and representative MMDA subset (not all ~261 districts).
+- **Export modal** — Unified Export on report pages; borrower profile print unchanged; PDF photo thumbnails not yet implemented.
+- **Operational mobile nav** — Collector, approver, auditor, and registration officer use floating pill nav on mobile; super-admin retains sidebar/drawer pattern.
+- **Deferred domains** — OTP, password reset, approval email (SMS approval wired) — see `P14.3B-remaining-work-roadmap.md`.
 
 ---
 
 ## Documentation Index
 
+Paths under `docs/page-validation/` unless noted.
+
 | Phase | Key documents |
 |-------|---------------|
-| **P14.1** Discovery | `P14.1A-domain-inventory.md`, `P14.1B-database-blueprint.md`, `P14.1C-domain-model.md`, `P14.1D-workspace-decision.md` |
-| **P14.2** Database | `P14.2-frontend-contract-verification.md` |
-| **P14.3A** Financial core | `P14.3A-loan-lifecycle-report.md`, `P14.3A-repayment-engine-report.md`, `P14.3A-financial-safety-audit.md` |
-| **P14.3A.1** Verification | `P14.3A.1-financial-verification.md`, `P14.3A.1-security-review.md` |
-| **P14.3A.2–4** Certification | `P14.3A.4-production-certification.md` (historical) |
-| **P14.3B** Features | Reversal, reconciliation, Cloudinary — see `P14.3B-reconciliation-architecture.md` |
-| **P14.3B Phase 5A** | `P14.3B-phase-5a-deployment-guide.md`, `P14.3B-phase-5a-release-validation.md` |
-| **P14.3B Phase 5B** | `P14.3B-phase-5b-production-certification.md`, `P14.3B-phase-5b-release-approval.md` |
-| **Pre-5B audit** | `docs/audit/P14.3B-final-readiness.md`, `P14.3B-security-audit.md`, `P14.3B-feature-completion-matrix.md` |
-| **Doc alignment (current)** | `P14.3B-readme-audit.md`, `P14.3B-production-readiness-review.md`, `P14.3B-remaining-work-roadmap.md` |
-| **P14.3C Release readiness** | `P14.3C-release-dashboard.md`, `P14.3C-executive-summary.md` — page/API/RBAC coverage (46 pages; 41% live-API-safe) |
-| **P14.4 Release candidate** | `P14.4I-release-decision.md`, `P14.4-executive-summary.md` — V1 scope freeze; **NOT READY** for production |
-| **P14.5A Production hardening** | `P14.5A-release-readiness.md`, `P14.5A-validation-report.md` |
-| **P14.5A.1 Financial closure** | `P14.5A.1-financial-certification-closure.md`, `P14.5A.1-release-readiness.md` |
-| **P14.5A.2 Release freeze audit** | `P14.5A.2-executive-summary.md`, `P14.5A.2-risk-register.md` |
-| **P14.5A.3 Release Candidate Zero** | **`P14.5A.3-release-candidate.md`** — **CONDITIONAL** (canonical RC0) |
-| **Releases** | `docs/releases/P14.3B-Phase-5A.md`, `P14.3B-Phase-5B.md` |
+| **P14.1** Discovery | `P14.1A-domain-inventory.md`, `P14.1B-database-blueprint.md`, `P14.1C-domain-model.md` |
+| **P14.3A** Financial core | `P14.3A-loan-lifecycle-report.md`, `P14.3A-repayment-engine-report.md` |
+| **P14.3B** Features | Reversal, reconciliation, Cloudinary — `P14.3B-reconciliation-architecture.md`, `P14.3B-remaining-work-roadmap.md` |
+| **P14.5A** RC0 | **`P14.5A.3-release-candidate.md`** — historical CONDITIONAL RC0 |
+| **RC1** Release hardening | `RC1-production-verification.md`, `RC1.3-final-certification.md` |
+| **RC1.4** v1.0 certification | **`RC1.4-v1-certification.md`**, `RC1.4-production-verification.md`, `RC1.4-settings.md`, `RC1.4-navigation.md` |
+| **Engineering** | `docs/engineering/ghana-locations.md`, `docs/engineering/app-lock.md`, `docs/engineering/cloudinary-setup.md` |
+| **Deployment** | `docs/deployment-guide.md`, `docs/production-guide.md`, `docs/security-guide.md` |
+| **Status** | `PROJECT_STATUS.md` (repo root) |
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/engineering/branching-strategy.md](docs/engineering/branching-strategy.md) for phase workflow standards.
 
@@ -517,9 +521,13 @@ npm run test             # Unit tests
 npm run test:e2e         # Playwright E2E
 npm run db:migrate -w @wilms/api
 npm run db:seed -w @wilms/api
+npm run seed:ghana-locations
+npm run verify:deploy-sync
 npm run verify:financial -w @wilms/api
 npm run verify:pools -w @wilms/api
 npm run verify:live -w @wilms/api
+npm run smoke:notifications -w @wilms/api
+npm run clean:local
 npm run perf:baseline -w @wilms/api
 ```
 
