@@ -10,7 +10,9 @@ import { hashPassword } from '../../lib/password.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
 import * as userRepo from '../../repositories/user.repository.js';
 import * as systemSettingsRepo from '../../repositories/system-settings.repository.js';
+import { getIntegrationStatus } from '../../infrastructure/integrations/status.js';
 import { getSmsProvider } from '../../infrastructure/sms/index.js';
+import { getSmsConfig } from '../../infrastructure/sms/config.js';
 import { fetchSmsNotifyGhBalance } from '../../infrastructure/sms/smsnotifygh-adapter.js';
 import { getMailProvider } from '../../infrastructure/mail/index.js';
 import {
@@ -408,23 +410,29 @@ export async function updateSettingsMe(
   return getSettingsMe(userId);
 }
 
+export function getIntegrationsStatus() {
+  return getIntegrationStatus();
+}
+
 export async function sendTestSms(userId: string, phone: string): Promise<{ ok: true }> {
   const normalizedPhone = phone.trim();
   if (!normalizedPhone) {
     throw new Error('VALIDATION:Phone number is required for test SMS.');
   }
 
+  const integration = getIntegrationStatus();
   const provider = getSmsProvider();
   if (!provider.isConfigured()) {
-    throw new Error('VALIDATION:SMS provider is not configured. Set SMS_PROVIDER and credentials.');
+    throw new Error(`VALIDATION:SMS provider is not configured. ${integration.sms.setupHint}`);
   }
 
   const settings = await getSettings();
   const profile = await getSettingsMe(userId);
+  const smsConfig = getSmsConfig();
 
   await provider.send({
     to: normalizedPhone,
-    body: `WILMS test SMS for ${profile.displayName}. Sender: ${settings.smsSenderId}. SMSNotifyGH is configured.`,
+    body: `WILMS test SMS for ${profile.displayName}. Sender: ${settings.smsSenderId}. Provider: ${smsConfig.provider}.`,
   });
 
   return { ok: true };
@@ -436,26 +444,31 @@ export async function sendTestEmail(userId: string, email: string): Promise<{ ok
     throw new Error('VALIDATION:Email address is required for test email.');
   }
 
+  const integration = getIntegrationStatus();
   const mail = getMailProvider();
   if (!mail.isConfigured()) {
-    throw new Error(
-      'VALIDATION:Mail provider is not configured. Set MAIL_PROVIDER=gmail and GMAIL_* credentials.',
-    );
+    throw new Error(`VALIDATION:Mail provider is not configured. ${integration.mail.setupHint}`);
   }
 
   const profile = await getSettingsMe(userId);
+  const providerLabel = integration.mail.provider;
 
   await mail.send({
     to: normalizedEmail,
     subject: 'WILMS test email',
-    text: `Hello ${profile.displayName}, this is a test email from WILMS via Gmail SMTP.`,
-    html: `<p>Hello <strong>${profile.displayName}</strong>,</p><p>This is a test email from WILMS via Gmail SMTP.</p>`,
+    text: `Hello ${profile.displayName}, this is a test email from WILMS (${providerLabel}).`,
+    html: `<p>Hello <strong>${profile.displayName}</strong>,</p><p>This is a test email from WILMS (${providerLabel}).</p>`,
   });
 
   return { ok: true };
 }
 
 export async function getSmsBalance(): Promise<{ balance: string }> {
+  const integration = getIntegrationStatus();
+  if (!integration.sms.configured) {
+    throw new Error(`VALIDATION:SMS provider is not configured. ${integration.sms.setupHint}`);
+  }
+
   const result = await fetchSmsNotifyGhBalance();
   return { balance: result.balance };
 }

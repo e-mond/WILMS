@@ -79,6 +79,14 @@ settingsRouter.post(
 );
 
 settingsRouter.get(
+  '/settings/integrations/status',
+  requirePermission(PERMISSION.MANAGE_SYSTEM_SETTINGS),
+  asyncHandler(async (_req, res) => {
+    sendData(res, settingsService.getIntegrationsStatus());
+  }),
+);
+
+settingsRouter.get(
   '/settings/sms/balance',
   requirePermission(PERMISSION.MANAGE_SYSTEM_SETTINGS),
   asyncHandler(async (_req, res) => {

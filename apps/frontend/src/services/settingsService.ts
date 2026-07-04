@@ -39,6 +39,10 @@ const settingsService: ISettingsService = {
     return apiClient.post('/settings/email/test', { email });
   },
 
+  getIntegrationsStatus() {
+    return apiClient.get('/settings/integrations/status');
+  },
+
   listUsers() {
     return apiClient.get('/settings/users');
   },
