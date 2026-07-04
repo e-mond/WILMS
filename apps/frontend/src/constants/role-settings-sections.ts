@@ -36,9 +36,7 @@ export const ROLE_SETTINGS_SECTIONS: Record<UserRole, RoleSettingsSectionDefinit
     { id: ROLE_SETTINGS_SECTION.PROFILE, label: 'Profile' },
     { id: ROLE_SETTINGS_SECTION.PIN, label: 'PIN' },
     { id: ROLE_SETTINGS_SECTION.APP_LOCK, label: 'App Lock' },
-    { id: ROLE_SETTINGS_SECTION.NOTIFICATIONS, label: 'Notifications' },
     { id: ROLE_SETTINGS_SECTION.DEVICE, label: 'Device Settings' },
-    { id: ROLE_SETTINGS_SECTION.SYNC, label: 'Sync' },
   ],
   [USER_ROLE.REGISTRATION_OFFICER]: [
     { id: ROLE_SETTINGS_SECTION.PROFILE, label: 'Profile' },

@@ -28,16 +28,25 @@ export {
   formatPesewasForCsv,
   formatPesewasForExport,
   formatPercentForExport,
+  buildExportFilename,
 } from '@/features/export/utils/formatters';
 export { generateReportId, resetReportIdSequence } from '@/features/export/utils/report-id';
 export { getWilmsEnvironment } from '@/features/export/utils/environment';
 export { useWilmsExportActor } from '@/features/export/hooks/useWilmsExportActor';
+export { useWilmsExport, type WilmsExportFormat } from '@/features/export/hooks/useWilmsExport';
 export { ExportCsvButton, type ExportCsvButtonProps } from '@/features/export/components/ExportCsvButton';
 export { WilmsExportActions, type WilmsExportActionsProps } from '@/features/export/components/WilmsExportActions';
+export {
+  WilmsExportModal,
+  WilmsExportTrigger,
+  type WilmsExportModalProps,
+  type WilmsExportTriggerProps,
+} from '@/features/export/components/WilmsExportModal';
+export { downloadWilmsDocx } from '@/features/export/engines/docx-engine';
 
 export async function exportWilmsDocument(
   document: WilmsExportDocument,
-  format: 'csv' | 'excel' | 'pdf' | 'print' | 'print-preview',
+  format: 'csv' | 'excel' | 'pdf' | 'word' | 'print' | 'print-preview',
   filename: string,
 ): Promise<void> {
   switch (format) {
@@ -50,6 +59,11 @@ export async function exportWilmsDocument(
     case 'pdf':
       downloadWilmsPdf(document, filename);
       return;
+    case 'word': {
+      const { downloadWilmsDocx } = await import('@/features/export/engines/docx-engine');
+      await downloadWilmsDocx(document, filename);
+      return;
+    }
     case 'print':
       await printWilmsDocument(document);
       return;

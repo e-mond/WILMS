@@ -101,17 +101,17 @@ export function AppLockHandler() {
     }
 
     const handleVisibility = () => {
-      if (document.visibilityState !== 'visible') {
-        return;
-      }
-
       const state = useAppLockStore.getState();
       if (Date.now() - state.sessionStartedAt < APP_LOCK_POST_LOGIN_GRACE_MS) {
         return;
       }
 
       const elapsed = Date.now() - state.lastActivityAt;
-      if (elapsed >= APP_LOCK_IDLE_MS) {
+      if (elapsed < APP_LOCK_IDLE_MS) {
+        return;
+      }
+
+      if (document.visibilityState === 'hidden' || document.visibilityState === 'visible') {
         lock();
       }
     };

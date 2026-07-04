@@ -13,6 +13,7 @@ import {
 } from '../../db/persistence.js';
 import * as userRepo from '../../repositories/user.repository.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
+import { maybeSendBorrowerApprovalSms } from '../../infrastructure/sms/notifications.js';
 import { processApprovedBorrower } from '../group-formation/service.js';
 import * as loanService from '../loans/service.js';
 import { buildBorrowerRiskSummary } from './borrower-risk.js';
@@ -54,6 +55,14 @@ function assertValidBorrowerId(idType: string, idNumber: string): string {
   }
 
   return normalized;
+}
+
+async function buildBorrowerSequenceMap(): Promise<Map<string, number>> {
+  const sorted = [...(await listBorrowers())].sort((left, right) =>
+    left.registeredAt.localeCompare(right.registeredAt),
+  );
+
+  return new Map(sorted.map((record, index) => [record.id, index + 1]));
 }
 
 function toSummary(record: BorrowerRecord, sequence?: number) {
@@ -108,9 +117,9 @@ function toRegistration(record: BorrowerRecord, sequence?: number) {
   };
 }
 
-function toDetail(record: BorrowerRecord) {
+function toDetail(record: BorrowerRecord, sequence?: number) {
   return {
-    ...toSummary(record),
+    ...toSummary(record, sequence),
     community: record.community,
     registeredAt: record.registeredAt,
     idType: record.idType,
@@ -134,7 +143,7 @@ function toDetail(record: BorrowerRecord) {
 }
 
 function toReview(record: BorrowerRecord, officerDisplayName: string, sequence?: number) {
-  const detail = toDetail(record);
+  const detail = toDetail(record, sequence);
 
   return {
     ...detail,
@@ -266,7 +275,8 @@ export async function getBorrowerDetail(id: string) {
     throw new Error('NOT_FOUND');
   }
 
-  return toDetail(record);
+  const sequenceById = await buildBorrowerSequenceMap();
+  return toDetail(record, sequenceById.get(record.id));
 }
 
 export async function getBorrowerFullProfile(id: string) {
@@ -397,6 +407,13 @@ export async function approveBorrower(id: string, actorId: string, actorDisplayN
     community: record.community,
     approvedAt: new Date().toISOString(),
   });
+
+  if (record.phone?.trim()) {
+    void maybeSendBorrowerApprovalSms({
+      borrowerPhone: record.phone,
+      borrowerName: record.fullName,
+    });
+  }
 
   return toSummary(record);
 }

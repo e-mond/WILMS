@@ -1,13 +1,28 @@
 import { describe, expect, it } from 'vitest';
 import {
+  formatBorrowerDisplayId,
   formatCollectorDisplayId,
   formatEntityDisplayId,
   formatLoanDisplayId,
+  formatPaymentDisplayId,
   formatPoolDisplayId,
   isReadableWilmsId,
 } from '@wilms/shared-utils';
 
 describe('display id formatters', () => {
+  it('formats borrower ids from community and registration month', () => {
+    expect(
+      formatBorrowerDisplayId(
+        { community: 'Madina', registeredAt: '2026-05-15T10:00:00.000Z' },
+        3,
+      ),
+    ).toBe('BWR-MADI-202605-0003');
+  });
+
+  it('formats payment ids from recorded date and sequence', () => {
+    expect(formatPaymentDisplayId({ recordedAt: '2026-07-04', sequence: 2 })).toBe('TXN-20260704-002');
+  });
+
   it('formats collector codes from collectorCode or staffId', () => {
     expect(formatCollectorDisplayId({ collectorCode: 'col-011' })).toBe('COL-011');
     expect(formatCollectorDisplayId({ staffId: 'STF-204' })).toBe('STF-204');

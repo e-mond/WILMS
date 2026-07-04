@@ -1,0 +1,66 @@
+[
+  {
+    "code": "GAR",
+    "name": "Greater Accra"
+  },
+  {
+    "code": "ASH",
+    "name": "Ashanti"
+  },
+  {
+    "code": "WES",
+    "name": "Western"
+  },
+  {
+    "code": "CEN",
+    "name": "Central"
+  },
+  {
+    "code": "EAS",
+    "name": "Eastern"
+  },
+  {
+    "code": "NOR",
+    "name": "Northern"
+  },
+  {
+    "code": "VOL",
+    "name": "Volta"
+  },
+  {
+    "code": "UPE",
+    "name": "Upper East"
+  },
+  {
+    "code": "UPW",
+    "name": "Upper West"
+  },
+  {
+    "code": "BON",
+    "name": "Bono"
+  },
+  {
+    "code": "BEA",
+    "name": "Bono East"
+  },
+  {
+    "code": "AHA",
+    "name": "Ahafo"
+  },
+  {
+    "code": "WNO",
+    "name": "Western North"
+  },
+  {
+    "code": "OTI",
+    "name": "Oti"
+  },
+  {
+    "code": "NEE",
+    "name": "North East"
+  },
+  {
+    "code": "SAV",
+    "name": "Savannah"
+  }
+]

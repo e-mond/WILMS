@@ -120,8 +120,9 @@ export async function applyMissedWeekMarking(
   loanId: string,
   referenceDate: string,
   tx: WilmsDb = getDb(),
-) {
+): Promise<number[]> {
   const weeks = await listScheduleWeeks(loanId, tx);
+  const newlyMissed: number[] = [];
 
   for (const week of weeks) {
     if (week.status === 'PENDING' && week.dueDate < referenceDate) {
@@ -135,6 +136,9 @@ export async function applyMissedWeekMarking(
             eq(loanSchedules.version, week.version),
           ),
         );
+      newlyMissed.push(week.weekNumber);
     }
   }
+
+  return newlyMissed;
 }

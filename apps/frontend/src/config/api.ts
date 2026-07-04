@@ -19,7 +19,7 @@ function normalizeApiBaseUrl(raw: string | undefined): string {
 
 export const API_BASE_URL = normalizeApiBaseUrl(process.env.NEXT_PUBLIC_API_BASE_URL);
 
-export const API_TIMEOUT_MS = 10_000;
+export const API_TIMEOUT_MS = 20_000;
 
 /** True when mock data providers are active (dev, staging without API, or forced demo). */
 export const USE_MOCK_SERVICES = isDemoMode();

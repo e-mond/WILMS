@@ -1,21 +1,8 @@
-export const GHANA_REGIONS = [
-  'Greater Accra',
-  'Ashanti',
-  'Western',
-  'Central',
-  'Eastern',
-  'Northern',
-  'Volta',
-  'Upper East',
-  'Upper West',
-  'Bono',
-  'Bono East',
-  'Ahafo',
-  'Western North',
-  'Oti',
-  'North East',
-  'Savannah',
-] as const;
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { isDatabaseEnabled } from '../db/client.js';
+import * as ghanaLocationsRepo from '../repositories/ghana-locations.repository.js';
 
 export interface LocationRegion {
   id: string;
@@ -26,82 +13,191 @@ export interface LocationDistrict {
   id: string;
   regionId: string;
   name: string;
+  type?: string;
 }
 
 export interface LocationCity {
   id: string;
   districtId: string;
   name: string;
+  source?: string;
 }
 
-const DISTRICT_SUFFIXES = ['Municipal', 'District', 'Metropolitan'] as const;
-const CITY_NAMES = ['Central', 'North', 'South', 'East', 'West', 'Market', 'Station'] as const;
+interface SeedRegion {
+  code: string;
+  name: string;
+}
+
+interface SeedDistrict {
+  region_code: string;
+  name: string;
+  type: 'District' | 'Municipal' | 'Metropolitan';
+  code: string;
+}
+
+interface SeedCity {
+  district_code: string;
+  name: string;
+  source?: string;
+}
+
+const DATA_DIR = join(dirname(fileURLToPath(import.meta.url)), '../../../../data/ghana-locations');
 
 function slugify(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
-function buildDistrictsForRegion(region: LocationRegion): LocationDistrict[] {
-  return DISTRICT_SUFFIXES.slice(0, 2).map((suffix, index) => ({
-    id: `${region.id}-district-${index + 1}`,
-    regionId: region.id,
-    name: `${region.name} ${suffix}`,
-  }));
+function readSeedJson<T>(filename: string): T {
+  return JSON.parse(readFileSync(join(DATA_DIR, filename), 'utf8')) as T;
 }
 
-function buildCitiesForDistrict(district: LocationDistrict): LocationCity[] {
-  return CITY_NAMES.slice(0, 3).map((cityName, index) => ({
-    id: `${district.id}-city-${index + 1}`,
-    districtId: district.id,
-    name: `${district.name.replace(/ (Municipal|District|Metropolitan)$/, '')} ${cityName}`,
-  }));
-}
+let bundledCache:
+  | {
+      regions: LocationRegion[];
+      districts: LocationDistrict[];
+      cities: LocationCity[];
+    }
+  | null = null;
 
-let cachedRegions: LocationRegion[] | null = null;
-let cachedDistricts: LocationDistrict[] | null = null;
-let cachedCities: LocationCity[] | null = null;
-
-function ensureCache(): void {
-  if (cachedRegions && cachedDistricts && cachedCities) {
-    return;
+function loadBundledLocations(): {
+  regions: LocationRegion[];
+  districts: LocationDistrict[];
+  cities: LocationCity[];
+} {
+  if (bundledCache) {
+    return bundledCache;
   }
 
-  cachedRegions = GHANA_REGIONS.map((name) => ({
-    id: slugify(name),
-    name,
+  const seedRegions = readSeedJson<SeedRegion[]>('regions.json');
+  const seedDistricts = readSeedJson<SeedDistrict[]>('districts.json');
+  const seedCities = readSeedJson<SeedCity[]>('cities.json');
+
+  const regionIdByCode = new Map<string, string>();
+  const regions: LocationRegion[] = seedRegions.map((region) => {
+    const id = slugify(region.name);
+    regionIdByCode.set(region.code, id);
+    return { id, name: region.name };
+  });
+
+  const districtIdByCode = new Map<string, string>();
+  const districts: LocationDistrict[] = seedDistricts.map((district) => {
+    const id = slugify(`${district.region_code}-${district.code}`);
+    districtIdByCode.set(district.code, id);
+    return {
+      id,
+      regionId: regionIdByCode.get(district.region_code) ?? slugify(district.region_code),
+      name: district.name,
+      type: district.type,
+    };
+  });
+
+  const cities: LocationCity[] = seedCities.map((city) => ({
+    id: slugify(`${city.district_code}-${city.name}`),
+    districtId: districtIdByCode.get(city.district_code) ?? slugify(city.district_code),
+    name: city.name,
+    source: city.source ?? 'official',
   }));
 
-  cachedDistricts = cachedRegions.flatMap((region) => buildDistrictsForRegion(region));
-  cachedCities = cachedDistricts.flatMap((district) => buildCitiesForDistrict(district));
+  bundledCache = { regions, districts, cities };
+  return bundledCache;
 }
 
-export function getGhanaRegions(): LocationRegion[] {
-  ensureCache();
-  return cachedRegions!.map((entry) => ({ ...entry }));
+async function loadDbRegions(): Promise<LocationRegion[] | null> {
+  if (!isDatabaseEnabled()) {
+    return null;
+  }
+
+  try {
+    const count = await ghanaLocationsRepo.countRegions();
+    if (count === 0) {
+      return null;
+    }
+
+    const rows = await ghanaLocationsRepo.listRegions();
+    return rows.map((row) => ({ id: row.id, name: row.name }));
+  } catch {
+    return null;
+  }
 }
 
-export function getGhanaDistricts(regionId: string): LocationDistrict[] {
-  ensureCache();
-  return cachedDistricts!.filter((entry) => entry.regionId === regionId).map((entry) => ({ ...entry }));
+export async function getGhanaRegions(): Promise<LocationRegion[]> {
+  const dbRegions = await loadDbRegions();
+  if (dbRegions) {
+    return dbRegions;
+  }
+
+  return loadBundledLocations().regions.map((entry) => ({ ...entry }));
 }
 
-export function getGhanaCities(districtId: string): LocationCity[] {
-  ensureCache();
-  return cachedCities!.filter((entry) => entry.districtId === districtId).map((entry) => ({ ...entry }));
+export async function getGhanaDistricts(regionId: string): Promise<LocationDistrict[]> {
+  if (isDatabaseEnabled()) {
+    try {
+      const count = await ghanaLocationsRepo.countRegions();
+      if (count > 0) {
+        const rows = await ghanaLocationsRepo.listDistrictsByRegionId(regionId);
+        return rows.map((row) => ({
+          id: row.id,
+          regionId: row.regionId,
+          name: row.name,
+          type: row.type,
+        }));
+      }
+    } catch {
+      // fall through to bundled data
+    }
+  }
+
+  return loadBundledLocations()
+    .districts.filter((district) => district.regionId === regionId)
+    .map((entry) => ({ ...entry }));
 }
 
-export function searchGhanaLocations(query: string, limit = 20) {
-  ensureCache();
+export async function getGhanaCities(districtId: string): Promise<LocationCity[]> {
+  if (isDatabaseEnabled()) {
+    try {
+      const count = await ghanaLocationsRepo.countRegions();
+      if (count > 0) {
+        const rows = await ghanaLocationsRepo.listCitiesByDistrictId(districtId);
+        return rows.map((row) => ({
+          id: row.id,
+          districtId: row.districtId,
+          name: row.name,
+          source: row.source,
+        }));
+      }
+    } catch {
+      // fall through to bundled data
+    }
+  }
+
+  return loadBundledLocations()
+    .cities.filter((city) => city.districtId === districtId)
+    .map((entry) => ({ ...entry }));
+}
+
+export async function searchGhanaLocations(query: string): Promise<{
+  regions: LocationRegion[];
+  districts: LocationDistrict[];
+  cities: LocationCity[];
+}> {
   const normalized = query.trim().toLowerCase();
   if (!normalized) {
-    return [];
+    return { regions: [], districts: [], cities: [] };
   }
 
-  const matches = [
-    ...cachedRegions!.map((entry) => ({ type: 'region' as const, ...entry })),
-    ...cachedDistricts!.map((entry) => ({ type: 'district' as const, ...entry })),
-    ...cachedCities!.map((entry) => ({ type: 'city' as const, ...entry })),
-  ].filter((entry) => entry.name.toLowerCase().includes(normalized));
+  const bundled = loadBundledLocations();
+  const regions = (await getGhanaRegions()).filter((region) =>
+    region.name.toLowerCase().includes(normalized),
+  );
+  const districts = bundled.districts.filter((district) =>
+    district.name.toLowerCase().includes(normalized),
+  );
+  const cities = bundled.cities.filter((city) => city.name.toLowerCase().includes(normalized));
 
-  return matches.slice(0, limit);
+  return { regions, districts, cities };
+}
+
+/** @deprecated Use async getGhanaRegions instead. */
+export function getGhanaRegionsSync(): LocationRegion[] {
+  return loadBundledLocations().regions.map((entry) => ({ ...entry }));
 }

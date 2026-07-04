@@ -417,8 +417,10 @@ export interface AuditEntry {
   action: AuditAction;
   actorId: string;
   actorDisplayName?: string;
+  actorDisplayId?: string;
   actorPhotoUrl?: string | null;
   targetEntityId: string;
+  targetEntityDisplayId?: string;
   targetEntityType: AuditTargetEntity;
   reason?: string;
   createdAt: string;
