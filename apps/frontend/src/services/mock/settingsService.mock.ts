@@ -89,6 +89,22 @@ const settingsServiceMock: ISettingsService = {
     return { ok: true as const };
   },
 
+  async getIntegrationsStatus() {
+    await simulateDelay();
+    return {
+      sms: {
+        provider: 'smsnotifygh',
+        configured: true,
+        setupHint: 'Demo mode — SMS provider simulated as configured.',
+      },
+      mail: {
+        provider: 'gmail',
+        configured: true,
+        setupHint: 'Demo mode — mail provider simulated as configured.',
+      },
+    };
+  },
+
   async listUsers() {
     await simulateDelay();
     return getSettingsUsersStore();

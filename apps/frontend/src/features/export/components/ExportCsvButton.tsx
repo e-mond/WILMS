@@ -1,6 +1,5 @@
 'use client';
 
-import { ExportDownloadIcon } from '@/components/icons/ExportDownloadIcon';
 import type { PermissionId } from '@/constants/permissions';
 import { PERMISSION } from '@/constants/permissions';
 import {
