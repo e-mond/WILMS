@@ -491,6 +491,7 @@ const borrowerServiceMock: IBorrowerService = {
   },
 
   async submitRegistrationDraft(id: string) {
+    void id;
     await simulateDelay();
     const entry = getBorrowerRegistryEntries()[0];
     if (!entry) {
@@ -499,7 +500,8 @@ const borrowerServiceMock: IBorrowerService = {
     return registryEntryToSummary(entry);
   },
 
-  async deleteRegistrationDraft(_id: string) {
+  async deleteRegistrationDraft(id: string) {
+    void id;
     await simulateDelay();
     return { deleted: true };
   },
