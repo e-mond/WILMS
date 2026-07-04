@@ -23,20 +23,12 @@ WILMS supports registration officers, approvers, collectors, auditors, and super
 
 | Area | Status | Evidence |
 |------|--------|----------|
-| Frontend UI | **RC1.2** | 46 routes; **431** unit tests; `verify:api-coverage` 0 placeholders |
-| Backend API | **RC1.2** | Express on Railway; **40/40** unit tests |
-| Financial core | **Certified** | `verify:financial` **64/64** ×2 on shared Neon (`phase-5a.3-evidence/verify-financial-run*.txt`) |
-| Live integration | **Certified** | `verify:live` **23/23** ×2 (`phase-5a.3-evidence/verify-live-run*.txt`) |
-| Neon / Drizzle | **Operational** | Migrations `0000`–`0006`; seed when `DATABASE_URL` set |
-| Security | **Certified** | Pre-5B hardening + 5B re-verify **11/11** (`P14.3B-phase-5b-security-certification.md`) |
-| Production certification | **RC0 complete** | P14.5A.3 — **CONDITIONAL** (`P14.5A.3-release-candidate.md`) |
-| P14.3B — Loan Pools | **Certified** | Phase 1 — `verify:pools` 5/5 |
-| P14.3B — Adjustments | **Certified** | Phase 2 — `verify:adjustments` 10/10 |
-| P14.3B — Payment Reversal | **Certified** | functional 10/10, concurrency PASS; perf measured (Neon latency) |
-| P14.3B — Reconciliation | **Certified** | functional 24/24, RBAC 6/6, concurrency PASS |
-| P14.3B — Uploads | **Certified** | `cert:upload:env` + `cert:upload:smoke` PASS (Cloudinary) |
-| Notifications (SMS/email) | **Deferred** | Adapters only; no workflow call sites (`docs/audit/P14.3B-feature-completion-matrix.md`) |
-| **Current phase** | **RC1.2** | Pre-v1.0.0 validation — `docs/page-validation/RC1.2-final-report.md` (RC1.1 merged via PR #43) |
+| Frontend UI | **RC1.4** | Next.js on Vercel; unified export modal; readable IDs in UI |
+| Backend API | **RC1.4** | Express on Railway; Ghana locations DB; SMS workflow wiring |
+| Neon / Drizzle | **Operational** | Migrations `0000`–`0012` (Ghana locations); seed when `DATABASE_URL` set |
+| Notifications (SMS/email) | **Partial** | Payment, missed-payment, and approval SMS wired; test endpoints + smoke script |
+| Ghana locations | **RC1.4** | DB tables + bundled seeds (`npm run seed:ghana-locations`); JSON fallback offline |
+| **Current phase** | **RC1.4** | v1.0 certification on `release/rc1-4-v1-certification` — see `PROJECT_STATUS.md` |
 
 ---
 
@@ -97,9 +89,11 @@ Management screens show human-readable IDs from the API (`displayId`, `groupSyst
 | Group | `GRP-ACC-202603-001` | `groups.system_id` |
 | Loan | `LOAN-CYCLE1JA-202605-0002` | Derived from `cycleBatch` + `startDate` |
 | Pool | `POOL-GRE-001` | Derived from `region` + sequence |
+| User | `USR-000001` or staff ID | `displayId` on settings users |
+| Payment | `TXN-20260704-001` | `displayId` on payment records |
 | Risk flag entity | `ENT-BOR-...` | Derived when `entityId` is a UUID |
 
-Ghana region/district/city dropdowns use bundled reference data (no auth API call). Dashboard KPIs in production come from `/dashboard/summary` and domain list endpoints — not mock factories.
+Ghana region/district/city dropdowns use `/locations/*` (DB when seeded, bundled JSON fallback). See `docs/engineering/ghana-locations.md`.
 
 Remove demo financial rows from production with:
 
@@ -415,8 +409,10 @@ npm run start -w @wilms/api            # Backend API
 ```bash
 npm run db:migrate -w @wilms/api
 npm run db:seed -w @wilms/api          # First deploy only
+npm run seed:ghana-locations           # After migration 0012 (Ghana MMDA data)
+npm run verify:deploy-sync             # Compare local HEAD vs production /health
+npm run smoke:notifications -w @wilms/api  # Test SMS/email when credentials set
 npm run verify:financial -w @wilms/api # Post-deploy verification
-npm run verify:pools -w @wilms/api     # After P14.3B pool migration/seed
 ```
 
 ### Production environment
@@ -430,11 +426,9 @@ Detail: `docs/deployment-guide.md` · `docs/security-guide.md` · `docs/producti
 | Service | URL | Version (health/HTML) |
 |---------|-----|------------------------|
 | Frontend | https://wilms.vercel.app | **0.2.2** |
-| API | https://wilms-production.up.railway.app | **0.2.2** — migrations **11/11** (0000–0010) |
+| API | https://wilms-production.up.railway.app | **0.2.2** — migrations through **0012** after deploy |
 
-P14.6.3 recovery complete — production synchronized. See `docs/page-validation/P14.6.3-production-acceptance.md`.
-
-P14.6.4 stabilization complete — full API backend coverage. See `docs/page-validation/P14.6.4-api-synchronization.md` and `PROJECT_STATUS.md`.
+Set `WILMS_GIT_COMMIT` on Railway so `/health` reports the deployed SHA. Engineering docs: `docs/engineering/ghana-locations.md`, `docs/engineering/app-lock.md`.
 
 ### P14.6.1 (superseded)
 
@@ -480,7 +474,9 @@ Full blocker matrix: `docs/page-validation/P14.5A.3-release-candidate.md`
 - **Audit writes** — Best-effort async; not transactional with business operations.
 - **Admin fee gate** — Enforced in mock UI only; not server-validated on loan create/disburse.
 - **HTTPS / CORS / trust proxy** — Require staging validation and deploy-time config (`WILMS_CORS_ORIGIN`, `WILMS_TRUST_PROXY`).
-- **Deferred domains** — Other reversal types, dedicated write-offs, OTP, password reset, SMS/email workflows — see `P14.3B-remaining-work-roadmap.md`.
+- **Ghana location coverage** — Seed bundles 16 regions and a representative MMDA subset (not all ~261 districts); OSM-flagged communities where official data is missing.
+- **Export modal** — Single Export button on report pages; borrower profile print flow unchanged; PDF photo thumbnails not yet implemented.
+- **Deferred domains** — Approval email notifications, OTP, password reset — see `P14.3B-remaining-work-roadmap.md`.
 
 ---
 
