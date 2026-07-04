@@ -11,6 +11,7 @@ import { PermissionProvider } from '@/components/providers/PermissionProvider';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { ThemeScript } from '@/components/theme/ThemeScript';
+import { ConnectionStatusBar } from '@/components/layout/shell/ConnectionStatusBar';
 import { E2eBridge } from '@/components/dev/E2eBridge';
 import { DemoModeBanner } from '@/components/feedback/DemoModeBanner';
 import { isDemoMode } from '@/data-provider/types';
@@ -69,6 +70,7 @@ export default function RootLayout({
                 <AppLockHandler />
                 <AppLockRequiredGate>
                   <ToastContainer />
+                  <ConnectionStatusBar />
                   {children}
                 </AppLockRequiredGate>
               </AppBootstrap>

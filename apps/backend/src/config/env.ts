@@ -41,6 +41,7 @@ export const env = {
   trustProxy: resolveTrustProxy(),
   trustProxyHops: Number(process.env.WILMS_TRUST_PROXY_HOPS ?? 1),
   gitCommit: resolveGitCommit(),
+  appUrl: process.env.WILMS_APP_URL?.trim() || process.env.WILMS_CORS_ORIGIN?.trim() || undefined,
 };
 
 function resolveGitCommit(): string | undefined {

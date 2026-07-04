@@ -22,6 +22,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { PhotoUpload } from '@/components/forms/PhotoUpload';
 import { UPLOAD_PURPOSE } from '@/types/upload';
 import { resolvePersonPhotoUrl } from '@/utils/person-photo';
+import { resolveUserDisplayId } from '@/utils/entity-display-id';
 import { cn } from '@/utils/cn';
 
 function ProfileSection() {
@@ -77,7 +78,7 @@ function ProfileSection() {
       <SettingsSettingRow
         title="User ID"
         description="Internal account identifier."
-        control={<Input defaultValue={user.id} readOnly aria-label="User ID" />}
+        control={<Input defaultValue={resolveUserDisplayId(user.id)} readOnly aria-label="User ID" />}
       />
       <SettingsSettingRow
         title="Role"
