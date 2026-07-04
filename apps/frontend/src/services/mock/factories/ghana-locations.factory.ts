@@ -1,27 +1,28 @@
-import { GHANA_REGIONS } from '@/constants/borrower-registration';
+import regionsSeed from '../../../../../../data/ghana-locations/regions.json';
+import districtsSeed from '../../../../../../data/ghana-locations/districts.json';
+import citiesSeed from '../../../../../../data/ghana-locations/cities.json';
 import type { LocationCity, LocationDistrict, LocationRegion } from '@/types/location';
 
-const DISTRICT_SUFFIXES = ['Municipal', 'District', 'Metropolitan'] as const;
-const CITY_NAMES = ['Central', 'North', 'South', 'East', 'West', 'Market', 'Station'] as const;
+interface SeedRegion {
+  code: string;
+  name: string;
+}
+
+interface SeedDistrict {
+  region_code: string;
+  name: string;
+  type: string;
+  code: string;
+}
+
+interface SeedCity {
+  district_code: string;
+  name: string;
+  source?: string;
+}
 
 function slugify(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-}
-
-function buildDistrictsForRegion(region: LocationRegion): LocationDistrict[] {
-  return DISTRICT_SUFFIXES.slice(0, 2).map((suffix, index) => ({
-    id: `${region.id}-district-${index + 1}`,
-    regionId: region.id,
-    name: `${region.name} ${suffix}`,
-  }));
-}
-
-function buildCitiesForDistrict(district: LocationDistrict): LocationCity[] {
-  return CITY_NAMES.slice(0, 3).map((cityName, index) => ({
-    id: `${district.id}-city-${index + 1}`,
-    districtId: district.id,
-    name: `${district.name.replace(/ (Municipal|District|Metropolitan)$/, '')} ${cityName}`,
-  }));
 }
 
 let cachedRegions: LocationRegion[] | null = null;
@@ -33,13 +34,29 @@ function ensureCache(): void {
     return;
   }
 
-  cachedRegions = GHANA_REGIONS.map((name) => ({
-    id: slugify(name),
-    name,
-  }));
+  const regionIdByCode = new Map<string, string>();
+  cachedRegions = (regionsSeed as SeedRegion[]).map((region) => {
+    const id = slugify(region.name);
+    regionIdByCode.set(region.code, id);
+    return { id, name: region.name };
+  });
 
-  cachedDistricts = cachedRegions.flatMap((region) => buildDistrictsForRegion(region));
-  cachedCities = cachedDistricts.flatMap((district) => buildCitiesForDistrict(district));
+  const districtIdByCode = new Map<string, string>();
+  cachedDistricts = (districtsSeed as SeedDistrict[]).map((district) => {
+    const id = slugify(`${district.region_code}-${district.code}`);
+    districtIdByCode.set(district.code, id);
+    return {
+      id,
+      regionId: regionIdByCode.get(district.region_code) ?? slugify(district.region_code),
+      name: district.name,
+    };
+  });
+
+  cachedCities = (citiesSeed as SeedCity[]).map((city) => ({
+    id: slugify(`${city.district_code}-${city.name}`),
+    districtId: districtIdByCode.get(city.district_code) ?? slugify(city.district_code),
+    name: city.name,
+  }));
 }
 
 export function getGhanaRegions(): LocationRegion[] {

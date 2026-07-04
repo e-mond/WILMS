@@ -1,0 +1,290 @@
+[
+  {
+    "region_code": "GAR",
+    "name": "Accra Metropolitan",
+    "type": "Metropolitan",
+    "code": "GAR-AMA"
+  },
+  {
+    "region_code": "GAR",
+    "name": "Tema Metropolitan",
+    "type": "Metropolitan",
+    "code": "GAR-TMA"
+  },
+  {
+    "region_code": "GAR",
+    "name": "Ga East Municipal",
+    "type": "Municipal",
+    "code": "GAR-GEM"
+  },
+  {
+    "region_code": "ASH",
+    "name": "Kumasi Metropolitan",
+    "type": "Metropolitan",
+    "code": "ASH-KMA"
+  },
+  {
+    "region_code": "ASH",
+    "name": "Obuasi Municipal",
+    "type": "Municipal",
+    "code": "ASH-OBM"
+  },
+  {
+    "region_code": "ASH",
+    "name": "Ejisu Municipal",
+    "type": "Municipal",
+    "code": "ASH-EJM"
+  },
+  {
+    "region_code": "WES",
+    "name": "Sekondi-Takoradi Metropolitan",
+    "type": "Metropolitan",
+    "code": "WES-STM"
+  },
+  {
+    "region_code": "WES",
+    "name": "Tarkwa-Nsuaem Municipal",
+    "type": "Municipal",
+    "code": "WES-TNM"
+  },
+  {
+    "region_code": "WES",
+    "name": "Ahanta West Municipal",
+    "type": "Municipal",
+    "code": "WES-AWM"
+  },
+  {
+    "region_code": "CEN",
+    "name": "Cape Coast Metropolitan",
+    "type": "Metropolitan",
+    "code": "CEN-CCM"
+  },
+  {
+    "region_code": "CEN",
+    "name": "Agona West Municipal",
+    "type": "Municipal",
+    "code": "CEN-AWM"
+  },
+  {
+    "region_code": "CEN",
+    "name": "Mfantsiman Municipal",
+    "type": "Municipal",
+    "code": "CEN-MFM"
+  },
+  {
+    "region_code": "EAS",
+    "name": "New Juaben South Municipal",
+    "type": "Municipal",
+    "code": "EAS-NJS"
+  },
+  {
+    "region_code": "EAS",
+    "name": "Akuapem North Municipal",
+    "type": "Municipal",
+    "code": "EAS-ANM"
+  },
+  {
+    "region_code": "EAS",
+    "name": "Kwahu South District",
+    "type": "District",
+    "code": "EAS-KSD"
+  },
+  {
+    "region_code": "NOR",
+    "name": "Tamale Metropolitan",
+    "type": "Metropolitan",
+    "code": "NOR-TAM"
+  },
+  {
+    "region_code": "NOR",
+    "name": "Sagnarigu Municipal",
+    "type": "Municipal",
+    "code": "NOR-SGM"
+  },
+  {
+    "region_code": "NOR",
+    "name": "Yendi Municipal",
+    "type": "Municipal",
+    "code": "NOR-YEM"
+  },
+  {
+    "region_code": "VOL",
+    "name": "Ho Municipal",
+    "type": "Municipal",
+    "code": "VOL-HOM"
+  },
+  {
+    "region_code": "VOL",
+    "name": "Hohoe Municipal",
+    "type": "Municipal",
+    "code": "VOL-HHM"
+  },
+  {
+    "region_code": "VOL",
+    "name": "Keta Municipal",
+    "type": "Municipal",
+    "code": "VOL-KEM"
+  },
+  {
+    "region_code": "UPE",
+    "name": "Bolgatanga Municipal",
+    "type": "Municipal",
+    "code": "UPE-BOM"
+  },
+  {
+    "region_code": "UPE",
+    "name": "Bawku Municipal",
+    "type": "Municipal",
+    "code": "UPE-BAM"
+  },
+  {
+    "region_code": "UPE",
+    "name": "Kassena-Nankana Municipal",
+    "type": "Municipal",
+    "code": "UPE-KNM"
+  },
+  {
+    "region_code": "UPW",
+    "name": "Wa Municipal",
+    "type": "Municipal",
+    "code": "UPW-WAM"
+  },
+  {
+    "region_code": "UPW",
+    "name": "Lawra Municipal",
+    "type": "Municipal",
+    "code": "UPW-LAM"
+  },
+  {
+    "region_code": "UPW",
+    "name": "Jirapa Municipal",
+    "type": "Municipal",
+    "code": "UPW-JIM"
+  },
+  {
+    "region_code": "BON",
+    "name": "Sunyani Municipal",
+    "type": "Municipal",
+    "code": "BON-SUM"
+  },
+  {
+    "region_code": "BON",
+    "name": "Berekum Municipal",
+    "type": "Municipal",
+    "code": "BON-BEM"
+  },
+  {
+    "region_code": "BON",
+    "name": "Dormaa Central Municipal",
+    "type": "Municipal",
+    "code": "BON-DCM"
+  },
+  {
+    "region_code": "BEA",
+    "name": "Techiman Municipal",
+    "type": "Municipal",
+    "code": "BEA-TEM"
+  },
+  {
+    "region_code": "BEA",
+    "name": "Kintampo North Municipal",
+    "type": "Municipal",
+    "code": "BEA-KNM"
+  },
+  {
+    "region_code": "BEA",
+    "name": "Atebubu-Amantin Municipal",
+    "type": "Municipal",
+    "code": "BEA-AAM"
+  },
+  {
+    "region_code": "AHA",
+    "name": "Goaso Municipal",
+    "type": "Municipal",
+    "code": "AHA-GOM"
+  },
+  {
+    "region_code": "AHA",
+    "name": "Bechem Municipal",
+    "type": "Municipal",
+    "code": "AHA-BEM"
+  },
+  {
+    "region_code": "AHA",
+    "name": "Hwidiem Municipal",
+    "type": "Municipal",
+    "code": "AHA-HWM"
+  },
+  {
+    "region_code": "WNO",
+    "name": "Sefwi-Wiawso Municipal",
+    "type": "Municipal",
+    "code": "WNO-SWM"
+  },
+  {
+    "region_code": "WNO",
+    "name": "Bibiani-Anhwiaso-Bekwai Municipal",
+    "type": "Municipal",
+    "code": "WNO-BAB"
+  },
+  {
+    "region_code": "WNO",
+    "name": "Bodi District",
+    "type": "District",
+    "code": "WNO-BOD"
+  },
+  {
+    "region_code": "OTI",
+    "name": "Jasikan District",
+    "type": "District",
+    "code": "OTI-JAD"
+  },
+  {
+    "region_code": "OTI",
+    "name": "Krachi East Municipal",
+    "type": "Municipal",
+    "code": "OTI-KEM"
+  },
+  {
+    "region_code": "OTI",
+    "name": "Nkwanta South Municipal",
+    "type": "Municipal",
+    "code": "OTI-NSM"
+  },
+  {
+    "region_code": "NEE",
+    "name": "Nalerigu-Gambaga Municipal",
+    "type": "Municipal",
+    "code": "NEE-NGM"
+  },
+  {
+    "region_code": "NEE",
+    "name": "Walewale Municipal",
+    "type": "Municipal",
+    "code": "NEE-WAM"
+  },
+  {
+    "region_code": "NEE",
+    "name": "Bunkpurugu-Nyankpanduri District",
+    "type": "District",
+    "code": "NEE-BND"
+  },
+  {
+    "region_code": "SAV",
+    "name": "Damongo Municipal",
+    "type": "Municipal",
+    "code": "SAV-DAM"
+  },
+  {
+    "region_code": "SAV",
+    "name": "Salaga Municipal",
+    "type": "Municipal",
+    "code": "SAV-SAM"
+  },
+  {
+    "region_code": "SAV",
+    "name": "Bole District",
+    "type": "District",
+    "code": "SAV-BOD"
+  }
+]

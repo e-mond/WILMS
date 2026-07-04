@@ -35,6 +35,7 @@ export interface SystemSettings {
 
 export interface SettingsUserRecord {
   id: string;
+  displayId: string;
   displayName: string;
   email: string;
   role: string;

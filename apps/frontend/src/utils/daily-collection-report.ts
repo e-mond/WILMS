@@ -2,6 +2,7 @@ import { LOAN_STATUS, type LoanPortfolioEntry } from '@/types/loan';
 import type { DailyCollectionReport, DailyCollectionReportRow } from '@/types/reports';
 import { TRANSACTION_TYPE, type FinancialTransaction } from '@/types/transaction';
 import { getWeekdayNameFromIsoDate, isLoanDueOnDate } from '@/utils/weekday';
+import { resolveCollectorDisplayId, resolveLoanDisplayId } from '@/utils/entity-display-id';
 
 export interface DailyCollectionRepaymentInput {
   id: string;
@@ -23,7 +24,10 @@ function resolveCollectorName(collectorId: string, collectorName?: string): stri
   if (collectorName?.trim()) {
     return collectorName.trim();
   }
-  return collectorId ? `Collector ${collectorId.slice(0, 8)}` : 'Collector';
+  if (!collectorId) {
+    return 'Collector';
+  }
+  return resolveCollectorDisplayId({ id: collectorId });
 }
 function resolveBorrowerContext(
   borrowerId: string,
@@ -37,7 +41,7 @@ function resolveBorrowerContext(
   return {
     borrowerName: loan?.borrowerName ?? 'Unknown borrower',
     community: loan?.community ?? '—',
-    loanId: loan?.id,
+    loanId: loan ? resolveLoanDisplayId(loan) : loanId,
     expectedPesewas: 0,
   };
 }
@@ -110,7 +114,7 @@ export function buildDailyCollectionReport(
       borrowerId: loan.borrowerId,
       borrowerName: loan.borrowerName,
       community: loan.community,
-      loanId: loan.id,
+      loanId: resolveLoanDisplayId(loan),
       collectorId: '',
       collectorName: '—',
       expectedPesewas: loan.weeklyPaymentPesewas,

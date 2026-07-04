@@ -16,6 +16,8 @@
     "db:seed": "tsx src/db/seed/run-seed.ts",
     "db:seed:reference": "tsx src/db/seed/run-seed-reference.ts",
     "db:seed:demo": "tsx src/db/seed/run-seed-demo.ts",
+    "seed:ghana-locations": "tsx src/db/seed/import-ghana-locations.ts",
+    "smoke:notifications": "tsx src/verification/notifications-smoke.ts",
     "verify:financial": "tsx src/verification/run-all.ts",
     "verify:live": "tsx src/verification/live-integration.ts",
     "perf:baseline": "tsx src/verification/performance-baseline.ts",

@@ -13,6 +13,22 @@ RC1.3.3 recovery complete (schema repaired, smoke 31/31, RBAC 11/11). RC1.4 adds
 
 ---
 
+## Phased rollout (2026-07-04)
+
+| PR | Delivered |
+|----|-----------|
+| CI hotfix | Audit log test uses `TestAppProviders`; permissive `usePermission` fallback |
+| Readable IDs | Shared `formatBorrowerDisplayId`; settings/audit/payment display IDs |
+| Ghana locations | DB schema `0012`, bundled seeds, import script, async location API |
+| Unified export | `WilmsExportModal` + Word engine; single Export button on report pages |
+| App lock | Background idle lock; `pinConfigured` state; engineering doc |
+| Notifications | Missed-payment + approval SMS wired; smoke script |
+| Collector QA | 20s API timeout; collector settings trimmed to functional sections |
+
+Engineering docs: `docs/engineering/ghana-locations.md`, `docs/engineering/app-lock.md`
+
+---
+
 ## RC1.4 progress
 
 | Phase | Status |

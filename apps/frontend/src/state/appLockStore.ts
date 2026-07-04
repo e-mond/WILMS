@@ -9,6 +9,7 @@ import { hashPinSync, verifyPinSync } from '@/lib/security/pin-hash';
 
 interface AppLockState {
   isEnabled: boolean;
+  pinConfigured: boolean;
   pinHash: string | null;
   pinUserId: string | null;
   isHydrated: boolean;
@@ -30,6 +31,7 @@ export const useAppLockStore = create<AppLockState>()(
   persist(
     (set, get) => ({
       isEnabled: false,
+      pinConfigured: false,
       pinHash: null,
       pinUserId: null,
       isHydrated: false,
@@ -42,6 +44,7 @@ export const useAppLockStore = create<AppLockState>()(
         const now = Date.now();
         set({
           isEnabled: true,
+          pinConfigured: true,
           pinHash: hashPinSync(pin, userId),
           pinUserId: userId,
           isLocked: false,
@@ -55,6 +58,7 @@ export const useAppLockStore = create<AppLockState>()(
         const now = Date.now();
         set({
           isEnabled: false,
+          pinConfigured: false,
           pinHash: null,
           pinUserId: null,
           isLocked: false,
@@ -132,12 +136,14 @@ export const useAppLockStore = create<AppLockState>()(
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         isEnabled: state.isEnabled,
+        pinConfigured: state.pinConfigured,
         pinHash: state.pinHash,
         pinUserId: state.pinUserId,
       }),
       onRehydrateStorage: () => (state) => {
         state?.markHydrated();
         if (state?.isEnabled) {
+          state.pinConfigured = true;
           state.unlock();
         }
       },

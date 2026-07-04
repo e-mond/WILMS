@@ -72,7 +72,28 @@ export function formatEntityDisplayId(input: {
     : `ENT-${typeCode}-${suffix}`;
 }
 
-export function formatUserDisplayId(input: { sequence?: number; id?: string }): string {
+export function formatBorrowerDisplayId(
+  input: { community: string; registeredAt: string; id?: string },
+  sequence?: number,
+): string {
+  if (input.community && input.registeredAt && sequence != null) {
+    const communityCode =
+      input.community.replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() || 'WILMS';
+    const monthKey = input.registeredAt.slice(0, 7).replace('-', '');
+
+    return `BWR-${communityCode}-${monthKey}-${String(sequence).padStart(4, '0')}`;
+  }
+
+  const compactId = (input.id ?? '').replace(/-/g, '').slice(0, 8).toUpperCase() || '00000000';
+  return `BWR-${compactId}`;
+}
+
+export function formatUserDisplayId(input: { sequence?: number; id?: string; staffId?: string }): string {
+  const staffId = input.staffId?.trim();
+  if (staffId) {
+    return staffId.toUpperCase();
+  }
+
   if (input.sequence != null) {
     return `USR-${String(input.sequence).padStart(6, '0')}`;
   }

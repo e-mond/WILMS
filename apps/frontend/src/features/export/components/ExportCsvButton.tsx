@@ -1,20 +1,18 @@
 'use client';
 
 import { ExportDownloadIcon } from '@/components/icons/ExportDownloadIcon';
-import { PermissionGate } from '@/components/auth/PermissionGate';
-import { Button } from '@/components/ui/Button';
 import type { PermissionId } from '@/constants/permissions';
 import { PERMISSION } from '@/constants/permissions';
 import {
   buildTabularExportDocument,
-  downloadWilmsCsv,
   useWilmsExportActor,
   WILMS_REPORT_TYPE,
 } from '@/features/export';
 import type { WilmsReportType } from '@/features/export';
+import { WilmsExportTrigger } from '@/features/export/components/WilmsExportModal';
+import type { WilmsExportFormat } from '@/features/export/hooks/useWilmsExport';
 import { cn } from '@/utils/cn';
-import { useState, useCallback } from 'react';
-import { useToast } from '@/hooks/useToast';
+import { useMemo } from 'react';
 
 export interface ExportCsvButtonProps {
   filename: string;
@@ -28,6 +26,7 @@ export interface ExportCsvButtonProps {
   label?: string;
   className?: string;
   showDownloadIcon?: boolean;
+  formats?: WilmsExportFormat[];
   /** When set, export requires any of these permissions. */
   permissions?: PermissionId[];
 }
@@ -41,59 +40,39 @@ export function ExportCsvButton({
   generatedBy,
   executiveSummary,
   disabled = false,
-  label = 'Export CSV',
+  label = 'Export',
   className,
   showDownloadIcon = false,
+  formats,
   permissions = [PERMISSION.EXPORT_REPORTS],
 }: ExportCsvButtonProps) {
-  const toast = useToast();
   const actor = useWilmsExportActor();
   const resolvedActor = generatedBy ?? actor;
-  const [isExporting, setIsExporting] = useState(false);
+  const filenameBase = filename.replace(/\.csv$/i, '');
 
-  const handleExport = useCallback(async () => {
-    if (rows.length === 0) return;
-
-    setIsExporting(true);
-
-    try {
-      const document = buildTabularExportDocument({
+  const document = useMemo(
+    () =>
+      buildTabularExportDocument({
         reportType,
         reportTitle,
         generatedBy: resolvedActor,
         headers,
         rows,
         executiveSummary,
-      });
-
-      // Ensure filename has .csv extension
-      const finalFilename = filename.endsWith('.csv') ? filename : `${filename}.csv`;
-
-      downloadWilmsCsv(document, finalFilename);
-    } catch (error) {
-      console.error('CSV export failed:', error);
-      toast.error('Export failed', {
-        message: 'Unable to generate CSV file. Please try again.',
-      });
-    } finally {
-      setIsExporting(false);
-    }
-  }, [filename, headers, rows, reportType, reportTitle, resolvedActor, executiveSummary, toast]);
+      }),
+    [executiveSummary, headers, reportTitle, reportType, resolvedActor, rows],
+  );
 
   return (
-    <PermissionGate permissions={permissions}>
-      <Button
-        type="button"
-        variant="secondary"
-        size="sm"
-        disabled={disabled || rows.length === 0 || isExporting}
-        className={cn(showDownloadIcon && 'gap-wilms-2', className)}
-        onClick={() => void handleExport()}
-        aria-busy={isExporting}
-      >
-        {showDownloadIcon && <ExportDownloadIcon />}
-        {isExporting ? 'Exporting…' : label}
-      </Button>
-    </PermissionGate>
+    <WilmsExportTrigger
+      document={document}
+      filenameBase={filenameBase}
+      label={label}
+      showIcon={showDownloadIcon}
+      disabled={disabled || rows.length === 0}
+      className={cn(showDownloadIcon && 'gap-wilms-2', className)}
+      formats={formats}
+      permissions={permissions}
+    />
   );
 }
