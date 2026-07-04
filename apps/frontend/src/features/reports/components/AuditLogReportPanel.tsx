@@ -11,6 +11,8 @@ import { Select } from '@/components/ui/Select';
 import { AUDIT_ACTION_FILTER_OPTIONS, AUDIT_ACTION_LABELS } from '@/constants/audit-display';
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
 import { WILMS_REPORT_TYPE } from '@/features/export';
+import { PERMISSION } from '@/constants/permissions';
+import { usePermission } from '@/hooks/usePermissions';
 import { AuditLogAsidePanel } from '@/features/reports/components/AuditLogAsidePanel';
 import { useAuditLogReport } from '@/features/reports/hooks/useAuditLogReport';
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
@@ -32,6 +34,7 @@ function formatAuditTimestamp(value: string): string {
 }
 
 export function AuditLogReportPanel() {
+  const canListUsers = usePermission(PERMISSION.VIEW_ALL_USERS);
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [actorFilter, setActorFilter] = useState('');
@@ -40,6 +43,7 @@ export function AuditLogReportPanel() {
   const usersQuery = useQuery({
     queryKey: ['settings-users-filter'],
     queryFn: () => settingsService.listUsers(),
+    enabled: canListUsers,
   });
 
   const userFilterOptions = useMemo(

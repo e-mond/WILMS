@@ -11,6 +11,7 @@ import {
   saveBorrower,
   type BorrowerRecord,
 } from '../../db/persistence.js';
+import * as userRepo from '../../repositories/user.repository.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
 import { processApprovedBorrower } from '../group-formation/service.js';
 import * as loanService from '../loans/service.js';
@@ -27,6 +28,21 @@ const AUDIT_ACTION = {
 
 function officerName(officerId: string): string {
   return DEMO_USERS.find((user) => user.id === officerId)?.displayName ?? officerId;
+}
+
+async function resolveOfficerDisplayName(officerId: string): Promise<string> {
+  if (isDatabaseEnabled()) {
+    const user = await userRepo.getUserById(officerId);
+    if (user?.displayName?.trim()) {
+      return user.displayName.trim();
+    }
+  }
+
+  return officerName(officerId);
+}
+
+function uploadContentUrl(uploadId?: string | null): string | undefined {
+  return uploadId ? `/uploads/${uploadId}/content` : undefined;
 }
 
 function assertValidBorrowerId(idType: string, idNumber: string): string {
@@ -58,20 +74,28 @@ function toSummary(record: BorrowerRecord, sequence?: number) {
   };
 }
 
-function toPending(record: BorrowerRecord) {
+function toPending(record: BorrowerRecord, officerDisplayName: string) {
   return {
     id: record.id,
+    displayId: formatBorrowerDisplayId(
+      { community: record.community, registeredAt: record.registeredAt },
+      1,
+    ),
     fullName: record.fullName,
     phone: record.phone,
     community: record.community,
     registeredAt: record.registeredAt,
-    registeredByOfficerName: officerName(record.registeredByOfficerId),
+    registeredByOfficerName: officerDisplayName,
   };
 }
 
-function toRegistration(record: BorrowerRecord) {
+function toRegistration(record: BorrowerRecord, sequence?: number) {
   return {
     id: record.id,
+    displayId: formatBorrowerDisplayId(
+      { community: record.community, registeredAt: record.registeredAt },
+      sequence ?? 1,
+    ),
     fullName: record.fullName,
     phone: record.phone,
     status: record.status,
@@ -80,9 +104,7 @@ function toRegistration(record: BorrowerRecord) {
     registeredAt: record.registeredAt,
     canEdit: record.status === BORROWER_STATUS.PENDING,
     canDelete: record.status === BORROWER_STATUS.PENDING,
-    photoUrl: record.profile.photoUploadId
-      ? `/uploads/${record.profile.photoUploadId}/content`
-      : undefined,
+    photoUrl: uploadContentUrl(record.profile.photoUploadId),
   };
 }
 
@@ -111,15 +133,38 @@ function toDetail(record: BorrowerRecord) {
   };
 }
 
-function toReview(record: BorrowerRecord) {
+function toReview(record: BorrowerRecord, officerDisplayName: string, sequence?: number) {
+  const detail = toDetail(record);
+
   return {
-    id: record.id,
-    fullName: record.fullName,
-    phone: record.phone,
-    community: record.community,
-    registeredAt: record.registeredAt,
-    registeredByOfficerName: officerName(record.registeredByOfficerId),
-    profile: record.profile,
+    ...detail,
+    displayId: formatBorrowerDisplayId(
+      { community: record.community, registeredAt: record.registeredAt },
+      sequence ?? 1,
+    ),
+    dateOfBirth: record.profile.dateOfBirth ?? '',
+    gender: record.profile.gender ?? '',
+    email: record.profile.email,
+    nationality: record.profile.nationality ?? '',
+    idType: record.idType,
+    idNumber: record.idNumber,
+    houseAddress: record.profile.houseAddress ?? '',
+    gpsAddress: record.profile.gpsAddress ?? '',
+    city: record.profile.city ?? '',
+    region: record.profile.region ?? '',
+    district: record.profile.district ?? '',
+    businessName: record.profile.businessName ?? '',
+    businessAddress: record.profile.businessAddress ?? '',
+    typeOfWork: record.profile.typeOfWork ?? '',
+    guarantorName: record.profile.guarantorName ?? '',
+    guarantorPhone: record.profile.guarantorPhone ?? '',
+    guarantorRelationship: record.profile.guarantorRelationship ?? '',
+    photoFileName: record.profile.photoFileName ?? '',
+    photoMimeType: record.profile.photoMimeType ?? '',
+    photoUrl: uploadContentUrl(record.profile.photoUploadId),
+    guarantorPhotoUrl: uploadContentUrl(record.profile.guarantorPhotoUploadId),
+    registeredByOfficerId: record.registeredByOfficerId,
+    registeredByOfficerName: officerDisplayName,
     status: record.status,
   };
 }
@@ -145,15 +190,47 @@ export async function listBorrowerSummaries() {
 }
 
 export async function listPendingApplications() {
-  return (await listBorrowers())
+  const pendingRecords = (await listBorrowers())
     .filter((record) => record.status === BORROWER_STATUS.PENDING)
-    .map(toPending);
+    .sort((left, right) => left.registeredAt.localeCompare(right.registeredAt));
+
+  const officerNames = new Map<string, string>();
+  await Promise.all(
+    [...new Set(pendingRecords.map((record) => record.registeredByOfficerId))].map(
+      async (officerId) => {
+        officerNames.set(officerId, await resolveOfficerDisplayName(officerId));
+      },
+    ),
+  );
+
+  const sequenceById = new Map(
+    pendingRecords.map((record, index) => [record.id, index + 1]),
+  );
+
+  return pendingRecords.map((record) => ({
+    ...toPending(record, officerNames.get(record.registeredByOfficerId) ?? record.registeredByOfficerId),
+    displayId: formatBorrowerDisplayId(
+      { community: record.community, registeredAt: record.registeredAt },
+      sequenceById.get(record.id) ?? 1,
+    ),
+  }));
 }
 
 export async function listMyRegistrations(officerId: string) {
-  return (await listBorrowers())
-    .filter((record) => record.registeredByOfficerId === officerId)
-    .map(toRegistration);
+  const records = (await listBorrowers()).filter(
+    (record) => record.registeredByOfficerId === officerId,
+  );
+  const sorted = [...records].sort((left, right) =>
+    left.registeredAt.localeCompare(right.registeredAt),
+  );
+  const sequenceById = new Map(sorted.map((record, index) => [record.id, index + 1]));
+
+  return records
+    .map((record) => toRegistration(record, sequenceById.get(record.id)))
+    .sort(
+      (left, right) =>
+        new Date(right.registeredAt).getTime() - new Date(left.registeredAt).getTime(),
+    );
 }
 
 export async function listReviewedApplications(approverId: string) {
@@ -232,7 +309,16 @@ export async function getBorrowerReviewDetail(id: string) {
     throw new Error('NOT_FOUND');
   }
 
-  return toReview(record);
+  const pendingRecords = (await listBorrowers())
+    .filter((entry) => entry.status === BORROWER_STATUS.PENDING)
+    .sort((left, right) => left.registeredAt.localeCompare(right.registeredAt));
+  const sequenceById = new Map(
+    pendingRecords.map((entry, index) => [entry.id, index + 1]),
+  );
+
+  const officerDisplayName = await resolveOfficerDisplayName(record.registeredByOfficerId);
+
+  return toReview(record, officerDisplayName, sequenceById.get(record.id));
 }
 
 export async function registerBorrower(payload: Record<string, unknown>, actorId: string) {

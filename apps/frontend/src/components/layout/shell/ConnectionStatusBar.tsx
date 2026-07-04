@@ -1,15 +1,36 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { ConnectionStatusChip } from '@/components/layout/shell/navbar/ConnectionStatusChip';
+import { isPublicPath } from '@/lib/auth/routes';
+import { useAppLockStore } from '@/state/appLockStore';
 import { cn } from '@/utils/cn';
 
+function shouldHideConnectionBar(pathname: string, isLocked: boolean): boolean {
+  if (isPublicPath(pathname)) {
+    return true;
+  }
+
+  if (isLocked) {
+    return true;
+  }
+
+  return false;
+}
+
 export function ConnectionStatusBar() {
+  const pathname = usePathname();
+  const isLocked = useAppLockStore((state) => state.isLocked);
+
+  if (shouldHideConnectionBar(pathname, isLocked)) {
+    return null;
+  }
+
   return (
     <div
       className={cn(
         'pointer-events-none fixed z-50',
-        'right-3 sm:right-4',
-        'bottom-[calc(4.75rem+env(safe-area-inset-bottom))] md:bottom-4',
+        'right-4 top-1/2 -translate-y-1/2',
       )}
       aria-hidden={false}
     >

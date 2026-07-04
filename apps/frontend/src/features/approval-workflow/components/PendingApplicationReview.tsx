@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { Alert } from '@/components/feedback/Alert';
 
@@ -16,6 +16,7 @@ import { EmptyState } from '@/components/feedback/EmptyState';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
 
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { PERMISSION } from '@/constants/permissions';
 
@@ -47,6 +48,7 @@ import type { ApprovalDecisionAction } from '@/types/approval';
 
 import { ApiError } from '@/types/api';
 import { formatDisplayDate } from '@/utils/format-date';
+import { resolveBorrowerDisplayId } from '@/utils/format-borrower-display-id';
 
 
 
@@ -61,7 +63,7 @@ export interface PendingApplicationReviewProps {
 export function PendingApplicationReview({ borrowerId }: PendingApplicationReviewProps) {
 
   const router = useRouter();
-
+  const queryClient = useQueryClient();
   const generatedBy = useWilmsExportActor();
 
   const { data, isLoading, isError } = useBorrowerReview(borrowerId);
@@ -75,9 +77,8 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
   const [actionError, setActionError] = useState<string | null>(null);
 
   const [selectedGroupId, setSelectedGroupId] = useState('');
-
   const [selectedCollectorId, setSelectedCollectorId] = useState('');
-
+  const [newGroupName, setNewGroupName] = useState('');
   const [workflowMessage, setWorkflowMessage] = useState<string | null>(null);
 
 
@@ -107,6 +108,28 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
     enabled: Boolean(data?.guarantorPhone && data?.guarantorName),
   });
 
+  const createGroupMutation = useMutation({
+    mutationFn: () =>
+      groupService.createGroup({
+        name: newGroupName.trim(),
+        community: data?.community ?? 'General',
+        memberBorrowerIds: [borrowerId],
+      }),
+    onSuccess: (group) => {
+      setSelectedGroupId(group.id);
+      setNewGroupName('');
+      setWorkflowMessage(`Created group "${group.name}" and added ${data?.fullName ?? 'borrower'}.`);
+      void queryClient.invalidateQueries({ queryKey: ['groups', 'list', 'approver-review'] });
+    },
+    onError: (error) => {
+      setActionError(
+        error instanceof ApiError
+          ? error.message
+          : 'Unable to create a group for this borrower.',
+      );
+    },
+  });
+
   const groups = useMemo(() => (groupsQuery.data?.groups ?? []).slice(0, 8), [groupsQuery.data]);
 
   const collectors = useMemo(
@@ -132,21 +155,31 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
       generatedBy,
       headers: ['Field', 'Value'],
       rows: [
-
-        ['Applicant', data.fullName],
-
-        ['Phone', data.phone],
-
-        ['Community', data.community],
-
-        ['Guarantor', data.guarantorName],
-
-        ['Registered by', data.registeredByOfficerName],
-
+        ['Registration ID', resolveBorrowerDisplayId(data)],
+        ['Applicant', data.fullName ?? ''],
+        ['Phone', data.phone ?? ''],
+        ['Email', data.email ?? 'Not provided'],
+        ['Date of birth', data.dateOfBirth ?? 'Not provided'],
+        ['Gender', data.gender ?? 'Not provided'],
+        ['Nationality', data.nationality ?? 'Not provided'],
+        ['ID type', data.idType ?? 'Not provided'],
+        ['ID number', data.idNumber ?? 'Not provided'],
+        ['House address', data.houseAddress ?? 'Not provided'],
+        ['GPS address', data.gpsAddress ?? 'Not provided'],
+        ['City', data.city ?? 'Not provided'],
+        ['Region', data.region ?? 'Not provided'],
+        ['District', data.district ?? 'Not provided'],
+        ['Community', data.community ?? 'Not provided'],
+        ['Business name', data.businessName ?? 'Not provided'],
+        ['Business address', data.businessAddress ?? 'Not provided'],
+        ['Type of work', data.typeOfWork ?? 'Not provided'],
+        ['Guarantor', data.guarantorName ?? 'Not provided'],
+        ['Guarantor phone', data.guarantorPhone ?? 'Not provided'],
+        ['Guarantor relationship', data.guarantorRelationship ?? 'Not provided'],
+        ['Registered by', data.registeredByOfficerName ?? 'Not provided'],
         ['Submitted', formatDisplayDate(data.registeredAt)],
-
-        ['Status', data.status],
-
+        ['Status', data.status ?? ''],
+        ['Photo on file', data.photoUrl ? 'Yes' : 'No'],
       ],
 
     });
@@ -285,7 +318,7 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
             document={exportDocument}
             filenameBase={`approval-${borrowerId}`}
             showIcons
-            permissions={[PERMISSION.EXPORT_REPORTS, PERMISSION.REVIEW_APPLICATIONS]}
+            permissions={[]}
           />
 
         ) : null}
@@ -362,27 +395,39 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
 
               </Select>
 
-              <PermissionGate permission={PERMISSION.MANAGE_GROUPS}>
-              <Button
-
-                type="button"
-
-                variant="secondary"
-
-                disabled={!selectedGroupId}
-
-                onClick={() =>
-
-                  setWorkflowMessage(`Group assignment recorded for ${data.fullName}.`)
-
-                }
-
-              >
-
-                Assign Group
-
-              </Button>
-              </PermissionGate>
+              {groups.length === 0 ? (
+                <div className="space-y-wilms-2">
+                  <Input
+                    aria-label="New group name"
+                    placeholder="Enter a group name"
+                    value={newGroupName}
+                    onChange={(event) => setNewGroupName(event.target.value)}
+                  />
+                  <PermissionGate permissions={[PERMISSION.APPROVE_BORROWERS, PERMISSION.MANAGE_GROUPS]}>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      disabled={!newGroupName.trim() || createGroupMutation.isPending}
+                      onClick={() => createGroupMutation.mutate()}
+                    >
+                      {createGroupMutation.isPending ? 'Creating…' : 'Create group & add borrower'}
+                    </Button>
+                  </PermissionGate>
+                </div>
+              ) : (
+                <PermissionGate permissions={[PERMISSION.MANAGE_GROUPS, PERMISSION.APPROVE_BORROWERS]}>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={!selectedGroupId}
+                    onClick={() =>
+                      setWorkflowMessage(`Group assignment recorded for ${data.fullName}.`)
+                    }
+                  >
+                    Assign Group
+                  </Button>
+                </PermissionGate>
+              )}
 
             </label>
 
