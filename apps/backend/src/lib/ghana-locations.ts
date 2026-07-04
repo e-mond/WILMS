@@ -89,3 +89,19 @@ export function getGhanaCities(districtId: string): LocationCity[] {
   ensureCache();
   return cachedCities!.filter((entry) => entry.districtId === districtId).map((entry) => ({ ...entry }));
 }
+
+export function searchGhanaLocations(query: string, limit = 20) {
+  ensureCache();
+  const normalized = query.trim().toLowerCase();
+  if (!normalized) {
+    return [];
+  }
+
+  const matches = [
+    ...cachedRegions!.map((entry) => ({ type: 'region' as const, ...entry })),
+    ...cachedDistricts!.map((entry) => ({ type: 'district' as const, ...entry })),
+    ...cachedCities!.map((entry) => ({ type: 'city' as const, ...entry })),
+  ].filter((entry) => entry.name.toLowerCase().includes(normalized));
+
+  return matches.slice(0, limit);
+}

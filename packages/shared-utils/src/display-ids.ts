@@ -71,6 +71,24 @@ export function formatEntityDisplayId(input: {
     : `ENT-${typeCode}-${suffix}`;
 }
 
+export function formatUserDisplayId(input: { sequence?: number; id?: string }): string {
+  if (input.sequence != null) {
+    return `USR-${String(input.sequence).padStart(6, '0')}`;
+  }
+
+  const suffix = input.id?.replace(/[^a-zA-Z0-9]/g, '').slice(-4).toUpperCase() ?? '0000';
+  return `USR-${suffix}`;
+}
+
+export function formatPaymentDisplayId(input: {
+  recordedAt?: string;
+  sequence?: number;
+}): string {
+  const dateKey = (input.recordedAt ?? new Date().toISOString()).slice(0, 10).replace(/-/g, '');
+  const sequence = input.sequence ?? 1;
+  return `TXN-${dateKey}-${String(sequence).padStart(3, '0')}`;
+}
+
 export function isReadableWilmsId(value: string): boolean {
-  return /^(BWR|COL|GRP|LOAN|POOL|ENT)-/i.test(value.trim());
+  return /^(BWR|COL|GRP|LOAN|POOL|ENT|USR|TXN)-/i.test(value.trim());
 }

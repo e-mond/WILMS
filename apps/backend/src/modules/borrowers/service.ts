@@ -430,3 +430,105 @@ export async function checkBlacklist(input: { phone?: string; idType?: string; i
 
   return { blocked };
 }
+
+export async function checkGuarantorEligibility(input: {
+  guarantorPhone: string;
+  guarantorIdNumber?: string;
+  guarantorName: string;
+  borrowerPhone?: string;
+  isGroupLeader?: boolean;
+  isApprovedCommunityLeader?: boolean;
+}) {
+  const { evaluateGuarantorEligibility } = await import('./guarantor-eligibility.js');
+  return evaluateGuarantorEligibility(input, await listBorrowers());
+}
+
+export async function listRegistrationDraftsForOfficer(officerId: string) {
+  if (!isDatabaseEnabled()) {
+    return [];
+  }
+
+  const { listRegistrationDrafts } = await import(
+    '../../repositories/registration-draft.repository.js'
+  );
+  return listRegistrationDrafts(officerId);
+}
+
+export async function getRegistrationDraft(id: string, officerId: string) {
+  if (!isDatabaseEnabled()) {
+    throw new Error('NOT_FOUND');
+  }
+
+  const { getRegistrationDraft } = await import(
+    '../../repositories/registration-draft.repository.js'
+  );
+  const draft = await getRegistrationDraft(id, officerId);
+
+  if (!draft) {
+    throw new Error('NOT_FOUND');
+  }
+
+  return draft;
+}
+
+export async function createRegistrationDraft(
+  officerId: string,
+  draftPayload: Record<string, unknown> = {},
+) {
+  if (!isDatabaseEnabled()) {
+    throw new Error('VALIDATION:Database is required for registration drafts.');
+  }
+
+  const { createRegistrationDraft } = await import(
+    '../../repositories/registration-draft.repository.js'
+  );
+  return createRegistrationDraft(officerId, draftPayload);
+}
+
+export async function updateRegistrationDraft(
+  id: string,
+  officerId: string,
+  draftPayload: Record<string, unknown>,
+  lastCompletedStep: number,
+) {
+  if (!isDatabaseEnabled()) {
+    throw new Error('NOT_FOUND');
+  }
+
+  const { updateRegistrationDraft } = await import(
+    '../../repositories/registration-draft.repository.js'
+  );
+  const draft = await updateRegistrationDraft(id, officerId, draftPayload, lastCompletedStep);
+
+  if (!draft) {
+    throw new Error('NOT_FOUND');
+  }
+
+  return draft;
+}
+
+export async function deleteRegistrationDraft(id: string, officerId: string) {
+  if (!isDatabaseEnabled()) {
+    throw new Error('NOT_FOUND');
+  }
+
+  const { deleteRegistrationDraft } = await import(
+    '../../repositories/registration-draft.repository.js'
+  );
+  const deleted = await deleteRegistrationDraft(id, officerId);
+
+  if (!deleted) {
+    throw new Error('NOT_FOUND');
+  }
+}
+
+export async function submitRegistrationDraft(id: string, officerId: string) {
+  const draft = await getRegistrationDraft(id, officerId);
+  const payload = {
+    ...draft.draftPayload,
+    registeredByOfficerId: officerId,
+  };
+  const result = await registerBorrower(payload, officerId);
+  await deleteRegistrationDraft(id, officerId);
+  return result;
+}

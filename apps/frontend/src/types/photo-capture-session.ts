@@ -3,6 +3,8 @@ export interface PhotoCaptureSession {
   captureUrl: string;
   expiresAt: string;
   status: 'PENDING' | 'CAPTURED' | 'EXPIRED';
+  uploadId?: string;
+  previewUrl?: string;
   capturedFileName?: string;
   capturedMimeType?: string;
   capturedDataUrl?: string;
