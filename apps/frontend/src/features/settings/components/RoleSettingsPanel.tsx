@@ -22,6 +22,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { PhotoUpload } from '@/components/forms/PhotoUpload';
 import { UPLOAD_PURPOSE } from '@/types/upload';
 import { resolvePersonPhotoUrl } from '@/utils/person-photo';
+import { resolveUserDisplayId } from '@/utils/entity-display-id';
 import { cn } from '@/utils/cn';
 
 function ProfileSection() {
@@ -52,7 +53,7 @@ function ProfileSection() {
         />
         <div>
           <p className="text-body font-semibold text-text-primary">{displayName}</p>
-          <p className="text-small text-text-muted">{user.role.replace(/_/g, ' ')}</p>
+          <p className="text-small text-text-muted">{user.role?.replace(/_/g, ' ') ?? 'User'}</p>
         </div>
       </div>
       <SettingsSettingRow
@@ -77,12 +78,12 @@ function ProfileSection() {
       <SettingsSettingRow
         title="User ID"
         description="Internal account identifier."
-        control={<Input defaultValue={user.id} readOnly aria-label="User ID" />}
+        control={<Input defaultValue={resolveUserDisplayId(user.id)} readOnly aria-label="User ID" />}
       />
       <SettingsSettingRow
         title="Role"
         description="Current access level."
-        control={<Input defaultValue={user.role.replace(/_/g, ' ')} readOnly aria-label="Role" />}
+        control={<Input defaultValue={user.role?.replace(/_/g, ' ') ?? 'User'} readOnly aria-label="Role" />}
       />
     </SettingsSectionCard>
   );

@@ -40,9 +40,14 @@ export const env = {
   databaseUrl: process.env.DATABASE_URL?.trim() || undefined,
   trustProxy: resolveTrustProxy(),
   trustProxyHops: Number(process.env.WILMS_TRUST_PROXY_HOPS ?? 1),
-  gitCommit:
-    process.env.WILMS_GIT_COMMIT?.trim() ||
-    process.env.RAILWAY_GIT_COMMIT_SHA?.trim() ||
-    process.env.VERCEL_GIT_COMMIT_SHA?.trim() ||
-    undefined,
+  gitCommit: resolveGitCommit(),
+  appUrl: process.env.WILMS_APP_URL?.trim() || process.env.WILMS_CORS_ORIGIN?.trim() || undefined,
 };
+
+function resolveGitCommit(): string | undefined {
+  const railway = process.env.RAILWAY_GIT_COMMIT_SHA?.trim();
+  const vercel = process.env.VERCEL_GIT_COMMIT_SHA?.trim();
+  const manual = process.env.WILMS_GIT_COMMIT?.trim();
+  // Platform-injected SHAs win over stale manual dashboard overrides.
+  return railway || vercel || manual || undefined;
+}

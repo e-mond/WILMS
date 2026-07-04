@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { AppLockNavbarButton } from '@/components/layout/shell/navbar/AppLockNavbarButton';
-import { ConnectionStatusChip } from '@/components/layout/shell/navbar/ConnectionStatusChip';
 import { GlobalSearchTrigger } from '@/components/layout/shell/navbar/GlobalSearchPanel';
 import { NotificationInboxTrigger } from '@/components/layout/shell/navbar/NotificationInboxPanel';
 import { ShellMobileOverflowMenu } from '@/components/layout/shell/navbar/ShellMobileOverflowMenu';
@@ -66,7 +65,6 @@ export function ShellNavbarActions({
   return (
     <>
       <div className="flex min-w-0 shrink-0 flex-nowrap items-center gap-1 sm:gap-1.5 lg:gap-3">
-        {!compact ? <ConnectionStatusChip compact={compact} /> : null}
         {user && !hideSearch && !compact ? <GlobalSearchTrigger variant="desktop" /> : null}
         {user && !hideSearch && compact ? <GlobalSearchTrigger /> : null}
         {user ? (

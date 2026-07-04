@@ -7,7 +7,6 @@ import { NotificationInboxTrigger } from '@/components/layout/shell/navbar/Notif
 import { useAuth } from '@/hooks/useAuth';
 import { useShellPageTitle } from '@/hooks/useShellPageTitle';
 import { resolveShellBreadcrumbs } from '@/utils/shell-breadcrumbs';
-import { cn } from '@/utils/cn';
 
 function formatHeaderDate(date: Date): string {
   return new Intl.DateTimeFormat('en-GB', {
@@ -23,13 +22,11 @@ function formatHeaderDate(date: Date): string {
 
 export interface OfficeShellHeaderProps {
   roleLabel: string;
-  showLiveBadge?: boolean;
   variant?: 'standard' | 'executive';
 }
 
 export function OfficeShellHeader({
   roleLabel,
-  showLiveBadge = false,
   variant = 'standard',
 }: OfficeShellHeaderProps) {
   const { user } = useAuth();
@@ -61,25 +58,6 @@ export function OfficeShellHeader({
             <h1 className="truncate text-heading-1 font-bold text-text-primary">{pageTitle}</h1>
           )}
 
-          {showLiveBadge && (
-            <span
-              className={cn(
-                'inline-flex shrink-0 items-center gap-1.5 rounded-full border px-wilms-2 py-0.5 text-small font-semibold',
-                isExecutive
-                  ? 'border-status-at-risk/40 bg-status-at-risk-light text-status-at-risk'
-                  : 'border-status-active/40 bg-status-active-light text-status-active',
-              )}
-            >
-              <span
-                className={cn(
-                  'h-1.5 w-1.5 rounded-full animate-pulse',
-                  isExecutive ? 'bg-status-at-risk' : 'bg-status-active',
-                )}
-                aria-hidden="true"
-              />
-              Online
-            </span>
-          )}
         </div>
 
         {/* Right: date · theme · notifications · user */}

@@ -3,7 +3,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import Link from 'next/link';
 import { AppLockNavbarButton } from '@/components/layout/shell/navbar/AppLockNavbarButton';
-import { ConnectionStatusChip } from '@/components/layout/shell/navbar/ConnectionStatusChip';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/hooks/useAuth';
@@ -101,10 +100,6 @@ export function ShellMobileOverflowMenu() {
 
             <div role="menuitem" className="flex min-h-[44px] items-center px-wilms-2 py-wilms-1">
               <ThemeToggle />
-            </div>
-
-            <div role="menuitem" className="flex min-h-[44px] items-center px-wilms-2 py-wilms-1">
-              <ConnectionStatusChip />
             </div>
           </div>
         ) : null}

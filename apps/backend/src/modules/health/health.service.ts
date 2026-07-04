@@ -154,11 +154,7 @@ export async function buildHealthReport(): Promise<HealthReport> {
     runtime: {
       nodeVersion: process.version,
       deployedAt: process.env.WILMS_DEPLOYED_AT?.trim() || null,
-      buildId:
-        process.env.RAILWAY_DEPLOYMENT_ID?.trim() ||
-        process.env.RAILWAY_GIT_COMMIT_SHA?.trim() ||
-        process.env.VERCEL_GIT_COMMIT_SHA?.trim() ||
-        null,
+      buildId: process.env.RAILWAY_DEPLOYMENT_ID?.trim() || null,
     },
     schema: {
       status: schemaReport.status,

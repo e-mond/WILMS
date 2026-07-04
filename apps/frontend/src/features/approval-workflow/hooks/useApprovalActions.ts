@@ -1,38 +1,16 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { AUDIT_ACTION, AUDIT_TARGET_ENTITY } from '@/constants/audit';
 import { pendingApplicationsQueryKey } from '@/features/approval-workflow/hooks/usePendingApplications';
 import { reviewedApplicationsQueryKey } from '@/features/approval-workflow/hooks/useReviewedApplications';
 import { borrowerReviewQueryKey } from '@/features/approval-workflow/hooks/useBorrowerReview';
-import { auditService, borrowerService } from '@/services';
+import { borrowerService } from '@/services';
 import { useAuthStore } from '@/state/authStore';
 import type { BlacklistBorrowerInput, RejectBorrowerInput } from '@/types/approval';
-import type { CreateAuditEntryInput } from '@/types/audit';
 import {
   notifyMutationError,
   notifyMutationSuccess,
 } from '@/utils/mutation-feedback';
-
-async function logApprovalAuditEntry(
-  borrowerId: string,
-  input: Pick<CreateAuditEntryInput, 'action' | 'reason'>,
-): Promise<void> {
-  const user = useAuthStore.getState().user;
-
-  if (!user) {
-    return;
-  }
-
-  await auditService.createEntry({
-    action: input.action,
-    actorId: user.id,
-    actorDisplayName: user.displayName,
-    targetEntityId: borrowerId,
-    targetEntityType: AUDIT_TARGET_ENTITY.BORROWER,
-    reason: input.reason,
-  });
-}
 
 export function useApprovalActions(borrowerId: string) {
   const queryClient = useQueryClient();
@@ -53,7 +31,6 @@ export function useApprovalActions(borrowerId: string) {
   const approveMutation = useMutation({
     mutationFn: async () => {
       const result = await borrowerService.approveBorrower(borrowerId);
-      await logApprovalAuditEntry(borrowerId, { action: AUDIT_ACTION.BORROWER_APPROVED });
       await invalidateApprovalQueries();
       return result;
     },
@@ -68,10 +45,6 @@ export function useApprovalActions(borrowerId: string) {
   const rejectMutation = useMutation({
     mutationFn: async (input: RejectBorrowerInput) => {
       const result = await borrowerService.rejectBorrower(borrowerId, input);
-      await logApprovalAuditEntry(borrowerId, {
-        action: AUDIT_ACTION.BORROWER_REJECTED,
-        reason: input.reason,
-      });
       await invalidateApprovalQueries();
       return result;
     },
@@ -86,10 +59,6 @@ export function useApprovalActions(borrowerId: string) {
   const blacklistMutation = useMutation({
     mutationFn: async (input: BlacklistBorrowerInput) => {
       const result = await borrowerService.blacklistBorrower(borrowerId, input);
-      await logApprovalAuditEntry(borrowerId, {
-        action: AUDIT_ACTION.BORROWER_BLACKLISTED,
-        reason: input.reason,
-      });
       await invalidateApprovalQueries();
       return result;
     },

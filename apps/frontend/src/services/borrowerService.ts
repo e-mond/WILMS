@@ -24,6 +24,15 @@ import type {
 import type { RegisterBorrowerPayload } from '@/types/borrower-registration';
 import type { IBorrowerService } from '@/types/services';
 
+export interface RegistrationDraftRecord {
+  id: string;
+  officerUserId: string;
+  draftPayload: Record<string, unknown>;
+  lastCompletedStep: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 function buildQuery(path: string, params: Record<string, string>): string {
   const searchParams = new URLSearchParams(params);
   return `${path}?${searchParams.toString()}`;
@@ -131,6 +140,33 @@ const borrowerService: IBorrowerService = {
       '/borrowers/check-guarantor-eligibility',
       input,
     );
+  },
+
+  createRegistrationDraft(draftPayload: Record<string, unknown> = {}) {
+    return apiClient.post<RegistrationDraftRecord>('/borrowers/drafts', { draftPayload });
+  },
+
+  getRegistrationDraft(id: string) {
+    return apiClient.get<RegistrationDraftRecord>(`/borrowers/drafts/${id}`);
+  },
+
+  updateRegistrationDraft(
+    id: string,
+    draftPayload: Record<string, unknown>,
+    lastCompletedStep: number,
+  ) {
+    return apiClient.patch<RegistrationDraftRecord>(`/borrowers/drafts/${id}`, {
+      draftPayload,
+      lastCompletedStep,
+    });
+  },
+
+  submitRegistrationDraft(id: string) {
+    return apiClient.post<BorrowerSummary>(`/borrowers/drafts/${id}/submit`, {});
+  },
+
+  deleteRegistrationDraft(id: string) {
+    return apiClient.delete<{ deleted: boolean }>(`/borrowers/drafts/${id}`);
   },
 };
 

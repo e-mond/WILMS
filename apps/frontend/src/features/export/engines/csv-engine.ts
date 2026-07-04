@@ -7,12 +7,14 @@ import {
 } from '@/features/export/constants/branding';
 import type { WilmsExportDocument } from '@/features/export/types';
 
-export function escapeCsvCell(value: string): string {
-  if (value.includes('"') || value.includes(',') || value.includes('\n')) {
-    return `"${value.replace(/"/g, '""')}"`;
+export function escapeCsvCell(value: string | null | undefined): string {
+  const normalized = value ?? '';
+
+  if (normalized.includes('"') || normalized.includes(',') || normalized.includes('\n')) {
+    return `"${normalized.replace(/"/g, '""')}"`;
   }
 
-  return value;
+  return normalized;
 }
 
 function buildMetadataLines(document: WilmsExportDocument): string[] {

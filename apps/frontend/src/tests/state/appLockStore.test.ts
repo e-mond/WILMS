@@ -12,6 +12,7 @@ describe('appLockStore', () => {
       isLocked: false,
       failedAttempts: 0,
       lastActivityAt: Date.now(),
+      sessionStartedAt: Date.now(),
     });
     localStorage.removeItem('wilms-app-lock');
   });
@@ -36,6 +37,13 @@ describe('appLockStore', () => {
 
     const correct = useAppLockStore.getState().verifyAndUnlock('123456', 'user-collector');
     expect(correct.success).toBe(true);
+    expect(useAppLockStore.getState().isLocked).toBe(false);
+  });
+
+  it('does not lock during the post-login grace period', () => {
+    useAppLockStore.getState().setPin('123456', 'user-collector');
+    useAppLockStore.setState({ sessionStartedAt: Date.now() });
+    useAppLockStore.getState().lock();
     expect(useAppLockStore.getState().isLocked).toBe(false);
   });
 

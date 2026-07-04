@@ -8,6 +8,7 @@ import {
   getGhanaCities,
   getGhanaDistricts,
   getGhanaRegions,
+  searchGhanaLocations,
 } from '../../lib/ghana-locations.js';
 
 export const locationsRouter = Router();
@@ -31,6 +32,13 @@ locationsRouter.get(
   '/locations/districts/:id/cities',
   asyncHandler(async (req, res) => {
     sendData(res, getGhanaCities(req.params.id!));
+  }),
+);
+
+locationsRouter.get(
+  '/locations/search',
+  asyncHandler(async (req, res) => {
+    sendData(res, searchGhanaLocations(String(req.query.q ?? '')));
   }),
 );
 

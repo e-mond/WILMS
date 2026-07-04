@@ -4,6 +4,8 @@ import {
   formatGroupDisplayId,
   formatLoanDisplayId,
   formatPoolDisplayId,
+  formatUserDisplayId,
+  formatPaymentDisplayId,
   isReadableWilmsId,
 } from '@wilms/shared-utils';
 
@@ -13,6 +15,8 @@ export {
   formatGroupDisplayId,
   formatLoanDisplayId,
   formatPoolDisplayId,
+  formatUserDisplayId,
+  formatPaymentDisplayId,
   isReadableWilmsId,
 };
 
@@ -82,6 +86,18 @@ export function resolveGroupDisplayId(group: {
   }
 
   return isReadableWilmsId(group.id) ? group.id : group.id;
+}
+
+export function resolveUserDisplayId(userId: string | null | undefined, sequence?: number): string {
+  if (!userId?.trim()) {
+    return formatUserDisplayId({ sequence });
+  }
+
+  if (isReadableWilmsId(userId)) {
+    return userId.toUpperCase();
+  }
+
+  return formatUserDisplayId({ id: userId, sequence });
 }
 
 export function resolveEntityDisplayId(flag: {

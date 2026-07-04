@@ -52,10 +52,25 @@ export function PhoneCaptureSessionPanel({
 
         setSession(next);
 
-        if (next.status === 'CAPTURED' && next.capturedDataUrl) {
-          onCaptured(
-            dataUrlToFile(next.capturedDataUrl, next.capturedFileName ?? `${next.sessionToken}.jpg`),
-          );
+        if (next.status === 'CAPTURED' && (next.capturedDataUrl || next.previewUrl)) {
+          if (next.capturedDataUrl) {
+            onCaptured(
+              dataUrlToFile(next.capturedDataUrl, next.capturedFileName ?? `${next.sessionToken}.jpg`),
+            );
+            return;
+          }
+
+          if (next.previewUrl) {
+            void fetch(next.previewUrl)
+              .then((response) => response.blob())
+              .then((blob) => {
+                onCaptured(
+                  new File([blob], next.capturedFileName ?? `${next.sessionToken}.jpg`, {
+                    type: next.capturedMimeType ?? blob.type ?? 'image/jpeg',
+                  }),
+                );
+              });
+          }
         }
       });
     }, 2000);
