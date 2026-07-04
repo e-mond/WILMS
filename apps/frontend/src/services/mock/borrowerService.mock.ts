@@ -447,6 +447,62 @@ const borrowerServiceMock: IBorrowerService = {
     );
     return evaluate(input);
   },
+
+  async createRegistrationDraft(draftPayload: Record<string, unknown> = {}) {
+    await simulateDelay();
+    const now = new Date().toISOString();
+    return {
+      id: `draft-${Date.now()}`,
+      officerUserId: 'mock-officer',
+      draftPayload,
+      lastCompletedStep: 0,
+      createdAt: now,
+      updatedAt: now,
+    };
+  },
+
+  async getRegistrationDraft(id: string) {
+    await simulateDelay();
+    return {
+      id,
+      officerUserId: 'mock-officer',
+      draftPayload: {},
+      lastCompletedStep: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+  },
+
+  async updateRegistrationDraft(
+    id: string,
+    draftPayload: Record<string, unknown>,
+    lastCompletedStep: number,
+  ) {
+    await simulateDelay();
+    const now = new Date().toISOString();
+    return {
+      id,
+      officerUserId: 'mock-officer',
+      draftPayload,
+      lastCompletedStep,
+      createdAt: now,
+      updatedAt: now,
+    };
+  },
+
+  async submitRegistrationDraft(id: string) {
+    await simulateDelay();
+    const entry = getBorrowerRegistryEntries()[0];
+    if (!entry) {
+      throw new ApiError('Draft not found.', API_ERROR_CODE.NOT_FOUND, 404);
+    }
+    return registryEntryToSummary(entry);
+  },
+
+  async deleteRegistrationDraft(_id: string) {
+    await simulateDelay();
+    return { deleted: true };
+  },
 };
 
 export function resetMockBorrowerRegistrations(): void {

@@ -12,6 +12,18 @@ export function checkGuarantorEligibility(
 ): GuarantorEligibilityResult {
   const normalizedPhone = input.guarantorPhone.trim();
   const normalizedName = input.guarantorName.trim().toLowerCase();
+  const borrowerPhone = input.borrowerPhone?.trim();
+
+  if (borrowerPhone && normalizedPhone === borrowerPhone) {
+    return {
+      isEligible: false,
+      activeGuaranteeCount: 0,
+      maxGuarantees: MAX_GUARANTOR_GUARANTEES,
+      isDuplicateRegistration: false,
+      validationStatus: GUARANTOR_VALIDATION_STATUS.VALID,
+      message: 'Guarantor phone must differ from borrower phone.',
+    };
+  }
 
   const activeGuaranteeCount = getBorrowerRegistryEntries().filter(
     (entry: BorrowerRegistryEntry) => entry.profile.guarantorPhone === normalizedPhone,

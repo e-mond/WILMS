@@ -14,6 +14,7 @@ export interface GuarantorEligibilityInput {
   guarantorPhone: string;
   guarantorIdNumber: string;
   guarantorName: string;
+  borrowerPhone?: string;
   isGroupLeader?: boolean;
   isApprovedCommunityLeader?: boolean;
 }

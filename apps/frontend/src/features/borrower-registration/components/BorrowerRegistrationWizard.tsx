@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
@@ -121,7 +121,10 @@ export function BorrowerRegistrationWizard() {
     if (editId) {
       void borrowerService.getRegistrationDraft(editId).then((draft) => {
         setDraftId(draft.id);
-        reset({ ...DEFAULT_REGISTRATION_VALUES, ...(draft.draftPayload as BorrowerRegistrationFormValues) });
+        reset({
+          ...DEFAULT_REGISTRATION_VALUES,
+          ...(draft.draftPayload as unknown as BorrowerRegistrationFormValues),
+        });
         setCurrentStep(Math.min(draft.lastCompletedStep + 1, REGISTRATION_STEPS.length - 1));
       });
       return;
@@ -141,7 +144,7 @@ export function BorrowerRegistrationWizard() {
 
     await borrowerService.updateRegistrationDraft(
       draftId,
-      getValues() as Record<string, unknown>,
+      getValues() as unknown as Record<string, unknown>,
       step,
     );
   };
