@@ -104,8 +104,8 @@ export function WilmsExportTrigger({
         disabled={disabled}
         onClick={() => setIsOpen(true)}
       >
-        {showIcon && <ExportDownloadIcon />}
-        {label}
+        {showIcon ? <ExportDownloadIcon /> : null}
+        <span>{label}</span>
       </Button>
       <WilmsExportModal
         isOpen={isOpen}

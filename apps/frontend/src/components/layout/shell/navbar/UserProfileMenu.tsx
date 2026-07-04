@@ -61,7 +61,9 @@ export function UserProfileMenu({ roleLabel, compact = false }: UserProfileMenuP
         aria-expanded={isOpen}
         aria-haspopup="menu"
         aria-controls={menuId}
-        aria-label={displayName}
+        aria-label={
+          compact ? `Account menu for ${displayName}` : undefined
+        }
         onClick={() => setIsOpen((open) => !open)}
       >
         <div

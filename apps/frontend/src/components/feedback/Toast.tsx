@@ -54,7 +54,6 @@ export function Toast({ toast, onDismiss }: ToastProps) {
       <Button
         variant="ghost"
         size="sm"
-        aria-label={`Dismiss ${toast.title} notification`}
         onClick={() => onDismiss(toast.id)}
         className="shrink-0"
       >
