@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Avatar } from '@/components/data-display/Avatar';
 import { AppLockSetupPanel } from '@/features/app-lock/components/AppLockSetupPanel';
 import {
@@ -12,6 +12,7 @@ import { SettingsRolesSection } from '@/features/settings/components/SettingsRol
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Switch } from '@/components/ui/Switch';
+import { Button } from '@/components/ui/Button';
 import {
   ROLE_SETTINGS_SECTION,
   ROLE_SETTINGS_SECTIONS,
@@ -19,6 +20,10 @@ import {
 } from '@/constants/role-settings-sections';
 import { USER_ROLE, type UserRole } from '@/constants/roles';
 import { useAuth } from '@/hooks/useAuth';
+import { useNotificationSound } from '@/hooks/useNotificationSound';
+import { useToast } from '@/hooks/useToast';
+import { useSettingsMe, useUpdateSettingsMe } from '@/features/settings/hooks/useSettingsMe';
+import { roleSettingsPreferences } from '@/features/settings/utils/role-settings-preferences';
 import { PhotoUpload } from '@/components/forms/PhotoUpload';
 import { UPLOAD_PURPOSE } from '@/types/upload';
 import { resolvePersonPhotoUrl } from '@/utils/person-photo';
@@ -27,13 +32,25 @@ import { cn } from '@/utils/cn';
 
 function ProfileSection() {
   const { user } = useAuth();
+  const toast = useToast();
+  const { data: me } = useSettingsMe();
+  const updateMe = useUpdateSettingsMe();
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState('');
+  const [email, setEmail] = useState('');
 
-  if (!user?.id) {
+  useEffect(() => {
+    if (me) {
+      setDisplayName(me.displayName);
+      setEmail(me.email);
+    }
+  }, [me]);
+
+  if (!user?.id || !me) {
     return null;
   }
 
-  const displayName = user.displayName ?? 'WILMS User';
+  const resolvedDisplayName = displayName || user.displayName || 'WILMS User';
 
   return (
     <SettingsSectionCard
@@ -43,16 +60,16 @@ function ProfileSection() {
     >
       <div className="mb-wilms-4 flex items-center gap-wilms-3">
         <Avatar
-          label={displayName}
+          label={resolvedDisplayName}
           photoUrl={resolvePersonPhotoUrl({
-            name: displayName,
+            name: resolvedDisplayName,
             id: user.id,
             uploadUrl: profilePhotoUrl,
           })}
           size="lg"
         />
         <div>
-          <p className="text-body font-semibold text-text-primary">{displayName}</p>
+          <p className="text-body font-semibold text-text-primary">{resolvedDisplayName}</p>
           <p className="text-small text-text-muted">{user.role?.replace(/_/g, ' ') ?? 'User'}</p>
         </div>
       </div>
@@ -73,7 +90,25 @@ function ProfileSection() {
       <SettingsSettingRow
         title="Display Name"
         description="Shown in the shell header and audit trail."
-        control={<Input defaultValue={displayName} readOnly aria-label="Display name" />}
+        control={
+          <Input
+            value={displayName}
+            onChange={(event) => setDisplayName(event.target.value)}
+            aria-label="Display name"
+          />
+        }
+      />
+      <SettingsSettingRow
+        title="Email Address"
+        description="Primary contact email."
+        control={
+          <Input
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            aria-label="Email address"
+            type="email"
+          />
+        }
       />
       <SettingsSettingRow
         title="User ID"
@@ -85,11 +120,41 @@ function ProfileSection() {
         description="Current access level."
         control={<Input defaultValue={user.role?.replace(/_/g, ' ') ?? 'User'} readOnly aria-label="Role" />}
       />
+      <div className="flex justify-end pt-wilms-2">
+        <Button
+          type="button"
+          size="sm"
+          disabled={updateMe.isPending}
+          onClick={() => {
+            void updateMe
+              .mutateAsync({ displayName, email })
+              .then(() => toast.success('Profile updated'))
+              .catch((error: unknown) => {
+                const message = error instanceof Error ? error.message : 'Try again shortly.';
+                toast.error('Unable to update profile', { message });
+              });
+          }}
+        >
+          Save profile
+        </Button>
+      </div>
     </SettingsSectionCard>
   );
 }
 
 function NotificationsSection() {
+  const toast = useToast();
+  const { setEnabled, isEnabled } = useNotificationSound();
+  const [pushNotifications, setPushNotifications] = useState(true);
+  const [emailSummaries, setEmailSummaries] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+
+  useEffect(() => {
+    setPushNotifications(roleSettingsPreferences.getPushNotifications());
+    setEmailSummaries(roleSettingsPreferences.getEmailSummaries());
+    setSoundEnabled(isEnabled());
+  }, [isEnabled]);
+
   return (
     <SettingsSectionCard
       title="Notifications"
@@ -99,18 +164,56 @@ function NotificationsSection() {
       <SettingsSettingRow
         title="Push Notifications"
         description="Receive in-app alerts for assigned work."
-        control={<Switch checked label="Push notifications" disabled onChange={() => undefined} />}
+        control={
+          <Switch
+            checked={pushNotifications}
+            label="Push notifications"
+            onChange={setPushNotifications}
+          />
+        }
       />
       <SettingsSettingRow
         title="Email Summaries"
         description="Daily digest of activity."
-        control={<Switch checked={false} label="Email summaries" disabled onChange={() => undefined} />}
+        control={
+          <Switch checked={emailSummaries} label="Email summaries" onChange={setEmailSummaries} />
+        }
       />
+      <SettingsSettingRow
+        title="Notification Sounds"
+        description="Play tones on login, logout, and workflow events."
+        control={
+          <Switch checked={soundEnabled} label="Notification sounds" onChange={setSoundEnabled} />
+        }
+      />
+      <div className="flex justify-end pt-wilms-2">
+        <Button
+          type="button"
+          size="sm"
+          onClick={() => {
+            roleSettingsPreferences.setPushNotifications(pushNotifications);
+            roleSettingsPreferences.setEmailSummaries(emailSummaries);
+            setEnabled(soundEnabled);
+            toast.success('Notification preferences saved');
+          }}
+        >
+          Save notifications
+        </Button>
+      </div>
     </SettingsSectionCard>
   );
 }
 
 function SyncSection() {
+  const toast = useToast();
+  const [autoSync, setAutoSync] = useState(true);
+  const [syncInterval, setSyncInterval] = useState('15');
+
+  useEffect(() => {
+    setAutoSync(roleSettingsPreferences.getAutoSync());
+    setSyncInterval(roleSettingsPreferences.getSyncInterval());
+  }, []);
+
   return (
     <SettingsSectionCard
       title="Sync"
@@ -120,23 +223,49 @@ function SyncSection() {
       <SettingsSettingRow
         title="Auto Sync"
         description="Upload pending records when online."
-        control={<Switch checked label="Auto sync" disabled onChange={() => undefined} />}
+        control={<Switch checked={autoSync} label="Auto sync" onChange={setAutoSync} />}
       />
       <SettingsSettingRow
         title="Sync Interval"
         description="Background refresh frequency."
         control={
-          <Select aria-label="Sync interval" defaultValue="15" disabled>
+          <Select
+            aria-label="Sync interval"
+            value={syncInterval}
+            onChange={(event) => setSyncInterval(event.target.value)}
+          >
             <option value="15">Every 15 minutes</option>
             <option value="30">Every 30 minutes</option>
           </Select>
         }
       />
+      <div className="flex justify-end pt-wilms-2">
+        <Button
+          type="button"
+          size="sm"
+          onClick={() => {
+            roleSettingsPreferences.setAutoSync(autoSync);
+            roleSettingsPreferences.setSyncInterval(syncInterval);
+            toast.success('Sync preferences saved');
+          }}
+        >
+          Save sync settings
+        </Button>
+      </div>
     </SettingsSectionCard>
   );
 }
 
 function DeviceSection() {
+  const toast = useToast();
+  const [gpsVerification, setGpsVerification] = useState(true);
+  const [lowDataMode, setLowDataMode] = useState(false);
+
+  useEffect(() => {
+    setGpsVerification(roleSettingsPreferences.getGpsVerification());
+    setLowDataMode(roleSettingsPreferences.getLowDataMode());
+  }, []);
+
   return (
     <SettingsSectionCard
       title="Device Settings"
@@ -146,18 +275,42 @@ function DeviceSection() {
       <SettingsSettingRow
         title="GPS Verification"
         description="Require location on collections."
-        control={<Switch checked label="GPS verification" disabled onChange={() => undefined} />}
+        control={
+          <Switch checked={gpsVerification} label="GPS verification" onChange={setGpsVerification} />
+        }
       />
       <SettingsSettingRow
         title="Low Data Mode"
         description="Reduce image upload size in the field."
-        control={<Switch checked={false} label="Low data mode" disabled onChange={() => undefined} />}
+        control={<Switch checked={lowDataMode} label="Low data mode" onChange={setLowDataMode} />}
       />
+      <div className="flex justify-end pt-wilms-2">
+        <Button
+          type="button"
+          size="sm"
+          onClick={() => {
+            roleSettingsPreferences.setGpsVerification(gpsVerification);
+            roleSettingsPreferences.setLowDataMode(lowDataMode);
+            toast.success('Device preferences saved');
+          }}
+        >
+          Save device settings
+        </Button>
+      </div>
     </SettingsSectionCard>
   );
 }
 
 function CameraSection() {
+  const toast = useToast();
+  const [preferredCapture, setPreferredCapture] = useState('mobile');
+  const [passportCropGuide, setPassportCropGuide] = useState(true);
+
+  useEffect(() => {
+    setPreferredCapture(roleSettingsPreferences.getPreferredCapture());
+    setPassportCropGuide(roleSettingsPreferences.getPassportCropGuide());
+  }, []);
+
   return (
     <SettingsSectionCard
       title="Camera Settings"
@@ -168,7 +321,11 @@ function CameraSection() {
         title="Preferred Capture"
         description="Default workflow when both options are available."
         control={
-          <Select aria-label="Preferred capture" defaultValue="mobile" disabled>
+          <Select
+            aria-label="Preferred capture"
+            value={preferredCapture}
+            onChange={(event) => setPreferredCapture(event.target.value)}
+          >
             <option value="mobile">Capture using mobile</option>
             <option value="device">Take photo on this device</option>
           </Select>
@@ -177,8 +334,23 @@ function CameraSection() {
       <SettingsSettingRow
         title="Passport Crop Guide"
         description="Show framing overlay during capture."
-        control={<Switch checked label="Passport crop guide" disabled onChange={() => undefined} />}
+        control={
+          <Switch checked={passportCropGuide} label="Passport crop guide" onChange={setPassportCropGuide} />
+        }
       />
+      <div className="flex justify-end pt-wilms-2">
+        <Button
+          type="button"
+          size="sm"
+          onClick={() => {
+            roleSettingsPreferences.setPreferredCapture(preferredCapture);
+            roleSettingsPreferences.setPassportCropGuide(passportCropGuide);
+            toast.success('Camera preferences saved');
+          }}
+        >
+          Save camera settings
+        </Button>
+      </div>
     </SettingsSectionCard>
   );
 }
@@ -209,6 +381,15 @@ function SecuritySection() {
 }
 
 function AuditPreferencesSection() {
+  const toast = useToast();
+  const [highRiskAlerts, setHighRiskAlerts] = useState(true);
+  const [defaultExportScope, setDefaultExportScope] = useState('30');
+
+  useEffect(() => {
+    setHighRiskAlerts(roleSettingsPreferences.getHighRiskAlerts());
+    setDefaultExportScope(roleSettingsPreferences.getDefaultExportScope());
+  }, []);
+
   return (
     <SettingsSectionCard
       title="Audit Preferences"
@@ -218,18 +399,37 @@ function AuditPreferencesSection() {
       <SettingsSettingRow
         title="High-Risk Alerts"
         description="Notify on flagged audit events."
-        control={<Switch checked label="High-risk alerts" disabled onChange={() => undefined} />}
+        control={
+          <Switch checked={highRiskAlerts} label="High-risk alerts" onChange={setHighRiskAlerts} />
+        }
       />
       <SettingsSettingRow
         title="Default Export Scope"
         description="Preferred audit log range."
         control={
-          <Select aria-label="Default export scope" defaultValue="30" disabled>
+          <Select
+            aria-label="Default export scope"
+            value={defaultExportScope}
+            onChange={(event) => setDefaultExportScope(event.target.value)}
+          >
             <option value="30">Last 30 days</option>
             <option value="90">Last 90 days</option>
           </Select>
         }
       />
+      <div className="flex justify-end pt-wilms-2">
+        <Button
+          type="button"
+          size="sm"
+          onClick={() => {
+            roleSettingsPreferences.setHighRiskAlerts(highRiskAlerts);
+            roleSettingsPreferences.setDefaultExportScope(defaultExportScope);
+            toast.success('Audit preferences saved');
+          }}
+        >
+          Save audit preferences
+        </Button>
+      </div>
     </SettingsSectionCard>
   );
 }

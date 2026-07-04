@@ -297,12 +297,14 @@ function mapDemoUserToSettingsRecord(
 }
 
 export async function getSettings(): Promise<SystemSettings> {
+  const integrationStatus = getIntegrationStatus();
+
   if (!isDatabaseEnabled()) {
-    return { ...systemSettings };
+    return { ...systemSettings, integrationStatus };
   }
 
   const row = await systemSettingsRepo.getSystemSettingsRow();
-  return mapSystemSettingsRow(row);
+  return { ...mapSystemSettingsRow(row), integrationStatus };
 }
 
 function validateGroupSizeRules(minGroupSize: number, maxGroupSize: number): void {

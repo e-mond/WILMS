@@ -12,6 +12,7 @@ import {
   type BorrowerRecord,
 } from '../../db/persistence.js';
 import * as userRepo from '../../repositories/user.repository.js';
+import { resolveUploadAccessUrlById } from '../../infrastructure/uploads/index.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
 import { maybeSendBorrowerApprovalSms } from '../../infrastructure/sms/notifications.js';
 import { processApprovedBorrower } from '../group-formation/service.js';
@@ -44,6 +45,14 @@ async function resolveOfficerDisplayName(officerId: string): Promise<string> {
 
 function uploadContentUrl(uploadId?: string | null): string | undefined {
   return uploadId ? `/uploads/${uploadId}/content` : undefined;
+}
+
+async function resolvePhotoUrl(uploadId?: string | null): Promise<string | undefined> {
+  if (!uploadId) {
+    return undefined;
+  }
+
+  return resolveUploadAccessUrlById(uploadId);
 }
 
 function assertValidBorrowerId(idType: string, idNumber: string): string {
@@ -142,8 +151,12 @@ function toDetail(record: BorrowerRecord, sequence?: number) {
   };
 }
 
-function toReview(record: BorrowerRecord, officerDisplayName: string, sequence?: number) {
+async function toReview(record: BorrowerRecord, officerDisplayName: string, sequence?: number) {
   const detail = toDetail(record, sequence);
+  const [photoUrl, guarantorPhotoUrl] = await Promise.all([
+    resolvePhotoUrl(record.profile.photoUploadId),
+    resolvePhotoUrl(record.profile.guarantorPhotoUploadId),
+  ]);
 
   return {
     ...detail,
@@ -170,8 +183,8 @@ function toReview(record: BorrowerRecord, officerDisplayName: string, sequence?:
     guarantorRelationship: record.profile.guarantorRelationship ?? '',
     photoFileName: record.profile.photoFileName ?? '',
     photoMimeType: record.profile.photoMimeType ?? '',
-    photoUrl: uploadContentUrl(record.profile.photoUploadId),
-    guarantorPhotoUrl: uploadContentUrl(record.profile.guarantorPhotoUploadId),
+    photoUrl,
+    guarantorPhotoUrl,
     registeredByOfficerId: record.registeredByOfficerId,
     registeredByOfficerName: officerDisplayName,
     status: record.status,
@@ -328,7 +341,7 @@ export async function getBorrowerReviewDetail(id: string) {
 
   const officerDisplayName = await resolveOfficerDisplayName(record.registeredByOfficerId);
 
-  return toReview(record, officerDisplayName, sequenceById.get(record.id));
+  return await toReview(record, officerDisplayName, sequenceById.get(record.id));
 }
 
 export async function registerBorrower(payload: Record<string, unknown>, actorId: string) {

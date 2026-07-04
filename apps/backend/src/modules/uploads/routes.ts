@@ -49,6 +49,19 @@ async function assertUploadAccess(uploadId: string, session: SessionUser): Promi
     return;
   }
 
+  const stored = await getUploadRecord(uploadId);
+  const reviewPurposes = new Set(['borrower-photo', 'guarantor-photo', 'profile-photo', 'document']);
+
+  if (
+    stored &&
+    reviewPurposes.has(stored.purpose) &&
+    (roleHasPermission(session.role, PERMISSION.ACCESS_APPROVER_PORTAL) ||
+      roleHasPermission(session.role, PERMISSION.ACCESS_AUDITOR_PORTAL) ||
+      roleHasPermission(session.role, PERMISSION.REGISTER_BORROWERS))
+  ) {
+    return;
+  }
+
   if (!isDatabaseEnabled()) {
     return;
   }

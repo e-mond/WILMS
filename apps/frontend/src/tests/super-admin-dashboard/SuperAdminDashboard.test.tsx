@@ -19,6 +19,14 @@ function AsideSlotTestHarness({ children }: { children: ReactNode }) {
 
 const mockGetDashboardSummary = vi.hoisted(() => vi.fn());
 
+vi.mock('@/services/mock/delay', () => ({
+  simulateDelay: async () => undefined,
+}));
+
+vi.mock('@/hooks/usePermissions', () => ({
+  usePermission: () => true,
+}));
+
 vi.mock('@/services', () => ({
   dashboardService: {
     getDashboardSummary: mockGetDashboardSummary,

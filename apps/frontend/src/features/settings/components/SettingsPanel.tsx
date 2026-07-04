@@ -2,6 +2,11 @@
 
 import { useMemo, useState } from 'react';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
+import {
+  buildSettingsExportDocument,
+  useWilmsExportActor,
+  WilmsExportActions,
+} from '@/features/export';
 import { SettingsAsidePanel } from '@/features/settings/components/SettingsAsidePanel';
 import { SettingsUsersSection } from '@/features/settings/components/SettingsUsersSection';
 import { SettingsRolesSection } from '@/features/settings/components/SettingsRolesSection';
@@ -27,6 +32,7 @@ import { cn } from '@/utils/cn';
 
 export function SettingsPanel() {
   const { data, isLoading, isError, error, refetch } = useSettings();
+  const generatedBy = useWilmsExportActor();
   const [activeSection, setActiveSection] = useState<SettingsSection>(SETTINGS_SECTION.ORGANISATION);
 
   const activeSectionLabel =
@@ -41,6 +47,19 @@ export function SettingsPanel() {
   );
 
   useShellAsideContent(asideContent);
+
+  const exportDocument = useMemo(
+    () =>
+      data
+        ? buildSettingsExportDocument({
+            settings: data,
+            users: [],
+            generatedBy,
+            activeSectionLabel,
+          })
+        : null,
+    [activeSectionLabel, data, generatedBy],
+  );
 
   return (
     <QueryStatePanel
@@ -78,6 +97,16 @@ export function SettingsPanel() {
           </nav>
 
           <div className="min-w-0 space-y-wilms-4">
+            {exportDocument ? (
+              <div className="flex justify-end">
+                <WilmsExportActions
+                  document={exportDocument}
+                  filenameBase="system-settings"
+                  showIcons
+                  permissions={[]}
+                />
+              </div>
+            ) : null}
             {activeSection === SETTINGS_SECTION.ORGANISATION ? (
               <OrganisationSectionView settings={data} />
             ) : null}

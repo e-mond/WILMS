@@ -1,7 +1,11 @@
 'use client';
 
+import Link from 'next/link';
 import { ShellNavbarActions } from '@/components/layout/shell/navbar/ShellNavbarActions';
+import { useAuth } from '@/hooks/useAuth';
+import { resolveSettingsHref } from '@/utils/settings-route';
 import { cn } from '@/utils/cn';
+import { Settings } from 'lucide-react';
 
 export interface OfficeShellMobileBarProps {
   brandTitle?: string;
@@ -12,6 +16,9 @@ export function OfficeShellMobileBar({
   brandTitle = 'WILMS',
   isExecutive = false,
 }: OfficeShellMobileBarProps) {
+  const { user } = useAuth();
+  const settingsHref = resolveSettingsHref(user?.role);
+
   return (
     <header
       className={cn(
@@ -41,7 +48,18 @@ export function OfficeShellMobileBar({
           </p>
         </div>
 
-        <ShellNavbarActions compact showDateTime={false} mobileSimplified />
+        <div className="flex shrink-0 items-center gap-1">
+          {user ? (
+            <Link
+              href={settingsHref}
+              aria-label="Settings"
+              className="inline-flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-text-muted transition-colors hover:bg-background hover:text-text-primary"
+            >
+              <Settings className="h-5 w-5" aria-hidden="true" />
+            </Link>
+          ) : null}
+          <ShellNavbarActions compact showDateTime={false} mobileSimplified />
+        </div>
       </div>
     </header>
   );

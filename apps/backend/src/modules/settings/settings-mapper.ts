@@ -33,6 +33,7 @@ export interface SystemSettingsDto {
   gpsVerificationEnabled: boolean;
   emailProviderLabel: string;
   updatedAt: string;
+  integrationStatus?: import('../../infrastructure/integrations/status.js').IntegrationStatusReport;
 }
 
 export const DEFAULT_SYSTEM_SETTINGS: SystemSettingsDto = {

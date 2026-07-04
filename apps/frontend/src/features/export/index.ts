@@ -11,6 +11,7 @@ export { buildRiskFlagsExportDocument, type RiskFlagsExportInput } from '@/featu
 export { buildRegistrationAgreementExportDocument, type RegistrationAgreementExportInput } from '@/features/export/builders/registration-agreement-document';
 export { buildSettingsExportDocument, type SettingsExportInput } from '@/features/export/builders/settings-document';
 export { buildTabularExportDocument } from '@/features/export/builders/tabular-export-document';
+export { buildDashboardExportDocument } from '@/features/export/builders/dashboard-export-document';
 export {
   buildWilmsCsvContent,
   buildCsvContent,

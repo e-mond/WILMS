@@ -31,6 +31,7 @@ export interface SystemSettings {
   gpsVerificationEnabled: boolean;
   emailProviderLabel: string;
   updatedAt: string;
+  integrationStatus?: IntegrationStatusReport;
 }
 
 export interface IntegrationProviderStatus {

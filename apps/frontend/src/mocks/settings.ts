@@ -34,4 +34,16 @@ export const MOCK_SYSTEM_SETTINGS: SystemSettings = {
   gpsVerificationEnabled: true,
   emailProviderLabel: 'Gmail SMTP',
   updatedAt: '2026-06-01T08:00:00.000Z',
+  integrationStatus: {
+    sms: {
+      provider: 'smsnotifygh',
+      configured: true,
+      setupHint: 'Demo mode — SMS provider simulated as configured.',
+    },
+    mail: {
+      provider: 'gmail',
+      configured: true,
+      setupHint: 'Demo mode — mail provider simulated as configured.',
+    },
+  },
 };

@@ -30,7 +30,21 @@ import {
 const settingsServiceMock: ISettingsService = {
   async getSettings() {
     await simulateDelay();
-    return getSystemSettingsStore();
+    return {
+      ...getSystemSettingsStore(),
+      integrationStatus: {
+        sms: {
+          provider: 'smsnotifygh',
+          configured: true,
+          setupHint: 'Demo mode — SMS provider simulated as configured.',
+        },
+        mail: {
+          provider: 'gmail',
+          configured: true,
+          setupHint: 'Demo mode — mail provider simulated as configured.',
+        },
+      },
+    };
   },
 
   async updateSettings(input) {
