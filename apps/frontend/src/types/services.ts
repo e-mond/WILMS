@@ -88,6 +88,7 @@ import type { SubmitReconciliationInput, ReconciliationHistoryEntry } from '@/ty
 import type { ReportsHubMetadata, ReportCategory } from '@/types/reports';
 import type {
   CreateSettingsUserInput,
+  IntegrationStatusReport,
   SettingsActivityEntry,
   SettingsMeProfile,
   SettingsUserRecord,
@@ -359,6 +360,7 @@ export interface ISettingsService {
   sendTestSms(phone: string): Promise<{ ok: true }>;
   getSmsBalance(): Promise<{ balance: string }>;
   sendTestEmail(email: string): Promise<{ ok: true }>;
+  getIntegrationsStatus(): Promise<IntegrationStatusReport>;
   listUsers(): Promise<SettingsUserRecord[]>;
   getUserProfile(userId: string): Promise<SettingsUserProfile>;
   getSettingsActivity(): Promise<SettingsActivityEntry[]>;

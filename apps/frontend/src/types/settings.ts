@@ -33,6 +33,17 @@ export interface SystemSettings {
   updatedAt: string;
 }
 
+export interface IntegrationProviderStatus {
+  provider: string;
+  configured: boolean;
+  setupHint: string;
+}
+
+export interface IntegrationStatusReport {
+  sms: IntegrationProviderStatus;
+  mail: IntegrationProviderStatus;
+}
+
 export interface SettingsUserRecord {
   id: string;
   displayId: string;

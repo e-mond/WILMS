@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/Button';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { PERMISSION } from '@/constants/permissions';
 import { USER_ROLE } from '@/constants/roles';
+import { useIntegrationStatus } from '@/features/settings/hooks/useIntegrationStatus';
 import { useUpdateSystemSettings } from '@/features/settings/hooks/useUpdateSystemSettings';
 import { useSettingsMe, useUpdateSettingsMe } from '@/features/settings/hooks/useSettingsMe';
 import { useAuth } from '@/hooks/useAuth';
@@ -25,6 +26,22 @@ import { CurrencyAmount } from '@/components/data-display';
 const SecurityIcon = SETTINGS_SECTION_ICONS.security;
 const LoanRulesIcon = SETTINGS_SECTION_ICONS.loanRules;
 const SmsIcon = SETTINGS_SECTION_ICONS.sms;
+
+function IntegrationSetupNotice({ hint }: { hint: string }) {
+  return (
+    <p className="mt-wilms-1 max-w-md text-small text-warning">
+      {hint}{' '}
+      <a
+        href="https://github.com/e-mond/WILMS#environment-variables"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="font-semibold text-brand-primary hover:underline"
+      >
+        README env guide →
+      </a>
+    </p>
+  );
+}
 
 function useSettingsSave() {
   const toast = useToast();
@@ -475,6 +492,8 @@ export function SmsSectionView({ settings }: { settings: SystemSettings }) {
   const { save, isPending } = useSettingsSave();
   const toast = useToast();
   const { data: me } = useSettingsMe();
+  const { data: integrationStatus } = useIntegrationStatus();
+  const smsRuntimeConfigured = integrationStatus?.sms.configured ?? false;
   const [smsProvider, setSmsProvider] = useState(settings.smsProvider);
   const [smsSenderId, setSmsSenderId] = useState(settings.smsSenderId);
   const [smsNotificationsEnabled, setSmsNotificationsEnabled] = useState(settings.smsNotificationsEnabled);
@@ -515,6 +534,28 @@ export function SmsSectionView({ settings }: { settings: SystemSettings }) {
             <option value="smsnotifygh">SMSNotifyGH</option>
             <option value="none">Disabled</option>
           </Select>
+        }
+      />
+      <SettingsSettingRow
+        title="Backend SMS credentials"
+        description="Runtime provider on Railway (independent of the UI label above)."
+        control={
+          <div>
+            <Input
+              value={
+                integrationStatus
+                  ? integrationStatus.sms.configured
+                    ? `${integrationStatus.sms.provider} — configured`
+                    : `${integrationStatus.sms.provider} — not configured`
+                  : 'Checking…'
+              }
+              readOnly
+              aria-label="Backend SMS provider status"
+            />
+            {integrationStatus && !integrationStatus.sms.configured ? (
+              <IntegrationSetupNotice hint={integrationStatus.sms.setupHint} />
+            ) : null}
+          </div>
         }
       />
       <SettingsSettingRow
@@ -564,7 +605,8 @@ export function SmsSectionView({ settings }: { settings: SystemSettings }) {
               type="button"
               variant="secondary"
               size="sm"
-              disabled={isSendingTest || !testPhone.trim()}
+              disabled={isSendingTest || !testPhone.trim() || !smsRuntimeConfigured}
+              title={!smsRuntimeConfigured ? integrationStatus?.sms.setupHint : undefined}
               onClick={() => {
                 setIsSendingTest(true);
                 void settingsService
@@ -697,13 +739,20 @@ export function IntegrationsSectionView({ settings }: { settings: SystemSettings
   const { save, isPending } = useSettingsSave();
   const toast = useToast();
   const { data: me } = useSettingsMe();
+  const { data: integrationStatus } = useIntegrationStatus();
+  const smsRuntimeConfigured = integrationStatus?.sms.configured ?? false;
+  const mailRuntimeConfigured = integrationStatus?.mail.configured ?? false;
   const [gpsVerificationEnabled, setGpsVerificationEnabled] = useState(settings.gpsVerificationEnabled);
   const [emailProviderLabel, setEmailProviderLabel] = useState(settings.emailProviderLabel);
   const [smsBalance, setSmsBalance] = useState<string | null>(null);
   const [testEmail, setTestEmail] = useState(me?.email ?? '');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
-  const smsGatewayStatus = settings.smsProvider === 'smsnotifygh' ? 'SMSNotifyGH configured' : 'Not configured';
+  const smsGatewayStatus = integrationStatus
+    ? integrationStatus.sms.configured
+      ? `${integrationStatus.sms.provider} — configured`
+      : `${integrationStatus.sms.provider} — not configured`
+    : 'Checking…';
 
   useEffect(() => {
     setGpsVerificationEnabled(settings.gpsVerificationEnabled);
@@ -724,8 +773,15 @@ export function IntegrationsSectionView({ settings }: { settings: SystemSettings
     >
       <SettingsSettingRow
         title="SMS Gateway"
-        description="SMSNotifyGH outbound messaging."
-        control={<Input value={smsGatewayStatus} readOnly aria-label="SMS gateway" />}
+        description="SMSNotifyGH outbound messaging (requires Railway env vars)."
+        control={
+          <div>
+            <Input value={smsGatewayStatus} readOnly aria-label="SMS gateway" />
+            {integrationStatus && !integrationStatus.sms.configured ? (
+              <IntegrationSetupNotice hint={integrationStatus.sms.setupHint} />
+            ) : null}
+          </div>
+        }
       />
       <SettingsSettingRow
         title="SMS Balance"
@@ -737,7 +793,8 @@ export function IntegrationsSectionView({ settings }: { settings: SystemSettings
               type="button"
               variant="secondary"
               size="sm"
-              disabled={isLoadingBalance}
+              disabled={isLoadingBalance || !smsRuntimeConfigured}
+              title={!smsRuntimeConfigured ? integrationStatus?.sms.setupHint : undefined}
               onClick={() => {
                 setIsLoadingBalance(true);
                 void settingsService
@@ -760,13 +817,30 @@ export function IntegrationsSectionView({ settings }: { settings: SystemSettings
       />
       <SettingsSettingRow
         title="Email Provider"
-        description="Gmail SMTP (smtp.gmail.com:587) via backend mail provider."
+        description="Gmail SMTP or Resend via backend mail provider."
         control={
-          <Input
-            value={emailProviderLabel}
-            onChange={(event) => setEmailProviderLabel(event.target.value)}
-            aria-label="Email provider"
-          />
+          <div>
+            <Input
+              value={emailProviderLabel}
+              onChange={(event) => setEmailProviderLabel(event.target.value)}
+              aria-label="Email provider label"
+            />
+            <Input
+              className="mt-wilms-2"
+              value={
+                integrationStatus
+                  ? integrationStatus.mail.configured
+                    ? `${integrationStatus.mail.provider} — configured`
+                    : `${integrationStatus.mail.provider} — not configured`
+                  : 'Checking…'
+              }
+              readOnly
+              aria-label="Backend mail provider status"
+            />
+            {integrationStatus && !integrationStatus.mail.configured ? (
+              <IntegrationSetupNotice hint={integrationStatus.mail.setupHint} />
+            ) : null}
+          </div>
         }
       />
       <SettingsSettingRow
@@ -784,7 +858,8 @@ export function IntegrationsSectionView({ settings }: { settings: SystemSettings
               type="button"
               variant="secondary"
               size="sm"
-              disabled={isSendingEmail || !testEmail.trim()}
+              disabled={isSendingEmail || !testEmail.trim() || !mailRuntimeConfigured}
+              title={!mailRuntimeConfigured ? integrationStatus?.mail.setupHint : undefined}
               onClick={() => {
                 setIsSendingEmail(true);
                 void settingsService

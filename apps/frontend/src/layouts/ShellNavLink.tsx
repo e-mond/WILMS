@@ -89,6 +89,10 @@ export interface ShellNavLinkProps {
    * semantics instead of `aria-current="page"`.
    */
   tabMode?: boolean;
+  /**
+   * Instagram-style floating pill tab (mobile operational shells).
+   */
+  pillMode?: boolean;
 }
 
 export function ShellNavLink({
@@ -105,6 +109,7 @@ export function ShellNavLink({
   animated = true,
   badge,
   tabMode = false,
+  pillMode = false,
   isActive: isActiveOverride,
 }: ShellNavLinkProps) {
   const pathname = usePathname();
@@ -154,6 +159,48 @@ export function ShellNavLink({
     'text-text-secondary border-transparent',
     'hover:bg-background hover:border-border/30 hover:text-text-primary',
   );
+
+  // ─── PILL MODE (Instagram-style floating nav) ────────────────────────────
+  if (pillMode) {
+    return (
+      <Link
+        prefetch
+        href={href}
+        role="tab"
+        aria-selected={isActive}
+        aria-current={isActive ? 'page' : undefined}
+        aria-label={label}
+        title={label}
+        className={cn(
+          'relative flex flex-1 items-center justify-center',
+          'min-h-[44px] min-w-[44px] rounded-full px-4 py-2.5',
+          baseInteraction,
+          'active:scale-[0.92]',
+          isActive
+            ? cn('bg-white/20 text-white', activeClassName)
+            : cn('text-white/70 hover:bg-white/10 hover:text-white', inactiveClassName),
+          className,
+        )}
+      >
+        {icon && (
+          <ShellNavIcon
+            name={icon}
+            className="h-6 w-6 flex-shrink-0"
+            aria-hidden="true"
+          />
+        )}
+
+        <span className="sr-only">{label}</span>
+
+        {badge !== undefined && (
+          <span
+            aria-label={`${badge} notifications`}
+            className="nav-badge absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-[#262626]"
+          />
+        )}
+      </Link>
+    );
+  }
 
   // ─── TAB MODE (mobile bottom bar) ────────────────────────────────────────
   if (tabMode) {

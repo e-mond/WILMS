@@ -9,18 +9,6 @@ export function filterOperationalBottomNavItems(navItems: ShellNavItem[]): Shell
   return navItems.filter((item) => !item.href.endsWith('/settings'));
 }
 
-function resolveBottomNavGridClass(count: number): string {
-  if (count <= 3) {
-    return 'grid-cols-3';
-  }
-
-  if (count === 4) {
-    return 'grid-cols-4';
-  }
-
-  return 'grid-cols-5';
-}
-
 export interface OperationalMobileHeaderProps {
   brandTitle: string;
   isExecutive?: boolean;
@@ -43,21 +31,22 @@ export function OperationalBottomNavigation({ navItems, ariaLabel }: Operational
       aria-label={ariaLabel}
       className={cn(
         'fixed inset-x-0 bottom-0 z-50 md:hidden',
-        'border-t border-border/40',
-        'bg-card/95 backdrop-blur-lg',
-        'px-2 pt-1.5',
-        'pb-[max(8px,env(safe-area-inset-bottom))]',
+        'pointer-events-none',
+        'px-4 pb-[max(12px,env(safe-area-inset-bottom))]',
       )}
     >
-      <ul role="tablist" className={cn('grid gap-0.5', resolveBottomNavGridClass(bottomItems.length))}>
+      <ul
+        role="tablist"
+        className={cn(
+          'pointer-events-auto mx-auto flex max-w-lg items-center justify-between',
+          'rounded-full border border-white/10',
+          'bg-[#262626]/95 backdrop-blur-xl',
+          'px-1.5 py-1.5 shadow-2xl shadow-black/35',
+        )}
+      >
         {bottomItems.map((item) => (
-          <li key={item.href} role="presentation">
-            <ShellNavLink
-              {...item}
-              tabMode
-              variant="executive"
-              inactiveClassName="text-text-muted hover:bg-muted/80"
-            />
+          <li key={item.href} role="presentation" className="flex flex-1 justify-center">
+            <ShellNavLink {...item} pillMode variant="executive" />
           </li>
         ))}
       </ul>
