@@ -125,7 +125,7 @@ export function Modal({
           <h2 id={titleId} className="text-heading-2 font-semibold text-text-primary">
             {title}
           </h2>
-          <Button variant="ghost" size="sm" aria-label="Close dialog" onClick={onClose}>
+          <Button variant="ghost" size="sm" onClick={onClose}>
             Close
           </Button>
         </div>

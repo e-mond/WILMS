@@ -169,7 +169,6 @@ export function ShellNavLink({
         role="tab"
         aria-selected={isActive}
         aria-current={isActive ? 'page' : undefined}
-        aria-label={label}
         title={label}
         className={cn(
           'relative flex flex-1 items-center justify-center',

@@ -32,12 +32,11 @@ export function AppLockNavbarButton() {
       type="button"
       variant="ghost"
       size="sm"
-      aria-label="Lock app now"
       className="h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 p-0"
       onClick={lock}
     >
       <Lock className="h-4 w-4" aria-hidden="true" />
-      <span className="sr-only">Lock</span>
+      <span className="sr-only">Lock app now</span>
     </Button>
   );
 }

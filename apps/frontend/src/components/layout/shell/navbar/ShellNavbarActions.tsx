@@ -82,10 +82,10 @@ export function ShellNavbarActions({
         {!compact ? (
           <Link
             href={settingsHref}
-            aria-label="Settings"
             className="inline-flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-sm p-0 text-text-muted transition-colors hover:bg-background hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary"
           >
             <Settings className="h-4 w-4" aria-hidden="true" />
+            <span className="sr-only">Settings</span>
           </Link>
         ) : null}
         {!compact ? <AppLockNavbarButton /> : null}

@@ -52,10 +52,10 @@ export function OfficeShellMobileBar({
           {user ? (
             <Link
               href={settingsHref}
-              aria-label="Settings"
               className="inline-flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-text-muted transition-colors hover:bg-background hover:text-text-primary"
             >
               <Settings className="h-5 w-5" aria-hidden="true" />
+              <span className="sr-only">Settings</span>
             </Link>
           ) : null}
           <ShellNavbarActions compact showDateTime={false} mobileSimplified />

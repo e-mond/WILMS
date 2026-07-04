@@ -55,11 +55,11 @@ export function ShellMobileOverflowMenu() {
           aria-expanded={isOpen}
           aria-haspopup="menu"
           aria-controls={menuId}
-          aria-label="More actions"
           className="h-11 w-11 min-h-[44px] min-w-[44px] p-0 text-text-muted hover:text-text-primary"
           onClick={() => setIsOpen((open) => !open)}
         >
           <MoreVertical className="h-5 w-5" aria-hidden="true" />
+          <span className="sr-only">More actions</span>
         </Button>
 
         {isOpen ? (

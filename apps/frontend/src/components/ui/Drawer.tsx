@@ -191,11 +191,11 @@ export function Drawer({
             <Button
               variant="ghost"
               size="sm"
-              aria-label="Close drawer"
               onClick={onClose}
               className="h-8 w-8 p-0 flex-shrink-0"
             >
-              <X className="h-4 w-4" />
+              <X className="h-4 w-4" aria-hidden="true" />
+              <span className="sr-only">Close</span>
             </Button>
           </div>
         ) : null}

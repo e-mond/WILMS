@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { PERMISSION } from '@/constants/permissions';
 import { WilmsExportActions } from '@/features/export/components/WilmsExportActions';
 import { buildRegistrationAgreementExportDocument } from '@/features/export/builders/registration-agreement-document';
 import { useWilmsExportActor } from '@/features/export/hooks/useWilmsExportActor';
@@ -125,6 +126,7 @@ export function RegistrationReviewPanel({
         <WilmsExportActions
           document={exportDocument}
           filenameBase={`registration-${values.fullName.replace(/\s+/g, '-').toLowerCase()}`}
+          permissions={[PERMISSION.REGISTER_BORROWERS]}
         />
       </div>
 

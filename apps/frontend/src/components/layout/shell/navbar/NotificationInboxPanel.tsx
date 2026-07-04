@@ -249,12 +249,12 @@ export function NotificationInboxTrigger() {
         'hover:bg-background hover:border-brand-primary/40',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-1',
       )}
-      aria-label={
-        unreadCount > 0 ? `Open notifications, ${unreadCount} unread` : 'Open notifications'
-      }
       onClick={openNotificationPanel}
     >
       <NotificationBellIcon className="h-[18px] w-[18px]" />
+      <span className="sr-only">
+        {unreadCount > 0 ? `Open notifications, ${unreadCount} unread` : 'Open notifications'}
+      </span>
 
       {unreadCount > 0 && (
         <span

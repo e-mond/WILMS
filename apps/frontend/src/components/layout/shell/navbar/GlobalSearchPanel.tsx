@@ -162,7 +162,6 @@ export function GlobalSearchTrigger({ variant = 'compact' }: { variant?: 'deskto
       <button
         type="button"
         className="inline-flex min-h-[44px] items-center gap-wilms-2 rounded-sm border border-border bg-background px-wilms-3 py-wilms-2 text-small text-text-muted hover:text-text-primary"
-        aria-label="Open global search"
         onClick={openGlobalSearch}
       >
         <Search className="h-4 w-4" aria-hidden="true" />
@@ -179,11 +178,10 @@ export function GlobalSearchTrigger({ variant = 'compact' }: { variant?: 'deskto
         'inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-sm border border-border bg-background text-text-muted hover:text-text-primary',
         'px-wilms-2 md:gap-wilms-2 md:px-wilms-3',
       )}
-      aria-label="Open global search"
       onClick={openGlobalSearch}
     >
       <Search className="h-4 w-4" aria-hidden="true" />
-      <span className="hidden md:inline">Search</span>
+      <span className="sr-only md:not-sr-only md:inline">Search</span>
       <kbd className="hidden rounded-sm border border-border px-wilms-1 text-small xl:inline">Ctrl K</kbd>
     </button>
   );

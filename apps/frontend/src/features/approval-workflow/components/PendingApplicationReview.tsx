@@ -498,8 +498,6 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
 
               disabled={isSubmitting}
 
-              aria-label="Approve application"
-
               onClick={() => setActiveAction('approve')}
 
             >
@@ -517,8 +515,6 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
               variant="secondary"
 
               disabled={isSubmitting}
-
-              aria-label="Reject application"
 
               onClick={() => setActiveAction('reject')}
 
@@ -573,8 +569,6 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
               variant="danger"
 
               disabled={isSubmitting}
-
-              aria-label="Blacklist application"
 
               onClick={() => setActiveAction('blacklist')}
 

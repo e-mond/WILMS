@@ -54,12 +54,11 @@ export const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(
             variant="ghost"
             size="sm"
             disabled={disabled}
-          aria-label="Toggle password visibility"
-          aria-pressed={isVisible}
-          onClick={() => setIsVisible((visible) => !visible)}
-          className="absolute right-wilms-1 top-1/2 -translate-y-1/2"
-        >
-          {isVisible ? 'Hide' : 'Show'}
+            aria-pressed={isVisible}
+            onClick={() => setIsVisible((visible) => !visible)}
+            className="absolute right-wilms-1 top-1/2 -translate-y-1/2"
+          >
+            {isVisible ? 'Hide password' : 'Show password'}
           </Button>
         </div>
         {errorMessage ? (

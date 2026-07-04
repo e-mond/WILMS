@@ -25,16 +25,19 @@ export function LogoutButton({ className, collapsed = false }: LogoutButtonProps
         className
       )}
       disabled={isLoggingOut}
-      aria-label="Log out"
+      aria-label={collapsed ? 'Log out' : undefined}
       onClick={() => void logout()}
     >
       {isLoggingOut ? (
         'Logging out...'
       ) : collapsed ? (
-        <LogOut className="h-5 w-5" />
+        <>
+          <LogOut className="h-5 w-5" aria-hidden="true" />
+          <span className="sr-only">Log out</span>
+        </>
       ) : (
         <>
-          <LogOut className="h-5 w-5 mr-3" />
+          <LogOut className="h-5 w-5 mr-3" aria-hidden="true" />
           Log out
         </>
       )}
