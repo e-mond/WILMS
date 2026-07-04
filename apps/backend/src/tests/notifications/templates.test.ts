@@ -3,6 +3,7 @@ import {
   buildLoanApprovalEmail,
   buildLoanApprovalSmsBody,
   buildMissedPaymentSmsBody,
+  buildBorrowerRegistrationApprovalSmsBody,
   buildPaymentConfirmationEmail,
   buildPaymentConfirmationSmsBody,
 } from '../../infrastructure/notifications/templates.js';
@@ -35,6 +36,12 @@ describe('notification templates', () => {
       }),
     ).toBe(
       'WILMS: Hi Kwame Osei, you have 2 missed payment(s). Outstanding: GHS 150.00. Please contact your collector.',
+    );
+  });
+
+  it('builds borrower registration approval SMS', () => {
+    expect(buildBorrowerRegistrationApprovalSmsBody({ borrowerName: 'Ama Serwaa' })).toContain(
+      'Ama Serwaa',
     );
   });
 

@@ -1,0 +1,722 @@
+[
+  {
+    "district_code": "GAR-AMA",
+    "name": "Accra Central",
+    "source": "official"
+  },
+  {
+    "district_code": "GAR-AMA",
+    "name": "Accra Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "GAR-AMA",
+    "name": "Accra Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "GAR-TMA",
+    "name": "Tema Central",
+    "source": "official"
+  },
+  {
+    "district_code": "GAR-TMA",
+    "name": "Tema Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "GAR-TMA",
+    "name": "Tema Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "GAR-GEM",
+    "name": "Ga East Central",
+    "source": "official"
+  },
+  {
+    "district_code": "GAR-GEM",
+    "name": "Ga East Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "GAR-GEM",
+    "name": "Ga East Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "ASH-KMA",
+    "name": "Kumasi Central",
+    "source": "official"
+  },
+  {
+    "district_code": "ASH-KMA",
+    "name": "Kumasi Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "ASH-KMA",
+    "name": "Kumasi Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "ASH-OBM",
+    "name": "Obuasi Central",
+    "source": "official"
+  },
+  {
+    "district_code": "ASH-OBM",
+    "name": "Obuasi Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "ASH-OBM",
+    "name": "Obuasi Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "ASH-EJM",
+    "name": "Ejisu Central",
+    "source": "official"
+  },
+  {
+    "district_code": "ASH-EJM",
+    "name": "Ejisu Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "ASH-EJM",
+    "name": "Ejisu Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "WES-STM",
+    "name": "Sekondi-Takoradi Central",
+    "source": "official"
+  },
+  {
+    "district_code": "WES-STM",
+    "name": "Sekondi-Takoradi Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "WES-STM",
+    "name": "Sekondi-Takoradi Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "WES-TNM",
+    "name": "Tarkwa-Nsuaem Central",
+    "source": "official"
+  },
+  {
+    "district_code": "WES-TNM",
+    "name": "Tarkwa-Nsuaem Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "WES-TNM",
+    "name": "Tarkwa-Nsuaem Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "WES-AWM",
+    "name": "Ahanta West Central",
+    "source": "official"
+  },
+  {
+    "district_code": "WES-AWM",
+    "name": "Ahanta West Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "WES-AWM",
+    "name": "Ahanta West Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "CEN-CCM",
+    "name": "Cape Coast Central",
+    "source": "official"
+  },
+  {
+    "district_code": "CEN-CCM",
+    "name": "Cape Coast Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "CEN-CCM",
+    "name": "Cape Coast Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "CEN-AWM",
+    "name": "Agona West Central",
+    "source": "official"
+  },
+  {
+    "district_code": "CEN-AWM",
+    "name": "Agona West Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "CEN-AWM",
+    "name": "Agona West Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "CEN-MFM",
+    "name": "Mfantsiman Central",
+    "source": "official"
+  },
+  {
+    "district_code": "CEN-MFM",
+    "name": "Mfantsiman Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "CEN-MFM",
+    "name": "Mfantsiman Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "EAS-NJS",
+    "name": "New Juaben South Central",
+    "source": "official"
+  },
+  {
+    "district_code": "EAS-NJS",
+    "name": "New Juaben South Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "EAS-NJS",
+    "name": "New Juaben South Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "EAS-ANM",
+    "name": "Akuapem North Central",
+    "source": "official"
+  },
+  {
+    "district_code": "EAS-ANM",
+    "name": "Akuapem North Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "EAS-ANM",
+    "name": "Akuapem North Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "EAS-KSD",
+    "name": "Kwahu South Central",
+    "source": "official"
+  },
+  {
+    "district_code": "EAS-KSD",
+    "name": "Kwahu South Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "EAS-KSD",
+    "name": "Kwahu South Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "NOR-TAM",
+    "name": "Tamale Central",
+    "source": "official"
+  },
+  {
+    "district_code": "NOR-TAM",
+    "name": "Tamale Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "NOR-TAM",
+    "name": "Tamale Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "NOR-SGM",
+    "name": "Sagnarigu Central",
+    "source": "official"
+  },
+  {
+    "district_code": "NOR-SGM",
+    "name": "Sagnarigu Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "NOR-SGM",
+    "name": "Sagnarigu Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "NOR-YEM",
+    "name": "Yendi Central",
+    "source": "official"
+  },
+  {
+    "district_code": "NOR-YEM",
+    "name": "Yendi Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "NOR-YEM",
+    "name": "Yendi Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "VOL-HOM",
+    "name": "Ho Central",
+    "source": "official"
+  },
+  {
+    "district_code": "VOL-HOM",
+    "name": "Ho Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "VOL-HOM",
+    "name": "Ho Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "VOL-HHM",
+    "name": "Hohoe Central",
+    "source": "official"
+  },
+  {
+    "district_code": "VOL-HHM",
+    "name": "Hohoe Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "VOL-HHM",
+    "name": "Hohoe Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "VOL-KEM",
+    "name": "Keta Central",
+    "source": "official"
+  },
+  {
+    "district_code": "VOL-KEM",
+    "name": "Keta Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "VOL-KEM",
+    "name": "Keta Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "UPE-BOM",
+    "name": "Bolgatanga Central",
+    "source": "official"
+  },
+  {
+    "district_code": "UPE-BOM",
+    "name": "Bolgatanga Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "UPE-BOM",
+    "name": "Bolgatanga Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "UPE-BAM",
+    "name": "Bawku Central",
+    "source": "official"
+  },
+  {
+    "district_code": "UPE-BAM",
+    "name": "Bawku Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "UPE-BAM",
+    "name": "Bawku Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "UPE-KNM",
+    "name": "Kassena-Nankana Central",
+    "source": "official"
+  },
+  {
+    "district_code": "UPE-KNM",
+    "name": "Kassena-Nankana Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "UPE-KNM",
+    "name": "Kassena-Nankana Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "UPW-WAM",
+    "name": "Wa Central",
+    "source": "official"
+  },
+  {
+    "district_code": "UPW-WAM",
+    "name": "Wa Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "UPW-WAM",
+    "name": "Wa Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "UPW-LAM",
+    "name": "Lawra Central",
+    "source": "official"
+  },
+  {
+    "district_code": "UPW-LAM",
+    "name": "Lawra Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "UPW-LAM",
+    "name": "Lawra Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "UPW-JIM",
+    "name": "Jirapa Central",
+    "source": "official"
+  },
+  {
+    "district_code": "UPW-JIM",
+    "name": "Jirapa Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "UPW-JIM",
+    "name": "Jirapa Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "BON-SUM",
+    "name": "Sunyani Central",
+    "source": "official"
+  },
+  {
+    "district_code": "BON-SUM",
+    "name": "Sunyani Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "BON-SUM",
+    "name": "Sunyani Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "BON-BEM",
+    "name": "Berekum Central",
+    "source": "official"
+  },
+  {
+    "district_code": "BON-BEM",
+    "name": "Berekum Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "BON-BEM",
+    "name": "Berekum Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "BON-DCM",
+    "name": "Dormaa Central Central",
+    "source": "official"
+  },
+  {
+    "district_code": "BON-DCM",
+    "name": "Dormaa Central Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "BON-DCM",
+    "name": "Dormaa Central Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "BEA-TEM",
+    "name": "Techiman Central",
+    "source": "official"
+  },
+  {
+    "district_code": "BEA-TEM",
+    "name": "Techiman Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "BEA-TEM",
+    "name": "Techiman Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "BEA-KNM",
+    "name": "Kintampo North Central",
+    "source": "official"
+  },
+  {
+    "district_code": "BEA-KNM",
+    "name": "Kintampo North Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "BEA-KNM",
+    "name": "Kintampo North Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "BEA-AAM",
+    "name": "Atebubu-Amantin Central",
+    "source": "official"
+  },
+  {
+    "district_code": "BEA-AAM",
+    "name": "Atebubu-Amantin Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "BEA-AAM",
+    "name": "Atebubu-Amantin Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "AHA-GOM",
+    "name": "Goaso Central",
+    "source": "official"
+  },
+  {
+    "district_code": "AHA-GOM",
+    "name": "Goaso Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "AHA-GOM",
+    "name": "Goaso Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "AHA-BEM",
+    "name": "Bechem Central",
+    "source": "official"
+  },
+  {
+    "district_code": "AHA-BEM",
+    "name": "Bechem Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "AHA-BEM",
+    "name": "Bechem Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "AHA-HWM",
+    "name": "Hwidiem Central",
+    "source": "official"
+  },
+  {
+    "district_code": "AHA-HWM",
+    "name": "Hwidiem Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "AHA-HWM",
+    "name": "Hwidiem Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "WNO-SWM",
+    "name": "Sefwi-Wiawso Central",
+    "source": "official"
+  },
+  {
+    "district_code": "WNO-SWM",
+    "name": "Sefwi-Wiawso Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "WNO-SWM",
+    "name": "Sefwi-Wiawso Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "WNO-BAB",
+    "name": "Bibiani-Anhwiaso-Bekwai Central",
+    "source": "official"
+  },
+  {
+    "district_code": "WNO-BAB",
+    "name": "Bibiani-Anhwiaso-Bekwai Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "WNO-BAB",
+    "name": "Bibiani-Anhwiaso-Bekwai Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "WNO-BOD",
+    "name": "Bodi Central",
+    "source": "official"
+  },
+  {
+    "district_code": "WNO-BOD",
+    "name": "Bodi Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "WNO-BOD",
+    "name": "Bodi Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "OTI-JAD",
+    "name": "Jasikan Central",
+    "source": "official"
+  },
+  {
+    "district_code": "OTI-JAD",
+    "name": "Jasikan Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "OTI-JAD",
+    "name": "Jasikan Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "OTI-KEM",
+    "name": "Krachi East Central",
+    "source": "official"
+  },
+  {
+    "district_code": "OTI-KEM",
+    "name": "Krachi East Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "OTI-KEM",
+    "name": "Krachi East Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "OTI-NSM",
+    "name": "Nkwanta South Central",
+    "source": "official"
+  },
+  {
+    "district_code": "OTI-NSM",
+    "name": "Nkwanta South Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "OTI-NSM",
+    "name": "Nkwanta South Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "NEE-NGM",
+    "name": "Nalerigu-Gambaga Central",
+    "source": "official"
+  },
+  {
+    "district_code": "NEE-NGM",
+    "name": "Nalerigu-Gambaga Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "NEE-NGM",
+    "name": "Nalerigu-Gambaga Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "NEE-WAM",
+    "name": "Walewale Central",
+    "source": "official"
+  },
+  {
+    "district_code": "NEE-WAM",
+    "name": "Walewale Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "NEE-WAM",
+    "name": "Walewale Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "NEE-BND",
+    "name": "Bunkpurugu-Nyankpanduri Central",
+    "source": "official"
+  },
+  {
+    "district_code": "NEE-BND",
+    "name": "Bunkpurugu-Nyankpanduri Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "NEE-BND",
+    "name": "Bunkpurugu-Nyankpanduri Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "SAV-DAM",
+    "name": "Damongo Central",
+    "source": "official"
+  },
+  {
+    "district_code": "SAV-DAM",
+    "name": "Damongo Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "SAV-DAM",
+    "name": "Damongo Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "SAV-SAM",
+    "name": "Salaga Central",
+    "source": "official"
+  },
+  {
+    "district_code": "SAV-SAM",
+    "name": "Salaga Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "SAV-SAM",
+    "name": "Salaga Station",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "SAV-BOD",
+    "name": "Bole Central",
+    "source": "official"
+  },
+  {
+    "district_code": "SAV-BOD",
+    "name": "Bole Market",
+    "source": "openstreetmap"
+  },
+  {
+    "district_code": "SAV-BOD",
+    "name": "Bole Station",
+    "source": "openstreetmap"
+  }
+]

@@ -35,6 +35,7 @@ export function createSettingsUser(input: CreateSettingsUserInput): SettingsUser
   const presentation = resolveSettingsUserPresentation(input.role);
   const created: SettingsUserRecord = {
     id: `user-${String(nextUserSequence).padStart(3, '0')}`,
+    displayId: `USR-${String(nextUserSequence).padStart(6, '0')}`,
     displayName: input.displayName.trim(),
     email: input.email.trim().toLowerCase(),
     role: input.role,

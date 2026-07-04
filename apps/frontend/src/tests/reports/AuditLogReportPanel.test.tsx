@@ -2,14 +2,32 @@ import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import auditServiceMock from '@/services/mock/auditService.mock';
 import { resetMockAuditLog } from '@/services/mock/auditService.mock';
-import { TestQueryProvider } from '@/tests/utils/test-query-client';
+import { USER_ROLE } from '@/constants/roles';
+import { TestAppProviders } from '@/tests/utils/test-app-providers';
 
 const mockListRecentEntries = vi.hoisted(() => vi.fn());
+
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: { id: 'user-super-admin', role: USER_ROLE.SUPER_ADMIN, displayName: 'Test Admin' },
+    isAuthenticated: true,
+    isHydrated: true,
+    isExpired: false,
+    clearSession: vi.fn(),
+  }),
+}));
 
 vi.mock('@/services', () => ({
   auditService: {
     listRecentEntries: mockListRecentEntries,
   },
+  settingsService: {
+    listUsers: vi.fn().mockResolvedValue([]),
+  },
+}));
+
+vi.mock('@/hooks/useShellAsideContent', () => ({
+  useShellAsideContent: () => undefined,
 }));
 
 import { AuditLogReportPanel } from '@/features/reports/components/AuditLogReportPanel';
@@ -23,9 +41,9 @@ describe('AuditLogReportPanel', () => {
 
   it('renders immutable audit entries and export action', async () => {
     render(
-      <TestQueryProvider>
+      <TestAppProviders>
         <AuditLogReportPanel />
-      </TestQueryProvider>,
+      </TestAppProviders>,
     );
 
     expect(await screen.findByRole('table', { name: 'Audit log entries' })).toBeInTheDocument();

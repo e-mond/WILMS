@@ -21,6 +21,7 @@
     "@wilms/shared-types": "*",
     "@wilms/shared-utils": "*",
     "@wilms/shared-validation": "*",
+    "docx": "^9.7.1",
     "exceljs": "^4.4.0",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",

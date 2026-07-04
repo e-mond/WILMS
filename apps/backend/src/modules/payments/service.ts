@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { formatPaymentDisplayId } from '@wilms/shared-utils';
 import { isDatabaseEnabled, runInTransaction } from '../../db/client.js';
 import {
   applyPaymentToSchedule,
@@ -13,7 +14,7 @@ import { pesewasToDecimal } from '../../domain/money.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import { runWithIdempotency } from '../../infrastructure/idempotency/run-with-idempotency.js';
 import * as borrowerRepo from '../../repositories/borrower.repository.js';
-import { maybeSendPaymentConfirmationSms } from '../../infrastructure/sms/notifications.js';
+import { maybeSendPaymentConfirmationSms, maybeSendMissedPaymentSms } from '../../infrastructure/sms/notifications.js';
 import * as ledgerRepo from '../../repositories/ledger.repository.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import * as paymentRepo from '../../repositories/payment.repository.js';
@@ -65,7 +66,15 @@ export async function getPaymentEntryContext(borrowerId: string, referenceDate?:
   }
 
   const loan = mapLoanRowToDetail(activeLoan);
-  await scheduleRepo.applyMissedWeekMarking(loan.id, ref);
+  const newlyMissedWeeks = await scheduleRepo.applyMissedWeekMarking(loan.id, ref);
+  if (newlyMissedWeeks.length > 0 && borrower.phone?.trim()) {
+    void maybeSendMissedPaymentSms({
+      borrowerPhone: borrower.phone,
+      borrowerName: borrower.fullName,
+      weeksOverdue: newlyMissedWeeks.length,
+      amountPesewas: loan.weeklyPaymentPesewas * newlyMissedWeeks.length,
+    });
+  }
   const scheduleRows = await scheduleRepo.listScheduleWeeks(loan.id);
   const scheduleWeeks = scheduleRows.map(mapScheduleRow);
 
@@ -250,6 +259,7 @@ async function postPayment(
 
   return {
     id: result.id,
+    displayId: formatPaymentDisplayId({ recordedAt: result.recordedAt }),
     borrowerId: result.borrowerId,
     collectorId: result.collectorId,
     loanId: loan.id,
@@ -272,6 +282,7 @@ export async function getPaymentById(paymentId: string) {
 
   return {
     id: payment.id,
+    displayId: formatPaymentDisplayId({ recordedAt: payment.recordedAt }),
     borrowerId: payment.borrowerId,
     collectorId: payment.collectorId,
     amountPesewas: payment.amountPesewas,

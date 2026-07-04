@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { formatEntityDisplayId, formatPaymentDisplayId, formatUserDisplayId, isReadableWilmsId } from '@wilms/shared-utils';
 import { isDatabaseEnabled } from '../../db/client.js';
 import { auditRepository } from '../../repositories/index.js';
 
@@ -7,8 +8,10 @@ export interface AuditEntryRecord {
   action: string;
   actorId: string;
   actorDisplayName?: string;
+  actorDisplayId?: string;
   targetEntityId: string;
   targetEntityType: string;
+  targetEntityDisplayId?: string;
   reason?: string;
   createdAt: string;
 }
@@ -24,8 +27,41 @@ export interface CreateAuditEntryInput {
 
 const entries: AuditEntryRecord[] = [];
 
+function resolveActorDisplayId(entry: Pick<AuditEntryRecord, 'actorId' | 'actorDisplayName'>): string {
+  if (entry.actorDisplayName && isReadableWilmsId(entry.actorDisplayName)) {
+    return entry.actorDisplayName.toUpperCase();
+  }
+
+  return formatUserDisplayId({ id: entry.actorId });
+}
+
+function resolveTargetEntityDisplayId(
+  entry: Pick<AuditEntryRecord, 'targetEntityId' | 'targetEntityType' | 'createdAt'>,
+): string {
+  if (isReadableWilmsId(entry.targetEntityId)) {
+    return entry.targetEntityId.toUpperCase();
+  }
+
+  if (entry.targetEntityType === 'payment') {
+    return formatPaymentDisplayId({ recordedAt: entry.createdAt });
+  }
+
+  return formatEntityDisplayId({
+    entityType: entry.targetEntityType,
+    entityId: entry.targetEntityId,
+  });
+}
+
+function enrichAuditEntry(entry: AuditEntryRecord): AuditEntryRecord {
+  return {
+    ...entry,
+    actorDisplayId: resolveActorDisplayId(entry),
+    targetEntityDisplayId: resolveTargetEntityDisplayId(entry),
+  };
+}
+
 export function appendAuditEntry(input: CreateAuditEntryInput): AuditEntryRecord {
-  const record: AuditEntryRecord = {
+  const record: AuditEntryRecord = enrichAuditEntry({
     id: `audit-${randomUUID()}`,
     action: input.action,
     actorId: input.actorId,
@@ -34,7 +70,7 @@ export function appendAuditEntry(input: CreateAuditEntryInput): AuditEntryRecord
     targetEntityType: input.targetEntityType,
     reason: input.reason,
     createdAt: new Date().toISOString(),
-  };
+  });
 
   entries.unshift(record);
 
@@ -74,7 +110,7 @@ export async function listAuditEntries(params?: {
       result = result.filter((entry) => entry.createdAt <= params.toDate!);
     }
 
-    return result;
+    return result.map(enrichAuditEntry);
   }
 
   let result = [...entries];
@@ -96,5 +132,5 @@ export async function listAuditEntries(params?: {
   }
 
   const limit = params?.limit ?? 100;
-  return result.slice(0, limit);
+  return result.slice(0, limit).map(enrichAuditEntry);
 }

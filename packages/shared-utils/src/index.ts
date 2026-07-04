@@ -1,5 +1,6 @@
 export { formatPesewasAsGhs } from './currency';
 export {
+  formatBorrowerDisplayId,
   formatCollectorDisplayId,
   formatEntityDisplayId,
   formatGroupDisplayId,
