@@ -88,7 +88,11 @@ export function resolveGroupDisplayId(group: {
   return isReadableWilmsId(group.id) ? group.id : group.id;
 }
 
-export function resolveUserDisplayId(userId: string, sequence?: number): string {
+export function resolveUserDisplayId(userId: string | null | undefined, sequence?: number): string {
+  if (!userId?.trim()) {
+    return formatUserDisplayId({ sequence });
+  }
+
   if (isReadableWilmsId(userId)) {
     return userId.toUpperCase();
   }

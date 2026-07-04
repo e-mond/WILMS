@@ -10,7 +10,8 @@ const MEMBER_SEEDS = [
 ];
 
 export function buildGroupMemberLabels(group: GroupSummary, maxVisible = 5): string[] {
-  const leader = group.name.split(' ').slice(0, 2).join(' ') || group.name;
+  const groupName = group.name?.trim() || 'Group member';
+  const leader = groupName.split(' ').slice(0, 2).join(' ') || groupName;
 
   return [leader, ...MEMBER_SEEDS.filter((name) => name !== leader)].slice(
     0,

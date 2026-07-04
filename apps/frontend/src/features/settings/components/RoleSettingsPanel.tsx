@@ -53,7 +53,7 @@ function ProfileSection() {
         />
         <div>
           <p className="text-body font-semibold text-text-primary">{displayName}</p>
-          <p className="text-small text-text-muted">{user.role.replace(/_/g, ' ')}</p>
+          <p className="text-small text-text-muted">{user.role?.replace(/_/g, ' ') ?? 'User'}</p>
         </div>
       </div>
       <SettingsSettingRow
@@ -83,7 +83,7 @@ function ProfileSection() {
       <SettingsSettingRow
         title="Role"
         description="Current access level."
-        control={<Input defaultValue={user.role.replace(/_/g, ' ')} readOnly aria-label="Role" />}
+        control={<Input defaultValue={user.role?.replace(/_/g, ' ') ?? 'User'} readOnly aria-label="Role" />}
       />
     </SettingsSectionCard>
   );

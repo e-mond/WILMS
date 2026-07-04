@@ -48,8 +48,9 @@ export function formatPoolDisplayId(input: {
   return `POOL-${regionCode}-${String(sequence).padStart(3, '0')}`;
 }
 
-export function formatGroupDisplayId(systemId: string): string {
-  return systemId.trim().toUpperCase();
+export function formatGroupDisplayId(systemId: string | null | undefined): string {
+  const normalized = systemId?.trim();
+  return normalized ? normalized.toUpperCase() : 'GRP-000';
 }
 
 export function formatEntityDisplayId(input: {

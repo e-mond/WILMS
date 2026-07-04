@@ -6,6 +6,7 @@ import { AppLockOverlay } from '@/features/app-lock/components/AppLockOverlay';
 import {
   APP_LOCK_ACTIVITY_EVENTS,
   APP_LOCK_IDLE_MS,
+  APP_LOCK_POST_LOGIN_GRACE_MS,
 } from '@/constants/app-lock';
 import { isPublicPath } from '@/lib/auth/routes';
 import { useAuth } from '@/hooks/useAuth';
@@ -18,6 +19,7 @@ export function AppLockHandler() {
   const isLocked = useAppLockStore((state) => state.isLocked);
   const isStoreHydrated = useAppLockStore((state) => state.isHydrated);
   const lastActivityAt = useAppLockStore((state) => state.lastActivityAt);
+  const sessionStartedAt = useAppLockStore((state) => state.sessionStartedAt);
   const recordActivity = useAppLockStore((state) => state.recordActivity);
   const lock = useAppLockStore((state) => state.lock);
   const unlock = useAppLockStore((state) => state.unlock);
@@ -77,6 +79,10 @@ export function AppLockHandler() {
       return;
     }
 
+    if (Date.now() - sessionStartedAt < APP_LOCK_POST_LOGIN_GRACE_MS) {
+      return;
+    }
+
     const elapsed = Date.now() - lastActivityAt;
     const delay = Math.max(APP_LOCK_IDLE_MS - elapsed, 0);
 
@@ -87,7 +93,7 @@ export function AppLockHandler() {
     return () => {
       window.clearTimeout(timerId);
     };
-  }, [isLocked, lastActivityAt, lock, shouldWatch]);
+  }, [isLocked, lastActivityAt, lock, sessionStartedAt, shouldWatch]);
 
   useEffect(() => {
     if (!shouldWatch) {
@@ -99,7 +105,12 @@ export function AppLockHandler() {
         return;
       }
 
-      const elapsed = Date.now() - useAppLockStore.getState().lastActivityAt;
+      const state = useAppLockStore.getState();
+      if (Date.now() - state.sessionStartedAt < APP_LOCK_POST_LOGIN_GRACE_MS) {
+        return;
+      }
+
+      const elapsed = Date.now() - state.lastActivityAt;
       if (elapsed >= APP_LOCK_IDLE_MS) {
         lock();
       }

@@ -38,15 +38,18 @@ export function BorrowerReviewProfile({
   borrower,
   guarantorEligibility,
 }: BorrowerReviewProfileProps) {
+  const applicantName = borrower.fullName?.trim() || 'Applicant';
+  const guarantorName = borrower.guarantorName?.trim() || 'Guarantor';
+
   return (
     <div className="space-y-wilms-4">
       <div className="grid gap-wilms-4 lg:grid-cols-2">
         <section className="rounded-sm border-2 border-brand-primary bg-card p-wilms-4 text-center">
           <h2 className="text-body font-semibold uppercase tracking-wide text-brand-primary">Applicant</h2>
           <Avatar
-            label={borrower.fullName}
+            label={applicantName}
             photoUrl={resolveEntityPhotoUrl({
-              name: borrower.fullName,
+              name: applicantName,
               id: borrower.id,
               photoFileName: borrower.photoFileName,
               photoUrl: borrower.photoUrl,
@@ -54,23 +57,23 @@ export function BorrowerReviewProfile({
             size="lg"
             className="mx-auto mt-wilms-4"
           />
-          <p className="mt-wilms-3 text-heading-3 font-semibold text-text-primary">{borrower.fullName}</p>
+          <p className="mt-wilms-3 text-heading-3 font-semibold text-text-primary">{applicantName}</p>
           <p className="text-small text-text-muted">{borrower.phone}</p>
         </section>
 
         <section className="rounded-sm border-2 border-brand-primary bg-card p-wilms-4 text-center">
           <h2 className="text-body font-semibold uppercase tracking-wide text-brand-primary">Guarantor</h2>
           <Avatar
-            label={borrower.guarantorName}
+            label={guarantorName}
             photoUrl={resolveEntityPhotoUrl({
-              name: borrower.guarantorName,
+              name: guarantorName,
               id: `${borrower.id}-guarantor`,
               photoUrl: borrower.guarantorPhotoUrl,
             })}
             size="lg"
             className="mx-auto mt-wilms-4"
           />
-          <p className="mt-wilms-3 text-heading-3 font-semibold text-text-primary">{borrower.guarantorName}</p>
+          <p className="mt-wilms-3 text-heading-3 font-semibold text-text-primary">{guarantorName}</p>
           <p className="text-small text-text-muted">{borrower.guarantorPhone}</p>
           {guarantorEligibility ? (
             <p className="mt-wilms-2 text-small text-text-primary">

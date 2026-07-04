@@ -40,6 +40,8 @@ export function DailyCollectionReportPanel() {
   const collectorsQuery = useQuery({
     queryKey: ['collectors-filter'],
     queryFn: (): Promise<CollectorListResponse> => collectorManagementService.listCollectors(),
+    retry: 1,
+    throwOnError: false,
   });
 
   const collectorFilterOptions = useMemo(

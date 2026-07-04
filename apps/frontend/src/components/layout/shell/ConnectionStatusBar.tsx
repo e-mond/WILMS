@@ -7,11 +7,18 @@ export function ConnectionStatusBar() {
   return (
     <div
       className={cn(
-        'pointer-events-none fixed z-40',
-        'bottom-4 right-4 max-sm:left-1/2 max-sm:right-auto max-sm:-translate-x-1/2',
+        'pointer-events-none fixed z-50',
+        'right-3 sm:right-4',
+        'bottom-[calc(4.75rem+env(safe-area-inset-bottom))] md:bottom-4',
       )}
+      aria-hidden={false}
     >
-      <div className="pointer-events-auto rounded-sm border border-border bg-background/95 shadow-md backdrop-blur-sm">
+      <div
+        className={cn(
+          'pointer-events-auto rounded-full border border-border bg-background/95 shadow-lg backdrop-blur-md',
+          'sm:rounded-sm',
+        )}
+      >
         <ConnectionStatusChip />
       </div>
     </div>
