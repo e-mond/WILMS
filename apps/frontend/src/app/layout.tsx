@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { AuthHydrator } from '@/components/auth/AuthHydrator';
 import { AppLockHandler } from '@/components/auth/AppLockHandler';
-import { AppLockRequiredGate } from '@/components/auth/AppLockRequiredGate';
 import { SessionExpiryHandler } from '@/components/auth/SessionExpiryHandler';
 import { SkipToContent } from '@/components/accessibility/SkipToContent';
 import { FocusOnRouteChange } from '@/components/accessibility/FocusOnRouteChange';
@@ -68,11 +67,9 @@ export default function RootLayout({
                 <FocusOnRouteChange />
                 <SessionExpiryHandler />
                 <AppLockHandler />
-                <AppLockRequiredGate>
-                  <ToastContainer />
-                  <ConnectionStatusBar />
-                  {children}
-                </AppLockRequiredGate>
+                <ToastContainer />
+                <ConnectionStatusBar />
+                {children}
               </AppBootstrap>
               </PermissionProvider>
             </QueryProvider>

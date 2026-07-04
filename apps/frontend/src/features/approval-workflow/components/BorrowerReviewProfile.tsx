@@ -2,6 +2,7 @@ import { Avatar, StatusBadge } from '@/components/data-display';
 import type { BorrowerReviewDetail } from '@/types/approval';
 import { formatDisplayDate } from '@/utils/format-date';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
+import { resolveUserDisplayId } from '@/utils/entity-display-id';
 
 export interface BorrowerReviewProfileProps {
   borrower: BorrowerReviewDetail;
@@ -10,6 +11,32 @@ export interface BorrowerReviewProfileProps {
     maxGuarantees: number;
     validationStatus: string;
   } | null;
+}
+
+function formatField(value?: string | null): string {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : 'Not provided';
+}
+
+function formatRegisteredBy(borrower: BorrowerReviewDetail): string {
+  const officerName = borrower.registeredByOfficerName?.trim();
+  const officerId = borrower.registeredByOfficerId?.trim();
+
+  if (officerName && officerId && officerName !== officerId) {
+    return `${officerName} (${resolveUserDisplayId(officerId)})`;
+  }
+
+  return officerName || (officerId ? resolveUserDisplayId(officerId) : 'Not provided');
+}
+
+function formatPhotoReference(borrower: BorrowerReviewDetail): string {
+  if (borrower.photoUrl) {
+    return borrower.photoFileName?.trim()
+      ? `${borrower.photoFileName} · Photo on file`
+      : 'Photo on file';
+  }
+
+  return 'No photo uploaded';
 }
 
 function ReviewSection({
@@ -92,52 +119,53 @@ export function BorrowerReviewProfile({
       <ReviewSection
         title="Personal details"
         items={[
-          ['Date of birth', borrower.dateOfBirth],
-          ['Gender', borrower.gender],
-          ['Phone', borrower.phone],
-          ['Email', borrower.email || 'Not provided'],
-          ['Nationality', borrower.nationality],
-          ['ID type', borrower.idType],
-          ['ID number', borrower.idNumber],
+          ['Registration ID', formatField(borrower.displayId)],
+          ['Date of birth', formatField(borrower.dateOfBirth)],
+          ['Gender', formatField(borrower.gender)],
+          ['Phone', formatField(borrower.phone)],
+          ['Email', formatField(borrower.email)],
+          ['Nationality', formatField(borrower.nationality)],
+          ['ID type', formatField(borrower.idType)],
+          ['ID number', formatField(borrower.idNumber)],
         ]}
       />
 
       <ReviewSection
         title="Address"
         items={[
-          ['House address', borrower.houseAddress],
-          ['GPS address', borrower.gpsAddress],
-          ['City', borrower.city],
-          ['Region', borrower.region],
-          ['District', borrower.district],
-          ['Community', borrower.community],
+          ['House address', formatField(borrower.houseAddress)],
+          ['GPS address', formatField(borrower.gpsAddress)],
+          ['City', formatField(borrower.city)],
+          ['Region', formatField(borrower.region)],
+          ['District', formatField(borrower.district)],
+          ['Community', formatField(borrower.community)],
         ]}
       />
 
       <ReviewSection
         title="Business information"
         items={[
-          ['Business name', borrower.businessName],
-          ['Business address', borrower.businessAddress],
-          ['Type of work', borrower.typeOfWork],
+          ['Business name', formatField(borrower.businessName)],
+          ['Business address', formatField(borrower.businessAddress)],
+          ['Type of work', formatField(borrower.typeOfWork)],
         ]}
       />
 
       <ReviewSection
         title="Guarantor"
         items={[
-          ['Name', borrower.guarantorName],
-          ['Phone', borrower.guarantorPhone],
-          ['Relationship', borrower.guarantorRelationship],
+          ['Name', formatField(borrower.guarantorName)],
+          ['Phone', formatField(borrower.guarantorPhone)],
+          ['Relationship', formatField(borrower.guarantorRelationship)],
         ]}
       />
 
       <ReviewSection
         title="Registration"
         items={[
-          ['Registered by', borrower.registeredByOfficerName],
+          ['Registered by', formatRegisteredBy(borrower)],
           ['Submitted', formatDisplayDate(borrower.registeredAt)],
-          ['Photo', `${borrower.photoFileName} (${borrower.photoMimeType})`],
+          ['Photo', formatPhotoReference(borrower)],
         ]}
       />
     </div>

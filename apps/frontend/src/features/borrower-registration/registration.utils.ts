@@ -1,6 +1,7 @@
 import type { BorrowerRegistrationFormValues } from '@/types/borrower-registration';
 import type { RegisterBorrowerPayload } from '@/types/borrower-registration';
 import type { BorrowerRegistrationInput } from '@/features/borrower-registration/registration.schema';
+import type { BorrowerReviewDetail } from '@/types/approval';
 
 export const DEFAULT_REGISTRATION_VALUES: BorrowerRegistrationFormValues = {
   fullName: '',
@@ -38,6 +39,35 @@ export const DEFAULT_REGISTRATION_VALUES: BorrowerRegistrationFormValues = {
   borrowerThumbprintManualPlaceholder: false,
   guarantorThumbprintManualPlaceholder: false,
 };
+
+export function reviewDetailToFormValues(detail: BorrowerReviewDetail): BorrowerRegistrationFormValues {
+  return {
+    ...DEFAULT_REGISTRATION_VALUES,
+    fullName: detail.fullName ?? '',
+    dateOfBirth: detail.dateOfBirth ?? '',
+    gender: detail.gender ?? '',
+    phone: detail.phone ?? '',
+    email: detail.email ?? '',
+    nationality: detail.nationality ?? 'Ghanaian',
+    idType: detail.idType ?? '',
+    idNumber: detail.idNumber ?? '',
+    houseAddress: detail.houseAddress ?? '',
+    gpsAddress: detail.gpsAddress ?? '',
+    city: detail.city ?? '',
+    region: detail.region ?? '',
+    district: detail.district ?? '',
+    businessName: detail.businessName ?? '',
+    businessAddress: detail.businessAddress ?? '',
+    typeOfWork: detail.typeOfWork ?? '',
+    guarantorName: detail.guarantorName ?? '',
+    guarantorPhone: detail.guarantorPhone ?? '',
+    guarantorRelationship: detail.guarantorRelationship ?? '',
+    photoUploadId: undefined,
+    guarantorPhotoUploadId: undefined,
+    photo: detail.photoUrl ? new File([], detail.photoFileName || 'photo.jpg') : null,
+    guarantorPhoto: detail.guarantorPhotoUrl ? new File([], 'guarantor-photo.jpg') : null,
+  };
+}
 
 export function toRegisterBorrowerPayload(
   input: BorrowerRegistrationInput,

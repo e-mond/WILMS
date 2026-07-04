@@ -33,6 +33,7 @@ import {
 } from '@/features/borrower-registration/registration-conflicts';
 import {
   DEFAULT_REGISTRATION_VALUES,
+  reviewDetailToFormValues,
   toRegisterBorrowerPayload,
 } from '@/features/borrower-registration/registration.utils';
 import {
@@ -119,14 +120,29 @@ export function BorrowerRegistrationWizard() {
 
     const editId = searchParams.get('edit');
     if (editId) {
-      void borrowerService.getRegistrationDraft(editId).then((draft) => {
-        setDraftId(draft.id);
-        reset({
-          ...DEFAULT_REGISTRATION_VALUES,
-          ...(draft.draftPayload as unknown as BorrowerRegistrationFormValues),
+      void borrowerService
+        .getRegistrationDraft(editId)
+        .then((draft) => {
+          setDraftId(draft.id);
+          reset({
+            ...DEFAULT_REGISTRATION_VALUES,
+            ...(draft.draftPayload as unknown as BorrowerRegistrationFormValues),
+          });
+          setCurrentStep(Math.min(draft.lastCompletedStep + 1, REGISTRATION_STEPS.length - 1));
+        })
+        .catch(async (error) => {
+          if (!(error instanceof ApiError) || error.status !== 404) {
+            throw error;
+          }
+
+          const review = await borrowerService.getBorrowerReview(editId);
+          setDraftId(editId);
+          reset(reviewDetailToFormValues(review));
+          setCurrentStep(REGISTRATION_STEPS.length - 1);
+        })
+        .catch(() => {
+          setSubmitError('Unable to load this registration for editing.');
         });
-        setCurrentStep(Math.min(draft.lastCompletedStep + 1, REGISTRATION_STEPS.length - 1));
-      });
       return;
     }
 

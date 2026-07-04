@@ -49,7 +49,7 @@ groupsRouter.get(
 groupsRouter.post(
   '/groups',
   validateBody(createGroupSchema),
-  requirePermission(PERMISSION.MANAGE_GROUPS),
+  requirePermission(PERMISSION.MANAGE_GROUPS, PERMISSION.APPROVE_BORROWERS),
   asyncHandler(async (req, res) => {
     try {
       sendData(
