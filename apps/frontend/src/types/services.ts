@@ -179,6 +179,15 @@ export interface IBorrowerService {
   checkActiveLoan(phone: string): Promise<ActiveLoanCheckResult>;
   checkBlacklist(input: RegistrationConflictInput): Promise<BlacklistCheckResult>;
   checkGuarantorEligibility(input: GuarantorEligibilityInput): Promise<GuarantorEligibilityResult>;
+  createRegistrationDraft(draftPayload?: Record<string, unknown>): Promise<import('@/services/borrowerService').RegistrationDraftRecord>;
+  getRegistrationDraft(id: string): Promise<import('@/services/borrowerService').RegistrationDraftRecord>;
+  updateRegistrationDraft(
+    id: string,
+    draftPayload: Record<string, unknown>,
+    lastCompletedStep: number,
+  ): Promise<import('@/services/borrowerService').RegistrationDraftRecord>;
+  submitRegistrationDraft(id: string): Promise<BorrowerSummary>;
+  deleteRegistrationDraft(id: string): Promise<{ deleted: boolean }>;
 }
 
 export interface ILoanService {

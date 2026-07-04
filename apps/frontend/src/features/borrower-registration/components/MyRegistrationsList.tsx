@@ -7,7 +7,6 @@ import { Avatar, DataTable, KpiCard, StatusBadge } from '@/components/data-displ
 import {
   ExecutiveKpiGrid,
   FilterPillBar,
-  ManagementToolbar,
 } from '@/components/layout/executive';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
@@ -38,6 +37,7 @@ import {
   countRegistrationsByStatus,
   matchesRegistrationDateFilter,
 } from '@/utils/registration-workflow.utils';
+import { resolveBorrowerDisplayId } from '@/utils/format-borrower-display-id';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
 
 const STATUS_FILTERS = [
@@ -64,7 +64,8 @@ function filterRegistrations(
       !normalizedQuery ||
       registration.fullName.toLowerCase().includes(normalizedQuery) ||
       registration.phone.toLowerCase().includes(normalizedQuery) ||
-      registration.community.toLowerCase().includes(normalizedQuery);
+      registration.community.toLowerCase().includes(normalizedQuery) ||
+      resolveBorrowerDisplayId(registration).toLowerCase().includes(normalizedQuery);
 
     return matchesStatus && matchesSearch && matchesDate;
   });
@@ -102,13 +103,15 @@ export function MyRegistrationsList() {
         reportType: WILMS_REPORT_TYPE.GENERIC_REPORT,
         reportTitle: 'My Registrations',
         generatedBy,
-        headers: ['Name', 'Phone', 'Community', 'Registration Date', 'Status'],
-        rows: filteredRegistrations.map((registration) => [
+        headers: ['Registration ID', 'Name', 'Phone', 'Community', 'Registration Date', 'Status', 'Photo'],
+        rows: filteredRegistrations.map((registration, index) => [
+          resolveBorrowerDisplayId(registration, index + 1),
           registration.fullName,
           registration.phone,
           registration.community,
           formatDisplayDate(registration.registeredAt),
           REGISTRATION_WORKFLOW_STATUS_LABELS[registration.registrationStatus],
+          registration.photoUrl ? 'Yes' : 'No',
         ]),
       }),
     [filteredRegistrations, generatedBy],
@@ -201,17 +204,17 @@ export function MyRegistrationsList() {
         <KpiCard variant="executive" label="Draft" value={statusCounts[REGISTRATION_WORKFLOW_STATUS.DRAFT]} />
       </ExecutiveKpiGrid>
 
-      <ManagementToolbar
-        search={
-          <Input
-            aria-label="Search registrations"
-            placeholder="Search by name, phone, or community"
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-          />
-        }
-        filters={
-          <div className="flex max-w-full flex-nowrap items-center gap-wilms-3 overflow-x-auto pb-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden lg:flex-wrap lg:overflow-visible lg:pb-0">
+      <div className="space-y-wilms-3 border-b border-border/80 pb-wilms-3">
+        <Input
+          aria-label="Search registrations"
+          placeholder="Search by name, phone, or community"
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          className="max-w-xl"
+        />
+
+        <div className="flex flex-col gap-wilms-3 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex min-w-0 flex-col gap-wilms-2">
             <FilterPillBar
               ariaLabel="Filter registrations by status"
               options={STATUS_FILTERS}
@@ -228,16 +231,16 @@ export function MyRegistrationsList() {
               onChange={(value) => setDateFilter(value as RegistrationDateFilter)}
             />
           </div>
-        }
-        actions={
+
           <WilmsExportActions
             document={exportDocument}
             filenameBase="my-registrations"
             showIcons
             permissions={[PERMISSION.EXPORT_REPORTS, PERMISSION.REGISTER_BORROWERS]}
+            className="lg:justify-end"
           />
-        }
-      />
+        </div>
+      </div>
 
       <DataTable
         variant="executive"
@@ -246,6 +249,15 @@ export function MyRegistrationsList() {
         emptyMessage="No registrations match your search."
         getRowId={(row) => row.id}
         columns={[
+          {
+            id: 'displayId',
+            header: 'Registration ID',
+            cell: (row) => (
+              <span className="font-mono text-small font-semibold text-text-primary">
+                {resolveBorrowerDisplayId(row)}
+              </span>
+            ),
+          },
           {
             id: 'fullName',
             header: 'Borrower',

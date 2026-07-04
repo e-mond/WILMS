@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
 import { BORROWER_ID_PLACEHOLDERS, formatGhanaCardInput } from '@wilms/shared-validation';
@@ -32,6 +33,7 @@ import {
 } from '@/features/borrower-registration/registration-conflicts';
 import {
   DEFAULT_REGISTRATION_VALUES,
+  reviewDetailToFormValues,
   toRegisterBorrowerPayload,
 } from '@/features/borrower-registration/registration.utils';
 import {
@@ -81,7 +83,9 @@ function applySchemaErrors(
 
 export function BorrowerRegistrationWizard() {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState(0);
+  const [draftId, setDraftId] = useState<string | null>(searchParams.get('edit'));
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [registeredBorrowerId, setRegisteredBorrowerId] = useState<string | null>(null);
   const [conflictReport, setConflictReport] = useState<RegistrationConflictReport>({
@@ -90,10 +94,7 @@ export function BorrowerRegistrationWizard() {
   });
   const [warningsAcknowledged, setWarningsAcknowledged] = useState(false);
   const [guarantorEligibility, setGuarantorEligibility] = useState<GuarantorEligibilityResult | null>(null);
-  const registrationSessionId = useMemo(
-    () => `reg-${user?.id ?? 'guest'}-${Date.now()}`,
-    [user?.id],
-  );
+  const registrationSessionId = draftId ?? `reg-${user?.id ?? 'guest'}-${Date.now()}`;
 
   const {
     control,
@@ -105,11 +106,64 @@ export function BorrowerRegistrationWizard() {
     clearErrors,
     trigger,
     watch,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<BorrowerRegistrationFormValues>({
     defaultValues: DEFAULT_REGISTRATION_VALUES,
     mode: 'onBlur',
   });
+
+  useEffect(() => {
+    if (!user?.id) {
+      return;
+    }
+
+    const editId = searchParams.get('edit');
+    if (editId) {
+      void borrowerService
+        .getRegistrationDraft(editId)
+        .then((draft) => {
+          setDraftId(draft.id);
+          reset({
+            ...DEFAULT_REGISTRATION_VALUES,
+            ...(draft.draftPayload as unknown as BorrowerRegistrationFormValues),
+          });
+          setCurrentStep(Math.min(draft.lastCompletedStep + 1, REGISTRATION_STEPS.length - 1));
+        })
+        .catch(async (error) => {
+          if (!(error instanceof ApiError) || error.status !== 404) {
+            throw error;
+          }
+
+          const review = await borrowerService.getBorrowerReview(editId);
+          setDraftId(editId);
+          reset(reviewDetailToFormValues(review));
+          setCurrentStep(REGISTRATION_STEPS.length - 1);
+        })
+        .catch(() => {
+          setSubmitError('Unable to load this registration for editing.');
+        });
+      return;
+    }
+
+    if (!draftId) {
+      void borrowerService.createRegistrationDraft({}).then((created) => {
+        setDraftId(created.id);
+      });
+    }
+  }, [user?.id, searchParams, draftId, reset]);
+
+  const persistDraft = async (step: number) => {
+    if (!draftId) {
+      return;
+    }
+
+    await borrowerService.updateRegistrationDraft(
+      draftId,
+      getValues() as unknown as Record<string, unknown>,
+      step,
+    );
+  };
 
   const reviewSummary = watch();
   const watchedIdentityFields = watch(['fullName', 'phone', 'idType', 'idNumber']);
@@ -276,6 +330,7 @@ export function BorrowerRegistrationWizard() {
         guarantorPhone: values.guarantorPhone,
         guarantorIdNumber: values.guarantorIdNumber,
         guarantorName: values.guarantorName,
+        borrowerPhone: values.phone,
       });
       setGuarantorEligibility(eligibility);
 
@@ -304,7 +359,9 @@ export function BorrowerRegistrationWizard() {
       return;
     }
 
-    setCurrentStep((step) => Math.min(step + 1, REGISTRATION_STEPS.length - 1));
+    const nextStep = Math.min(currentStep + 1, REGISTRATION_STEPS.length - 1);
+    await persistDraft(currentStep);
+    setCurrentStep(nextStep);
   };
 
   const handleBack = () => {
@@ -355,9 +412,17 @@ export function BorrowerRegistrationWizard() {
     }
 
     try {
-      const result = await borrowerService.registerBorrower(
-        toRegisterBorrowerPayload(parsed.data, user.id),
-      );
+      if (draftId) {
+        await borrowerService.updateRegistrationDraft(
+          draftId,
+          parsed.data as Record<string, unknown>,
+          REGISTRATION_STEPS.length - 1,
+        );
+      }
+
+      const result = draftId
+        ? await borrowerService.submitRegistrationDraft(draftId)
+        : await borrowerService.registerBorrower(toRegisterBorrowerPayload(parsed.data, user.id));
       setRegisteredBorrowerId(result.id);
       setConflictReport({ blocking: [], warnings: [] });
       notifyMutationSuccess(

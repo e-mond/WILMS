@@ -35,6 +35,7 @@ export interface BorrowerReviewDetail extends BorrowerDetail {
   photoUrl?: string | null;
   guarantorPhotoUrl?: string | null;
   registeredByOfficerName: string;
+  registeredByOfficerId?: string;
 }
 
 export type ReviewedDecision = 'APPROVED' | 'REJECTED' | 'BLACKLISTED';

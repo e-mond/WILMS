@@ -137,6 +137,13 @@ export function LoanPoolsPanel() {
     >
       {data ? (
     <div className="space-y-wilms-4">
+      <div className="rounded-sm border border-border bg-muted/40 p-wilms-4">
+        <h2 className="text-body font-semibold text-text-primary">What is a Loan Pool?</h2>
+        <p className="mt-wilms-2 text-small text-text-muted">
+          A loan pool is a fund allocated for issuing loans. Every loan issued is drawn from a pool,
+          allowing administrators to monitor capital allocation, repayments, and utilization.
+        </p>
+      </div>
       <ExecutiveKpiGrid>
         <KpiCard
           variant="executive"

@@ -8,8 +8,9 @@ import { cn } from '@/utils/cn';
 
 export type ShellNavVariant = 'default' | 'executive';
 
-function splitNavHref(href: string): { pathname: string; search: string } {
-  const [pathname, search = ''] = href.split('?');
+function splitNavHref(href: string | undefined): { pathname: string; search: string } {
+  const normalizedHref = href ?? '/';
+  const [pathname, search = ''] = normalizedHref.split('?');
 
   return { pathname, search };
 }

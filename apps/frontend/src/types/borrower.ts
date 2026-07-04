@@ -51,6 +51,7 @@ export interface BorrowerFullProfile extends BorrowerDetail {
 
 export interface OfficerRegistrationSummary {
   id: string;
+  displayId?: string;
   fullName: string;
   phone: string;
   status: BorrowerStatus;

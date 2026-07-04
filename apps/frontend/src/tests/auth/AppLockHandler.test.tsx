@@ -36,6 +36,7 @@ describe('AppLockHandler', () => {
       isLocked: true,
       failedAttempts: 0,
       lastActivityAt: Date.now(),
+      sessionStartedAt: Date.now() - 120_000,
     });
   });
 

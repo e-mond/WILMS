@@ -13,16 +13,18 @@ export function AppLockRequiredGate({ children }: { children: React.ReactNode })
   const { user, isAuthenticated, isHydrated } = useAuth();
   const { logout, isLoggingOut } = useLogout();
   const isEnabled = useAppLockStore((state) => state.isEnabled);
+  const pinUserId = useAppLockStore((state) => state.pinUserId);
   const isStoreHydrated = useAppLockStore((state) => state.isHydrated);
 
-  const shouldRequirePin =
+  const needsPinSetup =
     isHydrated &&
     isStoreHydrated &&
     isAuthenticated &&
-    !isEnabled &&
+    Boolean(user?.id) &&
+    (!isEnabled || pinUserId !== user?.id) &&
     !isPublicPath(pathname);
 
-  if (!shouldRequirePin) {
+  if (!needsPinSetup) {
     return children;
   }
 

@@ -4,6 +4,8 @@ export {
   formatEntityDisplayId,
   formatGroupDisplayId,
   formatLoanDisplayId,
+  formatPaymentDisplayId,
   formatPoolDisplayId,
+  formatUserDisplayId,
   isReadableWilmsId,
 } from './display-ids';

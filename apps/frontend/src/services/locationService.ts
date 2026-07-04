@@ -43,16 +43,28 @@ function readBrowserGeolocation(): Promise<CurrentLocationResult> {
 }
 
 const locationService: ILocationService = {
-  getRegions(): Promise<LocationRegion[]> {
-    return Promise.resolve(getGhanaRegions());
+  async getRegions(): Promise<LocationRegion[]> {
+    try {
+      return await apiClient.get<LocationRegion[]>('/locations/regions');
+    } catch {
+      return getGhanaRegions();
+    }
   },
 
-  getDistricts(regionId: string): Promise<LocationDistrict[]> {
-    return Promise.resolve(getGhanaDistricts(regionId));
+  async getDistricts(regionId: string): Promise<LocationDistrict[]> {
+    try {
+      return await apiClient.get<LocationDistrict[]>(`/locations/regions/${regionId}/districts`);
+    } catch {
+      return getGhanaDistricts(regionId);
+    }
   },
 
-  getCities(districtId: string): Promise<LocationCity[]> {
-    return Promise.resolve(getGhanaCities(districtId));
+  async getCities(districtId: string): Promise<LocationCity[]> {
+    try {
+      return await apiClient.get<LocationCity[]>(`/locations/districts/${districtId}/cities`);
+    } catch {
+      return getGhanaCities(districtId);
+    }
   },
 
   async getCurrentLocation(): Promise<CurrentLocationResult> {

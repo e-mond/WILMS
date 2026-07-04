@@ -33,7 +33,12 @@ collectorsRouter.use(requireAuth);
 
 collectorsRouter.get(
   '/collectors',
-  requirePermission(PERMISSION.VIEW_ALL_COLLECTORS),
+  requirePermission(
+    PERMISSION.VIEW_ALL_COLLECTORS,
+    PERMISSION.APPROVE_BORROWERS,
+    PERMISSION.REVIEW_APPLICATIONS,
+    PERMISSION.VIEW_REPORTS,
+  ),
   asyncHandler(async (_req, res) => {
     sendData(res, await collectorService.listCollectors());
   }),

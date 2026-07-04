@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { AuthHydrator } from '@/components/auth/AuthHydrator';
 import { AppLockHandler } from '@/components/auth/AppLockHandler';
-import { AppLockRequiredGate } from '@/components/auth/AppLockRequiredGate';
 import { SessionExpiryHandler } from '@/components/auth/SessionExpiryHandler';
 import { SkipToContent } from '@/components/accessibility/SkipToContent';
 import { FocusOnRouteChange } from '@/components/accessibility/FocusOnRouteChange';
@@ -11,6 +10,7 @@ import { PermissionProvider } from '@/components/providers/PermissionProvider';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { ThemeScript } from '@/components/theme/ThemeScript';
+import { ConnectionStatusBar } from '@/components/layout/shell/ConnectionStatusBar';
 import { E2eBridge } from '@/components/dev/E2eBridge';
 import { DemoModeBanner } from '@/components/feedback/DemoModeBanner';
 import { isDemoMode } from '@/data-provider/types';
@@ -67,10 +67,9 @@ export default function RootLayout({
                 <FocusOnRouteChange />
                 <SessionExpiryHandler />
                 <AppLockHandler />
-                <AppLockRequiredGate>
-                  <ToastContainer />
-                  {children}
-                </AppLockRequiredGate>
+                <ToastContainer />
+                <ConnectionStatusBar />
+                {children}
               </AppBootstrap>
               </PermissionProvider>
             </QueryProvider>

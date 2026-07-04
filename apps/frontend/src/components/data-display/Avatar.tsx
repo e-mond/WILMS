@@ -16,7 +16,8 @@ const SIZE_CLASS: Record<AvatarSize, string> = {
 };
 
 export function Avatar({ label, photoUrl, size = 'md', className }: AvatarProps) {
-  const initials = label
+  const safeLabel = (label ?? '').trim() || 'User';
+  const initials = safeLabel
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
@@ -28,7 +29,7 @@ export function Avatar({ label, photoUrl, size = 'md', className }: AvatarProps)
       // eslint-disable-next-line @next/next/no-img-element
       <img
         src={photoUrl}
-        alt={label}
+        alt={safeLabel}
         className={cn('inline-flex shrink-0 rounded-full border border-border object-cover', SIZE_CLASS[size], className)}
       />
     );

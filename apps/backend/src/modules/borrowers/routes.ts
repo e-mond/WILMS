@@ -120,8 +120,88 @@ borrowersRouter.get(
 
 borrowersRouter.post(
   '/borrowers/check-guarantor-eligibility',
-  asyncHandler(async (_req, res) => {
-    sendData(res, { eligible: true, reasons: [] });
+  asyncHandler(async (req, res) => {
+    sendData(res, await borrowerService.checkGuarantorEligibility(req.body ?? {}));
+  }),
+);
+
+borrowersRouter.get(
+  '/borrowers/drafts',
+  requirePermission(PERMISSION.REGISTER_BORROWERS),
+  asyncHandler(async (req, res) => {
+    sendData(res, await borrowerService.listRegistrationDraftsForOfficer(req.session!.userId));
+  }),
+);
+
+borrowersRouter.post(
+  '/borrowers/drafts',
+  requirePermission(PERMISSION.REGISTER_BORROWERS),
+  asyncHandler(async (req, res) => {
+    sendData(
+      res,
+      await borrowerService.createRegistrationDraft(
+        req.session!.userId,
+        (req.body?.draftPayload as Record<string, unknown>) ?? {},
+      ),
+      201,
+    );
+  }),
+);
+
+borrowersRouter.get(
+  '/borrowers/drafts/:id',
+  requirePermission(PERMISSION.REGISTER_BORROWERS),
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(res, await borrowerService.getRegistrationDraft(req.params.id!, req.session!.userId));
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+borrowersRouter.patch(
+  '/borrowers/drafts/:id',
+  requirePermission(PERMISSION.REGISTER_BORROWERS),
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(
+        res,
+        await borrowerService.updateRegistrationDraft(
+          req.params.id!,
+          req.session!.userId,
+          (req.body?.draftPayload as Record<string, unknown>) ?? {},
+          Number(req.body?.lastCompletedStep ?? 0),
+        ),
+      );
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+borrowersRouter.delete(
+  '/borrowers/drafts/:id',
+  requirePermission(PERMISSION.REGISTER_BORROWERS),
+  asyncHandler(async (req, res) => {
+    try {
+      await borrowerService.deleteRegistrationDraft(req.params.id!, req.session!.userId);
+      sendData(res, { deleted: true });
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+borrowersRouter.post(
+  '/borrowers/drafts/:id/submit',
+  requirePermission(PERMISSION.REGISTER_BORROWERS),
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(res, await borrowerService.submitRegistrationDraft(req.params.id!, req.session!.userId), 201);
+    } catch (error) {
+      mapError(error);
+    }
   }),
 );
 
