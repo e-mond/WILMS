@@ -30,7 +30,8 @@ export function ConnectionStatusBar() {
     <div
       className={cn(
         'pointer-events-none fixed z-50',
-        'right-4 top-1/2 -translate-y-1/2',
+        'bottom-4 right-4',
+        'pb-[max(0px,env(safe-area-inset-bottom))]',
       )}
       aria-hidden={false}
     >
