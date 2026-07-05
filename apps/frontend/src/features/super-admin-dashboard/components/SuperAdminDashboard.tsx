@@ -26,6 +26,7 @@ import {
 import { useDashboardSummary } from '@/features/super-admin-dashboard/hooks/useDashboardSummary';
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
+import { DashboardRecentActivity } from '@/features/super-admin-dashboard/components/DashboardRecentActivity';
 import { cn } from '@/utils/cn';
 
 const KPI_ICON_NAMES: Record<string, DashboardKpiIconName> = {
@@ -232,6 +233,15 @@ function SuperAdminDashboardContent({
             </div>
           </>
         )}
+      </section>
+
+      {/* Recent activity */}
+      <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <h2 className="text-2xl font-semibold text-text-primary">Recent Activity</h2>
+          <p className="text-sm text-text-muted">What needs attention right now</p>
+        </div>
+        <DashboardRecentActivity alerts={data.recentAlerts} />
       </section>
 
       {/* Bottom Section */}

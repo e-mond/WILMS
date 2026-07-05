@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic';
+import { ModulePageIntro } from '@/components/feedback/ModulePageIntro';
 import { PageShell } from '@/components/layout/PageShell';
 import { PageLoadingFallback } from '@/components/layout/PageLoadingFallback';
 
@@ -13,6 +14,7 @@ const ReportsIndexPanel = dynamic(
 export default function ReportsIndexPage() {
   return (
     <PageShell variant="executive">
+      <ModulePageIntro guidanceKey="reports" />
       <ReportsIndexPanel />
     </PageShell>
   );

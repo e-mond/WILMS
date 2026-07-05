@@ -11,7 +11,7 @@ export function useGlobalSearch(params: GlobalSearchParams, enabled = true) {
   return useQuery({
     queryKey: globalSearchQueryKey(params),
     queryFn: () => searchService.globalSearch(params),
-    enabled: enabled && trimmedQuery.length >= 2,
+    enabled: enabled && trimmedQuery.length >= 1,
     staleTime: 30_000,
   });
 }
