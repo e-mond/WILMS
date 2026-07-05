@@ -16,8 +16,25 @@ export interface GlobalSearchResult {
 
 const DEFAULT_LIMIT = 8;
 
+function normalizePhoneForSearch(phone: string): string {
+  return phone.replace(/\D/g, '');
+}
+
 function matchesQuery(value: string, query: string): boolean {
-  return value.toLowerCase().includes(query);
+  const normalizedValue = value.toLowerCase();
+  const normalizedQuery = query.toLowerCase();
+
+  if (normalizedValue.includes(normalizedQuery)) {
+    return true;
+  }
+
+  const phoneQuery = normalizePhoneForSearch(normalizedQuery);
+
+  if (phoneQuery.length >= 3 && normalizePhoneForSearch(value).includes(phoneQuery)) {
+    return true;
+  }
+
+  return false;
 }
 
 function entitiesForRole(role: string): Set<string> {
@@ -67,7 +84,8 @@ export async function globalSearch(input: {
         !matchesQuery(borrower.fullName, query) &&
         !matchesQuery(borrower.phone, query) &&
         !matchesQuery(borrower.idNumber, query) &&
-        !matchesQuery(borrower.groupName, query)
+        !matchesQuery(borrower.groupName, query) &&
+        !matchesQuery(borrower.id, query)
       ) {
         continue;
       }
@@ -123,7 +141,7 @@ export async function globalSearch(input: {
   if (allowed.has('COLLECTOR') && isDatabaseEnabled()) {
     const collectors = await userRepo.listCollectors();
     for (const { user } of collectors) {
-      if (!matchesQuery(user.displayName, query) && !matchesQuery(user.zone ?? '', query)) {
+      if (!matchesQuery(user.displayName, query) && !matchesQuery(user.zone ?? '', query) && !matchesQuery(user.id, query)) {
         continue;
       }
 

@@ -1,4 +1,5 @@
 'use client';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Drawer } from '@/components/ui/Drawer';
@@ -13,6 +14,8 @@ import { useUiStore } from '@/state/uiStore';
 import { NOTIFICATION_INBOX_SEVERITY } from '@/types/notification';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
 import { cn } from '@/utils/cn';
+
+type NotificationFilter = 'all' | 'unread' | 'critical';
 
 function severityConfig(severity: string): { className: string; label: string; dot: string } {
   switch (severity) {
@@ -61,6 +64,19 @@ export function NotificationInboxPanel() {
   const closeNotificationPanel = useUiStore((state) => state.closeNotificationPanel);
   const { data: items = [], isLoading } = useNotificationInbox(isOpen);
   const markAsRead = useMarkNotificationRead();
+  const [filter, setFilter] = useState<NotificationFilter>('all');
+
+  const filteredItems = useMemo(() => {
+    if (filter === 'unread') {
+      return items.filter((item) => !item.isRead);
+    }
+
+    if (filter === 'critical') {
+      return items.filter((item) => item.severity === NOTIFICATION_INBOX_SEVERITY.CRITICAL);
+    }
+
+    return items;
+  }, [filter, items]);
 
   const unreadItems = items.filter((i) => !i.isRead);
   const hasUnread = unreadItems.length > 0;
@@ -77,7 +93,31 @@ export function NotificationInboxPanel() {
       <div className="flex flex-col">
         {/* Header meta row */}
         {!isLoading && items.length > 0 && (
-          <div className="mb-wilms-4 flex items-center justify-between">
+          <div className="mb-wilms-4 space-y-wilms-3">
+            <div className="flex flex-wrap gap-wilms-2" role="tablist" aria-label="Notification filters">
+              {([
+                ['all', 'All'],
+                ['unread', 'Unread'],
+                ['critical', 'Critical'],
+              ] as const).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  role="tab"
+                  aria-selected={filter === value}
+                  className={cn(
+                    'rounded-full border px-wilms-3 py-wilms-1 text-small font-medium transition-colors',
+                    filter === value
+                      ? 'border-brand-primary bg-brand-primary-light text-brand-primary'
+                      : 'border-border bg-card text-text-muted hover:text-text-primary',
+                  )}
+                  onClick={() => setFilter(value)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center justify-between">
             <span className="text-small text-text-muted">
               {hasUnread ? `${unreadItems.length} unread` : 'All caught up'}
             </span>
@@ -92,6 +132,7 @@ export function NotificationInboxPanel() {
                 Mark all read
               </button>
             )}
+          </div>
           </div>
         )}
 
@@ -123,9 +164,21 @@ export function NotificationInboxPanel() {
                 </p>
               </div>
             </div>
+          ) : filteredItems.length === 0 ? (
+            <div className="flex flex-col items-center gap-wilms-3 py-wilms-10 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-background">
+                <NotificationBellIcon className="h-6 w-6 text-text-muted" />
+              </div>
+              <div>
+                <p className="text-body font-semibold text-text-primary">No notifications in this view</p>
+                <p className="mt-wilms-1 text-small text-text-muted">
+                  Try another filter or check back after new activity.
+                </p>
+              </div>
+            </div>
           ) : (
             <ul className="flex flex-col gap-wilms-2">
-              {items.map((item) => {
+              {filteredItems.map((item) => {
                 const severity = severityConfig(item.severity);
                 return (
                   <li

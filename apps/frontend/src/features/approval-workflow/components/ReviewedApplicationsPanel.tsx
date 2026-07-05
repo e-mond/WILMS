@@ -3,7 +3,9 @@
 import { useMemo, useState } from 'react';
 import { DataTable, KpiCard } from '@/components/data-display';
 import { ExecutiveKpiGrid, ManagementToolbar } from '@/components/layout/executive';
+import { GuidedEmptyState } from '@/components/feedback/GuidedEmptyState';
 import { EmptyState } from '@/components/feedback/EmptyState';
+import { CONNECTION_ERROR_COPY, EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
 import { Input } from '@/components/ui/Input';
 import {
@@ -47,21 +49,11 @@ export function ReviewedApplicationsPanel() {
   }
 
   if (isError) {
-    return (
-      <EmptyState
-        title="Unable to load reviewed applications"
-        description="Check your connection and try again."
-      />
-    );
+    return <EmptyState {...CONNECTION_ERROR_COPY} />;
   }
 
   if (!data?.length) {
-    return (
-      <EmptyState
-        title="No reviewed applications yet"
-        description="Decisions you make from the pending queue will appear here."
-      />
-    );
+    return <GuidedEmptyState {...EMPTY_STATE_COPY.reviewedApplications} />;
   }
 
   return (
