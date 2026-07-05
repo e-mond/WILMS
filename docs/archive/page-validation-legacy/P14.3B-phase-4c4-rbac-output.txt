@@ -1,0 +1,16 @@
+﻿
+> @wilms/api@0.1.0 cert:reconciliation:rbac
+> tsx src/verification/cert-reconciliation-rbac.ts
+
+Ôùç injected env (10) from ..\..\.env // tip: Ôîÿ override existing { override: true }
+P14.3B.4C.4 RBAC Certification
+Started: 2026-06-25T00:51:42.230Z
+  Ô£ô collector-allowed: status=201
+  Ô£ô unauthorized-staff-blocked: status=403 reconciliations=0
+  Ô£ô auditor-blocked: status=403
+  Ô£ô anonymous-blocked: status=401
+  Ô£ô borrower-role-note: No borrower API role in WILMS v1 ÔÇö REGISTRATION_OFFICER and AUDITOR used as unauthorized staff proxies
+  Ô£ô no-history-on-denied-requests: totalHistoryRows=7 baselineBefore=0
+
+Passed: 6/6
+Finished: 2026-06-25T00:51:48.048Z

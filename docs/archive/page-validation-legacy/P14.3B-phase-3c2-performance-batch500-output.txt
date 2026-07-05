@@ -1,0 +1,8 @@
+﻿Ôùç injected env (10) from ..\..\.env // tip: Ôîÿ suppress logs { quiet: true }
+P14.3B.3C.2 Performance Certification
+Started: 2026-06-22T06:56:22.919Z
+Methodology: record payment (setup) + timed reversePayment() per iteration; fresh payment each index
+Batches: 500
+
+| Batch | Samples | Avg (ms) | P95 (ms) | P99 (ms) | Setup Fail | Rev Fail | Lock | Rollback | Other |
+|-------|---------|----------|----------|----------|------------|----------|------|----------|-------|

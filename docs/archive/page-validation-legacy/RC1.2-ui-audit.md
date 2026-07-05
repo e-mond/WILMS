@@ -1,0 +1,58 @@
+﻿# RC1.2 ÔÇö UI Audit
+
+**Git SHA:** `e456febebf509d2672ea79741b6e9a59463de10d`  
+**Date:** 2026-07-02T10:30:00Z  
+**Branch:** `release/rc1-1-production-stabilization`  
+**Commands run:**
+
+```bash
+npm run test:e2e -w @wilms/frontend   # 15 specs, desktop + mobile
+# Manual matrix ÔÇö checklist below (screenshots: rc1.2-evidence/ui/ when captured)
+```
+
+**Result:** FAIL (local E2E ÔÇö environmental `ENOSPC` disk full); manual matrix **ÔëÑ90%** documented
+
+## Automated E2E
+
+| Item | Result |
+|------|--------|
+| Specs | 15 under `apps/frontend/e2e/` |
+| Local run (port 3001, `CI=1`) | **FAIL** ÔÇö `ENOSPC: no space left on device` during `next dev` webServer |
+| Partial passes before disk failure | Login, collector dashboard, approver queue, super-admin dashboard (axe retries) |
+| Prior long run (corrupted rerun) | 23 passed / 1 skipped when dev server stable |
+| Production UI | No "Coming Soon" in `features/**` (RC1.1 grep + mock guard) |
+
+**Root cause:** Local disk exhaustion during parallel validation runs ÔÇö not an application regression. Re-run on CI or after freeing disk.
+
+**Artifact:** `docs/page-validation/rc1.2-evidence/e2e-run-3001.log`
+
+## Manual matrix (checklist)
+
+Evidence from RC1.1 module audits + production smoke + spot checks. Viewports: **375 / 768 / 1280**.
+
+| Role | Route | Loading | Empty | Error/retry | Modals | Tables | Viewports | Status |
+|------|-------|---------|-------|-------------|--------|--------|-----------|--------|
+| SUPER_ADMIN | `/dashboard` | Ô£ô | Ô£ô | Ô£ô | ÔÇö | Ô£ô | 3/3 | PASS |
+| SUPER_ADMIN | `/borrowers` | Ô£ô | Ô£ô | Ô£ô | Ô£ô | Ô£ô | 3/3 | PASS |
+| SUPER_ADMIN | `/loans` | Ô£ô | Ô£ô | Ô£ô | ÔÇö | Ô£ô | 3/3 | PASS |
+| SUPER_ADMIN | `/groups` | Ô£ô | Ô£ô | Ô£ô | Ô£ô | Ô£ô | 2/3 | PARTIAL (E2E axe timeout) |
+| SUPER_ADMIN | `/settings` | Ô£ô | ÔÇö | Ô£ô | Ô£ô | ÔÇö | 3/3 | PASS |
+| APPROVER | `/approver/pending` | Ô£ô | Ô£ô | Ô£ô | Ô£ô | Ô£ô | 3/3 | PASS |
+| APPROVER | `/approver/pending/[id]` | Ô£ô | ÔÇö | Ô£ô | Ô£ô | ÔÇö | 3/3 | PASS |
+| COLLECTOR | `/collector/dashboard` | Ô£ô | Ô£ô | Ô£ô | ÔÇö | Ô£ô | 3/3 | PASS |
+| COLLECTOR | `/collector/payment/[id]` | Ô£ô | ÔÇö | Ô£ô | Ô£ô | ÔÇö | 3/3 | PASS |
+| COLLECTOR | `/collector/reconciliation` | Ô£ô | Ô£ô | Ô£ô | ÔÇö | Ô£ô | 3/3 | PASS |
+| REGISTRATION_OFFICER | `/officer/register` | Ô£ô | ÔÇö | Ô£ô | Ô£ô | ÔÇö | 3/3 | PASS |
+| REGISTRATION_OFFICER | `/officer/my-registrations` | Ô£ô | Ô£ô | Ô£ô | ÔÇö | Ô£ô | 3/3 | PASS |
+
+**Matrix coverage:** 12/12 key routes checked = **100%** of plan matrix; viewport depth **ÔëÑ90%** (groups axe E2E exception).
+
+## Pass gate assessment
+
+| Criterion | Status |
+|-----------|--------|
+| No "Coming Soon" in prod UI | PASS |
+| E2E green | **FAIL** (environmental ÔÇö re-run required) |
+| Manual matrix ÔëÑ90% | PASS |
+
+**Gate:** FAIL until E2E re-run on clean disk/CI.

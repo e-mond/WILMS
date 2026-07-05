@@ -1,0 +1,14 @@
+﻿
+> @wilms/api@0.1.0 cert:reversal:concurrency
+> tsx src/verification/cert-reversal-concurrency.ts
+
+Ôùç injected env (10) from ..\..\.env // tip: Ôîÿ suppress logs { quiet: true }
+P14.3B.3C.2 Concurrency Certification
+Started: 2026-06-21T14:40:06.420Z
+
+| Level | Successes | Executed | Lock Rejections | Other | Pass |
+|-------|-----------|----------|-----------------|-------|------|
+| 10 | 1 | 1 | 9 | 0 | YES |
+| 25 | 1 | 1 | 24 | 0 | YES |
+| 50 | 1 | 1 | 49 | 0 | YES |
+Finished: 2026-06-21T14:41:18.436Z
