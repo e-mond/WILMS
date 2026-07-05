@@ -51,7 +51,7 @@ After every phase, update:
 
 - `README.md` — current phase, domain coverage, production readiness, validation status.
 - `docs/releases/P14.3B-Phase-X.md` — features, validation, known issues, next phase.
-- `docs/page-validation/` — certification, implementation reports, git reports.
+- `docs/archive/page-validation/` — certification, implementation reports, git reports.
 
 ## Git and PR standards
 

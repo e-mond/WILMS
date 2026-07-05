@@ -7,7 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const outDir = path.join(root, 'docs/page-validation/phase-3c-evidence');
+const outDir = path.join(root, 'docs/generated/phase-3c-evidence');
 
 function walk(dir, pred) {
   const results = [];
