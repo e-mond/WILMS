@@ -11,6 +11,7 @@ import {
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
 import { WILMS_REPORT_TYPE } from '@/features/export';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
+import { FormField } from '@/components/forms';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
@@ -301,7 +302,8 @@ export function LoanPoolsPanel() {
               Cancel
             </Button>
             <Button
-              type="button"
+              type="submit"
+              form="create-loan-pool-form"
               variant="primary"
               size="sm"
               disabled={
@@ -314,62 +316,91 @@ export function LoanPoolsPanel() {
                 Number.isNaN(Number(capitalGhs)) ||
                 Number(capitalGhs) <= 0
               }
-              onClick={() => {
-                void createLoanPool
-                  .mutateAsync({
-                    name: poolName.trim(),
-                    region: poolRegion.trim(),
-                    source: poolSource.trim(),
-                    capitalPesewas: ghsInputToPesewas(capitalGhs),
-                    cycleLabel: cycleLabel.trim(),
-                  })
-                  .then(() => {
-                    setCreateModalOpen(false);
-                    setPoolName('');
-                    setPoolRegion('');
-                    setPoolSource('');
-                    setCapitalGhs('');
-                    setCycleLabel('');
-                  });
-              }}
             >
               {createLoanPool.isPending ? 'Creating…' : 'Create Pool'}
             </Button>
           </>
         }
       >
-        <div className="space-y-wilms-4">
-          <div>
-            <label htmlFor="pool-name" className="text-small font-semibold text-text-primary">
-              Pool name
-            </label>
-            <Input id="pool-name" className="mt-wilms-2" value={poolName} onChange={(e) => setPoolName(e.target.value)} />
-          </div>
-          <div>
-            <label htmlFor="pool-region" className="text-small font-semibold text-text-primary">
-              Region
-            </label>
-            <Input id="pool-region" className="mt-wilms-2" value={poolRegion} onChange={(e) => setPoolRegion(e.target.value)} />
-          </div>
-          <div>
-            <label htmlFor="pool-source" className="text-small font-semibold text-text-primary">
-              Funding source
-            </label>
-            <Input id="pool-source" className="mt-wilms-2" value={poolSource} onChange={(e) => setPoolSource(e.target.value)} />
-          </div>
-          <div>
-            <label htmlFor="pool-capital" className="text-small font-semibold text-text-primary">
-              Capital (GHS)
-            </label>
-            <Input id="pool-capital" className="mt-wilms-2" value={capitalGhs} onChange={(e) => setCapitalGhs(e.target.value)} placeholder="100000" />
-          </div>
-          <div>
-            <label htmlFor="pool-cycle" className="text-small font-semibold text-text-primary">
-              Cycle label
-            </label>
-            <Input id="pool-cycle" className="mt-wilms-2" value={cycleLabel} onChange={(e) => setCycleLabel(e.target.value)} placeholder="Jul 2026" />
-          </div>
-        </div>
+        <form
+          id="create-loan-pool-form"
+          className="space-y-wilms-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (
+              createLoanPool.isPending ||
+              !poolName.trim() ||
+              !poolRegion.trim() ||
+              !poolSource.trim() ||
+              !capitalGhs.trim() ||
+              !cycleLabel.trim() ||
+              Number.isNaN(Number(capitalGhs)) ||
+              Number(capitalGhs) <= 0
+            ) {
+              return;
+            }
+
+            void createLoanPool
+              .mutateAsync({
+                name: poolName.trim(),
+                region: poolRegion.trim(),
+                source: poolSource.trim(),
+                capitalPesewas: ghsInputToPesewas(capitalGhs),
+                cycleLabel: cycleLabel.trim(),
+              })
+              .then(() => {
+                setCreateModalOpen(false);
+                setPoolName('');
+                setPoolRegion('');
+                setPoolSource('');
+                setCapitalGhs('');
+                setCycleLabel('');
+              });
+          }}
+        >
+          <FormField label="Pool name" htmlFor="pool-name" required>
+            <Input
+              id="pool-name"
+              autoFocus
+              value={poolName}
+              onChange={(event) => setPoolName(event.target.value)}
+            />
+          </FormField>
+          <FormField label="Region" htmlFor="pool-region" required>
+            <Input
+              id="pool-region"
+              value={poolRegion}
+              onChange={(event) => setPoolRegion(event.target.value)}
+            />
+          </FormField>
+          <FormField label="Funding source" htmlFor="pool-source" required>
+            <Input
+              id="pool-source"
+              value={poolSource}
+              onChange={(event) => setPoolSource(event.target.value)}
+            />
+          </FormField>
+          <FormField label="Capital (GHS)" htmlFor="pool-capital" required>
+            <Input
+              id="pool-capital"
+              type="number"
+              min="0"
+              step="0.01"
+              inputMode="decimal"
+              value={capitalGhs}
+              onChange={(event) => setCapitalGhs(event.target.value)}
+              placeholder="100000"
+            />
+          </FormField>
+          <FormField label="Cycle label" htmlFor="pool-cycle" required>
+            <Input
+              id="pool-cycle"
+              value={cycleLabel}
+              onChange={(event) => setCycleLabel(event.target.value)}
+              placeholder="Jul 2026"
+            />
+          </FormField>
+        </form>
       </Modal>
     </>
   );

@@ -5,6 +5,7 @@ export {
   formatEntityDisplayId,
   formatGroupDisplayId,
   formatLoanDisplayId,
+  formatDisbursementDisplayId,
   formatPaymentDisplayId,
   formatPoolDisplayId,
   formatUserDisplayId,

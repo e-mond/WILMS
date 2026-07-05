@@ -10,6 +10,7 @@ import { hashPassword } from '../../lib/password.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
 import * as userRepo from '../../repositories/user.repository.js';
 import * as systemSettingsRepo from '../../repositories/system-settings.repository.js';
+import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import { getIntegrationStatus } from '../../infrastructure/integrations/status.js';
 import { getSmsProvider } from '../../infrastructure/sms/index.js';
 import { getSmsConfig } from '../../infrastructure/sms/config.js';
@@ -317,7 +318,10 @@ function validateGroupSizeRules(minGroupSize: number, maxGroupSize: number): voi
   }
 }
 
-export async function updateSettings(input: UpdateSystemSettingsInput): Promise<SystemSettings> {
+export async function updateSettings(
+  input: UpdateSystemSettingsInput,
+  actorId?: string,
+): Promise<SystemSettings> {
   const current = await getSettings();
   const minGroupSize = input.minGroupSize ?? current.minGroupSize;
   const maxGroupSize = input.maxGroupSize ?? current.maxGroupSize;
@@ -331,6 +335,15 @@ export async function updateSettings(input: UpdateSystemSettingsInput): Promise<
       maxGroupSize,
       updatedAt: new Date().toISOString(),
     };
+    if (actorId) {
+      appendAuditEntry({
+        action: 'settings.updated',
+        actorId,
+        targetEntityId: 'system-settings',
+        targetEntityType: 'settings',
+        reason: 'System settings updated',
+      });
+    }
     return { ...systemSettings };
   }
 
@@ -339,6 +352,16 @@ export async function updateSettings(input: UpdateSystemSettingsInput): Promise<
     minGroupSize,
     maxGroupSize,
   });
+
+  if (actorId) {
+    appendAuditEntry({
+      action: 'settings.updated',
+      actorId,
+      targetEntityId: 'system-settings',
+      targetEntityType: 'settings',
+      reason: 'System settings updated',
+    });
+  }
 
   return mapSystemSettingsRow(row);
 }

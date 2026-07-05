@@ -8,42 +8,55 @@ export interface SwitchProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
   onChange: (checked: boolean) => void;
   label: string;
   className?: string;
+  loading?: boolean;
 }
 
 export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(function Switch(
-  { checked, onChange, label, className, disabled, id, ...props },
+  { checked, onChange, label, className, disabled, loading = false, id, ...props },
   ref,
 ) {
   const switchId = id ?? label.toLowerCase().replace(/\s+/g, '-');
+  const isDisabled = disabled || loading;
 
   return (
-    <div className={cn('inline-flex items-center gap-wilms-2', className)}>
+    <div className={cn('inline-flex min-h-[44px] items-center gap-wilms-3', className)}>
       <button
         ref={ref}
         id={switchId}
         type="button"
         role="switch"
         aria-checked={checked}
-        aria-label={label}
-        disabled={disabled}
+        aria-labelledby={`${switchId}-label`}
+        aria-busy={loading || undefined}
+        disabled={isDisabled}
         onClick={() => onChange(!checked)}
         className={cn(
-          'relative h-6 w-11 rounded-sm border transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary',
-          checked ? 'border-brand-primary bg-brand-primary' : 'border-border bg-card',
-          disabled && 'cursor-not-allowed opacity-50',
+          'relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border transition-all duration-200',
+          'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary',
+          checked ? 'border-brand-primary bg-brand-primary' : 'border-border bg-muted/60',
+          isDisabled && 'cursor-not-allowed opacity-50',
         )}
         {...props}
       >
         <span
           aria-hidden="true"
           className={cn(
-            'absolute top-0.5 h-5 w-5 rounded-sm bg-card transition-transform',
-            checked ? 'translate-x-5' : 'translate-x-0.5',
+            'pointer-events-none inline-block h-5 w-5 rounded-full bg-card shadow-sm transition-transform duration-200',
+            checked ? 'translate-x-[22px]' : 'translate-x-0.5',
+            loading && 'opacity-70',
           )}
         />
       </button>
-      <label htmlFor={switchId} className="text-body text-text-primary">
+      <label
+        id={`${switchId}-label`}
+        htmlFor={switchId}
+        className={cn(
+          'cursor-pointer text-body text-text-primary',
+          isDisabled && 'cursor-not-allowed opacity-70',
+        )}
+      >
         {label}
+        {loading ? <span className="sr-only"> Updating</span> : null}
       </label>
     </div>
   );

@@ -218,7 +218,9 @@ export function AuditLogReportPanel() {
             {
               id: 'action',
               header: 'Action',
-              cell: (entry) => AUDIT_ACTION_LABELS[entry.action],
+              cell: (entry) =>
+                AUDIT_ACTION_LABELS[entry.action] ??
+                entry.action.replaceAll('_', ' ').toLowerCase(),
             },
             {
               id: 'targetEntityType',

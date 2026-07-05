@@ -15,7 +15,6 @@ import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import {
   ExecutiveKpiGrid,
-  FilterPillBar,
   ManagementToolbar,
 } from '@/components/layout/executive';
 import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
@@ -44,10 +43,13 @@ const CYCLE_FILTER_OPTIONS = [
   { value: 'Cycle 4 — October 2025', label: 'Cycle 4 — October 2025' },
 ];
 
-const STATUS_FILTERS = LOAN_STATUS_FILTER_OPTIONS.map((option) => ({
-  value: option.value,
-  label: option.value === '' ? 'All' : option.label,
-}));
+const STATUS_FILTER_OPTIONS = [
+  { value: '', label: 'All statuses' },
+  ...LOAN_STATUS_FILTER_OPTIONS.filter((option) => option.value !== '').map((option) => ({
+    value: option.value,
+    label: option.label,
+  })),
+];
 
 export function LoanPortfolioList() {
   const { data, isLoading, isError, error, refetch } = useLoanPortfolio();
@@ -127,7 +129,7 @@ export function LoanPortfolioList() {
   }
 
   const csvRows = filteredEntries.map((entry) => [
-    entry.id,
+    resolveLoanDisplayId(entry),
     entry.borrowerName,
     entry.community,
     entry.groupName,
@@ -171,26 +173,32 @@ export function LoanPortfolioList() {
           />
         }
         secondaryFilters={
-          <Select
-            aria-label="Filter by cycle or batch"
-            value={cycleBatchFilter}
-            onChange={(event) => setCycleBatchFilter(event.target.value)}
-            className="h-10 min-w-[180px] rounded-sm border border-border bg-card px-wilms-3 text-small"
-          >
-            {CYCLE_FILTER_OPTIONS.map((option) => (
-              <option key={option.value || 'all-cycles'} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
-        }
-        filters={
-          <FilterPillBar
-            ariaLabel="Filter loans by status"
-            options={STATUS_FILTERS}
-            value={statusFilter}
-            onChange={setStatusFilter}
-          />
+          <div className="flex flex-wrap gap-wilms-2">
+            <Select
+              aria-label="Filter by cycle or batch"
+              value={cycleBatchFilter}
+              onChange={(event) => setCycleBatchFilter(event.target.value)}
+              className="h-10 min-w-[180px] rounded-sm border border-border bg-card px-wilms-3 text-small"
+            >
+              {CYCLE_FILTER_OPTIONS.map((option) => (
+                <option key={option.value || 'all-cycles'} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+            <Select
+              aria-label="Filter by loan status"
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value)}
+              className="h-10 min-w-[180px] rounded-sm border border-border bg-card px-wilms-3 text-small"
+            >
+              {STATUS_FILTER_OPTIONS.map((option) => (
+                <option key={option.value || 'all-statuses'} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+          </div>
         }
         actions={
           <>

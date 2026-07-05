@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
+import { formatDisbursementDisplayId } from '@wilms/shared-utils';
 import { BORROWER_STATUS } from '@wilms/shared-contracts';
 import { calculateWeeklyPaymentPesewas } from '../../domain/loan/calculations.js';
 import { LOAN_LIFECYCLE } from '../../domain/loan/lifecycle.js';
@@ -198,6 +199,8 @@ export async function seedFinancialCore(): Promise<void> {
       .onConflictDoNothing();
   }
 
+  let disbursementSequence = 0;
+
   for (const scenario of LOAN_SCENARIOS) {
     const [existing] = await db
       .select({ id: loans.id })
@@ -262,13 +265,19 @@ export async function seedFinancialCore(): Promise<void> {
     );
 
     if (scenario.disbursed) {
+      disbursementSequence += 1;
+      const disbursedAt = new Date('2026-05-02T09:00:00.000Z');
       const disbursementId = uuidv7();
       await db.insert(loanDisbursements).values({
         id: disbursementId,
+        displayId: formatDisbursementDisplayId({
+          disbursedAt: disbursedAt.toISOString(),
+          sequence: disbursementSequence,
+        }),
         loanId: scenario.id,
         disbursedAmount: pesewasToDecimal(scenario.amountPesewas),
         disbursedByUserId: approverId,
-        disbursedAt: new Date('2026-05-02T09:00:00.000Z'),
+        disbursedAt,
       });
 
       await db.insert(ledgerEntries).values({

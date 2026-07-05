@@ -59,6 +59,14 @@ export function isShellNavLinkActive(
     }
   }
 
+  if (hrefPath === '/reports' && pathname.startsWith('/reports/')) {
+    return false;
+  }
+
+  if (hrefPath === '/auditor/reports' && pathname.startsWith('/auditor/') && pathname !== '/auditor/reports') {
+    return false;
+  }
+
   return true;
 }
 
