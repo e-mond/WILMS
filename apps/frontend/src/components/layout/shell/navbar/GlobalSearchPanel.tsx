@@ -14,6 +14,7 @@ import type { GlobalSearchEntityType } from '@/types/search';
 import { GLOBAL_SEARCH_ENTITY } from '@/types/search';
 import { getGlobalSearchPlaceholder } from '@/utils/global-search-scope';
 import { Search } from 'lucide-react';
+import { HighlightedText } from '@/components/feedback/HighlightedText';
 import { cn } from '@/utils/cn';
 
 const ENTITY_LABELS: Record<GlobalSearchEntityType, string> = {
@@ -77,9 +78,11 @@ export function GlobalSearchPanel() {
             onChange={(event) => setQuery(event.target.value)}
           />
         </label>
-        <p className="text-small text-text-muted">Type at least 2 characters to search.</p>
+        <p className="text-small text-text-muted">
+          Search by name, phone, ID, loan reference, or collector. Type at least 1 character.
+        </p>
 
-        {query.trim().length >= 2 ? (
+        {query.trim().length >= 1 ? (
           <div aria-live="polite" className="space-y-wilms-2">
             {isFetching ? (
               <p className="text-body text-text-muted">Searching...</p>
@@ -111,10 +114,12 @@ export function GlobalSearchPanel() {
                       />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-body font-semibold text-text-primary">
-                          {result.label}
+                          <HighlightedText text={result.label} query={query} />
                         </p>
                         {result.subtitle ? (
-                          <p className="truncate text-small text-text-muted">{result.subtitle}</p>
+                          <p className="truncate text-small text-text-muted">
+                            <HighlightedText text={result.subtitle} query={query} />
+                          </p>
                         ) : null}
                         {result.status ? (
                           <p className="text-small font-semibold text-brand-primary">{result.status}</p>

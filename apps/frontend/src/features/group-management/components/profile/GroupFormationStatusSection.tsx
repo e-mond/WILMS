@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Alert } from '@/components/feedback/Alert';
+import { QueryErrorState } from '@/components/feedback/QueryErrorState';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
 import { ProfileFieldGrid, ProfileSection } from '@/components/layout/executive/ProfileSection';
 import { groupFormationService } from '@/services';
@@ -16,7 +16,7 @@ function formationStatusQueryKey(community: string) {
 }
 
 export function GroupFormationStatusSection({ group }: GroupFormationStatusSectionProps) {
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: formationStatusQueryKey(group.community),
     queryFn: () => groupFormationService.getCommunityStatus(group.community),
   });
@@ -29,11 +29,17 @@ export function GroupFormationStatusSection({ group }: GroupFormationStatusSecti
       {isLoading ? (
         <LoadingSpinner label="Loading formation status" className="py-wilms-4" />
       ) : null}
-      {isError || !data ? (
-        <Alert title="Formation status unavailable" variant="warning" className="mt-wilms-3">
-          Community formation data could not be loaded.
-        </Alert>
-      ) : (
+      {isError ? (
+        <div className="mt-wilms-3">
+          <QueryErrorState
+            error={error}
+            onRetry={() => void refetch()}
+            title="Formation status unavailable"
+            description="Community formation data could not be loaded."
+          />
+        </div>
+      ) : null}
+      {!isLoading && !isError && data ? (
         <ProfileFieldGrid
           columns={3}
           items={[
@@ -52,7 +58,7 @@ export function GroupFormationStatusSection({ group }: GroupFormationStatusSecti
             },
           ]}
         />
-      )}
+      ) : null}
     </ProfileSection>
   );
 }

@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import { CurrencyAmount, DataTable, KpiCard } from '@/components/data-display';
-import { EmptyState } from '@/components/feedback/EmptyState';
+import { GuidedEmptyState } from '@/components/feedback/GuidedEmptyState';
+import { QueryErrorState } from '@/components/feedback/QueryErrorState';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import { ExecutiveKpiGrid } from '@/components/layout/executive';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { PERMISSION } from '@/constants/permissions';
@@ -17,7 +19,7 @@ import { formatDisplayDate } from '@/utils/format-date';
 export type OverpaymentReviewAction = 'RESOLVED' | 'DISMISSED';
 
 export function OverpaymentReviewPanel() {
-  const { data, isLoading, isError } = useOverpaymentReviews();
+  const { data, isLoading, isError, error, refetch } = useOverpaymentReviews();
   const { resolveMutation, isSubmitting } = useOverpaymentReviewActions();
   const [selectedReview, setSelectedReview] = useState<OverpaymentReview | null>(null);
   const [reviewAction, setReviewAction] = useState<OverpaymentReviewAction | null>(null);
@@ -49,12 +51,19 @@ export function OverpaymentReviewPanel() {
     return <LoadingSpinner label="Loading overpayment review queue" className="py-wilms-8" />;
   }
 
-  if (isError || !data) {
+  if (isError) {
     return (
-      <EmptyState
+      <QueryErrorState
+        error={error}
+        onRetry={() => void refetch()}
         title="Unable to load overpayment reviews"
-        description="Check your connection and try again."
       />
+    );
+  }
+
+  if (!data) {
+    return (
+      <QueryErrorState title="Unable to load overpayment reviews" />
     );
   }
 
@@ -78,10 +87,7 @@ export function OverpaymentReviewPanel() {
       </ExecutiveKpiGrid>
 
       {data.reviews.length === 0 ? (
-        <EmptyState
-          title="No pending overpayment reviews"
-          description="Blocked overpayment attempts will appear here for Super Admin review."
-        />
+        <GuidedEmptyState {...EMPTY_STATE_COPY.overpayments} />
       ) : (
         <DataTable<OverpaymentReview>
           variant="executive"

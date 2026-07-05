@@ -9,7 +9,10 @@ import {
   LoanStatusBadge,
 } from '@/components/data-display';
 import { EmptyState } from '@/components/feedback/EmptyState';
+import { GuidedEmptyState } from '@/components/feedback/GuidedEmptyState';
+import { QueryErrorState } from '@/components/feedback/QueryErrorState';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
+import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import {
   ExecutiveKpiGrid,
   FilterPillBar,
@@ -47,7 +50,7 @@ const STATUS_FILTERS = LOAN_STATUS_FILTER_OPTIONS.map((option) => ({
 }));
 
 export function LoanPortfolioList() {
-  const { data, isLoading, isError, refetch } = useLoanPortfolio();
+  const { data, isLoading, isError, error, refetch } = useLoanPortfolio();
   const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -111,30 +114,16 @@ export function LoanPortfolioList() {
 
   if (isError) {
     return (
-      <EmptyState
+      <QueryErrorState
+        error={error}
+        onRetry={() => void refetch()}
         title="Unable to load loan portfolio"
-        description="Check your connection and try again."
       />
     );
   }
 
   if (!data?.length) {
-    return (
-      <EmptyState
-        title="No loans yet"
-        description="Create a loan for an approved borrower with a recorded admin fee."
-        action={
-          <PermissionGate permission={PERMISSION.APPROVE_LOANS}>
-            <Link
-              href="/loans/new"
-              className="inline-flex h-10 items-center justify-center rounded-sm border border-brand-primary bg-brand-primary px-wilms-4 text-body font-semibold text-card hover:opacity-90"
-            >
-              Create loan
-            </Link>
-          </PermissionGate>
-        }
-      />
-    );
+    return <GuidedEmptyState {...EMPTY_STATE_COPY.loans} />;
   }
 
   const csvRows = filteredEntries.map((entry) => [

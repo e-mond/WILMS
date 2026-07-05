@@ -12,6 +12,7 @@ import {
   StatusBadge,
 } from '@/components/data-display';
 import { EmptyState } from '@/components/feedback/EmptyState';
+import { QueryErrorState } from '@/components/feedback/QueryErrorState';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
 import { ExecutiveKpiGrid } from '@/components/layout/executive';
 import { ProfileFieldGrid, ProfileSection } from '@/components/layout/executive/ProfileSection';
@@ -43,7 +44,7 @@ function resolveActiveLoanId(
 }
 
 export function BorrowerProfilePanel({ borrowerId }: BorrowerProfilePanelProps) {
-  const { data: borrower, isLoading, isError } = useBorrowerFullProfile(borrowerId);
+  const { data: borrower, isLoading, isError, error, refetch } = useBorrowerFullProfile(borrowerId);
   const { data: loans, isLoading: isLoansLoading } = useBorrowerLoans(borrowerId);
   const activeLoanId = useMemo(() => resolveActiveLoanId(loans ?? []), [loans]);
   const { data: schedule } = useLoanSchedule(activeLoanId ?? '');
@@ -147,7 +148,18 @@ export function BorrowerProfilePanel({ borrowerId }: BorrowerProfilePanelProps) 
     return <LoadingSpinner label="Loading borrower profile" className="py-wilms-8" />;
   }
 
-  if (isError || !borrower) {
+  if (isError) {
+    return (
+      <QueryErrorState
+        error={error}
+        onRetry={() => void refetch()}
+        title="Borrower not found"
+        description="This borrower profile could not be loaded."
+      />
+    );
+  }
+
+  if (!borrower) {
     return (
       <EmptyState
         title="Borrower not found"

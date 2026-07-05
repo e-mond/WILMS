@@ -5,6 +5,7 @@ import { CurrencyAmount, KpiCard } from '@/components/data-display';
 import { ExecutiveKpiGrid } from '@/components/layout/executive';
 import { Alert } from '@/components/feedback/Alert';
 import { EmptyState } from '@/components/feedback/EmptyState';
+import { QueryErrorState } from '@/components/feedback/QueryErrorState';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { PERMISSION } from '@/constants/permissions';
@@ -42,7 +43,7 @@ export function ReconciliationForm() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const { data, isLoading, isError } = useReconciliation(user?.id, date);
+  const { data, isLoading, isError, error, refetch } = useReconciliation(user?.id, date);
   const submitMutation = useSubmitReconciliation(user?.id ?? '', date);
 
   const previewVariancePesewas = useMemo(() => {
@@ -83,13 +84,18 @@ export function ReconciliationForm() {
     return <LoadingSpinner label="Loading reconciliation summary" className="py-wilms-8" />;
   }
 
-  if (isError || !data) {
+  if (isError) {
     return (
-      <EmptyState
+      <QueryErrorState
+        error={error}
+        onRetry={() => void refetch()}
         title="Unable to load reconciliation"
-        description="Check your connection and try again."
       />
     );
+  }
+
+  if (!data) {
+    return <QueryErrorState title="Unable to load reconciliation" />;
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {

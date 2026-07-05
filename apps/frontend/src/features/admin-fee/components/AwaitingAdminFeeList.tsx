@@ -3,8 +3,10 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { CurrencyAmount, DataTable, KpiCard } from '@/components/data-display';
-import { EmptyState } from '@/components/feedback/EmptyState';
+import { GuidedEmptyState } from '@/components/feedback/GuidedEmptyState';
+import { QueryErrorState } from '@/components/feedback/QueryErrorState';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import { ExecutiveKpiGrid, ManagementToolbar } from '@/components/layout/executive';
 import { Input } from '@/components/ui/Input';
 import { useBorrowersAwaitingAdminFee } from '@/features/admin-fee/hooks/useBorrowersAwaitingAdminFee';
@@ -29,7 +31,7 @@ function filterAwaitingBorrowers(
 }
 
 export function AwaitingAdminFeeList() {
-  const { data, isLoading, isError } = useBorrowersAwaitingAdminFee();
+  const { data, isLoading, isError, error, refetch } = useBorrowersAwaitingAdminFee();
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredBorrowers = useMemo(
@@ -42,21 +44,11 @@ export function AwaitingAdminFeeList() {
   }
 
   if (isError) {
-    return (
-      <EmptyState
-        title="Unable to load admin fee queue"
-        description="Check your connection and try again."
-      />
-    );
+    return <QueryErrorState error={error} onRetry={() => void refetch()} />;
   }
 
   if (!data?.length) {
-    return (
-      <EmptyState
-        title="No admin fees pending"
-        description="All approved borrowers have recorded admin fees."
-      />
-    );
+    return <GuidedEmptyState {...EMPTY_STATE_COPY.adminFeeQueue} />;
   }
 
   const totalFeePesewas = data.reduce((sum, row) => sum + row.requiredAmountPesewas, 0);
