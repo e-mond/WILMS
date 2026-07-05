@@ -9,7 +9,7 @@
 
 ## Summary
 
-WILMS v1.0.0 is the historical production release. The v1.0.1 maintenance branch focuses on repository hygiene: archiving RC evidence, reducing root clutter, removing proven dead code, applying non-breaking dependency fixes, updating current documentation, and preserving full reproducibility.
+WILMS v1.0.0 is the historical production release. The v1.0.1 maintenance branch focuses on repository hygiene: archiving RC evidence, reducing root clutter, removing proven dead code, updating current documentation, and preserving full reproducibility.
 
 ---
 
@@ -29,13 +29,28 @@ WILMS v1.0.0 is the historical production release. The v1.0.1 maintenance branch
 
 | Area | Status |
 |------|--------|
-| Documentation archive | In progress - root RC reports and `docs/page-validation` moved to `docs/archive/` |
-| Source cleanup | In progress - removed unused `AppLockRequiredGate` |
-| Script cleanup | In progress - generated verification outputs redirected to `docs/generated/` |
-| Dependency cleanup | In progress - non-breaking `npm audit fix` applied; breaking CVE upgrades documented |
+| Documentation archive | Complete ? root RC reports and `docs/page-validation` moved to `docs/archive/` |
+| Source cleanup | Complete ? removed unused `AppLockRequiredGate` |
+| Script cleanup | Complete ? generated verification outputs redirected to `docs/generated/` |
+| Dependency cleanup | Complete ? audit reviewed; breaking CVE upgrades documented and deferred |
 | CI/CD cleanup | Audited; workflows retained |
-| Environment cleanup | In progress - `.env.example` and docs aligned to current production variables |
-| Verification | Pending full run after cleanup commits |
+| Environment cleanup | Complete ? `.env.example` and docs aligned to current production variables |
+| Verification | Complete ? type-check, lint, build, tests, API integrity/coverage, mock guard |
+
+---
+
+## Verification evidence
+
+| Check | Result |
+|-------|--------|
+| `npm run type-check` | PASS |
+| `npm run lint` | PASS |
+| `npm run build` | PASS |
+| Backend tests | PASS (53/53) |
+| Frontend tests | PASS (438/438) |
+| `verify:api-integrity` | PASS |
+| `verify:api-coverage` | PASS |
+| `verify:mock-guard` | PASS |
 
 ---
 

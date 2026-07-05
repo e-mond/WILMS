@@ -13,7 +13,9 @@ All notable changes to WILMS are documented in this file.
 
 ### Fixed
 - Removed unused `AppLockRequiredGate` component after confirming it has no imports.
-- Applied non-breaking `npm audit fix` changes to the package lock.
+
+### Reverted
+- Non-breaking `npm audit fix` lockfile update reverted after it caused a Vitest/Vite type-check regression.
 
 ### Deferred
 - Breaking dependency upgrades for `next`, `drizzle-orm`, Playwright, and ExcelJS/uuid transitive advisories.
