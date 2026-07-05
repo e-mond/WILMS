@@ -1,4 +1,4 @@
-# Technical Debt Report
+﻿# Technical Debt Report
 
 **Date:** 2026-07-05  
 **Branch:** elease/v1.0.1-maintenance

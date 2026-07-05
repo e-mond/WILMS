@@ -1,6 +1,6 @@
-# Repository Cleanup Report
+﻿# Repository Cleanup Report
 
-**Branch:** elease/v1.0.1-maintenance  
+**Branch:** `release/v1.0.1-maintenance`  
 **Date:** 2026-07-05  
 **Scope:** Maintenance-only cleanup for v1.0.1.
 
@@ -13,11 +13,10 @@ This cleanup preserves v1.0.0 as historical evidence and prepares the repository
 | Area | Result |
 |------|--------|
 | Documentation | Root RC reports archived; stale README/project status replaced with v1.0.1 maintenance docs |
-| Historical evidence | 11 root reports and 0 page-validation files archived under docs/archive/ |
+| Historical evidence | 11 root reports and ~463 page-validation files archived under `docs/archive/` |
 | Source cleanup | Removed unused AppLockRequiredGate component |
 | Script cleanup | Generated verification outputs now target docs/generated/ instead of historical report folders |
-| Dependencies | Non-breaking 
-pm audit fix applied to package-lock.json |
+| Dependencies | Audit reviewed; non-breaking fix attempted and reverted to preserve type-check reproducibility |
 | Environment docs | .env.example clarified for local demo toggles and production SMS provider |
 
 ## Deferred for safety
