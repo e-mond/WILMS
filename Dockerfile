@@ -10,6 +10,7 @@ COPY packages/shared-contracts/package.json packages/shared-contracts/
 COPY packages/shared-rbac/package.json packages/shared-rbac/
 COPY packages/shared-types/package.json packages/shared-types/
 COPY packages/shared-validation/package.json packages/shared-validation/
+COPY packages/shared-utils/package.json packages/shared-utils/
 
 RUN npm ci --include=dev
 
