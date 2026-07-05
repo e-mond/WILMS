@@ -1,56 +1,58 @@
 # WILMS Deployment Guide
 
-**Last updated:** RC1.2 (v0.2.2)
+**Last updated:** 2026-07-05 (v1.0.1 maintenance)
 
----
-
-## Architecture
+## Deployment model
 
 | Component | Platform | Deploy from |
 |-----------|----------|-------------|
-| Frontend | Vercel | **Monorepo root** (`vercel.json`) |
-| API | Railway | **Monorepo root** (`Dockerfile`, `railway.toml`) |
-| Database | Neon PostgreSQL | Migrations via Drizzle |
-| Uploads | Cloudinary | Env vars on Railway |
+| Frontend | Vercel | repository root (`vercel.json`) |
+| API | Railway | repository root (`Dockerfile`, `railway.toml`) |
+| Database | Neon PostgreSQL | Drizzle migrations from `apps/backend` |
+| Uploads | Cloudinary | Railway production env |
 
-**Never deploy Express from `apps/backend/` alone** — context must include workspace packages.
+Always deploy from the monorepo root. Do not deploy `apps/backend/` in isolation because the API depends on workspace packages.
 
----
-
-## Railway (API)
+## API deploy
 
 ```bash
-# From repo root
-railway up
+railway up --detach
 ```
-
-Required env vars: `DATABASE_URL`, `WILMS_SESSION_SECRET`, `WILMS_CORS_ORIGIN`, Cloudinary credentials.
 
 Verify:
 
 ```bash
-curl https://wilms-production.up.railway.app/health
+curl -fsS https://wilms-production.up.railway.app/health
+npm run verify:deploy-sync
 ```
 
----
-
-## Vercel (Frontend)
+## Frontend deploy
 
 ```bash
-vercel deploy --prod
+vercel deploy --prod --yes
 ```
 
-Required env vars:
+Production domain: https://wilms.vercel.app
 
-- `NEXT_PUBLIC_API_BASE_URL` — public API URL
-- `WILMS_API_UPSTREAM` — Railway API for BFF proxy
+## Required production secrets
+
+See `.env.example` for the full reference. Production must include:
+
+- `DATABASE_URL`
+- `WILMS_SESSION_SECRET`
+- `WILMS_CORS_ORIGIN`
+- `WILMS_API_UPSTREAM`
+- `NEXT_PUBLIC_API_BASE_URL`
 - `NEXT_PUBLIC_USE_MOCK=false`
+- `UPLOAD_PROVIDER=cloudinary`
+- `CLOUDINARY_CLOUD_NAME`
+- `CLOUDINARY_API_KEY`
+- `CLOUDINARY_API_SECRET`
+- `SMS_PROVIDER=smsnotifygh`
+- `SMSNOTIFYGH_API_KEY`
+- `SMSNOTIFYGH_SENDER_ID`
 
-Primary domain: `https://wilms.vercel.app`
-
----
-
-## Post-Deploy Validation
+## Post-deploy validation
 
 ```bash
 WILMS_APP_URL=https://wilms.vercel.app \
@@ -61,21 +63,6 @@ WILMS_APP_URL=https://wilms.vercel.app \
 npm run smoke:rbac
 ```
 
-Expected: **29/29** production checks + **11/11** RBAC probes (RC1.2). Migrations: **11/11** (`0000`–`0010`).
+## Historical deployment evidence
 
----
-
-## Rollback
-
-Redeploy previous Railway/Vercel deployment. v0.2.2 adds migration `0007_offline_sync` (8/8); rollback requires schema consideration.
-
-See `docs/page-validation/P14.5G-rollback-guide.md`.
-
----
-
-## References
-
-- `docs/page-validation/RC1.2-final-report.md`
-- `docs/page-validation/RC1.1-production-verification.md`
-- `docs/page-validation/P14.6.3-production-acceptance.md`
-- `docs/page-validation/P14.5G-deployment-report.md`
+Pre-v1.0 deployment, rollback, and recovery reports are archived under `docs/archive/page-validation/` and `docs/archive/v1.0.0-rc1.4/`.

@@ -1,63 +1,43 @@
 # WILMS Security Guide
 
-**Last updated:** P14.6.4 (v0.2.2)
+**Last updated:** 2026-07-05 (v1.0.1 maintenance)
 
----
+## Current controls
 
-## Authentication
+| Area | Control |
+|------|---------|
+| Authentication | HMAC-signed session flow with bcrypt password verification |
+| Browser session | HttpOnly cookies and CSRF protection through the BFF flow |
+| RBAC | Shared role/permission constants and backend permission middleware |
+| Headers | Helmet on the API |
+| Rate limiting | Express rate-limit middleware |
+| Uploads | MIME/size validation and Cloudinary-backed production storage |
+| Audit trail | Backend audit entries for sensitive workflows |
 
-- HMAC-signed session tokens in HttpOnly cookie `wilms_session`
-- Bcrypt password hashing
-- 24-hour session expiry
-- Cookie flags: `Secure` (production), `SameSite=Lax`, `HttpOnly`
+## Required checks
 
----
+```bash
+npm audit --omit=dev
+npm run verify:mock-guard
+npm run smoke:rbac
+npm run smoke:production
+```
 
-## CSRF (BFF Layer)
+## Known dependency risks
 
-All browser mutations through the Next.js BFF require synchronizer tokens:
+Remaining advisories after non-breaking audit cleanup require breaking upgrades:
 
-| Component | Value |
-|-----------|-------|
-| Cookie | `wilms_csrf` (non-HttpOnly, readable by JS) |
-| Header | `x-wilms-csrf` |
-| Issuance | `GET /api/auth/csrf` |
-| Validation | BFF compares cookie === header |
+- `next` and transitive `postcss`
+- `drizzle-orm`
+- `@playwright/test` / `playwright`
+- `exceljs` / transitive `uuid`
 
-Protected routes: `/api/auth/login`, `/api/auth/logout`, `/api/wilms/*` (POST/PATCH/DELETE).
-
-Client code: `authService.ensureCsrfToken()` before login; `apiClient` adds header on mutations.
-
----
-
-## API Security (Express)
-
-- Helmet middleware (CSP, HSTS, frame guard, nosniff)
-- CORS locked to production frontend origin
-- RBAC on all business routes
-- Rate limiting via infrastructure (Railway/Vercel)
-
-Direct API calls require session cookie; browser traffic should use BFF.
-
----
-
-## Upload Security
-
-- Server-side MIME allowlist
-- Size limits (default 10 MB)
-- Cloudinary in production (no local disk persistence)
-
----
+These should be fixed in a dedicated hardening PR with full migration, build, E2E, export, and smoke validation.
 
 ## Secrets
 
-Never commit: `.env*`, `.wilms-production-credentials.json`, session secrets, DB URLs.
+Secrets belong in `.env` locally or in Railway/Vercel/GitHub secrets. Never commit `.env`, credentials JSON, API keys, or production tokens.
 
-Rotate: `WILMS_SESSION_SECRET`, production user passwords via `rotate-production-users.mjs`.
+## Historical security reports
 
----
-
-## Audits
-
-- `docs/page-validation/P14.5G-security-audit.md`
-- `docs/page-validation/P14.5F-security-review.md`
+Pre-v1.0 security audits are archived under `docs/archive/`.

@@ -19,4 +19,4 @@ See `CHANGELOG.md` for detailed release notes.
 | v1.2.x | Feature enhancements |
 | v2.0.0 | Major platform expansion |
 
-Detail: `docs/page-validation/P14.5G-future-roadmap.md`
+Detail: `docs/archive/page-validation/P14.5G-future-roadmap.md`

@@ -1,82 +1,64 @@
-# WILMS — Project Status
+# WILMS - Project Status
 
-**Last updated:** 2026-07-05 (RC1.4 final closure)  
-**Current release:** v0.2.2  
-**Branch:** `release/rc1-4-final-closure` (from `main` @ `487708b`)  
-**Overall readiness:** **82%** — see `RC1.4_CLOSURE_REPORT.md`
-
----
-
-## Executive summary
-
-WILMS is **operational in production** (Railway + Vercel synced on `487708b`). RC1.4 closure fixes are on branch `release/rc1-4-final-closure`. **Version 1.0 is conditionally ready** (78%) — merge closure branch, then complete production DB audit and dependency CVE remediation before tagging v1.0.
+**Last updated:** 2026-07-05 (v1.0.1 maintenance cleanup)  
+**Current production release:** v1.0.0  
+**Maintenance branch:** `release/v1.0.1-maintenance`  
+**Scope:** Repository cleanup only; no new business features.
 
 ---
 
-## Production (verified 2026-07-05)
+## Summary
 
-| Service | URL | Commit / status |
-|---------|-----|-----------------|
-| Frontend | https://wilms.vercel.app | Auto-deploy from `main`; login 200 |
-| Backend | https://wilms-production.up.railway.app | `487708b` — `verify:deploy-sync` **PASS** |
-| Database | Neon (via Railway) | 13/13 migrations, schema ok |
-| Cloudinary | Railway env | `cloudinaryConfigured: true` |
+WILMS v1.0.0 is the historical production release. The v1.0.1 maintenance branch focuses on repository hygiene: archiving RC evidence, reducing root clutter, removing proven dead code, applying non-breaking dependency fixes, updating current documentation, and preserving full reproducibility.
 
 ---
 
-## Verification snapshot (2026-07-05)
-
-| Check | Result |
-|-------|--------|
-| `verify:deploy-sync` | **PASS** |
-| `smoke:rbac` | **11/11** |
-| `smoke:production` | **31/32** (stale `EXPECTED_GIT_COMMIT` in local `.env`) |
-| Backend tests | **53/53** |
-| Frontend tests | **224/224** |
-| `npm audit` | **18 vulnerabilities** (9 moderate, 9 high) |
-
----
-
-## RC1.4 closure status
+## Production Baseline
 
 | Area | Status |
 |------|--------|
-| Deploy sync | ✅ Complete |
-| Mobile QR capture | ✅ Fixed (middleware, upload, polling, simulate) |
-| Registration autosave | ✅ Debounced draft save on all steps |
-| Guarantor eligibility | ✅ Pending registrations excluded from limit |
-| A11y test regressions | ✅ Fixed (Toast, Modal, PasswordField, PendingApplicationReview) |
-| App lock | ✅ Optional — mandatory setup gate removed |
-| Connection status UI | ✅ Bottom-right floating chip |
-| Login/logout sounds | ✅ Optional audio on auth events |
-| Production data audit | ⏳ **Unverified** — Neon row-count probe required |
-| Dependency CVEs | ⏳ drizzle, next, dompurify |
-| v1.0 tag | ⏳ After DB audit + CVE fixes |
+| Frontend | Vercel production: https://wilms.vercel.app |
+| API | Railway production: https://wilms-production.up.railway.app |
+| Database | Neon PostgreSQL, 13/13 migrations at v1.0.0 baseline |
+| Uploads | Cloudinary in production |
+| Historical evidence | Archived under `docs/archive/` |
 
 ---
 
-## Deliverables
+## v1.0.1 Maintenance Work
 
-- `RC1.4_CLOSURE_REPORT.md` — final closure assessment  
-- `PROJECT_READINESS_REPORT.md`, `FINAL_RECOMMENDATION.md`, and related audit reports
+| Area | Status |
+|------|--------|
+| Documentation archive | In progress - root RC reports and `docs/page-validation` moved to `docs/archive/` |
+| Source cleanup | In progress - removed unused `AppLockRequiredGate` |
+| Script cleanup | In progress - generated verification outputs redirected to `docs/generated/` |
+| Dependency cleanup | In progress - non-breaking `npm audit fix` applied; breaking CVE upgrades documented |
+| CI/CD cleanup | Audited; workflows retained |
+| Environment cleanup | In progress - `.env.example` and docs aligned to current production variables |
+| Verification | Pending full run after cleanup commits |
 
 ---
 
-## Quick verification
+## Required Verification Before PR
 
 ```bash
-EXPECTED_GIT_COMMIT=$(git rev-parse HEAD) WILMS_API_URL=https://wilms-production.up.railway.app npm run verify:deploy-sync
-WILMS_APP_URL=https://wilms.vercel.app WILMS_API_URL=https://wilms-production.up.railway.app npm run smoke:production
-WILMS_APP_URL=https://wilms.vercel.app npm run smoke:rbac
-npm run test -w @wilms/api && npm run test -w @wilms/frontend
+npm install
+npm run type-check
+npm run lint
+npm run build
+npm test
+npm run db:migrate -w @wilms/api
+npm run verify:api-integrity
+npm run verify:api-coverage
+npm run verify:mock-guard
+npm run smoke:production
+npm run smoke:rbac
 ```
 
 ---
 
-## Next steps
+## Current Blockers
 
-1. Merge `release/rc1-4-final-closure` PR  
-2. Production Neon data audit (reference users only, no financial demo data)  
-3. Upgrade drizzle-orm and next.js to patched versions  
-4. Re-run smoke + E2E on deployed commit  
-5. Tag `v1.0.0`
+- Remaining dependency advisories require breaking upgrades (`next`, `drizzle-orm`, Playwright, ExcelJS/uuid transitive chain).
+- Production smoke may still report a git SHA mismatch when local expected SHA differs from Railway platform metadata.
+- Some mock/demo data remains in test/dev and reference-seed paths; production mock guard remains required.
