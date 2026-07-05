@@ -1,0 +1,21 @@
+﻿
+> @wilms/api@0.1.0 cert:reversal:env
+> tsx src/verification/cert-reversal-environment.ts
+
+Ôùç injected env (10) from ..\..\.env // tip: Ôîÿ enable debugging { debug: true }
+P14.3B.3C.2 Environment Certification Probe
+---
+DATABASE_URL: postgresql://neondb_owner:***@ep-noisy-river-atkdh45c-pooler.c-9.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+DATABASE_ENABLED: true
+Neon connectivity: OK
+Expected migrations (journal): 0000_init, 0001_tired_sir_ram, 0002_sad_bucky, 0003_loan_pools, 0004_financial_adjustments, 0005_financial_reversals
+Seed admin: 019ed644-4a3e-7b19-a5df-a58e149e9063
+Seed collector: 019ed644-4cdb-76a7-845a-b0863bfa304b
+
+Seed loan status:
+  01930002-0001-7000-8000-000000000001: externalStatus=COMPLETED lifecycle=COMPLETED unpaidWeeks=1
+  01930002-0001-7000-8000-000000000002: externalStatus=COMPLETED lifecycle=COMPLETED unpaidWeeks=1
+  01930002-0001-7000-8000-000000000003: externalStatus=ACTIVE lifecycle=ACTIVE unpaidWeeks=5
+  01930002-0001-7000-8000-000000000004: externalStatus=DEFAULTED lifecycle=DEFAULTED unpaidWeeks=8
+
+Reversal-capable payment prepared: paymentId=019ed644-60b3-76fd-90bd-2a7ba3552739 loanId=01930002-0001-7000-8000-000000000001

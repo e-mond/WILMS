@@ -1,0 +1,12 @@
+﻿
+> @wilms/api@0.1.0 cert:reconciliation:seed-reset
+> tsx src/verification/cert-reconciliation-seed-reset.ts
+
+Ôùç injected env (10) from ..\..\.env // tip: Ôîÿ override existing { override: true }
+P14.3B.4C.4 Reconciliation Certification Seed Reset
+Started: 2026-06-25T00:34:55.971Z
+Cert collector portfolio loans: 2
+Removed reconciliations: 0
+Removed history rows: 0
+Date range: 2030-01-01 ÔÇö 2031-12-31
+Finished: 2026-06-25T00:34:59.377Z

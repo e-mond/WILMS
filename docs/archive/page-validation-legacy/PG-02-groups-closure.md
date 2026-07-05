@@ -1,0 +1,39 @@
+﻿# PG-02 ÔÇö `/groups` Closure Record
+> **Route:** `/groups`  
+> **Reference:** `context/design-references/GroupsManagement.jpeg`  
+> **Closed:** 2026-06-09
+
+---
+
+## Summary
+
+All gap remediation tasks R01ÔÇôR16 are resolved. PG-02 meets reference compliance for demo scope.
+
+| Priority | IDs | Status |
+|---|---|---|
+| P0 | R01ÔÇôR03 | Ô£à Reference-scale demo factory (148 groups, KPIs, distribution) |
+| P1 | R04ÔÇôR12 | Ô£à Visual fidelity (icons, aside structure, gold IDs, activity feed) |
+| P2 | R13ÔÇôR16 | Ô£à Row selection chrome, export icon, pagination, aside drawer E2E |
+
+---
+
+## Verification
+
+| Check | Result |
+|---|---|
+| Unit tests (`groups-demo.factory`, group service mock) | Ô£à Pass |
+| Layout type-check / lint | Ô£à Pass |
+| E2E `shell-navbar.spec.ts` groups aside | Ô£à Added |
+
+---
+
+## Deferred (not blocking PG-02)
+
+- DA-11 contextual aside on remaining office routes
+- Full global Definition of Done (coverage thresholds, WCAG audit pass for unit)
+
+---
+
+## Next
+
+PG-04 `/loan-pools` per execution order (unblock in progress tracker).

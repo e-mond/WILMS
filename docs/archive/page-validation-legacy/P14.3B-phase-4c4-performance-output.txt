@@ -1,0 +1,16 @@
+﻿
+> @wilms/api@0.1.0 cert:reconciliation:perf
+> tsx src/verification/cert-reconciliation-performance.ts
+
+Ôùç injected env (10) from ..\..\.env // tip: Ôîÿ custom filepath { path: '/custom/path/.env' }
+P14.3B.4C.4 Performance Certification
+Started: 2026-06-25T00:52:35.947Z
+Methodology: timed submitReconciliation() per iteration; unique cert date per index
+Batches: 100, 500, 1000
+
+| Batch | Samples | Avg (ms) | P95 (ms) | P99 (ms) | Fail | Rollback | Other |
+|-------|---------|----------|----------|----------|------|----------|-------|
+| 100 | 100 | 2190.2 | 2507.5 | 2822.6 | 0 | 0 | 0 |
+| 500 | 500 | 2180.7 | 2398.7 | 2564.0 | 0 | 0 | 0 |
+| 1000 | 1000 | 2150.8 | 2287.2 | 2668.9 | 0 | 0 | 0 |
+Finished: 2026-06-25T02:06:02.172Z

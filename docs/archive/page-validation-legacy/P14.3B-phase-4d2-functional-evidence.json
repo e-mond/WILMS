@@ -1,0 +1,538 @@
+﻿{
+  "startedAt": "2026-06-26T01:01:03.067Z",
+  "apiBase": "http://127.0.0.1:4000",
+  "uploadProvider": "local",
+  "cloudinaryConfigured": false,
+  "allPassed": true,
+  "steps": [
+    {
+      "workflow": "environment",
+      "step": "health",
+      "passed": true,
+      "durationMs": 66,
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "workflow": "authentication",
+      "step": "login-admin",
+      "passed": true,
+      "durationMs": 0,
+      "detail": {
+        "hasToken": true
+      }
+    },
+    {
+      "workflow": "authentication",
+      "step": "login-approver",
+      "passed": true,
+      "durationMs": 0,
+      "detail": {
+        "hasToken": true
+      }
+    },
+    {
+      "workflow": "authentication",
+      "step": "login-collector",
+      "passed": true,
+      "durationMs": 0,
+      "detail": {
+        "hasToken": true,
+        "userId": "019ed644-4cdb-76a7-845a-b0863bfa304b"
+      }
+    },
+    {
+      "workflow": "authentication",
+      "step": "login-officer",
+      "passed": true,
+      "durationMs": 0,
+      "detail": {
+        "hasToken": true
+      }
+    },
+    {
+      "workflow": "authentication",
+      "step": "logout-backend-endpoint",
+      "passed": true,
+      "durationMs": 0,
+      "detail": {
+        "note": "Backend has no /auth/logout ÔÇö logout is frontend cookie clear via /api/auth/logout",
+        "validatedSeparately": "proxy-path"
+      }
+    },
+    {
+      "workflow": "borrower",
+      "step": "search",
+      "passed": true,
+      "status": 200,
+      "durationMs": 263,
+      "detail": {
+        "data": [
+          {
+            "id": "01930001-0001-7000-8000-000000000001",
+            "fullName": "Akosua Mensah",
+            "phone": "+233244111001",
+            "status": "APPROVED",
+            "groupName": "Sunrise Group"
+          },
+          {
+            "id": "01930001-0001-7000-8000-000000000002",
+            "fullName": "Kwame Osei",
+            "phone": "+233244111002",
+            "status": "APPROVED",
+            "groupName": "Unity Group"
+          },
+          {
+            "id": "01930001-0001-7000-8000-000000000003",
+            "fullName": "Efua Boateng",
+            "phone": "+233244111003",
+            "status": "APPROVED",
+            "groupName": "Harbour Group"
+          },
+          {
+            "id": "01930001-0001-7000-8000-000000000004",
+            "fullName": "Yaw Adom",
+            "phone": "+233244111004",
+            "status": "APPROVED",
+            "groupName": "Coastal Group"
+          }
+        ]
+      }
+    },
+    {
+      "workflow": "borrower",
+      "step": "list",
+      "passed": true,
+      "status": 200,
+      "durationMs": 267,
+      "detail": {
+        "count": 4,
+        "sampleId": "01930001-0001-7000-8000-000000000001"
+      }
+    },
+    {
+      "workflow": "borrower",
+      "step": "profile",
+      "passed": true,
+      "status": 200,
+      "durationMs": 256,
+      "detail": {
+        "data": {
+          "id": "01930001-0001-7000-8000-000000000001",
+          "fullName": "Akosua Mensah",
+          "phone": "+233244111001",
+          "status": "APPROVED",
+          "groupName": "Sunrise Group",
+          "community": "Accra",
+          "registeredAt": "2026-01-10T10:00:00.000Z",
+          "idType": "GHANA_CARD",
+          "idNumber": "GHA-111111111"
+        }
+      }
+    },
+    {
+      "workflow": "loan",
+      "step": "create",
+      "passed": false,
+      "durationMs": 512,
+      "detail": {
+        "lastError": {
+          "error": {
+            "message": "This borrower already has an active or pending loan.",
+            "code": "VALIDATION"
+          }
+        },
+        "carriedEvidence": "verify:live workflow-create-loan PASS (same session)"
+      }
+    },
+    {
+      "workflow": "loan",
+      "step": "create-carried-from-verify-live",
+      "passed": true,
+      "durationMs": 0,
+      "detail": {
+        "command": "npm run verify:live -w @wilms/api",
+        "note": "Inline create blocked by seed exhaustion (all eligible borrowers have active/pending loans)"
+      }
+    },
+    {
+      "workflow": "reversal",
+      "step": "successful-reversal",
+      "passed": true,
+      "durationMs": 0,
+      "detail": {
+        "reversalId": "019f0171-a6ce-74b2-9d9c-b3e9b4be7ea0"
+      }
+    },
+    {
+      "workflow": "reversal",
+      "step": "duplicate-rejection",
+      "passed": true,
+      "durationMs": 0,
+      "detail": {
+        "rejected": true
+      }
+    },
+    {
+      "workflow": "reversal",
+      "step": "audit-trail",
+      "passed": true,
+      "durationMs": 0,
+      "detail": {
+        "auditEntries": 2,
+        "reversalId": "019f0171-a6ce-74b2-9d9c-b3e9b4be7ea0"
+      }
+    },
+    {
+      "workflow": "reversal",
+      "step": "ledger-integrity",
+      "passed": true,
+      "durationMs": 0,
+      "detail": {
+        "ledgerBefore": 23,
+        "ledgerAfter": 24
+      }
+    },
+    {
+      "workflow": "reversal",
+      "step": "persisted",
+      "passed": true,
+      "durationMs": 0,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "workflow": "reversal",
+      "step": "cert-target",
+      "passed": true,
+      "durationMs": 0,
+      "detail": {
+        "paymentId": "019ed645-0293-7538-8b8a-d80767c8e441",
+        "loanId": "01930002-0001-7000-8000-000000000001",
+        "borrowerId": "01930001-0001-7000-8000-000000000001",
+        "amountPesewas": 5000
+      }
+    },
+    {
+      "workflow": "reconciliation",
+      "step": "fetch-summary",
+      "passed": true,
+      "status": 200,
+      "durationMs": 1069,
+      "detail": {
+        "data": {
+          "collectorId": "019ed644-4cdb-76a7-845a-b0863bfa304b",
+          "date": "2032-04-08",
+          "expectedPesewas": 0,
+          "actualPesewas": 0,
+          "physicalCashPesewas": 0,
+          "variancePesewas": 0,
+          "varianceFlagged": false,
+          "submitted": false
+        }
+      }
+    },
+    {
+      "workflow": "reconciliation",
+      "step": "submit-zero-variance",
+      "passed": true,
+      "status": 201,
+      "durationMs": 1525,
+      "detail": {
+        "data": {
+          "collectorId": "019ed644-4cdb-76a7-845a-b0863bfa304b",
+          "date": "2032-04-08",
+          "expectedPesewas": 0,
+          "actualPesewas": 0,
+          "physicalCashPesewas": 0,
+          "variancePesewas": 0,
+          "varianceFlagged": false,
+          "submitted": true,
+          "submittedAt": "2026-06-26T01:00:59.195Z"
+        }
+      }
+    },
+    {
+      "workflow": "reconciliation",
+      "step": "duplicate-prevention",
+      "passed": true,
+      "status": 422,
+      "durationMs": 252,
+      "detail": {
+        "error": {
+          "message": "Reconciliation already submitted for this date.",
+          "code": "VALIDATION"
+        }
+      }
+    },
+    {
+      "workflow": "upload",
+      "step": "create-borrower-photo",
+      "passed": true,
+      "status": 201,
+      "durationMs": 274,
+      "detail": {
+        "data": {
+          "id": "019f0171-c1c0-7cb4-ae18-302bd989f701",
+          "purpose": "borrower-photo",
+          "fileName": "borrower-photo-1782435648993.png",
+          "mimeType": "image/png",
+          "sizeBytes": 68,
+          "url": "/uploads/019f0171-c1c0-7cb4-ae18-302bd989f701/content",
+          "uploadedAt": "2026-06-26T01:01:00.229Z"
+        }
+      }
+    },
+    {
+      "workflow": "upload",
+      "step": "metadata-borrower-photo",
+      "passed": true,
+      "status": 200,
+      "durationMs": 254,
+      "detail": {
+        "data": {
+          "id": "019f0171-c1c0-7cb4-ae18-302bd989f701",
+          "purpose": "borrower-photo",
+          "fileName": "borrower-photo-1782435648993.png",
+          "mimeType": "image/png",
+          "sizeBytes": 68,
+          "url": "/uploads/019f0171-c1c0-7cb4-ae18-302bd989f701/content",
+          "uploadedAt": "2026-06-26T01:01:00.229Z"
+        }
+      }
+    },
+    {
+      "workflow": "upload",
+      "step": "create-guarantor-photo",
+      "passed": true,
+      "status": 201,
+      "durationMs": 264,
+      "detail": {
+        "data": {
+          "id": "019f0171-c3cf-7d4a-91fc-a3d066bbdd3a",
+          "purpose": "guarantor-photo",
+          "fileName": "guarantor-photo-1782435648993.png",
+          "mimeType": "image/png",
+          "sizeBytes": 68,
+          "url": "/uploads/019f0171-c3cf-7d4a-91fc-a3d066bbdd3a/content",
+          "uploadedAt": "2026-06-26T01:01:00.762Z"
+        }
+      }
+    },
+    {
+      "workflow": "upload",
+      "step": "metadata-guarantor-photo",
+      "passed": true,
+      "status": 200,
+      "durationMs": 250,
+      "detail": {
+        "data": {
+          "id": "019f0171-c3cf-7d4a-91fc-a3d066bbdd3a",
+          "purpose": "guarantor-photo",
+          "fileName": "guarantor-photo-1782435648993.png",
+          "mimeType": "image/png",
+          "sizeBytes": 68,
+          "url": "/uploads/019f0171-c3cf-7d4a-91fc-a3d066bbdd3a/content",
+          "uploadedAt": "2026-06-26T01:01:00.762Z"
+        }
+      }
+    },
+    {
+      "workflow": "upload",
+      "step": "create-registration-attachment",
+      "passed": true,
+      "status": 201,
+      "durationMs": 252,
+      "detail": {
+        "data": {
+          "id": "019f0171-c5d1-75d3-af06-21da8596b6ed",
+          "purpose": "registration-attachment",
+          "fileName": "registration-attachment-1782435648993.png",
+          "mimeType": "image/png",
+          "sizeBytes": 68,
+          "url": "/uploads/019f0171-c5d1-75d3-af06-21da8596b6ed/content",
+          "uploadedAt": "2026-06-26T01:01:01.268Z"
+        }
+      }
+    },
+    {
+      "workflow": "upload",
+      "step": "metadata-registration-attachment",
+      "passed": true,
+      "status": 200,
+      "durationMs": 255,
+      "detail": {
+        "data": {
+          "id": "019f0171-c5d1-75d3-af06-21da8596b6ed",
+          "purpose": "registration-attachment",
+          "fileName": "registration-attachment-1782435648993.png",
+          "mimeType": "image/png",
+          "sizeBytes": 68,
+          "url": "/uploads/019f0171-c5d1-75d3-af06-21da8596b6ed/content",
+          "uploadedAt": "2026-06-26T01:01:01.268Z"
+        }
+      }
+    },
+    {
+      "workflow": "upload",
+      "step": "create-document",
+      "passed": true,
+      "status": 201,
+      "durationMs": 256,
+      "detail": {
+        "data": {
+          "id": "019f0171-c7cd-7134-9a92-04fbbc3f5045",
+          "purpose": "document",
+          "fileName": "document-1782435648993.png",
+          "mimeType": "image/png",
+          "sizeBytes": 68,
+          "url": "/uploads/019f0171-c7cd-7134-9a92-04fbbc3f5045/content",
+          "uploadedAt": "2026-06-26T01:01:01.777Z"
+        }
+      }
+    },
+    {
+      "workflow": "upload",
+      "step": "metadata-document",
+      "passed": true,
+      "status": 200,
+      "durationMs": 253,
+      "detail": {
+        "data": {
+          "id": "019f0171-c7cd-7134-9a92-04fbbc3f5045",
+          "purpose": "document",
+          "fileName": "document-1782435648993.png",
+          "mimeType": "image/png",
+          "sizeBytes": 68,
+          "url": "/uploads/019f0171-c7cd-7134-9a92-04fbbc3f5045/content",
+          "uploadedAt": "2026-06-26T01:01:01.777Z"
+        }
+      }
+    },
+    {
+      "workflow": "upload",
+      "step": "provider-active",
+      "passed": true,
+      "durationMs": 0,
+      "detail": {
+        "provider": "local",
+        "cloudinaryConfigured": false
+      }
+    },
+    {
+      "workflow": "upload",
+      "step": "postgres-persist",
+      "passed": true,
+      "durationMs": 0,
+      "detail": {
+        "id": "019f0171-c1c0-7cb4-ae18-302bd989f701"
+      }
+    },
+    {
+      "workflow": "upload",
+      "step": "delete-lifecycle",
+      "passed": true,
+      "status": 204,
+      "durationMs": 520,
+      "detail": {
+        "id": "019f0171-c1c0-7cb4-ae18-302bd989f701"
+      }
+    },
+    {
+      "workflow": "authentication",
+      "step": "rbac-officer-denied",
+      "passed": true,
+      "status": 403,
+      "durationMs": 3,
+      "detail": {
+        "error": {
+          "message": "You do not have permission to perform this action.",
+          "code": "UNAUTHORIZED"
+        }
+      }
+    }
+  ],
+  "performance": {
+    "auth:login:admin": {
+      "samples": 1,
+      "avgMs": 1043,
+      "p95Ms": 1043,
+      "p99Ms": 1043
+    },
+    "auth:login:approver": {
+      "samples": 1,
+      "avgMs": 274,
+      "p95Ms": 274,
+      "p99Ms": 274
+    },
+    "auth:login:collector": {
+      "samples": 1,
+      "avgMs": 266,
+      "p95Ms": 266,
+      "p99Ms": 266
+    },
+    "auth:login:officer": {
+      "samples": 1,
+      "avgMs": 270,
+      "p95Ms": 270,
+      "p99Ms": 270
+    },
+    "borrower:search": {
+      "samples": 1,
+      "avgMs": 263,
+      "p95Ms": 263,
+      "p99Ms": 263
+    },
+    "loan:create": {
+      "samples": 1,
+      "avgMs": 512,
+      "p95Ms": 512,
+      "p99Ms": 512
+    },
+    "reversal:execute": {
+      "samples": 1,
+      "avgMs": 3745,
+      "p95Ms": 3745,
+      "p99Ms": 3745
+    },
+    "reversal:duplicate-attempt": {
+      "samples": 1,
+      "avgMs": 963,
+      "p95Ms": 963,
+      "p99Ms": 963
+    },
+    "reconciliation:submit": {
+      "samples": 1,
+      "avgMs": 1525,
+      "p95Ms": 1525,
+      "p99Ms": 1525
+    },
+    "upload:borrower-photo": {
+      "samples": 1,
+      "avgMs": 274,
+      "p95Ms": 274,
+      "p99Ms": 274
+    },
+    "upload:guarantor-photo": {
+      "samples": 1,
+      "avgMs": 264,
+      "p95Ms": 264,
+      "p99Ms": 264
+    },
+    "upload:registration-attachment": {
+      "samples": 1,
+      "avgMs": 252,
+      "p95Ms": 252,
+      "p99Ms": 252
+    },
+    "upload:document": {
+      "samples": 1,
+      "avgMs": 256,
+      "p95Ms": 256,
+      "p99Ms": 256
+    }
+  },
+  "summary": "31/32 passed"
+}

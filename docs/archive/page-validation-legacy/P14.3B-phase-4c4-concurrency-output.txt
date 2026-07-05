@@ -1,0 +1,14 @@
+﻿
+> @wilms/api@0.1.0 cert:reconciliation:concurrency
+> tsx src/verification/cert-reconciliation-concurrency.ts
+
+Ôùç injected env (10) from ..\..\.env // tip: Ôîÿ custom filepath { path: '/custom/path/.env' }
+P14.3B.4C.4 Concurrency Certification
+Started: 2026-06-25T00:52:05.919Z
+
+| Level | Successes | Persisted | History | Validation Rej | Duplicate Rej | Other | Pass |
+|-------|-----------|-----------|---------|----------------|---------------|-------|------|
+| 10 | 1 | 1 | 1 | 0 | 9 | 0 | YES |
+| 25 | 1 | 1 | 1 | 0 | 24 | 0 | YES |
+| 50 | 1 | 1 | 1 | 0 | 49 | 0 | YES |
+Finished: 2026-06-25T00:52:32.867Z
