@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ModulePageIntro } from '@/components/feedback/ModulePageIntro';
 import { PageShell } from '@/components/layout/PageShell';
 import { MyRegistrationsList } from '@/features/borrower-registration/components/MyRegistrationsList';
 
@@ -15,6 +16,7 @@ export default function MyRegistrationsPage() {
         </Link>
       }
     >
+      <ModulePageIntro guidanceKey="officerRegistrations" />
       <MyRegistrationsList />
     </PageShell>
   );

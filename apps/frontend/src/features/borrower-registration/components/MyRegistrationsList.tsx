@@ -2,18 +2,18 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Avatar, DataTable, KpiCard, StatusBadge } from '@/components/data-display';
 import {
   ExecutiveKpiGrid,
   FilterPillBar,
 } from '@/components/layout/executive';
-import { EmptyState } from '@/components/feedback/EmptyState';
+import { GuidedEmptyState } from '@/components/feedback/GuidedEmptyState';
+import { QueryErrorState } from '@/components/feedback/QueryErrorState';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
+import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { PERMISSION } from '@/constants/permissions';
-import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import {
   REGISTRATION_DATE_FILTERS,
@@ -80,10 +80,9 @@ function RegistrationStatusBadge({ status }: { status: RegistrationWorkflowStatu
 }
 
 export function MyRegistrationsList() {
-  const router = useRouter();
   const generatedBy = useWilmsExportActor();
   const { user } = useAuth();
-  const { data, isLoading, isError, refetch } = useMyRegistrations(user?.id);
+  const { data, isLoading, isError, error, refetch } = useMyRegistrations(user?.id);
   const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
   const deleteMutation = useDeleteRegistration(user?.id);
   const [searchQuery, setSearchQuery] = useState('');
@@ -155,25 +154,16 @@ export function MyRegistrationsList() {
 
   if (isError) {
     return (
-      <EmptyState
+      <QueryErrorState
+        error={error}
+        onRetry={() => void refetch()}
         title="Unable to load registrations"
-        description="Check your connection and try again."
       />
     );
   }
 
   if (!data?.length) {
-    return (
-      <EmptyState
-        title="No registrations yet"
-        description="Borrowers you register will appear here with their approval status."
-        action={
-          <Button type="button" variant="primary" onClick={() => router.push('/officer/register')}>
-            Register a borrower
-          </Button>
-        }
-      />
-    );
+    return <GuidedEmptyState {...EMPTY_STATE_COPY.registrations} />;
   }
 
   return (

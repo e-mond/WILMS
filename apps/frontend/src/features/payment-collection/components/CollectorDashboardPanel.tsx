@@ -264,9 +264,13 @@ export function CollectorDashboardPanel() {
 
       <ExecutiveKpiGrid className="sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard variant="executive" label="Payments Recorded" value={stats.paymentsRecorded} />
-        <KpiCard variant="executive" label="Collection Rate" value={`${stats.collectionRatePercent}%`} />
         <KpiCard variant="executive" label="Borrowers Managed" value={stats.borrowersManaged} />
         <KpiCard variant="executive" label="Groups Assigned" value={stats.groupsAssigned} />
+        <KpiCard
+          variant="executive"
+          label="Reconciliation"
+          value={reconciliationLabel(summary.reconciliationStatus)}
+        />
       </ExecutiveKpiGrid>
 
       <ExecutiveDetailLayout

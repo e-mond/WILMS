@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { CurrencyAmount, DataTable, KpiCard, Avatar } from '@/components/data-display';
 import { EmptyState } from '@/components/feedback/EmptyState';
+import { QueryErrorState } from '@/components/feedback/QueryErrorState';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
 import { DetailSidebarCard, ExecutiveKpiGrid } from '@/components/layout/executive';
 import { ExecutiveDetailLayout } from '@/components/layout/ExecutiveDetailLayout';
@@ -17,13 +18,24 @@ export interface CollectorProfilePanelProps {
 }
 
 export function CollectorProfilePanel({ collectorId }: CollectorProfilePanelProps) {
-  const { data, isLoading, isError } = useCollector(collectorId);
+  const { data, isLoading, isError, error, refetch } = useCollector(collectorId);
 
   if (isLoading) {
     return <LoadingSpinner label="Loading collector profile" className="py-wilms-8" />;
   }
 
-  if (isError || !data) {
+  if (isError) {
+    return (
+      <QueryErrorState
+        error={error}
+        onRetry={() => void refetch()}
+        title="Collector not found"
+        description="This collector may have been removed or the link is invalid."
+      />
+    );
+  }
+
+  if (!data) {
     return (
       <EmptyState
         title="Collector not found"

@@ -41,8 +41,26 @@ export function DashboardExpenseSummary({ compact = false }: DashboardExpenseSum
     );
   }
 
-  if (isError || !data) {
-    return null;
+  if (isError) {
+    return (
+      <QueryStatePanel
+        isLoading={false}
+        isError
+        error={error}
+        onRetry={() => void refetch()}
+        variant="inline"
+      >
+        {null}
+      </QueryStatePanel>
+    );
+  }
+
+  if (!data) {
+    return (
+      <QueryStatePanel isLoading showLoading isError={false} variant="inline">
+        {null}
+      </QueryStatePanel>
+    );
   }
 
   const periods = [

@@ -5,7 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import { CurrencyAmount, DataTable, KpiCard } from '@/components/data-display';
 import { ExecutiveKpiGrid, ManagementToolbar } from '@/components/layout/executive';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
-import { EmptyState } from '@/components/feedback/EmptyState';
+import { GuidedEmptyState } from '@/components/feedback/GuidedEmptyState';
+import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
@@ -93,8 +94,8 @@ export function DailyCollectionReportPanel() {
   return (
     <QueryStatePanel
       isLoading={isLoading}
-      isError={isError} error={error}
-      errorMessage="Check your connection and try again."
+      isError={isError}
+      error={error}
       onRetry={() => void refetch()}
       variant="table"
     >
@@ -173,7 +174,8 @@ export function DailyCollectionReportPanel() {
       )}
 
       {data.rows.length === 0 ? (
-        <EmptyState
+        <GuidedEmptyState
+          {...EMPTY_STATE_COPY.payments}
           title="No collection activity"
           description="No repayments or due borrowers were recorded for this date."
         />
