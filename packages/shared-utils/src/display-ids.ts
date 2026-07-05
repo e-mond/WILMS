@@ -111,6 +111,15 @@ export function formatPaymentDisplayId(input: {
   return `TXN-${dateKey}-${String(sequence).padStart(3, '0')}`;
 }
 
+export function formatDisbursementDisplayId(input: {
+  disbursedAt?: string;
+  sequence?: number;
+}): string {
+  const year = (input.disbursedAt ?? new Date().toISOString()).slice(0, 4);
+  const sequence = input.sequence ?? 1;
+  return `DIS-${year}-${String(sequence).padStart(6, '0')}`;
+}
+
 export function isReadableWilmsId(value: string): boolean {
-  return /^(BWR|COL|GRP|LOAN|POOL|ENT|USR|TXN)-/i.test(value.trim());
+  return /^(BWR|BOR|COL|GRP|LOAN|POOL|ENT|USR|TXN|DIS|MEM)-/i.test(value.trim());
 }

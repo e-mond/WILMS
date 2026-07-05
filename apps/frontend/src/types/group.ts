@@ -44,6 +44,7 @@ export interface GroupSourceRecord {
 
 export interface GroupMember {
   borrowerId: string;
+  displayId?: string;
   fullName: string;
   role: GroupMemberRole;
   loanStatus: GroupMemberLoanStatus;

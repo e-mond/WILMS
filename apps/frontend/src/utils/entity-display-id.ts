@@ -7,6 +7,7 @@ import {
   formatPoolDisplayId,
   formatUserDisplayId,
   formatPaymentDisplayId,
+  formatDisbursementDisplayId,
   isReadableWilmsId,
 } from '@wilms/shared-utils';
 
@@ -19,6 +20,7 @@ export {
   formatPoolDisplayId,
   formatUserDisplayId,
   formatPaymentDisplayId,
+  formatDisbursementDisplayId,
   isReadableWilmsId,
 };
 
@@ -135,6 +137,22 @@ export function resolvePaymentDisplayId(
     recordedAt: payment.recordedAt,
     sequence,
   });
+}
+
+export function resolveDisbursementDisplayId(entry: {
+  id: string;
+  displayId?: string;
+  recordedAt?: string;
+}): string {
+  if (entry.displayId) {
+    return entry.displayId;
+  }
+
+  if (isReadableWilmsId(entry.id)) {
+    return entry.id.toUpperCase();
+  }
+
+  return formatDisbursementDisplayId({ disbursedAt: entry.recordedAt });
 }
 
 export function resolveEntityDisplayId(flag: {

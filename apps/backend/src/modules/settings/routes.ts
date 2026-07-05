@@ -36,7 +36,7 @@ settingsRouter.patch(
   requirePermission(PERMISSION.MANAGE_SYSTEM_SETTINGS),
   asyncHandler(async (req, res) => {
     try {
-      sendData(res, await settingsService.updateSettings(req.body ?? {}));
+      sendData(res, await settingsService.updateSettings(req.body ?? {}, req.session!.userId));
     } catch (error) {
       mapError(error);
     }

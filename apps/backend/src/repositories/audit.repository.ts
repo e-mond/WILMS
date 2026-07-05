@@ -23,16 +23,23 @@ const ACTION_MAP = {
   'reversal.executed': 'REVERSAL_EXECUTED',
   'reversal.rejected': 'REVERSAL_REJECTED',
   'reconciliation.submitted': 'RECONCILIATION_SUBMITTED',
-  'user.logged-in': 'SETTINGS_EXPORTED',
-  'user.login-failed': 'SETTINGS_EXPORTED',
+  'user.logged-in': 'USER_LOGGED_IN',
+  'user.login-failed': 'USER_LOGIN_FAILED',
+  'user.logged-out': 'USER_LOGGED_OUT',
+  'settings.updated': 'SETTINGS_UPDATED',
+  'settings.exported': 'SETTINGS_EXPORTED',
   'risk-flag.raised': 'RISK_FLAG_RAISED',
   'risk-flag.escalated': 'RISK_FLAG_ESCALATED',
   'risk-flag.resolved': 'RISK_FLAG_RESOLVED',
   'risk-flag.assigned': 'RISK_FLAG_ASSIGNED',
   'loan-pool.created': 'LOAN_POOL_REPLENISHED',
   'group.created': 'GROUP_MEMBER_ADDED',
-  'collector.onboarded': 'SETTINGS_EXPORTED',
+  'collector.onboarded': 'SETTINGS_UPDATED',
 } as const satisfies Record<string, string>;
+
+export function normalizeAuditAction(action: string): string {
+  return ACTION_MAP[action as keyof typeof ACTION_MAP] ?? action.toUpperCase().replace(/\./g, '_');
+}
 
 const TARGET_MAP = {
   borrower: 'BORROWER',
@@ -94,11 +101,11 @@ export async function listAuditEntries(limit = 50): Promise<
 
   return rows.map((row) => ({
     id: row.id,
-    action: row.action.toLowerCase().replace(/_/g, '.'),
+    action: row.action,
     actorId: row.actorId,
     actorDisplayName: row.actorDisplayName ?? undefined,
     targetEntityId: row.targetEntityId,
-    targetEntityType: row.targetEntityType.toLowerCase(),
+    targetEntityType: row.targetEntityType,
     reason: row.reason ?? undefined,
     createdAt: row.createdAt.toISOString(),
   }));

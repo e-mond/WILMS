@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { formatEntityDisplayId, formatPaymentDisplayId, formatUserDisplayId, isReadableWilmsId } from '@wilms/shared-utils';
 import { isDatabaseEnabled } from '../../db/client.js';
 import { auditRepository } from '../../repositories/index.js';
+import { normalizeAuditAction } from '../../repositories/audit.repository.js';
 
 export interface AuditEntryRecord {
   id: string;
@@ -63,7 +64,7 @@ function enrichAuditEntry(entry: AuditEntryRecord): AuditEntryRecord {
 export function appendAuditEntry(input: CreateAuditEntryInput): AuditEntryRecord {
   const record: AuditEntryRecord = enrichAuditEntry({
     id: `audit-${randomUUID()}`,
-    action: input.action,
+    action: normalizeAuditAction(input.action),
     actorId: input.actorId,
     actorDisplayName: input.actorDisplayName,
     targetEntityId: input.targetEntityId,

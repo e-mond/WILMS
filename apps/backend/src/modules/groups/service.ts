@@ -1,6 +1,7 @@
 import { and, eq, isNull, sql } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
 import { BORROWER_STATUS } from '@wilms/shared-contracts';
+import { formatBorrowerDisplayId } from '@wilms/shared-utils';
 import { env } from '../../config/env.js';
 import { isDatabaseEnabled, getDb } from '../../db/client.js';
 import { groupMembers, groups } from '../../db/schema/groups.js';
@@ -354,9 +355,17 @@ async function buildMembers(
           ? borrowerPayments.sort((left, right) => right.paymentDate.localeCompare(left.paymentDate))[0]!
               .paymentDate
           : null;
+      const borrowerSequence =
+        [...borrowers]
+          .sort((left, right) => left.registeredAt.localeCompare(right.registeredAt))
+          .findIndex((entry) => entry.id === borrowerId) + 1;
 
       return {
         borrowerId,
+        displayId: formatBorrowerDisplayId(
+          { community: borrower.community, registeredAt: borrower.registeredAt },
+          borrowerSequence,
+        ),
         fullName: borrower.fullName,
         role:
           memberRoles.get(borrowerId) ??

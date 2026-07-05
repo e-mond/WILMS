@@ -1,4 +1,5 @@
 import { BORROWER_STATUS } from '@/types/borrower';
+import { formatBorrowerDisplayId } from '@wilms/shared-utils';
 import { MOCK_GROUP_MEMBERS } from '@/mocks/group-members';
 import { MOCK_GROUP_RISK_HISTORY } from '@/mocks/group-risk-history';
 import { getCollectorsDemoDataset } from '@/services/mock/factories/collectors-demo.factory';
@@ -193,6 +194,19 @@ function enrichMember(
 
   return {
     ...member,
+    displayId: registryEntry
+      ? formatBorrowerDisplayId(
+          {
+            community: registryEntry.community,
+            registeredAt: registryEntry.registeredAt,
+          },
+          index + 1,
+        )
+      : formatBorrowerDisplayId({
+          community: source.community,
+          registeredAt: source.formedAt,
+          id: member.borrowerId,
+        }),
     photoUrl: registryEntry
       ? resolveMockPhotoUrl({
           name: registryEntry.fullName,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
@@ -94,7 +94,10 @@ export function BorrowerRegistrationWizard() {
   });
   const [warningsAcknowledged, setWarningsAcknowledged] = useState(false);
   const [guarantorEligibility, setGuarantorEligibility] = useState<GuarantorEligibilityResult | null>(null);
-  const registrationSessionId = draftId ?? `reg-${user?.id ?? 'guest'}-${Date.now()}`;
+  const registrationSessionRef = useRef(
+    searchParams.get('edit') ?? `reg-${user?.id ?? 'guest'}-${crypto.randomUUID()}`,
+  );
+  const registrationSessionId = draftId ?? registrationSessionRef.current;
 
   const {
     control,
@@ -165,38 +168,59 @@ export function BorrowerRegistrationWizard() {
     );
   };
 
-  const watchedGuarantorFields = watch(['guarantorPhone', 'guarantorName', 'guarantorIdNumber']);
+  const watchedGuarantorPhone = watch('guarantorPhone');
+  const watchedGuarantorName = watch('guarantorName');
+  const watchedGuarantorIdNumber = watch('guarantorIdNumber');
 
   useEffect(() => {
     setGuarantorEligibility(null);
     clearErrors(['guarantorPhone', 'guarantorName', 'guarantorIdNumber']);
-  }, [watchedGuarantorFields, clearErrors]);
-
-  const reviewSummary = watch();
+  }, [watchedGuarantorPhone, watchedGuarantorName, watchedGuarantorIdNumber, clearErrors]);
 
   useEffect(() => {
     if (!draftId) {
       return;
     }
 
-    const timer = window.setTimeout(() => {
-      void borrowerService
-        .updateRegistrationDraft(
-          draftId,
-          getValues() as unknown as Record<string, unknown>,
-          currentStep,
-        )
-        .catch(() => undefined);
-    }, 800);
+    let timer: number | undefined;
+    const subscription = watch(() => {
+      if (timer) {
+        window.clearTimeout(timer);
+      }
 
-    return () => window.clearTimeout(timer);
-  }, [reviewSummary, draftId, currentStep, getValues]);
+      timer = window.setTimeout(() => {
+        void borrowerService
+          .updateRegistrationDraft(
+            draftId,
+            getValues() as unknown as Record<string, unknown>,
+            currentStep,
+          )
+          .catch(() => undefined);
+      }, 800);
+    });
 
-  const watchedIdentityFields = watch(['fullName', 'phone', 'idType', 'idNumber']);
+    return () => {
+      subscription.unsubscribe();
+      if (timer) {
+        window.clearTimeout(timer);
+      }
+    };
+  }, [watch, draftId, currentStep, getValues]);
+
+  const watchedFullName = watch('fullName');
+  const watchedPhone = watch('phone');
   const watchedIdType = watch('idType');
+  const watchedIdNumber = watch('idNumber');
+
+  useEffect(() => {
+    setWarningsAcknowledged(false);
+    setConflictReport({ blocking: [], warnings: [] });
+  }, [watchedFullName, watchedPhone, watchedIdType, watchedIdNumber]);
+
   const watchedGuarantorIdType = watch('guarantorIdType');
   const watchedRegion = watch('region');
   const watchedDistrict = watch('district');
+  const reviewSummary = watch();
   const [locationFeedback, setLocationFeedback] = useState<string | null>(null);
   const [isLocating, setIsLocating] = useState(false);
 
@@ -252,11 +276,6 @@ export function BorrowerRegistrationWizard() {
       setIsLocating(false);
     }
   };
-
-  useEffect(() => {
-    setWarningsAcknowledged(false);
-    setConflictReport({ blocking: [], warnings: [] });
-  }, [watchedIdentityFields]);
 
   const phoneField = register('phone', {
     validate: async (phone) => {
@@ -609,7 +628,7 @@ export function BorrowerRegistrationWizard() {
       {currentStep === 1 ? (
         <section className="grid gap-wilms-4 md:grid-cols-2">
           <FormField
-            label="House address"
+            label="Home address"
             htmlFor="houseAddress"
             required
             error={errors.houseAddress?.message}

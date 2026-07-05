@@ -45,7 +45,7 @@ describe('LoanPortfolioList', () => {
     );
 
     await screen.findByText('Ama Mensah');
-    await user.click(screen.getByRole('button', { name: 'Completed' }));
+    await user.selectOptions(screen.getByLabelText('Filter by loan status'), 'COMPLETED');
 
     expect(await screen.findByText('Ama Mensan')).toBeInTheDocument();
     expect(screen.queryByText('Ama Mensah')).not.toBeInTheDocument();
