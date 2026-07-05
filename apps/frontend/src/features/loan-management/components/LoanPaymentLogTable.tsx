@@ -4,6 +4,7 @@ import { CurrencyAmount, DataTable } from '@/components/data-display';
 import { Badge } from '@/components/ui/Badge';
 import type { LoanPaymentLogEntry } from '@/types/loan';
 import { formatDisplayDate } from '@/utils/format-date';
+import { resolveDisbursementDisplayId } from '@/utils/entity-display-id';
 
 export interface LoanPaymentLogTableProps {
   entries: LoanPaymentLogEntry[];
@@ -57,6 +58,17 @@ export function LoanPaymentLogTable({ entries, detailed = false }: LoanPaymentLo
               },
             ]
           : [
+              {
+                id: 'reference',
+                header: 'Reference',
+                cell: (row) => (
+                  <span className="font-semibold text-brand-primary">
+                    {row.type === 'DISBURSEMENT'
+                      ? resolveDisbursementDisplayId(row)
+                      : row.id}
+                  </span>
+                ),
+              },
               {
                 id: 'date',
                 header: 'Date',

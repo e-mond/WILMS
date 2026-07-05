@@ -2,6 +2,23 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.1.1] ? Production hotfixes
+
+### Fixed
+- Registration home/business address inputs ? stable session id and debounced autosave (React #185).
+- Navigation highlighting when opening Daily Collection Report under Reports.
+- Audit log empty action labels; login/settings events map to correct actions.
+- Disbursement readable IDs (`DIS-YYYY-NNNNNN`) stored in database with migration backfill.
+- Missing disburse loan action on loan detail (loans stuck `PENDING_DISBURSEMENT`).
+- Disbursement portfolio filters replaced with dropdown selects.
+- Group member list shows readable borrower IDs from backend.
+- Loan pool create modal form fields (labels, focus, submit, validation).
+- Switch toggle consistency (size, pill style, keyboard, loading state).
+
+### Added
+- Migration `0013_v111_hotfixes.sql` (audit enum values, `loan_disbursements.display_id`).
+- `V1.1.1_HOTFIX_REPORT.md`.
+
 ## [Unreleased] ? v1.1 user experience
 
 ### Added

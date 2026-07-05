@@ -4,6 +4,7 @@ import { users } from './users';
 
 export const loanDisbursements = pgTable('loan_disbursements', {
   id: uuid('id').primaryKey(),
+  displayId: text('display_id').notNull().unique(),
   loanId: uuid('loan_id')
     .notNull()
     .references(() => loans.id),

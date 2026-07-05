@@ -381,6 +381,7 @@ export async function listLoanPaymentLog(loanId: string) {
   if (disbursement) {
     entries.push({
       id: disbursement.id,
+      displayId: disbursement.displayId,
       type: 'DISBURSEMENT' as const,
       amountPesewas: Math.round(Number(disbursement.disbursedAmount) * 100),
       recordedAt: disbursement.disbursedAt.toISOString(),
