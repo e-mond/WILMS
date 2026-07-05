@@ -76,5 +76,5 @@ Create `docs/releases/P14.3B-Phase-X.md` on every phase with features, validatio
 ## Merge policy
 
 - All validation gates green before merge request.
-- Certification doc published under `docs/page-validation/`.
+- Certification doc published under `docs/archive/page-validation/`.
 - README reflects current production readiness score.

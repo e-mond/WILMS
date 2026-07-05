@@ -45,4 +45,4 @@ Next.js BFF proxy: `apps/frontend/src/app/api/wilms/[...path]/route.ts`
 - `@wilms/shared-types` — API envelope types
 - `@wilms/shared-validation` — Zod schemas (e.g. login API)
 
-See `docs/page-validation/P14.2-frontend-contract-verification.md` for schema traceability.
+See `docs/archive/page-validation/P14.2-frontend-contract-verification.md` for schema traceability.

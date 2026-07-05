@@ -49,7 +49,7 @@ Response: `GuarantorEligibilityResult`
 
 ### Photo capture — `POST /registration/capture-sessions`, `GET /registration/capture-sessions/:token`
 
-See `context/page-validation/phone-capture-integration.md`
+See `context/docs/archive/page-validation/phone-capture-integration.md`
 
 ### Uploads — `POST /uploads`, `GET /uploads/:id`, `POST /uploads/:id/delete`
 

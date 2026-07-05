@@ -47,7 +47,7 @@ Each row represents one scoped, verifiable unit of work.
 | F-07 | Mock service layer scaffolding (dev/prod switch) | ✅ Complete | 2026-06-06 | 7 services + apiClient; NODE_ENV switch in services/index.ts; offline replay wired to paymentService; ESLint mock isolation; 9 service tests |
 | F-08 | Demo Mode banner component | ✅ Complete | 2026-06-06 | DemoModeBanner in root layout; development-only via NODE_ENV; role=status; 3 component tests |
 | UI-01 | Theme system + shared office shell layout | ✅ Complete | 2026-06-06 | themeStore (localStorage persist), ThemeProvider/Toggle, OfficeShell/PageShell; all office roles share header/footer/sidebar pattern; executive sidebar scoped tokens; 33 routes; 237 tests |
-| UI-02 | Executive dashboard design reference compliance | ✅ Complete | 2026-06-08 | PG-01 closed — `page-validation/PG-01-dashboard-closure.md` |
+| UI-02 | Executive dashboard design reference compliance | ✅ Complete | 2026-06-08 | PG-01 closed — `docs/archive/page-validation/PG-01-dashboard-closure.md` |
 | UI-03 | Layout consistency — detail, profile & field pages | ✅ Complete | 2026-06-07 | Detail routes use `PageShell variant="executive"`; profile panels + payment/reconciliation/admin-fee use executive KPI/sidebar layout; Applications nav → pending filter; notification placeholder removed; theme initializer on Officer/Approver |
 | EXP-01 | WILMS Export & Reporting Standard | ✅ Complete | 2026-06-09 | `src/features/export/` — PDF/Excel/CSV/Print engines; iframe print (no popups); borrower profile exports — `context/export-strategy.md` |
 | UI-04 | Design system audit — theme, tokens, toast, mobile nav | ✅ Complete | 2026-06-08 | Toast + Drawer mobile nav + responsive E2E; WCAG remediations in QA-03 (`context/accessibility-audit.md`) |
@@ -66,18 +66,18 @@ Each row represents one scoped, verifiable unit of work.
 | DA-08 | Migrate `CollectorShell` → `DashboardShell` field | ✅ Complete | 2026-06-08 | Bottom nav + offline wrapper preserved |
 | DA-09 | Shell E2E/a11y updates | ✅ Complete | 2026-06-08 | `e2e/shell-navbar.spec.ts`; collapse toggle + `#app-aside` helpers |
 | DA-10 | NB-* navbar features (search, notifications) | ✅ Complete | 2026-06-08 | GS-01 omnibar, NF-03 inbox, connection chip, app lock, profile menu |
-| DA-11 | Global contextual `AppAside` on all office routes | ✅ Complete | 2026-06-10 | All 12 sidebar routes — query-aware nav, URL-synced Applications filter — `page-validation/sidebar-audit.md` |
+| DA-11 | Global contextual `AppAside` on all office routes | ✅ Complete | 2026-06-10 | All 12 sidebar routes — query-aware nav, URL-synced Applications filter — `docs/archive/page-validation/sidebar-audit.md` |
 
 ### Page Reference Compliance (PG)
 
 | Unit | Description | Status | Last Updated | Notes |
 |---|---|---|---|---|
-| PG-01 | `/dashboard` reference compliance | ✅ **Complete** | 2026-06-08 | All P0–P2 resolved — `page-validation/PG-01-dashboard-closure.md` |
-| PG-02 | `/groups` reference compliance | ✅ **Complete** | 2026-06-09 | All R01–R16 resolved — `page-validation/PG-02-groups-closure.md` |
-| PG-03 | `/collectors` reference compliance | ✅ **Complete** | 2026-06-08 | All R01–R15 resolved — `page-validation/PG-03-collectors-closure.md` |
-| PG-04 | `/loan-pools` reference compliance | ✅ **Complete** | 2026-06-09 | R01–R11 — `page-validation/PG-04-loan-pools-closure.md` |
-| PG-05 | `/risk-flags` reference compliance | ✅ **Complete** | 2026-06-09 | R01–R11 — `page-validation/PG-05-risk-flags-closure.md` |
-| PG-06 | `/settings` reference compliance | ✅ **Complete** | 2026-06-09 | R01–R11 — `page-validation/PG-06-settings-closure.md` |
+| PG-01 | `/dashboard` reference compliance | ✅ **Complete** | 2026-06-08 | All P0–P2 resolved — `docs/archive/page-validation/PG-01-dashboard-closure.md` |
+| PG-02 | `/groups` reference compliance | ✅ **Complete** | 2026-06-09 | All R01–R16 resolved — `docs/archive/page-validation/PG-02-groups-closure.md` |
+| PG-03 | `/collectors` reference compliance | ✅ **Complete** | 2026-06-08 | All R01–R15 resolved — `docs/archive/page-validation/PG-03-collectors-closure.md` |
+| PG-04 | `/loan-pools` reference compliance | ✅ **Complete** | 2026-06-09 | R01–R11 — `docs/archive/page-validation/PG-04-loan-pools-closure.md` |
+| PG-05 | `/risk-flags` reference compliance | ✅ **Complete** | 2026-06-09 | R01–R11 — `docs/archive/page-validation/PG-05-risk-flags-closure.md` |
+| PG-06 | `/settings` reference compliance | ✅ **Complete** | 2026-06-09 | R01–R11 — `docs/archive/page-validation/PG-06-settings-closure.md` |
 
 #### PG-01 — Super Admin Dashboard (`/dashboard`)
 
@@ -85,8 +85,8 @@ Each row represents one scoped, verifiable unit of work.
 |---|---|
 | Status | ✅ **COMPLETE** |
 | Reference image | ✅ `context/design-references/WILMSSuperAdminDashboard.jpeg` — validated 2026-06-08 |
-| Closure record | ✅ `context/page-validation/PG-01-dashboard-closure.md` |
-| Gap analysis | ✅ `context/page-validation/PG-01-dashboard-gap-analysis.md` — image-authoritative |
+| Closure record | ✅ `context/docs/archive/page-validation/PG-01-dashboard-closure.md` |
+| Gap analysis | ✅ `context/docs/archive/page-validation/PG-01-dashboard-gap-analysis.md` — image-authoritative |
 
 **Prior remediation (R00–R05)**
 
@@ -144,7 +144,7 @@ Each row represents one scoped, verifiable unit of work.
 |---|---|
 | Status | ✅ **COMPLETE** |
 | Reference image | ✅ `context/design-references/GroupsManagement.jpeg` |
-| Gap analysis | ✅ `context/page-validation/PG-02-groups-gap-analysis.md` |
+| Gap analysis | ✅ `context/docs/archive/page-validation/PG-02-groups-gap-analysis.md` |
 
 **P0 remediation (R01–R03)**
 
@@ -177,7 +177,7 @@ Each row represents one scoped, verifiable unit of work.
 | PG-02-R15 | Pagination 8 rows / 19 pages | ✅ Resolved — `GROUPS_REFERENCE_PAGE_SIZE` |
 | PG-02-R16 | Mobile aside drawer E2E | ✅ Resolved — `shell-navbar.spec.ts` |
 
-**Closure:** `page-validation/PG-02-groups-closure.md`
+**Closure:** `docs/archive/page-validation/PG-02-groups-closure.md`
 
 #### PG-03 — Collectors Management (`/collectors`)
 
@@ -185,7 +185,7 @@ Each row represents one scoped, verifiable unit of work.
 |---|---|
 | Status | ✅ **COMPLETE** |
 | Reference image | ✅ `context/design-references/CollectorsManagement.jpeg` |
-| Gap analysis | ✅ `context/page-validation/PG-02-collectors-gap-analysis.md` |
+| Gap analysis | ✅ `context/docs/archive/page-validation/PG-02-collectors-gap-analysis.md` |
 
 **P0 remediation (R01–R03)**
 
@@ -217,7 +217,7 @@ Each row represents one scoped, verifiable unit of work.
 | PG-02-R14 | Export download icon | ✅ Resolved — `ExportDownloadIcon` |
 | PG-02-R15 | Mobile aside drawer E2E | ✅ Resolved — `shell-navbar.spec.ts` |
 
-**Closure:** `page-validation/PG-03-collectors-closure.md`
+**Closure:** `docs/archive/page-validation/PG-03-collectors-closure.md`
 
 ### Authentication
 
@@ -288,7 +288,7 @@ Each row represents one scoped, verifiable unit of work.
 | GM-01 | Group list view with risk levels | ✅ Complete | 2026-06-06 | `/groups`; `groupService`; `GroupsManagementPanel`; risk filters + detail sidebar |
 | GM-02 | Group profile (members, leader, risk history) | ✅ Complete | 2026-06-06 | `/groups/[id]`; `GroupProfilePanel`; members + risk history tables; REQ-023 |
 | GM-03 | Automatic group risk level calculation | ✅ Complete | 2026-06-06 | `calculateGroupRiskLevel`; `buildGroupSummaries`; thresholds in `constants/group-risk.ts`; REQ-025; 5 tests |
-| GM-04 | Full Group Details + Borrower Profile workflows | ✅ Complete | 2026-06-09 | `/groups/[id]`, `/borrowers/[id]`; leader/collector/members; payments; exports; aside; audit — `page-validation/GM-04-group-details-closure.md` |
+| GM-04 | Full Group Details + Borrower Profile workflows | ✅ Complete | 2026-06-09 | `/groups/[id]`, `/borrowers/[id]`; leader/collector/members; payments; exports; aside; audit — `docs/archive/page-validation/GM-04-group-details-closure.md` |
 
 ### Defaulter Tracking
 
