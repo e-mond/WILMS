@@ -25,6 +25,7 @@ import {
 } from '@/types/collector-dashboard';
 import { formatDisplayDate } from '@/utils/format-date';
 import { cn } from '@/utils/cn';
+import { resolveQueryErrorPresentation } from '@/utils/query-error-presentation';
 
 function reconciliationLabel(status: string): string {
   switch (status) {
@@ -153,19 +154,23 @@ export function CollectorDashboardPanel() {
     return <LoadingSpinner label="Loading collector dashboard" className="py-wilms-8" />;
   }
 
-  if (isError || !data) {
+  if (isError) {
     const isForbidden = error instanceof ApiError && error.status === 403;
+    const presentation = isForbidden
+      ? {
+          title: 'Access denied',
+          description:
+            'Your account does not have permission to view this collector dashboard. Sign in as a collector or contact your administrator.',
+          canRetry: false,
+        }
+      : resolveQueryErrorPresentation(error);
 
     return (
       <EmptyState
-        title={isForbidden ? 'Access denied' : 'Unable to load dashboard'}
-        description={
-          isForbidden
-            ? 'Your account does not have permission to view this collector dashboard. Sign in as a collector or contact your administrator.'
-            : 'Check your connection and try again.'
-        }
+        title={presentation.title}
+        description={presentation.description}
         action={
-          isForbidden ? undefined : (
+          presentation.canRetry ? (
             <button
               type="button"
               className="text-small font-semibold text-brand-primary"
@@ -174,10 +179,14 @@ export function CollectorDashboardPanel() {
             >
               {isFetching ? 'Retrying…' : 'Retry'}
             </button>
-          )
+          ) : undefined
         }
       />
     );
+  }
+
+  if (!data) {
+    return <LoadingSpinner label="Loading collector dashboard" className="py-wilms-8" />;
   }
 
   const { summary, hero, alerts, todayGroups, recentPayments, stats, borrowers } = data;
