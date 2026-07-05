@@ -20,6 +20,11 @@ export function resolveMiddlewareAuth(
   request: MiddlewareAuthRequest,
 ): MiddlewareAuthResult {
   const { pathname } = request.nextUrl;
+
+  if (pathname === '/capture' || pathname.startsWith('/capture/')) {
+    return { type: 'allow' };
+  }
+
   const sessionState = parseSessionCookieState(
     request.cookies.get(SESSION_COOKIE_NAME)?.value,
   );
