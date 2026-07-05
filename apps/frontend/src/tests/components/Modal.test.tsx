@@ -38,7 +38,7 @@ describe('Modal', () => {
       </Modal>,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Close dialog' }));
+    await user.click(screen.getByRole('button', { name: 'Close' }));
     expect(onClose).toHaveBeenCalled();
   });
 });

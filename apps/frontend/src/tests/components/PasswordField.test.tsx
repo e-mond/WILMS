@@ -11,10 +11,10 @@ describe('PasswordField', () => {
     const input = screen.getByLabelText('Password');
     expect(input).toHaveAttribute('type', 'password');
 
-    await user.click(screen.getByRole('button', { name: 'Toggle password visibility' }));
+    await user.click(screen.getByRole('button', { name: 'Show password' }));
     expect(input).toHaveAttribute('type', 'text');
 
-    await user.click(screen.getByRole('button', { name: 'Toggle password visibility' }));
+    await user.click(screen.getByRole('button', { name: 'Hide password' }));
     expect(input).toHaveAttribute('type', 'password');
   });
 

@@ -105,7 +105,7 @@ describe('ToastContainer', () => {
 
     render(<ToastContainer />);
 
-    await user.click(screen.getByRole('button', { name: /Dismiss Syncing payments notification/ }));
+    await user.click(screen.getByRole('button', { name: 'Dismiss' }));
 
     expect(useUiStore.getState().toasts).toHaveLength(0);
   });
