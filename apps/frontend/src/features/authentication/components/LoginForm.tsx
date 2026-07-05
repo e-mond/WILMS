@@ -12,6 +12,7 @@ import { DEMO_ACCOUNTS } from '@/constants/demo-accounts';
 import { isDemoMode } from '@/config/demo';
 import { loginSchema, type LoginFormInput } from '@/features/authentication/login.schema';
 import { resolveSafeRedirect } from '@/lib/auth/redirect';
+import { useNotificationSound } from '@/hooks/useNotificationSound';
 import { authService } from '@/services';
 import { useAuthStore } from '@/state/authStore';
 import { useAppLockStore } from '@/state/appLockStore';
@@ -28,6 +29,7 @@ export function LoginForm() {
   const setRememberEmail = useLoginPreferencesStore((state) => state.setRememberEmail);
   const setRememberedEmail = useLoginPreferencesStore((state) => state.setRememberedEmail);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const { playLogin } = useNotificationSound();
   const [hasMounted, setHasMounted] = useState(false);
   const isFormReady = hasMounted && isPreferencesHydrated;
 
@@ -95,6 +97,7 @@ export function LoginForm() {
     try {
       const result = await authService.login(parsed.data);
       setSession(result.user, result.expiresAt);
+      playLogin();
       useAppLockStore.getState().unlock();
       useAppLockStore.getState().recordActivity();
 

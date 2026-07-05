@@ -482,7 +482,7 @@ function renderSection(section: RoleSettingsSection, role: UserRole) {
       return <ProfileSection />;
     case ROLE_SETTINGS_SECTION.PIN:
     case ROLE_SETTINGS_SECTION.APP_LOCK:
-      return <AppLockSetupPanel mandatory />;
+      return <AppLockSetupPanel />;
     case ROLE_SETTINGS_SECTION.NOTIFICATIONS:
       return <NotificationsSection />;
     case ROLE_SETTINGS_SECTION.SYNC:

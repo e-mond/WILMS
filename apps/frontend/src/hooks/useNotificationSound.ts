@@ -51,10 +51,18 @@ export function areNotificationSoundsEnabled(): boolean {
   return readPreference();
 }
 
+export function playLoginSound(): void {
+  playTone(660, 120);
+}
+
+export function playLogoutSound(): void {
+  playTone(440, 120);
+}
+
 export function useNotificationSound() {
   return {
-    playLogin: () => playTone(660, 120),
-    playLogout: () => playTone(440, 120),
+    playLogin: playLoginSound,
+    playLogout: playLogoutSound,
     playApproval: () => playTone(784, 160),
     playAssignment: () => playTone(523, 140),
     playInvite: () => playTone(698, 140),
