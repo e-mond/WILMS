@@ -51,6 +51,9 @@ WILMS v1.0.0 is the historical production release. The v1.0.1 maintenance branch
 | `verify:api-integrity` | PASS |
 | `verify:api-coverage` | PASS |
 | `verify:mock-guard` | PASS |
+| `npm run db:migrate -w @wilms/api` | PASS |
+| `npm run smoke:rbac` | PASS (11/11) |
+| `npm run smoke:production` | 31/32 ? git SHA mismatch until maintenance branch is deployed to Railway |
 
 ---
 
@@ -75,5 +78,5 @@ npm run smoke:rbac
 ## Current Blockers
 
 - Remaining dependency advisories require breaking upgrades (`next`, `drizzle-orm`, Playwright, ExcelJS/uuid transitive chain).
-- Production smoke may still report a git SHA mismatch when local expected SHA differs from Railway platform metadata.
+- Production smoke may still report a git SHA mismatch when local expected SHA differs from Railway platform metadata (expected until v1.0.1 is deployed).
 - Some mock/demo data remains in test/dev and reference-seed paths; production mock guard remains required.
