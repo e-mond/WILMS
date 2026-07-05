@@ -23,7 +23,7 @@ v1.1 final stabilization completes UX consistency across all feature panels, rol
 | Dashboard polish | Complete |
 | PWA assets | Complete |
 | type-check / lint / build | PASS |
-| Full test suite | Run before merge |
+| Full test suite | Complete ? 438/438 frontend, 53/53 backend |
 | Release checklist | `V1.1_RELEASE_CHECKLIST.md` |
 
 ---
