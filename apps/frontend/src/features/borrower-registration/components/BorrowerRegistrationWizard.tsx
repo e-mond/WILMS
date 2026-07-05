@@ -165,7 +165,33 @@ export function BorrowerRegistrationWizard() {
     );
   };
 
+  const watchedGuarantorFields = watch(['guarantorPhone', 'guarantorName', 'guarantorIdNumber']);
+
+  useEffect(() => {
+    setGuarantorEligibility(null);
+    clearErrors(['guarantorPhone', 'guarantorName', 'guarantorIdNumber']);
+  }, [watchedGuarantorFields, clearErrors]);
+
   const reviewSummary = watch();
+
+  useEffect(() => {
+    if (!draftId) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      void borrowerService
+        .updateRegistrationDraft(
+          draftId,
+          getValues() as unknown as Record<string, unknown>,
+          currentStep,
+        )
+        .catch(() => undefined);
+    }, 800);
+
+    return () => window.clearTimeout(timer);
+  }, [reviewSummary, draftId, currentStep, getValues]);
+
   const watchedIdentityFields = watch(['fullName', 'phone', 'idType', 'idNumber']);
   const watchedIdType = watch('idType');
   const watchedGuarantorIdType = watch('guarantorIdType');

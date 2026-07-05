@@ -1,4 +1,5 @@
 import type { BorrowerRecord } from '../../db/persistence.js';
+import { BORROWER_STATUS } from '../../db/persistence.js';
 
 export const MAX_GUARANTOR_GUARANTEES = 3;
 
@@ -49,11 +50,23 @@ export function evaluateGuarantorEligibility(
     };
   }
 
+  const activeGuaranteeStatuses = new Set<string>([
+    BORROWER_STATUS.APPROVED,
+    BORROWER_STATUS.AT_RISK,
+    BORROWER_STATUS.DEFAULTED,
+  ]);
+
   const activeGuaranteeCount = borrowers.filter(
-    (record) => record.profile?.guarantorPhone === normalizedPhone,
+    (record) =>
+      activeGuaranteeStatuses.has(record.status) &&
+      record.profile?.guarantorPhone === normalizedPhone,
   ).length;
 
   const isDuplicateRegistration = borrowers.some((record) => {
+    if (record.status !== BORROWER_STATUS.APPROVED) {
+      return false;
+    }
+
     const profile = record.profile;
     return (
       profile?.guarantorPhone === normalizedPhone &&

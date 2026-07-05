@@ -28,7 +28,7 @@ WILMS supports registration officers, approvers, collectors, auditors, and super
 | Neon / Drizzle | **Operational** | Migrations `0000`–`0012` (Ghana locations); seed when `DATABASE_URL` set |
 | Notifications (SMS/email) | **Partial** | Payment, missed-payment, and approval SMS wired; test endpoints + smoke script |
 | Ghana locations | **RC1.4** | DB tables + bundled seeds (`npm run seed:ghana-locations`); JSON fallback offline |
-| **Current phase** | **RC1.4** | v1.0 certification merged to `main` — see `PROJECT_STATUS.md` and `docs/page-validation/RC1.4-v1-certification.md` |
+| **Current phase** | **RC1.4 closure** | Audit 2026-07-04 — `main` @ `487708b`; see `PROJECT_READINESS_REPORT.md` and `FINAL_RECOMMENDATION.md` |
 
 ---
 

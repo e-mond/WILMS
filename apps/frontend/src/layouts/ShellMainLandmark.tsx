@@ -1,7 +1,6 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { AppLockRequiredGate } from '@/components/auth/AppLockRequiredGate';
 import { useShellPageTitle } from '@/hooks/useShellPageTitle';
 import { cn } from '@/utils/cn';
 
@@ -29,7 +28,7 @@ export function ShellMainLandmark({
       )}
     >
       <h1 className="sr-only">{pageTitle}</h1>
-      <AppLockRequiredGate>{children}</AppLockRequiredGate>
+      {children}
     </main>
   );
 }

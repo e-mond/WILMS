@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import { csrfHeaders } from '@/lib/auth/csrf';
+import { playLogoutSound } from '@/hooks/useNotificationSound';
 import { useAuthStore } from '@/state/authStore';
 
 export function useLogout() {
@@ -26,6 +27,7 @@ export function useLogout() {
     } catch {
       // Clear local session and redirect even if the logout request fails.
     } finally {
+      playLogoutSound();
       clearSession();
       router.replace('/login');
       setIsLoggingOut(false);
