@@ -27,7 +27,7 @@ describe('Drawer', () => {
     expect(screen.getByRole('dialog', { name: 'Navigation' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Dashboard' })).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Close drawer' }));
+    await user.click(screen.getByRole('button', { name: 'Close' }));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 

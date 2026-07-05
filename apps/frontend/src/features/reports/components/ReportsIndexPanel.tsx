@@ -136,10 +136,6 @@ export function ReportsIndexPanel({ categoryFilterMode = 'default' }: ReportsInd
     );
   }
 
-  if (!data) {
-    return <EmptyState {...EMPTY_STATE_COPY.reports} />;
-  }
-
   if (isTimedOut && (isLoading || isDashboardLoading)) {
     return (
       <QueryStatePanel
@@ -158,7 +154,7 @@ export function ReportsIndexPanel({ categoryFilterMode = 'default' }: ReportsInd
     );
   }
 
-  if (showLoading && (isLoading || isDashboardLoading || !reportKpis)) {
+  if (showLoading && isLoading) {
     return (
       <QueryStatePanel isLoading showLoading isError={false} variant="inline">
         {null}
@@ -166,18 +162,26 @@ export function ReportsIndexPanel({ categoryFilterMode = 'default' }: ReportsInd
     );
   }
 
-  if (!reportKpis) {
-    return (
-      <EmptyState
-        title="Unable to load report metrics"
-        description="Check your connection and try again."
-      />
-    );
+  if (!data) {
+    if (isLoading) {
+      return (
+        <QueryStatePanel isLoading showLoading isError={false} variant="inline">
+          {null}
+        </QueryStatePanel>
+      );
+    }
+
+    return <EmptyState {...EMPTY_STATE_COPY.reports} />;
+  }
+
+  if (data.length === 0 && reports.length === 0 && !searchQuery && !typeFilter) {
+    return <EmptyState {...EMPTY_STATE_COPY.reports} />;
   }
 
   return (
     <div className="space-y-wilms-4">
-      <ExecutiveKpiGrid>
+      {reportKpis ? (
+        <ExecutiveKpiGrid>
           <KpiCard
             variant="executive"
             label="Total Collections"
@@ -203,6 +207,7 @@ export function ReportsIndexPanel({ categoryFilterMode = 'default' }: ReportsInd
             valueClassName="text-executive-gold"
           />
         </ExecutiveKpiGrid>
+      ) : null}
 
       <ManagementToolbar
         search={

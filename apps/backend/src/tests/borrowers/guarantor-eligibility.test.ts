@@ -43,41 +43,42 @@ function makeBorrower(overrides: Partial<BorrowerRecord> = {}): BorrowerRecord {
 
 describe('guarantor eligibility', () => {
   it('rejects guarantor when phone matches borrower', () => {
-  const result = evaluateGuarantorEligibility(
-    {
-      guarantorPhone: '0240000001',
-      guarantorName: 'Kofi Boateng',
-      borrowerPhone: '0240000001',
-    },
-    [],
-  );
+    const result = evaluateGuarantorEligibility(
+      {
+        guarantorPhone: '0240000001',
+        guarantorName: 'Kofi Boateng',
+        borrowerPhone: '0240000001',
+      },
+      [],
+    );
 
-  expect(result.isEligible).toBe(false);
-  expect(result.message).toContain('must differ');
+    expect(result.isEligible).toBe(false);
+    expect(result.message).toContain('must differ');
   });
 
   it('rejects guarantor at active guarantee limit', () => {
-  const borrowers = Array.from({ length: MAX_GUARANTOR_GUARANTEES }, (_, index) =>
-    makeBorrower({
-      id: `borrower-${index}`,
-      profile: {
-        ...makeBorrower().profile,
+    const borrowers = Array.from({ length: MAX_GUARANTOR_GUARANTEES }, (_, index) =>
+      makeBorrower({
+        id: `borrower-${index}`,
+        status: BORROWER_STATUS.APPROVED,
+        profile: {
+          ...makeBorrower().profile,
+          guarantorPhone: '0240000002',
+          guarantorName: `Guarantor ${index}`,
+        },
+      }),
+    );
+
+    const result = evaluateGuarantorEligibility(
+      {
         guarantorPhone: '0240000002',
-        guarantorName: `Guarantor ${index}`,
+        guarantorName: 'Kofi Boateng',
       },
-    }),
-  );
+      borrowers,
+    );
 
-  const result = evaluateGuarantorEligibility(
-    {
-      guarantorPhone: '0240000002',
-      guarantorName: 'Kofi Boateng',
-    },
-    borrowers,
-  );
-
-  expect(result.isEligible).toBe(false);
-  expect(result.message).toContain(String(MAX_GUARANTOR_GUARANTEES));
+    expect(result.isEligible).toBe(false);
+    expect(result.message).toContain(String(MAX_GUARANTOR_GUARANTEES));
   });
 
   it('accepts eligible guarantor with capacity remaining', () => {
@@ -91,5 +92,30 @@ describe('guarantor eligibility', () => {
     );
 
     expect(result.isEligible).toBe(true);
+  });
+
+  it('does not count pending registrations toward guarantee limit', () => {
+    const borrowers = Array.from({ length: MAX_GUARANTOR_GUARANTEES }, (_, index) =>
+      makeBorrower({
+        id: `borrower-${index}`,
+        status: BORROWER_STATUS.PENDING,
+        profile: {
+          ...makeBorrower().profile,
+          guarantorPhone: '0240000002',
+          guarantorName: `Guarantor ${index}`,
+        },
+      }),
+    );
+
+    const result = evaluateGuarantorEligibility(
+      {
+        guarantorPhone: '0240000002',
+        guarantorName: 'Kofi Boateng',
+      },
+      borrowers,
+    );
+
+    expect(result.isEligible).toBe(true);
+    expect(result.activeGuaranteeCount).toBe(0);
   });
 });

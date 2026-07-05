@@ -68,7 +68,7 @@ describe('LoginForm', () => {
   it('renders password visibility toggle and remember email checkbox', () => {
     render(<LoginForm />);
 
-    expect(screen.getByRole('button', { name: 'Toggle password visibility' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Show password' })).toBeInTheDocument();
     expect(screen.getByLabelText('Remember my email on this device')).toBeInTheDocument();
     expect(screen.getByText("Women's Interest-Free Loan Management")).toBeInTheDocument();
   });

@@ -37,7 +37,7 @@ describe('ReportsIndexPanel responsive layout', () => {
       </TestQueryProvider>,
     );
 
-    expect(await screen.findByText('Total Collections')).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: 'Loan Portfolio Report' })).toBeInTheDocument();
 
     const table = container.querySelector('table');
     expect(table?.closest('div')).toHaveClass('hidden');
