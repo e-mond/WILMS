@@ -1,31 +1,36 @@
-# Performance Report (v1.1)
+# Performance Report (v1.1 Final)
 
-**Date:** 2026-07-05  
-**Branch:** `feature/v1.1-user-experience`
+**Date:** 2026-07-05
 
-## Audit summary
+## Impact assessment
 
-v1.1 UX changes are lightweight and do not materially affect bundle size:
+v1.1 stabilization changes are UI-only with negligible bundle impact:
 
-| Change | Performance impact |
-|--------|-------------------|
-| `ModulePageIntro` | Client component; collapsed by default — negligible |
-| `HighlightedText` | O(n) string split per search result row — acceptable at limit 8 |
-| `DashboardRecentActivity` | Renders up to 5 alert items from existing dashboard payload — no extra API call |
-| Notification filters | Client-side filter on existing inbox query — no extra network |
-| Search match utils | Shared pure functions — tree-shakeable |
+| Change | Impact |
+|--------|--------|
+| QueryErrorState / GuidedEmptyState | ~2KB gzipped combined |
+| ModulePageIntro on 18 pages | Client component; collapsed by default |
+| PWA PNG icons | Static assets; 20KB total |
+| Search highlight | O(n) per result row; max 8 results |
+| Dashboard Recent Activity | Reuses existing dashboard payload |
 
-## Existing optimisations retained
+## Build output
 
+Production build completes successfully with no new dynamic import regressions.
+
+## Existing optimisations
+
+- Route-level code splitting (Next.js App Router)
 - Dynamic imports on heavy panels (loan pools, risk flags, reports)
-- TanStack Query stale times on search (30s) and dashboard hooks
-- Next.js App Router code splitting per route
-- Docker build excludes docs and test artifacts
+- TanStack Query stale times
+- Docker build excludes docs/tests
 
 ## Recommendations (deferred)
 
-- Add Lighthouse CI gate on `/dashboard` and `/login`
-- Lazy-load export PDF utilities on report pages
-- Evaluate route-level `loading.tsx` coverage for remaining static imports
+- Add Lighthouse CI on `/dashboard` and `/login`
+- Lazy-load PDF export utilities on report pages
+- Profile collector dashboard on low-end mobile devices
 
-No regressions expected from v1.1 UX diff.
+## Lighthouse
+
+Manual run recommended before release; not automated in this PR.

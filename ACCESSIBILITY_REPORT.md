@@ -1,32 +1,34 @@
-# Accessibility Report (v1.1)
+# Accessibility Report (v1.1 Final)
 
-**Date:** 2026-07-05  
-**Branch:** `feature/v1.1-user-experience`
+**Date:** 2026-07-05
 
-## Improvements in v1.1
+## v1.1 improvements
 
-| Component | A11y enhancement |
-|-----------|------------------|
-| `PageGuidanceTip` | `aria-expanded`, `aria-controls`, keyboard-operable button |
-| `GlobalSearchPanel` | `aria-live="polite"` on results; sr-only search label |
-| `NotificationInboxPanel` | Filter tabs with `role="tablist"` and `aria-selected` |
-| `DashboardRecentActivity` | `aria-label="Recent activity"` on list |
-| `HighlightedText` | Uses semantic `<mark>` for matched segments |
-| `GuidedEmptyState` | Structured headings for screen reader navigation |
+| Area | Change |
+|------|--------|
+| Module guidance | `aria-expanded`, `aria-controls` on collapsible help |
+| Global search | `aria-live="polite"`, sr-only labels, keyboard Ctrl+K |
+| Notifications | Filter tabs with `role="tablist"` / `aria-selected` |
+| Recent activity | `aria-label` on activity list |
+| Search highlights | Semantic `<mark>` elements |
+| Query errors | Structured headings in error/empty states |
+| Layout | favicon + apple-touch-icon metadata |
 
-## Existing baseline (retained)
+## Baseline retained
 
-- Focus-visible rings on buttons and links
-- Minimum 44px touch targets on navbar actions
-- Role shells with landmark navigation
-- Form fields with associated labels
+- Skip-to-content link
+- Focus-on-route-change
+- 44px minimum touch targets on navbar actions
+- Focus-visible rings on interactive elements
 
-## Known remaining gaps
+## Manual verification recommended
 
-- 10 feature panels still use legacy manual error guards instead of `QueryStatePanel`
-- Automated axe/Lighthouse audit not yet in CI
-- Some report tables rely on horizontal scroll on mobile without explicit scroll hints
+1. Tab through module help toggles on `/borrowers` and `/collector/dashboard`
+2. Open global search with Ctrl+K, arrow through results
+3. Open notification drawer, switch filter tabs with keyboard
+4. Verify contrast on brand-primary buttons in dark mode
 
-## Recommendation
+## Deferred
 
-Run manual keyboard pass on: global search (Ctrl+K), notification filters, module guidance toggles, and guided empty state CTAs before release.
+- Automated axe/Lighthouse CI gate
+- Full screen-reader audit of all 47 routes
