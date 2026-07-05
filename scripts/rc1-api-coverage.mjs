@@ -2,7 +2,7 @@
 /**
  * RC1 Phase 2 — API coverage: placeholder scan + integrity cross-check.
  */
-import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
@@ -10,7 +10,7 @@ import { spawnSync } from 'node:child_process';
 const root = join(fileURLToPath(new URL('.', import.meta.url)), '..');
 const frontendSrc = join(root, 'apps/frontend/src');
 const featuresDir = join(frontendSrc, 'features');
-const docsDir = join(root, 'docs/page-validation');
+const docsDir = join(root, 'docs/generated');
 
 const PLACEHOLDER_RE =
   /not yet available|coming soon|placeholder implementation|TODO endpoint/i;
@@ -110,6 +110,7 @@ for (const page of pages.sort()) {
 
 report.push('', '## API integrity output', '', '```', integrity.stdout.trim(), '```');
 
+mkdirSync(docsDir, { recursive: true });
 writeFileSync(join(docsDir, 'RC1-api-coverage.md'), report.join('\n') + '\n');
 
 console.log('RC1 API Coverage');
