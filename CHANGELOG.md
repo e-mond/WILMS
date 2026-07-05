@@ -5,15 +5,18 @@ All notable changes to WILMS are documented in this file.
 ## [Unreleased] ? v1.1 user experience
 
 ### Added
+- `QueryErrorState` for consistent error + retry UX across all feature panels.
+- PWA assets (`favicon.ico`, `icon-192.png`, `icon-512.png`) and `npm run generate:pwa-icons`.
+- Module guidance on collector, approver, officer, and executive dashboard pages (18 total).
 - Guided empty states with why/how guidance and primary CTAs.
-- Collapsible module help (`ModulePageIntro`) on core management pages.
 - Global search highlighting and improved ID/phone partial matching.
 - Super-admin dashboard Recent Activity section.
 - Notification inbox filters (All / Unread / Critical).
 
 ### Changed
+- Migrated all remaining panels from generic connection errors to `GuidedEmptyState` / `QueryStatePanel`.
 - Monorepo package version aligned to `1.0.0` (matches tagged production release).
-- Expanded empty-state copy and separated connection-error messaging from empty datasets.
+- Collector dashboard: deduplicated KPI grid; expense summary shows errors instead of silent failure.
 
 ## [1.0.1] ? Maintenance
 
