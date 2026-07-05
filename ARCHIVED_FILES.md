@@ -1,26 +1,39 @@
 # Archived Files
 
-**Date:** 2026-07-05
+**Date:** 2026-07-05 (v1.1.1 post-release cleanup)
 
 ## Summary
 
 | Destination | Count | Reason |
 |-------------|-------|--------|
-| docs/archive/v1.0.0-rc1.4/ | 11 | v1.0.0/RC1 closure reports retained as historical evidence |
-| docs/archive/page-validation/ | 0 | Historical phase validation, certification, recovery, smoke, and audit reports |
+| `docs/archive/v1.0.0-rc1.4/` | 11 | v1.0.0 / RC1.4 closure evidence |
+| `docs/archive/v1.1.1-release/` | 13 | v1.1 release, UX, and maintenance reports superseded by v1.1.1 verification docs |
+| `docs/archive/page-validation-legacy/` | ~500 | Historical P11–P14 phase validation, certification, recovery, and audit reports |
+| `docs/archive/scripts-one-time/` | 6 | One-time production probes and repair scripts |
 
-## Root reports archived
+## v1.1.1-release (root → archive)
 
-- API_COVERAGE_REPORT.md
-- DATABASE_STATUS_REPORT.md
-- DEPLOYMENT_STATUS_REPORT.md
-- FEATURE_COMPLETION_MATRIX.md
-- FINAL_RECOMMENDATION.md
-- PROJECT_READINESS_REPORT.md
-- RC1.4_CLOSURE_REPORT.md
-- SECURITY_STATUS_REPORT.md
-- TECHNICAL_DEBT_REPORT.md (old RC1 version)
-- TEST_STATUS_REPORT.md
-- VERSION_1_READINESS.md
+- `V1.1_RELEASE_REPORT.md`
+- `V1.1_RELEASE_CHECKLIST.md`
+- `V1.1_IMPLEMENTATION_REPORT.md`
+- `UX_IMPROVEMENT_REPORT.md`
+- `UX_FINAL_REPORT.md`
+- `UX_AUDIT_REPORT.md`
+- `PERFORMANCE_REPORT.md`
+- `ACCESSIBILITY_REPORT.md`
+- `TECHNICAL_DEBT_REPORT.md`
+- `REPOSITORY_CLEANUP_REPORT.md`
+- `REPOSITORY_STRUCTURE.md`
+- `DOCUMENT_ARCHIVE_REPORT.md`
+- `MAINTENANCE_SUMMARY.md`
+
+## scripts-one-time
+
+- `scripts/p14-6-3-auth-probe.mjs`
+- `scripts/p14-6-4-api-matrix.mjs`
+- `apps/backend/scripts/repair-production-schema.mjs`
+- `apps/backend/scripts/audit-prod-db.mjs`
+- `apps/backend/scripts/audit-prod-users.mjs`
+- `apps/backend/scripts/probe-migrations-table.mjs`
 
 No historical evidence was deleted.

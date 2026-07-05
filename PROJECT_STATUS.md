@@ -1,56 +1,45 @@
 # WILMS - Project Status
 
-**Last updated:** 2026-07-05 (v1.1.1 production hotfixes)  
-**Production release:** v1.0.0 (v1.1 merged to main)  
-**Hotfix branch:** `hotfix/v1.1.1-production-fixes`  
-**Package version:** `1.1.1`
+**Last updated:** 2026-07-05 (v1.1.1 post-release verification)  
+**Package version:** `1.1.1`  
+**Branch:** `hotfix/v1.1.1-production-fixes` @ `8dcda6e`  
+**Production (Railway):** `d2a64bb` (v1.1 ? hotfix pending merge/deploy)
 
 ---
 
 ## Summary
 
-v1.1.1 addresses verified production defects from post-v1.1 deployment verification: registration address stability, navigation highlighting, audit log action labels, disbursement readable IDs + disburse UI, group member IDs, loan pool form UX, and Switch consistency. No new features.
+v1.1.1 hotfixes are complete and verified locally. Production is **healthy** on v1.1 with smoke **32/32** and RBAC **11/11**. Repository cleanup archived historical reports under `docs/archive/`. Merge hotfix PR and redeploy both Railway and Vercel to complete v1.1.1.
 
 ---
 
-## v1.1.1 Hotfix scope
+## Verification status
 
-| Area | Status |
-|------|--------|
-| Registration address / React #185 | Fixed |
-| Navigation (Reports vs Collections) | Fixed |
-| Audit log action display + login mapping | Fixed |
-| Disbursement `DIS-*` IDs (backend stored) | Fixed + migration `0013` |
-| Disburse loan UI (pending ? active) | Fixed |
-| Disbursement filter dropdowns | Fixed |
-| Group member readable IDs | Fixed |
-| Loan pool create form | Fixed |
-| Switch / toggle UI | Improved |
+| Check | Result |
+|-------|--------|
+| Railway `/health` | PASS (200, DB, Cloudinary, 13/13 migrations) |
+| Vercel login + BFF | PASS |
+| `smoke:production` | **32/32** |
+| `smoke:rbac` | **11/11** |
+| Backend tests | **53/53** |
+| Frontend tests | **438/438** |
 | type-check / lint / build | PASS |
-| Frontend tests | PASS (438/438) |
-| Backend tests | PASS (53/53) |
+| Repository cleanup | Complete |
+
+See [POST_RELEASE_VERIFICATION.md](./POST_RELEASE_VERIFICATION.md) and [PRODUCTION_VERIFICATION_REPORT.md](./PRODUCTION_VERIFICATION_REPORT.md).
 
 ---
 
-## Verification before merge
+## Gate to tag v1.1.1
 
-```bash
-npm ci
-npm run type-check
-npm run lint
-npm run build
-npm test
-npm test -w @wilms/api
-npm run verify:api-integrity
-npm run verify:mock-guard
-npm run smoke:rbac
-npm run smoke:production
-```
-
-See `V1.1.1_HOTFIX_REPORT.md` for root causes and evidence.
+1. Merge `hotfix/v1.1.1-production-fixes` ? `main`
+2. Deploy Railway + Vercel
+3. Re-run smoke on deployed SHA
+4. Manual hotfix UX pass
+5. Tag `v1.1.1`
 
 ---
 
-## Recommendation
+## Ready for v1.2
 
-**Merge hotfix PR** after review. Tag `v1.1.1` only after production deploy and 32/32 smoke pass.
+After v1.1.1 tag: repository root decluttered, archives organized, production scripts retained.

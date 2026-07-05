@@ -1,33 +1,46 @@
 ﻿# Dependency Cleanup Report
 
 **Date:** 2026-07-05  
-**Branch:** `release/v1.0.1-maintenance`
+**Branch:** `hotfix/v1.1.1-production-fixes`
 
 ## Actions
 
-- Audited production dependencies with `npm audit --omit=dev`.
-- Attempted non-forced `npm audit fix` in commit `981be82`.
-- **Reverted** the lockfile change in commit `c942a78` after frontend type-check failed due to duplicate Vite type trees in `vitest.config.ts`.
-- Re-ran audit on the reverted lockfile baseline.
+- Reviewed workspace `package.json` files (root, frontend, backend, packages).
+- No packages removed in this pass — all declared dependencies are referenced by build, test, or runtime code.
+- No breaking `npm audit fix` applied (reverted in v1.0.1 due to Vitest/Vite type regression).
 
-## Outcome
+## Workspace packages (retained)
 
-| Action | Result |
-|--------|--------|
-| Non-breaking audit fix | Attempted, then reverted for reproducibility |
-| Lockfile | Unchanged from v1.0.0 baseline |
-| Production advisories | Remain; require breaking upgrades |
+| Package | Role |
+|---------|------|
+| `@wilms/frontend` | Next.js UI |
+| `@wilms/api` | Express backend |
+| `@wilms/shared-utils` | Display IDs, currency |
+| `@wilms/shared-validation` | Zod schemas |
+| `@wilms/shared-rbac` | Permissions |
+| `@wilms/shared-contracts` | DTO contracts |
 
-## Remaining advisories (deferred)
+## Dev dependencies
 
-| Package / chain | Severity | Reason deferred |
-|-----------------|----------|-----------------|
-| `next` / PostCSS transitive chain | High / Moderate | Major upgrade; requires full build, E2E, and smoke validation |
-| `drizzle-orm` | High | npm proposes 0.45.2 as breaking; requires migration validation |
-| `@playwright/test` / `playwright` | High | Outside current semver range; requires browser install validation |
-| `exceljs` / `uuid` | Moderate | Breaking movement in transitive chain; requires export regression testing |
-| `dompurify` | Moderate | Non-breaking fix available but bundled with reverted lockfile churn |
+| Package | Role |
+|---------|------|
+| `vitest` (root) | Frontend test runner |
+| Per-app devDeps | TypeScript, ESLint, Playwright, Drizzle, etc. |
+
+## Remaining advisories (deferred to v1.2+)
+
+| Chain | Severity | Notes |
+|-------|----------|-------|
+| `next` / PostCSS | High / Moderate | Major upgrade needs full E2E + smoke |
+| `drizzle-orm` | High | Breaking minor; migration validation required |
+| `@playwright/test` | High | Browser install validation |
+| `exceljs` / `uuid` | Moderate | Export regression testing |
+| `dompurify` | Moderate | Bundled with prior reverted lockfile churn |
 
 ## Recommendation
 
-Create a separate dependency-hardening PR for breaking upgrades with full build, migration, E2E, export, and production smoke validation.
+Schedule a dedicated **dependency hardening** task in v1.2 with full CI, migration, E2E, and production smoke validation. Do not upgrade during hotfix cleanup.
+
+## Verification
+
+`npm run type-check`, `npm run build`, and full test suites pass on current lockfile.
