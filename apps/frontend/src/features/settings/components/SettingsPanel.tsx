@@ -64,8 +64,8 @@ export function SettingsPanel() {
   return (
     <QueryStatePanel
       isLoading={isLoading}
-      isError={isError} error={error}
-      errorMessage="Unable to load settings. Check your connection and try again."
+      isError={isError}
+      error={error}
       onRetry={() => void refetch()}
       variant="inline"
     >

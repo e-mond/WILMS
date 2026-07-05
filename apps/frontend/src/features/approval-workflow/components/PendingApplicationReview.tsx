@@ -13,6 +13,8 @@ import { Alert } from '@/components/feedback/Alert';
 
 import { EmptyState } from '@/components/feedback/EmptyState';
 
+import { QueryErrorState } from '@/components/feedback/QueryErrorState';
+
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
 
 import { Button } from '@/components/ui/Button';
@@ -66,7 +68,7 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
   const queryClient = useQueryClient();
   const generatedBy = useWilmsExportActor();
 
-  const { data, isLoading, isError } = useBorrowerReview(borrowerId);
+  const { data, isLoading, isError, error, refetch } = useBorrowerReview(borrowerId);
 
   const { approveMutation, rejectMutation, blacklistMutation, isSubmitting } =
 
@@ -260,30 +262,29 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
 
 
 
-  if (isError || !data) {
-
+  if (isError) {
     return (
-
-      <EmptyState
-
+      <QueryErrorState
+        error={error}
+        onRetry={() => void refetch()}
         title="Application not found"
-
         description="This borrower application could not be loaded."
-
-        action={
-
-          <Button type="button" variant="secondary" onClick={() => router.push('/approver/pending')}>
-
-            Back to queue
-
-          </Button>
-
-        }
-
       />
-
     );
+  }
 
+  if (!data) {
+    return (
+      <EmptyState
+        title="Application not found"
+        description="This borrower application could not be loaded."
+        action={
+          <Button type="button" variant="secondary" onClick={() => router.push('/approver/pending')}>
+            Back to queue
+          </Button>
+        }
+      />
+    );
   }
 
 

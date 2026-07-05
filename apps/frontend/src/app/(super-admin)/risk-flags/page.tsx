@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic';
+import { ModulePageIntro } from '@/components/feedback/ModulePageIntro';
 import { PageShell } from '@/components/layout/PageShell';
 import { PageLoadingFallback } from '@/components/layout/PageLoadingFallback';
 
@@ -21,6 +22,7 @@ const RiskFlagsPanel = dynamic(
 export default function RiskFlagsPage() {
   return (
     <PageShell variant="executive">
+      <ModulePageIntro guidanceKey="riskFlags" />
       <div className="space-y-wilms-8">
         <OverpaymentReviewPanel />
         <RiskFlagsPanel />

@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import { CurrencyAmount, DataTable, KpiCard } from '@/components/data-display';
-import { EmptyState } from '@/components/feedback/EmptyState';
+import { GuidedEmptyState } from '@/components/feedback/GuidedEmptyState';
+import { QueryErrorState } from '@/components/feedback/QueryErrorState';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import { ExecutiveKpiGrid } from '@/components/layout/executive';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { PERMISSION } from '@/constants/permissions';
@@ -19,7 +21,7 @@ import type { AdjustmentRequest } from '@/types/adjustment';
 import { formatDisplayDate } from '@/utils/format-date';
 
 export function AdjustmentsPanel() {
-  const { data, isLoading, isError } = useAdjustments();
+  const { data, isLoading, isError, error, refetch } = useAdjustments();
   const { approveMutation, rejectMutation, isSubmitting } = useAdjustmentActions();
   const [selectedRequest, setSelectedRequest] = useState<AdjustmentRequest | null>(null);
   const [reviewAction, setReviewAction] = useState<AdjustmentReviewAction | null>(null);
@@ -55,13 +57,12 @@ export function AdjustmentsPanel() {
     return <LoadingSpinner label="Loading adjustment queue" className="py-wilms-8" />;
   }
 
-  if (isError || !data) {
-    return (
-      <EmptyState
-        title="Unable to load adjustments"
-        description="Check your connection and try again."
-      />
-    );
+  if (isError) {
+    return <QueryErrorState error={error} onRetry={() => void refetch()} />;
+  }
+
+  if (!data) {
+    return <LoadingSpinner label="Loading adjustment queue" className="py-wilms-8" />;
   }
 
   return (
@@ -77,10 +78,7 @@ export function AdjustmentsPanel() {
       </ExecutiveKpiGrid>
 
       {data.requests.length === 0 ? (
-        <EmptyState
-          title="No pending adjustments"
-          description="All correction requests have been reviewed."
-        />
+        <GuidedEmptyState {...EMPTY_STATE_COPY.adjustments} />
       ) : (
         <DataTable<AdjustmentRequest>
           variant="executive"

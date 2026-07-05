@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   description: "Women's Interest-Free Loan Management System",
   manifest: '/manifest.webmanifest',
   icons: {
-    icon: '/icons/icon-192.png',
+    icon: [{ url: '/favicon.ico' }, { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' }],
     apple: '/icons/icon-192.png',
   },
 };

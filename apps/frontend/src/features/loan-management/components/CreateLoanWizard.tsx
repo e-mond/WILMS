@@ -7,7 +7,10 @@ import { useForm } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Alert } from '@/components/feedback/Alert';
 import { EmptyState } from '@/components/feedback/EmptyState';
+import { GuidedEmptyState } from '@/components/feedback/GuidedEmptyState';
+import { QueryErrorState } from '@/components/feedback/QueryErrorState';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import { FormField, MultiStepForm } from '@/components/forms';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -61,7 +64,7 @@ function applySchemaErrors(
 export function CreateLoanWizard() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { data: eligibleBorrowers, isLoading, isError } = useEligibleBorrowers();
+  const { data: eligibleBorrowers, isLoading, isError, error, refetch } = useEligibleBorrowers();
   const [currentStep, setCurrentStep] = useState(0);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [createdLoanId, setCreatedLoanId] = useState<string | null>(null);
@@ -165,16 +168,18 @@ export function CreateLoanWizard() {
 
   if (isError) {
     return (
-      <EmptyState
+      <QueryErrorState
+        error={error}
+        onRetry={() => void refetch()}
         title="Unable to load borrowers"
-        description="Check your connection and try again."
       />
     );
   }
 
   if (!eligibleBorrowers?.length) {
     return (
-      <EmptyState
+      <GuidedEmptyState
+        {...EMPTY_STATE_COPY.loans}
         title="No borrowers ready for loans"
         description="Borrowers must be approved, have a recorded admin fee, and no existing open loan."
         action={

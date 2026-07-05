@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { DataTable, KpiCard, StatusBadge, Avatar } from '@/components/data-display';
 import { EmptyState } from '@/components/feedback/EmptyState';
+import { GuidedEmptyState } from '@/components/feedback/GuidedEmptyState';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { Button } from '@/components/ui/Button';
 import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
@@ -148,7 +149,7 @@ export function BorrowerList() {
   }
 
   if (!data?.length) {
-    return <EmptyState {...EMPTY_STATE_COPY.borrowers} />;
+    return <GuidedEmptyState {...EMPTY_STATE_COPY.borrowers} />;
   }
 
   const csvRows = filteredBorrowers.map((borrower) => [

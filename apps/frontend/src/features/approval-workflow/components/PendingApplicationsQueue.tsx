@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { DataTable, KpiCard, StatusBadge } from '@/components/data-display';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
+import { GuidedEmptyState } from '@/components/feedback/GuidedEmptyState';
 import { EmptyState } from '@/components/feedback/EmptyState';
+import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import { ExecutiveKpiGrid, ManagementToolbar } from '@/components/layout/executive';
 import { Input } from '@/components/ui/Input';
 import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
@@ -33,7 +35,7 @@ function filterPendingApplications(
 }
 
 export function PendingApplicationsQueue() {
-  const { data, isLoading, isError, refetch } = usePendingApplications();
+  const { data, isLoading, isError, error, refetch } = usePendingApplications();
   const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedCommunities, setExpandedCommunities] = useState<Record<string, boolean>>({});
@@ -55,7 +57,7 @@ export function PendingApplicationsQueue() {
         showLoading={showLoading}
         isTimedOut={isTimedOut}
         isError={isError}
-        errorMessage="Unable to load pending applications. Check your connection and try again."
+        error={error}
         onRetry={() => void refetch()}
         variant="table"
       >
@@ -65,18 +67,7 @@ export function PendingApplicationsQueue() {
   }
 
   if (!data?.length) {
-    return (
-      <QueryStatePanel
-        isLoading={false}
-        isError={false}
-        isEmpty
-        emptyTitle="No pending applications"
-        emptyDescription="New borrower registrations will appear here for your review."
-        variant="table"
-      >
-        {null}
-      </QueryStatePanel>
-    );
+    return <GuidedEmptyState {...EMPTY_STATE_COPY.applications} />;
   }
 
   return (

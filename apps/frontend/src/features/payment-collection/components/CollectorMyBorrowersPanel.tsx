@@ -8,8 +8,11 @@ import {
   DataTable,
   KpiCard,
 } from '@/components/data-display';
-import { EmptyState } from '@/components/feedback/EmptyState';
+import { GuidedEmptyState } from '@/components/feedback/GuidedEmptyState';
+import { QueryErrorState } from '@/components/feedback/QueryErrorState';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
+import { matchesAnySearchField } from '@/utils/search-match';
 import { ExecutiveKpiGrid, ManagementToolbar } from '@/components/layout/executive';
 import { Input } from '@/components/ui/Input';
 import { useCollectorBorrowers } from '@/features/payment-collection/hooks/useCollectorBorrowers';
@@ -19,17 +22,21 @@ function filterBorrowers(
   borrowers: CollectorDashboardBorrower[],
   searchQuery: string,
 ): CollectorDashboardBorrower[] {
-  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const normalizedQuery = searchQuery.trim();
 
   if (!normalizedQuery) {
     return borrowers;
   }
 
-  return borrowers.filter(
-    (borrower) =>
-      borrower.borrowerName.toLowerCase().includes(normalizedQuery) ||
-      borrower.community.toLowerCase().includes(normalizedQuery) ||
-      borrower.phone.toLowerCase().includes(normalizedQuery),
+  return borrowers.filter((borrower) =>
+    matchesAnySearchField(searchQuery, [
+      borrower.borrowerName,
+      borrower.community,
+      borrower.phone,
+      borrower.borrowerId,
+      borrower.groupName,
+      borrower.loanId,
+    ]),
   );
 }
 
@@ -51,7 +58,7 @@ function sortBorrowers(borrowers: CollectorDashboardBorrower[]): CollectorDashbo
 }
 
 export function CollectorMyBorrowersPanel() {
-  const { data, isLoading, isError } = useCollectorBorrowers();
+  const { data, isLoading, isError, error, refetch } = useCollectorBorrowers();
   const [searchQuery, setSearchQuery] = useState('');
 
   const borrowers = useMemo(
@@ -69,19 +76,17 @@ export function CollectorMyBorrowersPanel() {
   }
 
   if (isError) {
-    return (
-      <EmptyState
-        title="Unable to load borrowers"
-        description="Check your connection and try again."
-      />
-    );
+    return <QueryErrorState error={error} onRetry={() => void refetch()} />;
   }
 
   if (!data?.length) {
     return (
-      <EmptyState
+      <GuidedEmptyState
+        {...EMPTY_STATE_COPY.collectorsDashboard}
         title="No assigned borrowers"
         description="Active loans assigned to you will appear here."
+        actionHref="/collector/dashboard"
+        actionLabel="View collection dashboard"
       />
     );
   }
