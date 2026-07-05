@@ -2,7 +2,7 @@
  * P14.3B.4D.2 — Stakeholder demo workflow certification (live backend).
  *
  * Usage: npm run cert:demo:stakeholder -w @wilms/api
- * Output: docs/page-validation/P14.3B-phase-4d2-functional-evidence.json
+ * Output: docs/generated/P14.3B-phase-4d2-functional-evidence.json
  */
 import '../config/load-env.js';
 import { ensureCertLiveBorrower } from './cert-live-prep.js';
@@ -25,7 +25,7 @@ import { resolveCertPaymentTarget } from './cert-reversal-prep.js';
 
 const BASE = process.env.WILMS_LIVE_API_BASE ?? `http://${process.env.WILMS_API_HOST ?? '127.0.0.1'}:${process.env.WILMS_API_PORT ?? '4000'}`;
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
-const OUTPUT_PATH = join(REPO_ROOT, 'docs/page-validation/P14.3B-phase-4d2-functional-evidence.json');
+const OUTPUT_PATH = join(REPO_ROOT, 'docs/generated/P14.3B-phase-4d2-functional-evidence.json');
 
 interface StepEvidence {
   workflow: string;
