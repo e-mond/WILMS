@@ -1,0 +1,33 @@
+﻿# Dependency Cleanup Report
+
+**Date:** 2026-07-05  
+**Branch:** `release/v1.0.1-maintenance`
+
+## Actions
+
+- Audited production dependencies with `npm audit --omit=dev`.
+- Attempted non-forced `npm audit fix` in commit `981be82`.
+- **Reverted** the lockfile change in commit `c942a78` after frontend type-check failed due to duplicate Vite type trees in `vitest.config.ts`.
+- Re-ran audit on the reverted lockfile baseline.
+
+## Outcome
+
+| Action | Result |
+|--------|--------|
+| Non-breaking audit fix | Attempted, then reverted for reproducibility |
+| Lockfile | Unchanged from v1.0.0 baseline |
+| Production advisories | Remain; require breaking upgrades |
+
+## Remaining advisories (deferred)
+
+| Package / chain | Severity | Reason deferred |
+|-----------------|----------|-----------------|
+| `next` / PostCSS transitive chain | High / Moderate | Major upgrade; requires full build, E2E, and smoke validation |
+| `drizzle-orm` | High | npm proposes 0.45.2 as breaking; requires migration validation |
+| `@playwright/test` / `playwright` | High | Outside current semver range; requires browser install validation |
+| `exceljs` / `uuid` | Moderate | Breaking movement in transitive chain; requires export regression testing |
+| `dompurify` | Moderate | Non-breaking fix available but bundled with reverted lockfile churn |
+
+## Recommendation
+
+Create a separate dependency-hardening PR for breaking upgrades with full build, migration, E2E, export, and production smoke validation.

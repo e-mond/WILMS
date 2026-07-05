@@ -18,5 +18,6 @@ vitest-*.txt
 test-output.*
 test-final.txt
 .wilms-production-credentials.json
-docs/page-validation/*-evidence/
-docs/page-validation/rc1.*-evidence/
+docs/generated/*-evidence/
+docs/generated/rc1.*-evidence/
+docs/generated/

@@ -2,11 +2,11 @@
 
 WILMS uses a device-local PIN to protect field sessions after idle or background time.
 
-## First login
+## Optional setup
 
-- New users see the mandatory setup gate (`AppLockRequiredGate`) inside the authenticated shell.
+- App lock is optional and can be enabled, disabled, or changed from Security settings.
 - PIN is hashed with the user id and stored in localStorage (`wilms-app-lock`).
-- Setup runs once per user+device; returning users with a configured PIN skip setup.
+- Setup runs once per user+device when enabled; returning users with a configured PIN skip setup.
 
 ## Normal login
 
