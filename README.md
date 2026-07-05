@@ -2,7 +2,7 @@
 
 Women's Interest-Free Loan Management System (WILMS) is a TypeScript monorepo for borrower onboarding, group lending, loan lifecycle management, weekly collections, audit trails, and role-based reporting.
 
-Version 1.0.0 is the historical production release. This branch, `release/v1.0.1-maintenance`, prepares a maintenance-only v1.0.1 cleanup: documentation archive, dependency hygiene, low-risk dead-code removal, and reproducibility verification.
+Version 1.0.0 is the production release. This branch, `feature/v1.1-user-experience`, prepares v1.1 UX improvements: guided empty states, module help, search enhancements, dashboard activity, and notification filters.
 
 ## Production Services
 
