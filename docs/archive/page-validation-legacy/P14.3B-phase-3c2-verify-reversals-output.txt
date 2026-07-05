@@ -1,0 +1,65 @@
+﻿
+> @wilms/api@0.1.0 verify:reversals
+> tsx src/verification/run-reversals.ts
+
+Ôùç injected env (10) from ..\..\.env // tip: Ôùê secrets for agents [www.dotenvx.com]
+P14.3B Payment Reversal Verification (Phase 3C.1 MVP)
+DATABASE_URL: configured
+
+## Unit Checks (no DB)
+Passed: 3/3
+  Ô£ô reversal-balance-active-credit: after=15000
+  Ô£ô reversal-balance-completed-reactivates: lifecycle=ACTIVE
+  Ô£ô reversal-lifecycle-transition-valid: COMPLETED ÔåÆ ACTIVE allowed
+
+## Payment Reversal Safety
+Passed: 3/3
+  Ô£ô reversal-safety-seed-payment: skipped ÔÇö No confirmed payment or payable obligation available for reversal verification (integrity checks validate stored reversals)
+  Ô£ô reversal-idempotency-replay: skipped ÔÇö No confirmed payment or payable obligation available for reversal verification (integrity checks validate stored reversals)
+  Ô£ô reversal-concurrency-single-execute: skipped ÔÇö No confirmed payment or payable obligation available for reversal verification (integrity checks validate stored reversals)
+
+## Payment Reversal Workflow
+Passed: 8/8
+  Ô£ô reversal-workflow-seed-payment: skipped ÔÇö No confirmed payment or payable obligation available for reversal verification (integrity checks validate stored reversals)
+  Ô£ô reversal-execute-status: skipped ÔÇö No confirmed payment or payable obligation available for reversal verification (integrity checks validate stored reversals)
+  Ô£ô reversal-payment-status: skipped ÔÇö No confirmed payment or payable obligation available for reversal verification (integrity checks validate stored reversals)
+  Ô£ô reversal-balance-restored: skipped ÔÇö No confirmed payment or payable obligation available for reversal verification (integrity checks validate stored reversals)
+  Ô£ô reversal-ledger-entry: skipped ÔÇö No confirmed payment or payable obligation available for reversal verification (integrity checks validate stored reversals)
+  Ô£ô reversal-history-trail: skipped ÔÇö No confirmed payment or payable obligation available for reversal verification (integrity checks validate stored reversals)
+  Ô£ô reversal-duplicate-blocked: skipped ÔÇö No confirmed payment or payable obligation available for reversal verification (integrity checks validate stored reversals)
+  Ô£ô reversal-correction-conflict-blocked: skipped ÔÇö No confirmed payment or payable obligation available for reversal verification (integrity checks validate stored reversals)
+
+## Payment Reversal Integrity
+Passed: 29/29
+  Ô£ô reversal-executed-has-delta-b3de: delta=5000
+  Ô£ô reversal-executed-has-delta-2b36: delta=3000
+  Ô£ô reversal-executed-has-delta-b750: delta=5000
+  Ô£ô reversal-executed-has-delta-d682: delta=2500
+  Ô£ô reversal-executed-has-delta-f3b1: delta=2500
+  Ô£ô reversal-executed-has-delta-6246: delta=2500
+  Ô£ô reversal-executed-has-delta-4b02: delta=2500
+  Ô£ô reversal-executed-has-delta-a735: delta=2500
+  Ô£ô reversal-executed-has-delta-7550: delta=2500
+  Ô£ô reversal-executed-has-delta-43a5: delta=2500
+  Ô£ô reversal-executed-has-delta-d7e4: delta=2500
+  Ô£ô reversal-executed-has-delta-f9c0: delta=2500
+  Ô£ô reversal-executed-has-delta-df39: delta=5000
+  Ô£ô reversal-executed-has-delta-f660: delta=2500
+  Ô£ô reversal-executed-has-delta-e10d: delta=5000
+  Ô£ô reversal-executed-has-delta-d351: delta=2500
+  Ô£ô reversal-executed-has-delta-bf07: delta=5000
+  Ô£ô reversal-executed-has-delta-06ab: delta=2500
+  Ô£ô reversal-executed-has-delta-38c9: delta=5000
+  Ô£ô reversal-executed-has-delta-f5c3: delta=5000
+  Ô£ô reversal-executed-has-delta-16b6: delta=5000
+  Ô£ô reversal-executed-has-delta-70e8: delta=5000
+  Ô£ô reversal-executed-has-delta-f5ff: delta=5000
+  Ô£ô reversal-executed-has-delta-fcfc: delta=5000
+  Ô£ô reversal-executed-has-delta-4b60: delta=5000
+  Ô£ô reversal-executed-has-delta-a05b: delta=5000
+  Ô£ô reversal-executed-has-delta-7ef8: delta=5000
+  Ô£ô reversal-payments-linked: reversedCount=27
+  Ô£ô reversal-history-non-empty: rows=81
+
+=== SUMMARY ===
+Total: 43/43 passed

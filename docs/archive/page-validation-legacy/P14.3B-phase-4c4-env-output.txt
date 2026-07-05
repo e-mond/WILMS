@@ -1,0 +1,15 @@
+﻿
+> @wilms/api@0.1.0 cert:reconciliation:env
+> tsx src/verification/cert-reconciliation-environment.ts
+
+Ôùç injected env (10) from ..\..\.env // tip: Ôùê encrypted .env [www.dotenvx.com]
+P14.3B.4C.4 Reconciliation Environment Probe
+Started: 2026-06-25T00:35:12.815Z
+Collector ID: 019ed644-4cdb-76a7-845a-b0863bfa304b
+Portfolio loans: 2 (after cert setup: 2)
+Tuesday loans: 0
+Cert Tuesday anchor: 2030-01-01
+Probe date available: 2043-09-10
+Sample existing reconciliation: none
+PASS: Environment ready for reconciliation certification
+Finished: 2026-06-25T00:35:16.271Z

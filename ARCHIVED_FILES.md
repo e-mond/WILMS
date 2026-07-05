@@ -8,7 +8,7 @@
 |-------------|-------|--------|
 | `docs/archive/v1.0.0-rc1.4/` | 11 | v1.0.0 / RC1.4 closure evidence |
 | `docs/archive/v1.1.1-release/` | 13 | v1.1 release, UX, and maintenance reports superseded by v1.1.1 verification docs |
-| `docs/archive/page-validation-legacy/` | ~500 | Historical P11–P14 phase validation, certification, recovery, and audit reports |
+| `docs/archive/page-validation-legacy/` | ~481 | Historical P11–P14 phase validation, certification, recovery, and audit reports |
 | `docs/archive/scripts-one-time/` | 6 | One-time production probes and repair scripts |
 
 ## v1.1.1-release (root → archive)

@@ -1,0 +1,18 @@
+﻿
+> @wilms/api@0.1.0 cert:reversal:functional
+> tsx src/verification/cert-reversal-functional.ts
+
+Ôùç injected env (10) from ..\..\.env // tip: Ôîÿ suppress logs { quiet: true }
+P14.3B.3C.2 Functional Certification
+  Ô£ô reversal-created: reversalId=019eea9d-dcc3-763d-a336-f21c6b00f9e4
+  Ô£ô ledger-entry-created: rows=1
+  Ô£ô balance-restored: before=0 after=5000
+  Ô£ô schedule-restored: before=PAID after=MISSED
+  Ô£ô audit-history-created: events=3
+  Ô£ô duplicate-reversal-blocked: REVERSAL_DUPLICATE
+  Ô£ô idempotency-replay: first=019eea9d-dcc3-763d-a336-f21c6b00f9e4 replay=019eea9d-dcc3-763d-a336-f21c6b00f9e4
+  Ô£ô rbac-collector-blocked: status=403
+  Ô£ô rbac-unauthenticated-blocked: status=401
+  Ô£ô rbac-single-executed-reversal: executed=1 (admin path verified via service)
+
+Passed: 10/10

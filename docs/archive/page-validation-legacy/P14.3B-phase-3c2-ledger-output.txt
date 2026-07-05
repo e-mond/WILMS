@@ -1,0 +1,874 @@
+﻿
+> @wilms/api@0.1.0 cert:reversal:ledger
+> tsx src/verification/cert-reversal-ledger.ts
+
+Ôùç injected env (10) from ..\..\.env // tip: Ôîü auth for agents [www.vestauth.com]
+P14.3B.3C.2 Ledger Integrity Certification
+  Ô£ô ledger-net-zero-b3de: payment=5000 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-b3de: reverses=019ed644-5fe7-7330-87be-4404fda347ec
+  Ô£ô payment-reversed-flag-b3de: status=REVERSED
+  Ô£ô ledger-net-zero-5257: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-5257: reverses=019eeab3-6bcd-7f81-b71f-b5d3b17e1049
+  Ô£ô payment-reversed-flag-5257: status=REVERSED
+  Ô£ô ledger-net-zero-2b36: payment=3000 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-2b36: reverses=019ed644-6b35-7b69-adf7-2acf8ab05213
+  Ô£ô payment-reversed-flag-2b36: status=REVERSED
+  Ô£ô ledger-net-zero-b750: payment=5000 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-b750: reverses=019ee59c-11c7-7472-afdf-18f0afdf0469
+  Ô£ô payment-reversed-flag-b750: status=REVERSED
+  Ô£ô ledger-net-zero-95f7: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-95f7: reverses=019eeab3-9c3d-7271-8262-787f31c95b1e
+  Ô£ô payment-reversed-flag-95f7: status=REVERSED
+  Ô£ô ledger-net-zero-d682: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-d682: reverses=019ee7e2-4590-7342-be23-efc87b5075e1
+  Ô£ô payment-reversed-flag-d682: status=REVERSED
+  Ô£ô ledger-net-zero-32d5: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-32d5: reverses=019eeab4-393d-7004-bfb5-9d89a41d669b
+  Ô£ô payment-reversed-flag-32d5: status=REVERSED
+  Ô£ô ledger-net-zero-f3b1: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-f3b1: reverses=019ee7e2-91a9-73a5-94b1-e0b753b04a9a
+  Ô£ô payment-reversed-flag-f3b1: status=REVERSED
+  Ô£ô ledger-net-zero-6246: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-6246: reverses=019ee7e4-b116-763b-b6d9-d1897850c683
+  Ô£ô payment-reversed-flag-6246: status=REVERSED
+  Ô£ô ledger-net-zero-bee6: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-bee6: reverses=019eeab5-c04a-7a11-9666-a86c1972a70a
+  Ô£ô payment-reversed-flag-bee6: status=REVERSED
+  Ô£ô ledger-net-zero-4b02: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-4b02: reverses=019ee7e4-db67-7f10-94ef-eba39be7f7c9
+  Ô£ô payment-reversed-flag-4b02: status=REVERSED
+  Ô£ô ledger-net-zero-a735: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-a735: reverses=019ee7e4-fc60-75ec-a2db-f219f65f54e8
+  Ô£ô payment-reversed-flag-a735: status=REVERSED
+  Ô£ô ledger-net-zero-5473: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-5473: reverses=019eeab5-ee73-79c6-8a9e-405a6470a961
+  Ô£ô payment-reversed-flag-5473: status=REVERSED
+  Ô£ô ledger-net-zero-7550: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-7550: reverses=019ee7e5-20a4-7c07-b790-f41d9e44a5b1
+  Ô£ô payment-reversed-flag-7550: status=REVERSED
+  Ô£ô ledger-net-zero-43a5: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-43a5: reverses=019ee7e5-4d57-70a2-9145-2bb012a2c84c
+  Ô£ô payment-reversed-flag-43a5: status=REVERSED
+  Ô£ô ledger-net-zero-d7e4: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-d7e4: reverses=019ee7e5-718a-796c-86dc-1e42737e6ab7
+  Ô£ô payment-reversed-flag-d7e4: status=REVERSED
+  Ô£ô ledger-net-zero-f9c0: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-f9c0: reverses=019ee7e5-967d-78bb-acec-86f3ec4ae970
+  Ô£ô payment-reversed-flag-f9c0: status=REVERSED
+  Ô£ô ledger-net-zero-df39: payment=5000 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-df39: reverses=019ee7e5-b6cb-767f-94a7-3bcb25dae0ed
+  Ô£ô payment-reversed-flag-df39: status=REVERSED
+  Ô£ô ledger-net-zero-f660: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-f660: reverses=019ee7e5-db16-7340-b8fa-3961ca2c9434
+  Ô£ô payment-reversed-flag-f660: status=REVERSED
+  Ô£ô ledger-net-zero-e10d: payment=5000 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-e10d: reverses=019ee7e6-0858-7b1c-a252-5bafac773c83
+  Ô£ô payment-reversed-flag-e10d: status=REVERSED
+  Ô£ô ledger-net-zero-d351: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-d351: reverses=019ee7e6-43c5-7811-9048-3b1178cad5db
+  Ô£ô payment-reversed-flag-d351: status=REVERSED
+  Ô£ô ledger-net-zero-bf07: payment=5000 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-bf07: reverses=019ee7e6-74e8-74c1-be78-be2743e266c8
+  Ô£ô payment-reversed-flag-bf07: status=REVERSED
+  Ô£ô ledger-net-zero-06ab: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-06ab: reverses=019ee7e6-c422-7d66-92b8-9f5e459b5a21
+  Ô£ô payment-reversed-flag-06ab: status=REVERSED
+  Ô£ô ledger-net-zero-38c9: payment=5000 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-38c9: reverses=019ee8bd-56c3-7545-ab03-35548ea5838c
+  Ô£ô payment-reversed-flag-38c9: status=REVERSED
+  Ô£ô ledger-net-zero-f5c3: payment=5000 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-f5c3: reverses=019ee8bd-ec72-77c5-9a1a-65592fcebac7
+  Ô£ô payment-reversed-flag-f5c3: status=REVERSED
+  Ô£ô ledger-net-zero-16b6: payment=5000 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-16b6: reverses=019ee8bf-96ad-7612-af3c-7af48889f805
+  Ô£ô payment-reversed-flag-16b6: status=REVERSED
+  Ô£ô ledger-net-zero-70e8: payment=5000 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-70e8: reverses=019ee8c0-1d52-731d-9d22-98e3b5670540
+  Ô£ô payment-reversed-flag-70e8: status=REVERSED
+  Ô£ô ledger-net-zero-f5ff: payment=5000 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-f5ff: reverses=019ee8c1-9096-79a6-9ada-83e818afb0cb
+  Ô£ô payment-reversed-flag-f5ff: status=REVERSED
+  Ô£ô ledger-net-zero-fcfc: payment=5000 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-fcfc: reverses=019ee8c1-b971-74e3-a14e-8a78427f0be9
+  Ô£ô payment-reversed-flag-fcfc: status=REVERSED
+  Ô£ô ledger-net-zero-4b60: payment=5000 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-4b60: reverses=019ee8c3-3f01-711a-ab06-935362b67760
+  Ô£ô payment-reversed-flag-4b60: status=REVERSED
+  Ô£ô ledger-net-zero-a05b: payment=5000 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-a05b: reverses=019ee8c3-655f-79e9-be83-72b6b5574a84
+  Ô£ô payment-reversed-flag-a05b: status=REVERSED
+  Ô£ô ledger-net-zero-7ef8: payment=5000 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-7ef8: reverses=019ee8c3-af66-7377-aef1-6f08271e040a
+  Ô£ô payment-reversed-flag-7ef8: status=REVERSED
+  Ô£ô ledger-net-zero-f9e4: payment=5000 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-f9e4: reverses=019ed644-6174-7034-bc7e-105f86d704cb
+  Ô£ô payment-reversed-flag-f9e4: status=REVERSED
+  Ô£ô ledger-net-zero-46d3: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-46d3: reverses=019eeac1-0de6-7c04-a377-55ead2a89006
+  Ô£ô payment-reversed-flag-46d3: status=REVERSED
+  Ô£ô ledger-net-zero-b0fb: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-b0fb: reverses=019eeab3-c923-76c9-b2b3-4485419aa508
+  Ô£ô payment-reversed-flag-b0fb: status=REVERSED
+  Ô£ô ledger-net-zero-9f0e: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-9f0e: reverses=019eead5-2bbf-77ea-ae4e-c5b2bff30919
+  Ô£ô payment-reversed-flag-9f0e: status=REVERSED
+  Ô£ô ledger-net-zero-15f5: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-15f5: reverses=019eeab4-00e8-7cf6-b6a6-63a31ba22bec
+  Ô£ô payment-reversed-flag-15f5: status=REVERSED
+  Ô£ô ledger-net-zero-1214: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-1214: reverses=019eeac1-3f26-7bcc-9130-f193a0a2d996
+  Ô£ô payment-reversed-flag-1214: status=REVERSED
+  Ô£ô ledger-net-zero-b160: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-b160: reverses=019eeab4-70c2-7bab-85eb-41c1b06bc855
+  Ô£ô payment-reversed-flag-b160: status=REVERSED
+  Ô£ô ledger-net-zero-1736: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-1736: reverses=019eeaa0-5d58-7d1c-863f-b921d3b2d4b9
+  Ô£ô payment-reversed-flag-1736: status=REVERSED
+  Ô£ô ledger-net-zero-e552: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-e552: reverses=019eeab4-a5b4-71be-bb95-ecfae0da823b
+  Ô£ô payment-reversed-flag-e552: status=REVERSED
+  Ô£ô ledger-net-zero-6622: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-6622: reverses=019eeac1-9cc1-79f6-bf85-53db7b998337
+  Ô£ô payment-reversed-flag-6622: status=REVERSED
+  Ô£ô ledger-net-zero-0c3d: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-0c3d: reverses=019eeab4-d115-7333-8e63-a0fd75807974
+  Ô£ô payment-reversed-flag-0c3d: status=REVERSED
+  Ô£ô ledger-net-zero-54ab: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-54ab: reverses=019eead5-5c99-79c3-81ef-a86ff219a63d
+  Ô£ô payment-reversed-flag-54ab: status=REVERSED
+  Ô£ô ledger-net-zero-d019: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-d019: reverses=019eeab5-0878-796f-8dfc-9e0da0bd9467
+  Ô£ô payment-reversed-flag-d019: status=REVERSED
+  Ô£ô ledger-net-zero-7993: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-7993: reverses=019eeac1-f9cd-7d2d-8eac-e702162b60ea
+  Ô£ô payment-reversed-flag-7993: status=REVERSED
+  Ô£ô ledger-net-zero-4418: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-4418: reverses=019eeab5-3604-7a88-8b59-27e4ea1db9b6
+  Ô£ô payment-reversed-flag-4418: status=REVERSED
+  Ô£ô ledger-net-zero-6d92: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-6d92: reverses=019eeab5-629d-7e65-8e62-76b55a402c5a
+  Ô£ô payment-reversed-flag-6d92: status=REVERSED
+  Ô£ô ledger-net-zero-0718: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-0718: reverses=019eeac2-6004-7f07-a73a-4aeb6e05ec4f
+  Ô£ô payment-reversed-flag-0718: status=REVERSED
+  Ô£ô ledger-net-zero-290c: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-290c: reverses=019eeab5-91e3-7167-a828-7828934084cc
+  Ô£ô payment-reversed-flag-290c: status=REVERSED
+  Ô£ô ledger-net-zero-7bab: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-7bab: reverses=019eead5-8855-7e91-9c1c-2bff4e62aafe
+  Ô£ô payment-reversed-flag-7bab: status=REVERSED
+  Ô£ô ledger-net-zero-ecaf: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-ecaf: reverses=019eeab6-5af9-7496-ac97-371e6936e6c2
+  Ô£ô payment-reversed-flag-ecaf: status=REVERSED
+  Ô£ô ledger-net-zero-0a27: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-0a27: reverses=019eeac3-b530-7d68-bc94-c7d8224ca2da
+  Ô£ô payment-reversed-flag-0a27: status=REVERSED
+  Ô£ô ledger-net-zero-7305: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-7305: reverses=019eeab6-c7db-7688-b3d6-78c8b4b1d414
+  Ô£ô payment-reversed-flag-7305: status=REVERSED
+  Ô£ô ledger-net-zero-0e8d: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-0e8d: reverses=019eeab7-2fe9-7974-be0e-96319d0dae1e
+  Ô£ô payment-reversed-flag-0e8d: status=REVERSED
+  Ô£ô ledger-net-zero-7732: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-7732: reverses=019eeac4-ea3b-7f0a-990d-8e9ece37ecdd
+  Ô£ô payment-reversed-flag-7732: status=REVERSED
+  Ô£ô ledger-net-zero-1bf3: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-1bf3: reverses=019eeab7-9dc7-7640-a698-38cce8573d08
+  Ô£ô payment-reversed-flag-1bf3: status=REVERSED
+  Ô£ô ledger-net-zero-7560: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-7560: reverses=019eead5-b616-70e3-9fe1-1bd689129f44
+  Ô£ô payment-reversed-flag-7560: status=REVERSED
+  Ô£ô ledger-net-zero-4c6b: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-4c6b: reverses=019eeab8-8b71-7636-bb70-900ca8ec27a9
+  Ô£ô payment-reversed-flag-4c6b: status=REVERSED
+  Ô£ô ledger-net-zero-c6df: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-c6df: reverses=019eeac5-587b-7f07-8576-b0dcfb588628
+  Ô£ô payment-reversed-flag-c6df: status=REVERSED
+  Ô£ô ledger-net-zero-ab73: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-ab73: reverses=019eeab8-bd9d-77f1-afd7-1bf4780e85d3
+  Ô£ô payment-reversed-flag-ab73: status=REVERSED
+  Ô£ô ledger-net-zero-5f37: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-5f37: reverses=019eeac5-abd2-7307-b02e-d26beda2eb7b
+  Ô£ô payment-reversed-flag-5f37: status=REVERSED
+  Ô£ô ledger-net-zero-afe1: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-afe1: reverses=019eead5-ea0c-7e4d-b569-2ebfc8ad61d0
+  Ô£ô payment-reversed-flag-afe1: status=REVERSED
+  Ô£ô ledger-net-zero-a5ff: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-a5ff: reverses=019eeac6-2c7a-7365-8727-b99ec69d25d9
+  Ô£ô payment-reversed-flag-a5ff: status=REVERSED
+  Ô£ô ledger-net-zero-a827: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-a827: reverses=019eeaa0-1138-7723-8e12-93edaf439588
+  Ô£ô payment-reversed-flag-a827: status=REVERSED
+  Ô£ô ledger-net-zero-625e: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-625e: reverses=019eeab6-254f-7e59-9bf8-f78a3f48b50c
+  Ô£ô payment-reversed-flag-625e: status=REVERSED
+  Ô£ô ledger-net-zero-9927: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-9927: reverses=019eeac1-6c59-71fd-aa98-f6ecbc0d053b
+  Ô£ô payment-reversed-flag-9927: status=REVERSED
+  Ô£ô ledger-net-zero-4bfb: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-4bfb: reverses=019eeab6-936b-7a97-a430-52da6b58608f
+  Ô£ô payment-reversed-flag-4bfb: status=REVERSED
+  Ô£ô ledger-net-zero-ef9e: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-ef9e: reverses=019eead6-1a00-7815-84d1-f312623ed8f5
+  Ô£ô payment-reversed-flag-ef9e: status=REVERSED
+  Ô£ô ledger-net-zero-ee1a: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-ee1a: reverses=019eeab6-f76d-7159-becf-06487e90b86d
+  Ô£ô payment-reversed-flag-ee1a: status=REVERSED
+  Ô£ô ledger-net-zero-37c5: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-37c5: reverses=019eeac2-a74c-7c8b-8721-375f42498fa7
+  Ô£ô payment-reversed-flag-37c5: status=REVERSED
+  Ô£ô ledger-net-zero-1847: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-1847: reverses=019eeab7-67dd-7e5e-94c2-f48912a6e3c1
+  Ô£ô payment-reversed-flag-1847: status=REVERSED
+  Ô£ô ledger-net-zero-cc1b: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-cc1b: reverses=019eeab7-e2ec-7e76-b427-2680b8cf9a87
+  Ô£ô payment-reversed-flag-cc1b: status=REVERSED
+  Ô£ô ledger-net-zero-24cb: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-24cb: reverses=019eeac2-eedb-7c78-a894-c8506444b29b
+  Ô£ô payment-reversed-flag-24cb: status=REVERSED
+  Ô£ô ledger-net-zero-1553: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-1553: reverses=019eeab8-248e-7c05-a870-c271160336d1
+  Ô£ô payment-reversed-flag-1553: status=REVERSED
+  Ô£ô ledger-net-zero-9d15: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-9d15: reverses=019eead6-b451-7b77-8baf-729d36eb4f16
+  Ô£ô payment-reversed-flag-9d15: status=REVERSED
+  Ô£ô ledger-net-zero-fc7f: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-fc7f: reverses=019eeab8-61de-75a7-bcdb-098b95225751
+  Ô£ô payment-reversed-flag-fc7f: status=REVERSED
+  Ô£ô ledger-net-zero-660f: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-660f: reverses=019eeac3-4886-7700-b181-1dcbf9d4c133
+  Ô£ô payment-reversed-flag-660f: status=REVERSED
+  Ô£ô ledger-net-zero-b073: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-b073: reverses=019eeac4-00fb-7e67-a8d0-86d68eb30a6e
+  Ô£ô payment-reversed-flag-b073: status=REVERSED
+  Ô£ô ledger-net-zero-49c3: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-49c3: reverses=019eead6-efc0-7e15-890b-c9d886571cac
+  Ô£ô payment-reversed-flag-49c3: status=REVERSED
+  Ô£ô ledger-net-zero-6181: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-6181: reverses=019eeac4-4c18-72aa-a2b7-26bcc9dfb5bf
+  Ô£ô payment-reversed-flag-6181: status=REVERSED
+  Ô£ô ledger-net-zero-b5d4: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-b5d4: reverses=019eeac4-8abd-73c8-943c-0940f802896d
+  Ô£ô payment-reversed-flag-b5d4: status=REVERSED
+  Ô£ô ledger-net-zero-b878: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-b878: reverses=019eead7-2caa-7379-adf1-4cb860398d42
+  Ô£ô payment-reversed-flag-b878: status=REVERSED
+  Ô£ô ledger-net-zero-a9c2: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-a9c2: reverses=019eeac5-fc6c-76f1-8b80-04e2c6e533c1
+  Ô£ô payment-reversed-flag-a9c2: status=REVERSED
+  Ô£ô ledger-net-zero-f3a1: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-f3a1: reverses=019eeac6-6e78-795a-8114-2bf66ffca204
+  Ô£ô payment-reversed-flag-f3a1: status=REVERSED
+  Ô£ô ledger-net-zero-dbc5: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-dbc5: reverses=019eead7-6a0d-7d05-9d9e-e19c3485c5f0
+  Ô£ô payment-reversed-flag-dbc5: status=REVERSED
+  Ô£ô ledger-net-zero-9bfb: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-9bfb: reverses=019eead9-b6ea-79ff-93a7-5ca212a66738
+  Ô£ô payment-reversed-flag-9bfb: status=REVERSED
+  Ô£ô ledger-net-zero-faf8: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-faf8: reverses=019eead9-ec09-7b12-bee2-12177e3e928a
+  Ô£ô payment-reversed-flag-faf8: status=REVERSED
+  Ô£ô ledger-net-zero-aba0: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-aba0: reverses=019eeada-17b8-7d0b-8119-7d782ed313e5
+  Ô£ô payment-reversed-flag-aba0: status=REVERSED
+  Ô£ô ledger-net-zero-61d9: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-61d9: reverses=019eeada-482c-7e35-9e89-7ea6a27d0960
+  Ô£ô payment-reversed-flag-61d9: status=REVERSED
+  Ô£ô ledger-net-zero-b2b8: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-b2b8: reverses=019eeada-7760-7d3d-b493-effd1a2898fc
+  Ô£ô payment-reversed-flag-b2b8: status=REVERSED
+  Ô£ô ledger-net-zero-2f3d: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-2f3d: reverses=019eeada-e3ad-7d7a-8149-090c8f9054b8
+  Ô£ô payment-reversed-flag-2f3d: status=REVERSED
+  Ô£ô ledger-net-zero-f15a: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-f15a: reverses=019eeab8-ed18-754b-98cf-1ed4ac54e616
+  Ô£ô payment-reversed-flag-f15a: status=REVERSED
+  Ô£ô ledger-net-zero-2ed7: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-2ed7: reverses=019eeac6-9dbb-7575-9a12-417b14a896e6
+  Ô£ô payment-reversed-flag-2ed7: status=REVERSED
+  Ô£ô ledger-net-zero-eb6e: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-eb6e: reverses=019eeab9-1c98-7931-a73a-056c62466607
+  Ô£ô payment-reversed-flag-eb6e: status=REVERSED
+  Ô£ô ledger-net-zero-7ed5: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-7ed5: reverses=019eead6-48b5-7ffb-8bca-7180cae459a6
+  Ô£ô payment-reversed-flag-7ed5: status=REVERSED
+  Ô£ô ledger-net-zero-c6ea: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-c6ea: reverses=019eeab9-4650-7c8c-b822-563eec0931c6
+  Ô£ô payment-reversed-flag-c6ea: status=REVERSED
+  Ô£ô ledger-net-zero-c0be: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-c0be: reverses=019eeac6-d10a-766d-b80a-8cdcc54e5639
+  Ô£ô payment-reversed-flag-c0be: status=REVERSED
+  Ô£ô ledger-net-zero-8863: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-8863: reverses=019eeab9-7a4c-7421-95e1-f39967f872c8
+  Ô£ô payment-reversed-flag-8863: status=REVERSED
+  Ô£ô ledger-net-zero-f008: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-f008: reverses=019eeaba-0ca3-776b-b02d-2a5f0cacb9a1
+  Ô£ô payment-reversed-flag-f008: status=REVERSED
+  Ô£ô ledger-net-zero-1541: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-1541: reverses=019eeac7-2f13-7d25-ab22-84d5de84aecc
+  Ô£ô payment-reversed-flag-1541: status=REVERSED
+  Ô£ô ledger-net-zero-9194: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-9194: reverses=019eeaba-fe3f-7ad5-b3e5-ff75bc2ad3e8
+  Ô£ô payment-reversed-flag-9194: status=REVERSED
+  Ô£ô ledger-net-zero-bac1: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-bac1: reverses=019eead6-7fa5-7a0a-923a-3bd7214d6041
+  Ô£ô payment-reversed-flag-bac1: status=REVERSED
+  Ô£ô ledger-net-zero-ff2e: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-ff2e: reverses=019eeabb-307a-71df-9f40-5f26302a7507
+  Ô£ô payment-reversed-flag-ff2e: status=REVERSED
+  Ô£ô ledger-net-zero-0f20: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-0f20: reverses=019eeac7-8e77-7fe6-9893-45e7f5b31f18
+  Ô£ô payment-reversed-flag-0f20: status=REVERSED
+  Ô£ô ledger-net-zero-9d03: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-9d03: reverses=019eeabb-5e88-746f-906f-a6b1aec67b2b
+  Ô£ô payment-reversed-flag-9d03: status=REVERSED
+  Ô£ô ledger-net-zero-2282: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-2282: reverses=019eeabb-98a4-7a2c-bec4-a611ec86641c
+  Ô£ô payment-reversed-flag-2282: status=REVERSED
+  Ô£ô ledger-net-zero-e430: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-e430: reverses=019eeac8-6bf0-76b9-9378-f62ff9ae6ded
+  Ô£ô payment-reversed-flag-e430: status=REVERSED
+  Ô£ô ledger-net-zero-1d76: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-1d76: reverses=019eeabc-1e19-7eee-9297-96af85ee6728
+  Ô£ô payment-reversed-flag-1d76: status=REVERSED
+  Ô£ô ledger-net-zero-c6b4: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-c6b4: reverses=019eeabc-4a07-7f58-ad0f-92fbff8223b7
+  Ô£ô payment-reversed-flag-c6b4: status=REVERSED
+  Ô£ô ledger-net-zero-0bba: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-0bba: reverses=019eeac8-a4d2-7d2e-b4f0-8460d29d4d25
+  Ô£ô payment-reversed-flag-0bba: status=REVERSED
+  Ô£ô ledger-net-zero-f65f: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-f65f: reverses=019eeabc-7a8e-7310-be4d-6c7d795807ed
+  Ô£ô payment-reversed-flag-f65f: status=REVERSED
+  Ô£ô ledger-net-zero-1b9a: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-1b9a: reverses=019eeabc-e509-72eb-a886-6ecf15130d90
+  Ô£ô payment-reversed-flag-1b9a: status=REVERSED
+  Ô£ô ledger-net-zero-1214: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-1214: reverses=019eeac8-d6e8-74d9-bbb2-ad51e6b74048
+  Ô£ô payment-reversed-flag-1214: status=REVERSED
+  Ô£ô ledger-net-zero-1db5: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-1db5: reverses=019eeabd-143a-7d72-8d20-628ff6188ff8
+  Ô£ô payment-reversed-flag-1db5: status=REVERSED
+  Ô£ô ledger-net-zero-3c8f: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-3c8f: reverses=019eeabd-3f50-752f-86c6-846a79790f2b
+  Ô£ô payment-reversed-flag-3c8f: status=REVERSED
+  Ô£ô ledger-net-zero-8cbe: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-8cbe: reverses=019eeac9-60f5-77a7-844d-b00c15b4b8a8
+  Ô£ô payment-reversed-flag-8cbe: status=REVERSED
+  Ô£ô ledger-net-zero-215e: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-215e: reverses=019eeabd-9c8c-7a34-bb31-6d5a4be94f24
+  Ô£ô payment-reversed-flag-215e: status=REVERSED
+  Ô£ô ledger-net-zero-ef64: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-ef64: reverses=019eeabd-f5a4-7373-8c9c-a6204dad8814
+  Ô£ô payment-reversed-flag-ef64: status=REVERSED
+  Ô£ô ledger-net-zero-9b3b: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-9b3b: reverses=019eeac9-8fc8-7cae-8543-4cb877b104fc
+  Ô£ô payment-reversed-flag-9b3b: status=REVERSED
+  Ô£ô ledger-net-zero-0579: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-0579: reverses=019eeacb-a3b2-7230-8388-c075ac91d855
+  Ô£ô payment-reversed-flag-0579: status=REVERSED
+  Ô£ô ledger-net-zero-3cd4: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-3cd4: reverses=019eeacd-172d-706b-a6d0-ad7cdef47789
+  Ô£ô payment-reversed-flag-3cd4: status=REVERSED
+  Ô£ô ledger-net-zero-b370: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-b370: reverses=019eeacd-4be2-7654-a7db-01a77f3f8099
+  Ô£ô payment-reversed-flag-b370: status=REVERSED
+  Ô£ô ledger-net-zero-49b1: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-49b1: reverses=019eeacd-98d7-7043-8257-e8026b9455d1
+  Ô£ô payment-reversed-flag-49b1: status=REVERSED
+  Ô£ô ledger-net-zero-c37b: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-c37b: reverses=019eead7-9ffe-732a-ac58-e15d2de44f8b
+  Ô£ô payment-reversed-flag-c37b: status=REVERSED
+  Ô£ô ledger-net-zero-e7e5: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-e7e5: reverses=019eeab9-abda-793c-9502-3638e7013d07
+  Ô£ô payment-reversed-flag-e7e5: status=REVERSED
+  Ô£ô ledger-net-zero-9b6e: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-9b6e: reverses=019eeac7-0020-7388-960b-e222eddfbaa2
+  Ô£ô payment-reversed-flag-9b6e: status=REVERSED
+  Ô£ô ledger-net-zero-a644: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-a644: reverses=019eeab9-dd60-7b8e-a6c8-9fde1ee01152
+  Ô£ô payment-reversed-flag-a644: status=REVERSED
+  Ô£ô ledger-net-zero-edbd: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-edbd: reverses=019eeaba-4099-72da-a965-29e7c50b2aea
+  Ô£ô payment-reversed-flag-edbd: status=REVERSED
+  Ô£ô ledger-net-zero-01a3: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-01a3: reverses=019eeac7-57c5-721e-9d5b-8dcc58a96f43
+  Ô£ô payment-reversed-flag-01a3: status=REVERSED
+  Ô£ô ledger-net-zero-7f70: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-7f70: reverses=019eeaba-669d-753e-be3c-55dd7a2fb00a
+  Ô£ô payment-reversed-flag-7f70: status=REVERSED
+  Ô£ô ledger-net-zero-488a: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-488a: reverses=019eead7-e466-7501-9f01-483182565b92
+  Ô£ô payment-reversed-flag-488a: status=REVERSED
+  Ô£ô ledger-net-zero-c596: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-c596: reverses=019eeaba-9932-7a97-9274-9490c1f727f2
+  Ô£ô payment-reversed-flag-c596: status=REVERSED
+  Ô£ô ledger-net-zero-8e53: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-8e53: reverses=019eeac7-cc9c-73e4-8948-f8ba97023be5
+  Ô£ô payment-reversed-flag-8e53: status=REVERSED
+  Ô£ô ledger-net-zero-3995: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-3995: reverses=019eeaba-ccb9-7a9f-901e-162ea12264f7
+  Ô£ô payment-reversed-flag-3995: status=REVERSED
+  Ô£ô ledger-net-zero-45fd: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-45fd: reverses=019eeabb-c952-7b04-9a94-678b6139c023
+  Ô£ô payment-reversed-flag-45fd: status=REVERSED
+  Ô£ô ledger-net-zero-4a13: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-4a13: reverses=019eeac7-fd38-77cf-825b-6ae65ab45320
+  Ô£ô payment-reversed-flag-4a13: status=REVERSED
+  Ô£ô ledger-net-zero-0f8d: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-0f8d: reverses=019eeabb-f3a1-7eb9-a44a-fb5320da108f
+  Ô£ô payment-reversed-flag-0f8d: status=REVERSED
+  Ô£ô ledger-net-zero-1a07: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-1a07: reverses=019eead8-17f4-77ce-a42a-7b4704fdca72
+  Ô£ô payment-reversed-flag-1a07: status=REVERSED
+  Ô£ô ledger-net-zero-bdc4: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-bdc4: reverses=019eeabc-ad5e-7a9c-92a8-b2644fc2f43c
+  Ô£ô payment-reversed-flag-bdc4: status=REVERSED
+  Ô£ô ledger-net-zero-741e: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-741e: reverses=019eeac8-2c76-7ec7-9acc-a9f2b8fc6acb
+  Ô£ô payment-reversed-flag-741e: status=REVERSED
+  Ô£ô ledger-net-zero-2bff: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-2bff: reverses=019eeabd-7460-7ec8-8079-f65cffa08e64
+  Ô£ô payment-reversed-flag-2bff: status=REVERSED
+  Ô£ô ledger-net-zero-b926: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-b926: reverses=019eeac9-1231-71f6-a6f8-95e805c4b7da
+  Ô£ô payment-reversed-flag-b926: status=REVERSED
+  Ô£ô ledger-net-zero-d7a5: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-d7a5: reverses=019eeac9-c264-7e2d-9043-f0a5421bb777
+  Ô£ô payment-reversed-flag-d7a5: status=REVERSED
+  Ô£ô ledger-net-zero-0631: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-0631: reverses=019eeac9-f2ed-7a66-9f4a-f9fb880673a2
+  Ô£ô payment-reversed-flag-0631: status=REVERSED
+  Ô£ô ledger-net-zero-424a: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-424a: reverses=019eeaca-2a24-7a78-aae4-e316a66990de
+  Ô£ô payment-reversed-flag-424a: status=REVERSED
+  Ô£ô ledger-net-zero-d003: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-d003: reverses=019eeaca-6df8-76a6-a208-14ab8287c5ec
+  Ô£ô payment-reversed-flag-d003: status=REVERSED
+  Ô£ô ledger-net-zero-bdd3: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-bdd3: reverses=019eeaca-ab3a-7e5c-b0d6-39274b8e520a
+  Ô£ô payment-reversed-flag-bdd3: status=REVERSED
+  Ô£ô ledger-net-zero-3706: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-3706: reverses=019eeaca-e13c-708a-94fe-b9de84b31db7
+  Ô£ô payment-reversed-flag-3706: status=REVERSED
+  Ô£ô ledger-net-zero-1691: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-1691: reverses=019eeacb-17b1-7217-9073-a00ec4717dba
+  Ô£ô payment-reversed-flag-1691: status=REVERSED
+  Ô£ô ledger-net-zero-5c20: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-5c20: reverses=019eeacb-5fdc-7639-8f71-8ea7a8d35067
+  Ô£ô payment-reversed-flag-5c20: status=REVERSED
+  Ô£ô ledger-net-zero-f662: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-f662: reverses=019eeacc-0088-7db9-a61c-6d2697aa599f
+  Ô£ô payment-reversed-flag-f662: status=REVERSED
+  Ô£ô ledger-net-zero-bd78: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-bd78: reverses=019eeacc-3b10-79a5-943b-9bc648764bfd
+  Ô£ô payment-reversed-flag-bd78: status=REVERSED
+  Ô£ô ledger-net-zero-d2c4: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-d2c4: reverses=019eeacc-6dc8-7dac-94ea-da45e10870e5
+  Ô£ô payment-reversed-flag-d2c4: status=REVERSED
+  Ô£ô ledger-net-zero-2d22: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-2d22: reverses=019eeacc-9f91-7c17-bbb7-21dacc987aba
+  Ô£ô payment-reversed-flag-2d22: status=REVERSED
+  Ô£ô ledger-net-zero-46d5: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-46d5: reverses=019eeacc-d721-78ac-bb28-054e74f7545e
+  Ô£ô payment-reversed-flag-46d5: status=REVERSED
+  Ô£ô ledger-net-zero-ba62: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-ba62: reverses=019eeabd-c436-7894-a963-4e5ef8e95ef7
+  Ô£ô payment-reversed-flag-ba62: status=REVERSED
+  Ô£ô ledger-net-zero-20ed: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-20ed: reverses=019eeacd-dbdc-72ae-8efa-a13567af9aae
+  Ô£ô payment-reversed-flag-20ed: status=REVERSED
+  Ô£ô ledger-net-zero-813b: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-813b: reverses=019eeabe-293d-7990-b702-143ea7907bcf
+  Ô£ô payment-reversed-flag-813b: status=REVERSED
+  Ô£ô ledger-net-zero-3e82: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-3e82: reverses=019eead8-65c2-7f24-8b73-b4bf8428c0e6
+  Ô£ô payment-reversed-flag-3e82: status=REVERSED
+  Ô£ô ledger-net-zero-2af0: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-2af0: reverses=019eeace-6511-7656-b63f-0eaabfd51633
+  Ô£ô payment-reversed-flag-2af0: status=REVERSED
+  Ô£ô ledger-net-zero-91fb: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-91fb: reverses=019eeace-c629-7596-a149-ba23e5318b32
+  Ô£ô payment-reversed-flag-91fb: status=REVERSED
+  Ô£ô ledger-net-zero-e730: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-e730: reverses=019eead8-9ab2-7edd-b1a8-2ccca73df866
+  Ô£ô payment-reversed-flag-e730: status=REVERSED
+  Ô£ô ledger-net-zero-eee8: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-eee8: reverses=019eeacf-4bfe-75c4-9994-cc544f8116ac
+  Ô£ô payment-reversed-flag-eee8: status=REVERSED
+  Ô£ô ledger-net-zero-8acb: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-8acb: reverses=019eeacf-7ffd-7382-9a71-002c1d17d935
+  Ô£ô payment-reversed-flag-8acb: status=REVERSED
+  Ô£ô ledger-net-zero-2af7: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-2af7: reverses=019eead8-d383-7e88-9e62-346ad508a2de
+  Ô£ô payment-reversed-flag-2af7: status=REVERSED
+  Ô£ô ledger-net-zero-b2a6: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-b2a6: reverses=019eeacf-cc3c-72a3-8c28-f1bec582985e
+  Ô£ô payment-reversed-flag-b2a6: status=REVERSED
+  Ô£ô ledger-net-zero-1e2f: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-1e2f: reverses=019eead0-cdd8-7d24-954d-0654a0a31d9c
+  Ô£ô payment-reversed-flag-1e2f: status=REVERSED
+  Ô£ô ledger-net-zero-26a3: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-26a3: reverses=019eead9-0e63-7ac5-a784-65b942317d0b
+  Ô£ô payment-reversed-flag-26a3: status=REVERSED
+  Ô£ô ledger-net-zero-dc61: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-dc61: reverses=019eead0-fdf9-7782-8cef-56675e15afec
+  Ô£ô payment-reversed-flag-dc61: status=REVERSED
+  Ô£ô ledger-net-zero-19bf: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-19bf: reverses=019eead1-ca16-7a93-a648-0c24fc2c8245
+  Ô£ô payment-reversed-flag-19bf: status=REVERSED
+  Ô£ô ledger-net-zero-7934: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-7934: reverses=019eead9-3f4e-7b76-9605-8dfaf9847951
+  Ô£ô payment-reversed-flag-7934: status=REVERSED
+  Ô£ô ledger-net-zero-8f64: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-8f64: reverses=019eead2-09bc-704c-9442-f22c2b5631d9
+  Ô£ô payment-reversed-flag-8f64: status=REVERSED
+  Ô£ô ledger-net-zero-bf3c: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-bf3c: reverses=019eead3-0115-7aa4-8fad-e288a66d2fed
+  Ô£ô payment-reversed-flag-bf3c: status=REVERSED
+  Ô£ô ledger-net-zero-9f81: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-9f81: reverses=019eead9-7382-7ec6-be7d-c7b9c313708d
+  Ô£ô payment-reversed-flag-9f81: status=REVERSED
+  Ô£ô ledger-net-zero-dd4d: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-dd4d: reverses=019eead3-38a3-73d7-afc1-33d5eded2edc
+  Ô£ô payment-reversed-flag-dd4d: status=REVERSED
+  Ô£ô ledger-net-zero-5a22: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-5a22: reverses=019eead4-56f7-702d-89bd-899e016f3b20
+  Ô£ô payment-reversed-flag-5a22: status=REVERSED
+  Ô£ô ledger-net-zero-14ba: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-14ba: reverses=019eeada-aac2-7331-a48c-6709505a6fa7
+  Ô£ô payment-reversed-flag-14ba: status=REVERSED
+  Ô£ô ledger-net-zero-d657: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-d657: reverses=019eead4-a32f-7593-9148-04c0aa540d6b
+  Ô£ô payment-reversed-flag-d657: status=REVERSED
+  Ô£ô ledger-net-zero-f2a2: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-f2a2: reverses=019eeadb-288d-7c38-a56d-9a9a8afecd74
+  Ô£ô payment-reversed-flag-f2a2: status=REVERSED
+  Ô£ô ledger-net-zero-7c3d: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-7c3d: reverses=019eeadb-6346-7b8d-acb9-fc33318a4191
+  Ô£ô payment-reversed-flag-7c3d: status=REVERSED
+  Ô£ô ledger-net-zero-2619: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-2619: reverses=019eeadb-94fc-70ff-b73a-a7c63c2916b2
+  Ô£ô payment-reversed-flag-2619: status=REVERSED
+  Ô£ô ledger-net-zero-5f93: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-5f93: reverses=019eeadb-bf34-7c6b-95b7-a80c690132e6
+  Ô£ô payment-reversed-flag-5f93: status=REVERSED
+  Ô£ô ledger-net-zero-b995: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-b995: reverses=019eeadb-f1a2-7bb0-ae9a-acd30c441a24
+  Ô£ô payment-reversed-flag-b995: status=REVERSED
+  Ô£ô ledger-net-zero-7ddb: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-7ddb: reverses=019eeadc-26de-7ef8-96d4-4fd6491005eb
+  Ô£ô payment-reversed-flag-7ddb: status=REVERSED
+  Ô£ô ledger-net-zero-df2e: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-df2e: reverses=019eeabe-606e-71be-8dbf-f5fba9369919
+  Ô£ô payment-reversed-flag-df2e: status=REVERSED
+  Ô£ô ledger-net-zero-d9c3: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-d9c3: reverses=019eeace-09c2-7edf-a4a5-71e071448b80
+  Ô£ô payment-reversed-flag-d9c3: status=REVERSED
+  Ô£ô ledger-net-zero-2e51: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-2e51: reverses=019eeabe-9045-76a1-8120-f654297d743d
+  Ô£ô payment-reversed-flag-2e51: status=REVERSED
+  Ô£ô ledger-net-zero-2bec: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-2bec: reverses=019eeabe-ebda-7a90-bc37-720ab235729c
+  Ô£ô payment-reversed-flag-2bec: status=REVERSED
+  Ô£ô ledger-net-zero-eb92: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-eb92: reverses=019eeace-3846-7a12-800d-f2848f4edd2f
+  Ô£ô payment-reversed-flag-eb92: status=REVERSED
+  Ô£ô ledger-net-zero-be13: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-be13: reverses=019eeabf-20c8-7738-9f13-d36d061c92ef
+  Ô£ô payment-reversed-flag-be13: status=REVERSED
+  Ô£ô ledger-net-zero-f7c6: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-f7c6: reverses=019eeabf-56ba-77c3-b83c-c0ca91a555ac
+  Ô£ô payment-reversed-flag-f7c6: status=REVERSED
+  Ô£ô ledger-net-zero-9b8e: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-9b8e: reverses=019eeace-9574-7b59-b818-812d2649e239
+  Ô£ô payment-reversed-flag-9b8e: status=REVERSED
+  Ô£ô ledger-net-zero-7104: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-7104: reverses=019eeabf-8541-7df6-ba81-86377352e0fe
+  Ô£ô payment-reversed-flag-7104: status=REVERSED
+  Ô£ô ledger-net-zero-d401: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-d401: reverses=019eeabf-f203-7a4f-842a-2e2be1815251
+  Ô£ô payment-reversed-flag-d401: status=REVERSED
+  Ô£ô ledger-net-zero-e3a4: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-e3a4: reverses=019eeace-f130-7ff2-8d43-17a5f10e6602
+  Ô£ô payment-reversed-flag-e3a4: status=REVERSED
+  Ô£ô ledger-net-zero-fa37: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-fa37: reverses=019eeac0-27a3-7537-8c36-e0df44fc246d
+  Ô£ô payment-reversed-flag-fa37: status=REVERSED
+  Ô£ô ledger-net-zero-437c: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-437c: reverses=019eeac0-5c6e-7115-9e17-16b2545b3b48
+  Ô£ô payment-reversed-flag-437c: status=REVERSED
+  Ô£ô ledger-net-zero-5928: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-5928: reverses=019eeacf-249b-722a-b2ed-73f78258c129
+  Ô£ô payment-reversed-flag-5928: status=REVERSED
+  Ô£ô ledger-net-zero-cc0f: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-cc0f: reverses=019eeac0-d5bc-7223-a115-e06ea9d84380
+  Ô£ô payment-reversed-flag-cc0f: status=REVERSED
+  Ô£ô ledger-net-zero-73e4: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-73e4: reverses=019eead0-08b6-7535-a89a-5b32e30d5f54
+  Ô£ô payment-reversed-flag-73e4: status=REVERSED
+  Ô£ô ledger-net-zero-1e18: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-1e18: reverses=019eead0-36c4-749e-8cc1-db1f2c90a5a3
+  Ô£ô payment-reversed-flag-1e18: status=REVERSED
+  Ô£ô ledger-net-zero-9ca9: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-9ca9: reverses=019eead0-66f8-7433-9edd-1a2a65162f96
+  Ô£ô payment-reversed-flag-9ca9: status=REVERSED
+  Ô£ô ledger-net-zero-d9d6: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-d9d6: reverses=019eead0-9628-7c30-ac66-7c5ebc2457da
+  Ô£ô payment-reversed-flag-d9d6: status=REVERSED
+  Ô£ô ledger-net-zero-848e: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-848e: reverses=019eead1-3c11-7154-a15f-04e2f5095c2e
+  Ô£ô payment-reversed-flag-848e: status=REVERSED
+  Ô£ô ledger-net-zero-5681: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-5681: reverses=019eead1-820c-76fd-a38a-89b4400be403
+  Ô£ô payment-reversed-flag-5681: status=REVERSED
+  Ô£ô ledger-net-zero-5efd: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-5efd: reverses=019eead2-3f83-7267-8721-d34d320ee04e
+  Ô£ô payment-reversed-flag-5efd: status=REVERSED
+  Ô£ô ledger-net-zero-3ef3: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-3ef3: reverses=019eead2-86c9-7589-9f9a-cfa2755bd213
+  Ô£ô payment-reversed-flag-3ef3: status=REVERSED
+  Ô£ô ledger-net-zero-ee2b: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-ee2b: reverses=019eead2-c770-731b-b4a1-962207841c31
+  Ô£ô payment-reversed-flag-ee2b: status=REVERSED
+  Ô£ô ledger-net-zero-15fc: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-15fc: reverses=019eead3-985a-79dc-9766-714df57c7c3d
+  Ô£ô payment-reversed-flag-15fc: status=REVERSED
+  Ô£ô ledger-net-zero-a99d: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-a99d: reverses=019eead4-026a-775c-9789-c3520fdb8e48
+  Ô£ô payment-reversed-flag-a99d: status=REVERSED
+  Ô£ô ledger-net-zero-cb9c: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-cb9c: reverses=019eead4-ed88-70c8-b30d-adfd5f345ba8
+  Ô£ô payment-reversed-flag-cb9c: status=REVERSED
+  Ô£ô ledger-net-zero-aa94: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-aa94: reverses=019eeabe-bdf4-7924-900d-9cc3e9bc297c
+  Ô£ô payment-reversed-flag-aa94: status=REVERSED
+  Ô£ô ledger-net-zero-3652: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-3652: reverses=019eeabf-be2a-7cb0-8ac0-79ed0ac222a7
+  Ô£ô payment-reversed-flag-3652: status=REVERSED
+  Ô£ô ledger-net-zero-e3b0: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-e3b0: reverses=019eeac0-9805-7d41-8c8c-65c70a61c8f0
+  Ô£ô payment-reversed-flag-e3b0: status=REVERSED
+  Ô£ô ledger-net-zero-c0f9: payment=2500 reversalLedger=1 net=0
+  Ô£ô ledger-links-repayment-c0f9: reverses=019eeaa0-a72a-74bd-8596-b44a5f9dbcaa
+  Ô£ô payment-reversed-flag-c0f9: status=REVERSED
+  Ô£ô no-orphan-reversal-ledger-without-id: rows=0
+  Ô£ô no-duplicate-executed-reversals: none
+  Ô£ô reversal-balance-delta-b3de: delta=5000
+  Ô£ô reversal-balance-delta-5257: delta=2500
+  Ô£ô reversal-balance-delta-2b36: delta=3000
+  Ô£ô reversal-balance-delta-b750: delta=5000
+  Ô£ô reversal-balance-delta-95f7: delta=2500
+  Ô£ô reversal-balance-delta-d682: delta=2500
+  Ô£ô reversal-balance-delta-32d5: delta=2500
+  Ô£ô reversal-balance-delta-f3b1: delta=2500
+  Ô£ô reversal-balance-delta-6246: delta=2500
+  Ô£ô reversal-balance-delta-bee6: delta=2500
+  Ô£ô reversal-balance-delta-4b02: delta=2500
+  Ô£ô reversal-balance-delta-a735: delta=2500
+  Ô£ô reversal-balance-delta-5473: delta=2500
+  Ô£ô reversal-balance-delta-7550: delta=2500
+  Ô£ô reversal-balance-delta-43a5: delta=2500
+  Ô£ô reversal-balance-delta-d7e4: delta=2500
+  Ô£ô reversal-balance-delta-f9c0: delta=2500
+  Ô£ô reversal-balance-delta-df39: delta=5000
+  Ô£ô reversal-balance-delta-f660: delta=2500
+  Ô£ô reversal-balance-delta-e10d: delta=5000
+  Ô£ô reversal-balance-delta-d351: delta=2500
+  Ô£ô reversal-balance-delta-bf07: delta=5000
+  Ô£ô reversal-balance-delta-06ab: delta=2500
+  Ô£ô reversal-balance-delta-38c9: delta=5000
+  Ô£ô reversal-balance-delta-f5c3: delta=5000
+  Ô£ô reversal-balance-delta-16b6: delta=5000
+  Ô£ô reversal-balance-delta-70e8: delta=5000
+  Ô£ô reversal-balance-delta-f5ff: delta=5000
+  Ô£ô reversal-balance-delta-fcfc: delta=5000
+  Ô£ô reversal-balance-delta-4b60: delta=5000
+  Ô£ô reversal-balance-delta-a05b: delta=5000
+  Ô£ô reversal-balance-delta-7ef8: delta=5000
+  Ô£ô reversal-balance-delta-f9e4: delta=5000
+  Ô£ô reversal-balance-delta-46d3: delta=2500
+  Ô£ô reversal-balance-delta-b0fb: delta=2500
+  Ô£ô reversal-balance-delta-9f0e: delta=2500
+  Ô£ô reversal-balance-delta-15f5: delta=2500
+  Ô£ô reversal-balance-delta-1214: delta=2500
+  Ô£ô reversal-balance-delta-b160: delta=2500
+  Ô£ô reversal-balance-delta-1736: delta=2500
+  Ô£ô reversal-balance-delta-e552: delta=2500
+  Ô£ô reversal-balance-delta-6622: delta=2500
+  Ô£ô reversal-balance-delta-0c3d: delta=2500
+  Ô£ô reversal-balance-delta-54ab: delta=2500
+  Ô£ô reversal-balance-delta-d019: delta=2500
+  Ô£ô reversal-balance-delta-7993: delta=2500
+  Ô£ô reversal-balance-delta-4418: delta=2500
+  Ô£ô reversal-balance-delta-6d92: delta=2500
+  Ô£ô reversal-balance-delta-0718: delta=2500
+  Ô£ô reversal-balance-delta-290c: delta=2500
+  Ô£ô reversal-balance-delta-7bab: delta=2500
+  Ô£ô reversal-balance-delta-ecaf: delta=2500
+  Ô£ô reversal-balance-delta-0a27: delta=2500
+  Ô£ô reversal-balance-delta-7305: delta=2500
+  Ô£ô reversal-balance-delta-0e8d: delta=2500
+  Ô£ô reversal-balance-delta-7732: delta=2500
+  Ô£ô reversal-balance-delta-1bf3: delta=2500
+  Ô£ô reversal-balance-delta-7560: delta=2500
+  Ô£ô reversal-balance-delta-4c6b: delta=2500
+  Ô£ô reversal-balance-delta-c6df: delta=2500
+  Ô£ô reversal-balance-delta-ab73: delta=2500
+  Ô£ô reversal-balance-delta-5f37: delta=2500
+  Ô£ô reversal-balance-delta-afe1: delta=2500
+  Ô£ô reversal-balance-delta-a5ff: delta=2500
+  Ô£ô reversal-balance-delta-a827: delta=2500
+  Ô£ô reversal-balance-delta-625e: delta=2500
+  Ô£ô reversal-balance-delta-9927: delta=2500
+  Ô£ô reversal-balance-delta-4bfb: delta=2500
+  Ô£ô reversal-balance-delta-ef9e: delta=2500
+  Ô£ô reversal-balance-delta-ee1a: delta=2500
+  Ô£ô reversal-balance-delta-37c5: delta=2500
+  Ô£ô reversal-balance-delta-1847: delta=2500
+  Ô£ô reversal-balance-delta-cc1b: delta=2500
+  Ô£ô reversal-balance-delta-24cb: delta=2500
+  Ô£ô reversal-balance-delta-1553: delta=2500
+  Ô£ô reversal-balance-delta-9d15: delta=2500
+  Ô£ô reversal-balance-delta-fc7f: delta=2500
+  Ô£ô reversal-balance-delta-660f: delta=2500
+  Ô£ô reversal-balance-delta-b073: delta=2500
+  Ô£ô reversal-balance-delta-49c3: delta=2500
+  Ô£ô reversal-balance-delta-6181: delta=2500
+  Ô£ô reversal-balance-delta-b5d4: delta=2500
+  Ô£ô reversal-balance-delta-b878: delta=2500
+  Ô£ô reversal-balance-delta-a9c2: delta=2500
+  Ô£ô reversal-balance-delta-f3a1: delta=2500
+  Ô£ô reversal-balance-delta-dbc5: delta=2500
+  Ô£ô reversal-balance-delta-9bfb: delta=2500
+  Ô£ô reversal-balance-delta-faf8: delta=2500
+  Ô£ô reversal-balance-delta-aba0: delta=2500
+  Ô£ô reversal-balance-delta-61d9: delta=2500
+  Ô£ô reversal-balance-delta-b2b8: delta=2500
+  Ô£ô reversal-balance-delta-2f3d: delta=2500
+  Ô£ô reversal-balance-delta-f15a: delta=2500
+  Ô£ô reversal-balance-delta-2ed7: delta=2500
+  Ô£ô reversal-balance-delta-eb6e: delta=2500
+  Ô£ô reversal-balance-delta-7ed5: delta=2500
+  Ô£ô reversal-balance-delta-c6ea: delta=2500
+  Ô£ô reversal-balance-delta-c0be: delta=2500
+  Ô£ô reversal-balance-delta-8863: delta=2500
+  Ô£ô reversal-balance-delta-f008: delta=2500
+  Ô£ô reversal-balance-delta-1541: delta=2500
+  Ô£ô reversal-balance-delta-9194: delta=2500
+  Ô£ô reversal-balance-delta-bac1: delta=2500
+  Ô£ô reversal-balance-delta-ff2e: delta=2500
+  Ô£ô reversal-balance-delta-0f20: delta=2500
+  Ô£ô reversal-balance-delta-9d03: delta=2500
+  Ô£ô reversal-balance-delta-2282: delta=2500
+  Ô£ô reversal-balance-delta-e430: delta=2500
+  Ô£ô reversal-balance-delta-1d76: delta=2500
+  Ô£ô reversal-balance-delta-c6b4: delta=2500
+  Ô£ô reversal-balance-delta-0bba: delta=2500
+  Ô£ô reversal-balance-delta-f65f: delta=2500
+  Ô£ô reversal-balance-delta-1b9a: delta=2500
+  Ô£ô reversal-balance-delta-1214: delta=2500
+  Ô£ô reversal-balance-delta-1db5: delta=2500
+  Ô£ô reversal-balance-delta-3c8f: delta=2500
+  Ô£ô reversal-balance-delta-8cbe: delta=2500
+  Ô£ô reversal-balance-delta-215e: delta=2500
+  Ô£ô reversal-balance-delta-ef64: delta=2500
+  Ô£ô reversal-balance-delta-9b3b: delta=2500
+  Ô£ô reversal-balance-delta-0579: delta=2500
+  Ô£ô reversal-balance-delta-3cd4: delta=2500
+  Ô£ô reversal-balance-delta-b370: delta=2500
+  Ô£ô reversal-balance-delta-49b1: delta=2500
+  Ô£ô reversal-balance-delta-c37b: delta=2500
+  Ô£ô reversal-balance-delta-e7e5: delta=2500
+  Ô£ô reversal-balance-delta-9b6e: delta=2500
+  Ô£ô reversal-balance-delta-a644: delta=2500
+  Ô£ô reversal-balance-delta-edbd: delta=2500
+  Ô£ô reversal-balance-delta-01a3: delta=2500
+  Ô£ô reversal-balance-delta-7f70: delta=2500
+  Ô£ô reversal-balance-delta-488a: delta=2500
+  Ô£ô reversal-balance-delta-c596: delta=2500
+  Ô£ô reversal-balance-delta-8e53: delta=2500
+  Ô£ô reversal-balance-delta-3995: delta=2500
+  Ô£ô reversal-balance-delta-45fd: delta=2500
+  Ô£ô reversal-balance-delta-4a13: delta=2500
+  Ô£ô reversal-balance-delta-0f8d: delta=2500
+  Ô£ô reversal-balance-delta-1a07: delta=2500
+  Ô£ô reversal-balance-delta-bdc4: delta=2500
+  Ô£ô reversal-balance-delta-741e: delta=2500
+  Ô£ô reversal-balance-delta-2bff: delta=2500
+  Ô£ô reversal-balance-delta-b926: delta=2500
+  Ô£ô reversal-balance-delta-d7a5: delta=2500
+  Ô£ô reversal-balance-delta-0631: delta=2500
+  Ô£ô reversal-balance-delta-424a: delta=2500
+  Ô£ô reversal-balance-delta-d003: delta=2500
+  Ô£ô reversal-balance-delta-bdd3: delta=2500
+  Ô£ô reversal-balance-delta-3706: delta=2500
+  Ô£ô reversal-balance-delta-1691: delta=2500
+  Ô£ô reversal-balance-delta-5c20: delta=2500
+  Ô£ô reversal-balance-delta-f662: delta=2500
+  Ô£ô reversal-balance-delta-bd78: delta=2500
+  Ô£ô reversal-balance-delta-d2c4: delta=2500
+  Ô£ô reversal-balance-delta-2d22: delta=2500
+  Ô£ô reversal-balance-delta-46d5: delta=2500
+  Ô£ô reversal-balance-delta-ba62: delta=2500
+  Ô£ô reversal-balance-delta-20ed: delta=2500
+  Ô£ô reversal-balance-delta-813b: delta=2500
+  Ô£ô reversal-balance-delta-3e82: delta=2500
+  Ô£ô reversal-balance-delta-2af0: delta=2500
+  Ô£ô reversal-balance-delta-91fb: delta=2500
+  Ô£ô reversal-balance-delta-e730: delta=2500
+  Ô£ô reversal-balance-delta-eee8: delta=2500
+  Ô£ô reversal-balance-delta-8acb: delta=2500
+  Ô£ô reversal-balance-delta-2af7: delta=2500
+  Ô£ô reversal-balance-delta-b2a6: delta=2500
+  Ô£ô reversal-balance-delta-1e2f: delta=2500
+  Ô£ô reversal-balance-delta-26a3: delta=2500
+  Ô£ô reversal-balance-delta-dc61: delta=2500
+  Ô£ô reversal-balance-delta-19bf: delta=2500
+  Ô£ô reversal-balance-delta-7934: delta=2500
+  Ô£ô reversal-balance-delta-8f64: delta=2500
+  Ô£ô reversal-balance-delta-bf3c: delta=2500
+  Ô£ô reversal-balance-delta-9f81: delta=2500
+  Ô£ô reversal-balance-delta-dd4d: delta=2500
+  Ô£ô reversal-balance-delta-5a22: delta=2500
+  Ô£ô reversal-balance-delta-14ba: delta=2500
+  Ô£ô reversal-balance-delta-d657: delta=2500
+  Ô£ô reversal-balance-delta-f2a2: delta=2500
+  Ô£ô reversal-balance-delta-7c3d: delta=2500
+  Ô£ô reversal-balance-delta-2619: delta=2500
+  Ô£ô reversal-balance-delta-5f93: delta=2500
+  Ô£ô reversal-balance-delta-b995: delta=2500
+  Ô£ô reversal-balance-delta-7ddb: delta=2500
+  Ô£ô reversal-balance-delta-df2e: delta=2500
+  Ô£ô reversal-balance-delta-d9c3: delta=2500
+  Ô£ô reversal-balance-delta-2e51: delta=2500
+  Ô£ô reversal-balance-delta-2bec: delta=2500
+  Ô£ô reversal-balance-delta-eb92: delta=2500
+  Ô£ô reversal-balance-delta-be13: delta=2500
+  Ô£ô reversal-balance-delta-f7c6: delta=2500
+  Ô£ô reversal-balance-delta-9b8e: delta=2500
+  Ô£ô reversal-balance-delta-7104: delta=2500
+  Ô£ô reversal-balance-delta-d401: delta=2500
+  Ô£ô reversal-balance-delta-e3a4: delta=2500
+  Ô£ô reversal-balance-delta-fa37: delta=2500
+  Ô£ô reversal-balance-delta-437c: delta=2500
+  Ô£ô reversal-balance-delta-5928: delta=2500
+  Ô£ô reversal-balance-delta-cc0f: delta=2500
+  Ô£ô reversal-balance-delta-73e4: delta=2500
+  Ô£ô reversal-balance-delta-1e18: delta=2500
+  Ô£ô reversal-balance-delta-9ca9: delta=2500
+  Ô£ô reversal-balance-delta-d9d6: delta=2500
+  Ô£ô reversal-balance-delta-848e: delta=2500
+  Ô£ô reversal-balance-delta-5681: delta=2500
+  Ô£ô reversal-balance-delta-5efd: delta=2500
+  Ô£ô reversal-balance-delta-3ef3: delta=2500
+  Ô£ô reversal-balance-delta-ee2b: delta=2500
+  Ô£ô reversal-balance-delta-15fc: delta=2500
+  Ô£ô reversal-balance-delta-a99d: delta=2500
+  Ô£ô reversal-balance-delta-cb9c: delta=2500
+  Ô£ô reversal-balance-delta-aa94: delta=2500
+  Ô£ô reversal-balance-delta-3652: delta=2500
+  Ô£ô reversal-balance-delta-e3b0: delta=2500
+  Ô£ô reversal-balance-delta-c0f9: delta=2500
+
+Passed: 866/866

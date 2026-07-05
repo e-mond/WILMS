@@ -1,0 +1,34 @@
+﻿
+> @wilms/api@0.1.0 cert:reversal:seed-reset
+> tsx src/verification/cert-reversal-seed-reset.ts
+
+Ôùç injected env (10) from ..\..\.env // tip: Ôùê secrets for agents [www.dotenvx.com]
+P14.3B.3C.2 Certification Seed Reset
+Method: neutralize harness PAYMENT_CORRECTION rows + disburse pending cert loans
+Started: 2026-06-21T14:26:46.194Z
+Neutralized harness PAYMENT_CORRECTION rows: 6
+
+Seed loan status after reset:
+  01930002-0001-7000-8000-000000000001: external=COMPLETED lifecycle=COMPLETED approvedCorrections=0
+  01930002-0001-7000-8000-000000000002: external=COMPLETED lifecycle=COMPLETED approvedCorrections=0
+  01930002-0001-7000-8000-000000000003: external=ACTIVE lifecycle=ACTIVE approvedCorrections=0
+  01930002-0001-7000-8000-000000000004: external=DEFAULTED lifecycle=DEFAULTED approvedCorrections=0
+
+Outcome: SUCCESS ÔÇö reversal-capable payment paymentId=019ed644-60b3-76fd-90bd-2a7ba3552739 loanId=01930002-0001-7000-8000-000000000001
+
+> @wilms/api@0.1.0 cert:reversal:seed-reset
+> tsx src/verification/cert-reversal-seed-reset.ts
+
+Ôùç injected env (10) from ..\..\.env // tip: Ôîÿ enable debugging { debug: true }
+P14.3B.3C.2 Certification Seed Reset
+Method: neutralize harness PAYMENT_CORRECTION rows + disburse pending cert loans
+Started: 2026-06-21T14:50:59.127Z
+Neutralized harness PAYMENT_CORRECTION rows: 0
+
+Seed loan status after reset:
+  01930002-0001-7000-8000-000000000001: external=ACTIVE lifecycle=ACTIVE approvedCorrections=0
+  01930002-0001-7000-8000-000000000002: external=COMPLETED lifecycle=COMPLETED approvedCorrections=0
+  01930002-0001-7000-8000-000000000003: external=ACTIVE lifecycle=ACTIVE approvedCorrections=0
+  01930002-0001-7000-8000-000000000004: external=DEFAULTED lifecycle=DEFAULTED approvedCorrections=0
+
+Outcome: SUCCESS ÔÇö reversal-capable payment paymentId=019ed644-622d-7b3e-871d-cea099f86af7 loanId=01930002-0001-7000-8000-000000000001

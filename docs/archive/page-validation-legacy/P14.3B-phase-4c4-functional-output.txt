@@ -1,0 +1,34 @@
+﻿
+> @wilms/api@0.1.0 cert:reconciliation:functional
+> tsx src/verification/cert-reconciliation-functional.ts
+
+Ôùç injected env (10) from ..\..\.env // tip: Ôîÿ enable debugging { debug: true }
+P14.3B.4C.4 Functional Certification
+Started: 2026-06-25T00:51:27.164Z
+  Ô£ô preview-summary-computed: expected=0 actual=0 submitted=false
+  Ô£ô submit-persisted: collector=019ed644-4cdb-76a7-845a-b0863bfa304b date=2035-03-03
+  Ô£ô snapshot-persisted: id=019efc42-c06e-788e-83ff-63eacb9c4608 status=SUBMITTED
+  Ô£ô formula-expected-due: stored=0 computed=0
+  Ô£ô formula-system-recorded: stored=0 computed=0
+  Ô£ô formula-primary-variance: stored=0 computed=0
+  Ô£ô formula-variance-class: stored=BALANCED computed=BALANCED
+  Ô£ô formula-variance-flagged: stored=false computed=false
+  Ô£ô history-created: events=1
+  Ô£ô audit-trail-created: target=019ed644-4cdb-76a7-845a-b0863bfa304b:2035-03-03
+  Ô£ô get-by-id: id=019efc42-c06e-788e-83ff-63eacb9c4608
+  Ô£ô get-history: rows=1
+  Ô£ô list-reconciliations: count=6
+  Ô£ô duplicate-submit-blocked: VALIDATION blocked
+  Ô£ô idempotency-replay: date=2035-03-03
+  Ô£ô idempotency-single-persistence: reconciliations=1 history=1 audit=1
+  Ô£ô financial-integrity-loans: before=6 after=6
+  Ô£ô financial-integrity-payments: before=429 after=429
+  Ô£ô financial-integrity-schedules: before=50 after=50
+  Ô£ô financial-integrity-ledger: before=841 after=841
+  Ô£ô financial-integrity-pools: before=3 after=3
+  Ô£ô financial-integrity-adjustments: before=8 after=8
+  Ô£ô financial-integrity-reversals: before=397 after=397
+  Ô£ô api-get-reconciliation: status=200
+
+Passed: 24/24
+Finished: 2026-06-25T00:51:38.748Z
