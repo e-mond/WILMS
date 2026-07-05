@@ -8,6 +8,7 @@ import { DetailSidebarCard, ExecutiveKpiGrid } from '@/components/layout/executi
 import { ExecutiveDetailLayout } from '@/components/layout/ExecutiveDetailLayout';
 import { Alert } from '@/components/feedback/Alert';
 import { EmptyState } from '@/components/feedback/EmptyState';
+import { QueryErrorState } from '@/components/feedback/QueryErrorState';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
 import { Button } from '@/components/ui/Button';
 import { PermissionGate } from '@/components/auth/PermissionGate';
@@ -34,7 +35,7 @@ export interface PaymentEntryPanelProps {
 export function PaymentEntryPanel({ borrowerId }: PaymentEntryPanelProps) {
   const router = useRouter();
   const { user } = useAuth();
-  const { data, isLoading, isError } = usePaymentEntryContext(borrowerId);
+  const { data, isLoading, isError, error, refetch } = usePaymentEntryContext(borrowerId);
   const { data: sameDayPayment } = useSameDayPayment(
     borrowerId,
     user?.id,
@@ -113,7 +114,18 @@ export function PaymentEntryPanel({ borrowerId }: PaymentEntryPanelProps) {
     return <LoadingSpinner label="Loading payment details" className="py-wilms-8" />;
   }
 
-  if (isError || !data) {
+  if (isError) {
+    return (
+      <QueryErrorState
+        error={error}
+        onRetry={() => void refetch()}
+        title="Unable to load payment entry"
+        description="This borrower may not have an active loan or could not be found."
+      />
+    );
+  }
+
+  if (!data) {
     return (
       <EmptyState
         title="Unable to load payment entry"

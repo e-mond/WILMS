@@ -14,6 +14,8 @@ import {
   ManagementToolbar,
 } from '@/components/layout/executive';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
+import { GuidedEmptyState } from '@/components/feedback/GuidedEmptyState';
+import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
@@ -77,15 +79,22 @@ export function LoanPortfolioReportPanel() {
     [data?.entries],
   );
 
+  if (!isLoading && !isError && data && data.entries.length === 0) {
+    return (
+      <GuidedEmptyState
+        {...EMPTY_STATE_COPY.reports}
+        title="No loans match this report"
+        description="Adjust filters or create loans before exporting the portfolio report."
+      />
+    );
+  }
+
   return (
     <QueryStatePanel
       isLoading={isLoading}
-      isError={isError} error={error}
-      errorMessage="Unable to generate the loan portfolio report. Check your connection and try again."
+      isError={isError}
+      error={error}
       onRetry={() => void refetch()}
-      isEmpty={Boolean(data && data.entries.length === 0)}
-      emptyTitle="No loans match this report"
-      emptyDescription="Adjust filters or create loans before exporting the portfolio report."
     >
       {data ? (
     <div className="space-y-wilms-4">

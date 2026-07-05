@@ -4,8 +4,10 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { DataTable, KpiCard, Avatar } from '@/components/data-display';
 import { ExecutiveKpiGrid, ManagementToolbar } from '@/components/layout/executive';
-import { EmptyState } from '@/components/feedback/EmptyState';
+import { GuidedEmptyState } from '@/components/feedback/GuidedEmptyState';
+import { QueryErrorState } from '@/components/feedback/QueryErrorState';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { AUDIT_ACTION_FILTER_OPTIONS, AUDIT_ACTION_LABELS } from '@/constants/audit-display';
@@ -68,7 +70,7 @@ export function AuditLogReportPanel() {
     [usersQuery.data],
   );
 
-  const { data, isLoading, isError } = useAuditLogReport({
+  const { data, isLoading, isError, error, refetch } = useAuditLogReport({
     limit: 100,
     fromDate: fromDate || undefined,
     toDate: toDate || undefined,
@@ -104,9 +106,10 @@ export function AuditLogReportPanel() {
 
   if (isError) {
     return (
-      <EmptyState
+      <QueryErrorState
+        error={error}
+        onRetry={() => void refetch()}
         title="Unable to load audit log"
-        description="Check your connection and try again."
       />
     );
   }
@@ -178,7 +181,8 @@ export function AuditLogReportPanel() {
       />
 
       {entries.length === 0 ? (
-        <EmptyState
+        <GuidedEmptyState
+          {...EMPTY_STATE_COPY.reports}
           title="No audit entries"
           description="Adjust filters or perform system actions to populate the log."
         />

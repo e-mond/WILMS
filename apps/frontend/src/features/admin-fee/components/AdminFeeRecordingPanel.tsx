@@ -7,6 +7,7 @@ import { DetailSidebarCard, ExecutiveKpiGrid } from '@/components/layout/executi
 import { ExecutiveDetailLayout } from '@/components/layout/ExecutiveDetailLayout';
 import { Alert } from '@/components/feedback/Alert';
 import { EmptyState } from '@/components/feedback/EmptyState';
+import { QueryErrorState } from '@/components/feedback/QueryErrorState';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { PERMISSION } from '@/constants/permissions';
@@ -50,7 +51,7 @@ export interface AdminFeeRecordingPanelProps {
 
 export function AdminFeeRecordingPanel({ borrowerId }: AdminFeeRecordingPanelProps) {
   const router = useRouter();
-  const { data, isLoading, isError } = useAdminFeeStatus(borrowerId);
+  const { data, isLoading, isError, error, refetch } = useAdminFeeStatus(borrowerId);
   const recordAdminFeeMutation = useRecordAdminFee(borrowerId);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -74,7 +75,18 @@ export function AdminFeeRecordingPanel({ borrowerId }: AdminFeeRecordingPanelPro
     return <LoadingSpinner label="Loading admin fee details" className="py-wilms-8" />;
   }
 
-  if (isError || !data) {
+  if (isError) {
+    return (
+      <QueryErrorState
+        error={error}
+        onRetry={() => void refetch()}
+        title="Borrower not found"
+        description="This borrower could not be loaded for admin fee recording."
+      />
+    );
+  }
+
+  if (!data) {
     return (
       <EmptyState
         title="Borrower not found"
