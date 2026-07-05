@@ -62,7 +62,7 @@ describe('SuperAdminDashboard', () => {
     expect(screen.getByText('Borrower Status')).toBeInTheDocument();
     expect(screen.getByText('Collector Performance')).toBeInTheDocument();
     expect(screen.getByText('Group Risk Distribution')).toBeInTheDocument();
-    expect(screen.getByText('Recent Alerts')).toBeInTheDocument();
+    expect(await screen.findByText('Recent Alerts')).toBeInTheDocument();
     expect(screen.getByText(/critical/)).toBeInTheDocument();
     expect(screen.getByText('Pending')).toBeInTheDocument();
     expect(screen.getByText('GH₵4,820,000.00')).toBeInTheDocument();
