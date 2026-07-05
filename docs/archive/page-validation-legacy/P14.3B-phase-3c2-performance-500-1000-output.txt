@@ -1,0 +1,19 @@
+﻿Ôùç injected env (10) from ..\..\.env // tip: Ôîÿ custom filepath { path: '/custom/path/.env' }
+P14.3B.3C.2 Performance Certification
+Started: 2026-06-21T17:48:03.832Z
+Methodology: record payment (setup) + timed reversePayment() per iteration; fresh payment each index
+Batches: 500, 1000
+
+| Batch | Samples | Avg (ms) | P95 (ms) | P99 (ms) | Setup Fail | Rev Fail | Lock | Rollback | Other |
+|-------|---------|----------|----------|----------|------------|----------|------|----------|-------|
+node.exe : Failed to persist audit entry: Error: Connection terminated unexpectedly
+At C:\Program Files\nodejs\npx.ps1:29 char:3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Failed to persi...ed unexpectedly:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+    at file:///C:/Users/eddie/Downloads/WILMS/node_modules/@neondatabase/serverless/index.mjs:1087:33
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.appendAuditEntry 
+(C:\Users\eddie\Downloads\WILMS\apps\backend\src\repositories\audit.repository.ts:48:3)

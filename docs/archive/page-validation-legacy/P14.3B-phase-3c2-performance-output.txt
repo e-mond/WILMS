@@ -1,0 +1,20 @@
+﻿
+> @wilms/api@0.1.0 cert:reversal:perf
+> tsx src/verification/cert-reversal-performance.ts
+
+Ôùç injected env (10) from ..\..\.env // tip: Ôùê encrypted .env [www.dotenvx.com]
+P14.3B.3C.2 Performance Certification
+Started: 2026-06-21T15:01:19.173Z
+Methodology: record payment (setup) + timed reversePayment() per iteration; fresh payment each index
+
+| Batch | Samples | Avg (ms) | P95 (ms) | P99 (ms) | Setup Fail | Rev Fail | Lock | Rollback | Other |
+|-------|---------|----------|----------|----------|------------|----------|------|----------|-------|
+| 100 | 100 | 7382.5 | 10568.2 | 17272.1 | 0 | 0 | 0 | 0 | 0 |
+Ôùç injected env (10) from ..\..\.env // tip: Ôîü auth for agents [www.vestauth.com]
+P14.3B.3C.2 Performance Certification
+Started: 2026-06-21T15:46:01.777Z
+Methodology: record payment (setup) + timed reversePayment() per iteration; fresh payment each index
+Batches: 500, 1000
+
+| Batch | Samples | Avg (ms) | P95 (ms) | P99 (ms) | Setup Fail | Rev Fail | Lock | Rollback | Other |
+|-------|---------|----------|----------|----------|------------|----------|------|----------|-------|
