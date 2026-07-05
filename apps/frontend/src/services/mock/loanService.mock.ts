@@ -11,6 +11,7 @@ import { API_ERROR_CODE, ApiError } from '@/types/api';
 import type { CreateLoanInput } from '@/types/loan';
 import type { ILoanService } from '@/types/services';
 import { BORROWER_STATUS } from '@/types/borrower';
+import { formatDisbursementDisplayId, formatPaymentDisplayId } from '@wilms/shared-utils';
 import {
   getBorrowerRegistryEntries,
   getBorrowerRegistryEntry,
@@ -306,6 +307,13 @@ const loanServiceMock: ILoanService = {
       )
       .map((transaction, index) => ({
         id: transaction.id,
+        displayId:
+          transaction.type === TRANSACTION_TYPE.DISBURSEMENT
+            ? formatDisbursementDisplayId({
+                disbursedAt: transaction.recordedAt,
+                sequence: index + 1,
+              })
+            : formatPaymentDisplayId({ recordedAt: transaction.recordedAt, sequence: index + 1 }),
         type: transaction.type as 'DISBURSEMENT' | 'REPAYMENT',
         amountPesewas: transaction.amountPesewas,
         recordedAt: transaction.recordedAt,

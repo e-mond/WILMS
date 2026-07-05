@@ -16,6 +16,7 @@ import {
   GROUP_MEMBER_ROLE,
 } from '@/types/group';
 import type { GroupMemberDetail } from '@/types/group-detail';
+import { resolveBorrowerDisplayId } from '@/utils/format-borrower-display-id';
 import { formatDisplayDate } from '@/utils/format-date';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
 
@@ -56,6 +57,7 @@ export function GroupMembersSection({ members }: GroupMembersSectionProps) {
         !query ||
         member.fullName.toLowerCase().includes(query) ||
         member.borrowerId.toLowerCase().includes(query) ||
+        (member.displayId?.toLowerCase().includes(query) ?? false) ||
         member.phone.includes(query);
       const matchesLoan = !loanFilter || member.loanStatus === loanFilter;
 
@@ -98,7 +100,12 @@ export function GroupMembersSection({ members }: GroupMembersSectionProps) {
                 />
                 <div>
                   <p className="font-semibold text-text-primary">{row.fullName}</p>
-                  <p className="text-small text-text-muted">{row.borrowerId}</p>
+                  <p className="text-small text-text-muted">
+                    {resolveBorrowerDisplayId({
+                      id: row.borrowerId,
+                      displayId: row.displayId,
+                    })}
+                  </p>
                 </div>
               </div>
             ),

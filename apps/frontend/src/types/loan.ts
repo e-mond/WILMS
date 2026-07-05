@@ -109,6 +109,7 @@ export interface LoanProgressSummary {
 
 export interface LoanPaymentLogEntry {
   id: string;
+  displayId?: string;
   type: 'DISBURSEMENT' | 'REPAYMENT';
   amountPesewas: number;
   recordedAt: string;
