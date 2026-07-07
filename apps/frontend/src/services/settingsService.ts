@@ -8,6 +8,7 @@ import type {
 } from '@/types/settings';
 import type { CreateRoleInput, UpdateRoleInput } from '@/types/user-management';
 import type { ISettingsService } from '@/types/services';
+import { sendTestEmailViaBestRoute } from '@/lib/mail/send-test-email';
 import { apiClient } from '@/utils/apiClient';
 
 const settingsService: ISettingsService = {
@@ -36,7 +37,11 @@ const settingsService: ISettingsService = {
   },
 
   sendTestEmail(email: string): Promise<{ ok: true }> {
-    return apiClient.post('/settings/email/test', { email });
+    return sendTestEmailViaBestRoute(
+      email,
+      () => apiClient.get('/settings/integrations/status'),
+      (targetEmail) => apiClient.post('/settings/email/test', { email: targetEmail }),
+    );
   },
 
   getIntegrationsStatus() {

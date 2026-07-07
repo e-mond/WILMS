@@ -25,6 +25,9 @@ export class SmtpMailProvider implements MailProvider {
         user: config.smtp.user,
         pass: config.smtp.password,
       },
+      connectionTimeout: 10_000,
+      greetingTimeout: 10_000,
+      socketTimeout: 15_000,
     });
 
     const info = await transport.sendMail({
