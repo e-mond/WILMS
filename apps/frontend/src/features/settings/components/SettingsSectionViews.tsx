@@ -847,7 +847,7 @@ export function IntegrationsSectionView({ settings }: { settings: SystemSettings
       />
       <SettingsSettingRow
         title="Test Email"
-        description="Send a verification email through Gmail SMTP."
+        description="Send a verification email. Gmail SMTP is sent from Vercel; Resend uses the Railway API."
         control={
           <div className="flex flex-wrap gap-wilms-2">
             <Input
