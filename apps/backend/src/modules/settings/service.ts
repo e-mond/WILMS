@@ -18,6 +18,7 @@ import { getSmsConfig } from '../../infrastructure/sms/config.js';
 import { fetchSmsNotifyGhBalance } from '../../infrastructure/sms/smsnotifygh-adapter.js';
 import { notifyUserInvitation, notifyAccountActivated, notifyAccountDisabled, notifyAccountEnabled, notifyUserRoleChanged, notifyWelcome } from '../../infrastructure/notifications/event-dispatch.js';
 import { getMailProvider } from '../../infrastructure/mail/index.js';
+import { mapDatabaseError } from '../../lib/db-errors.js';
 import {
   DEFAULT_SYSTEM_SETTINGS,
   mapSystemSettingsRow,
@@ -38,6 +39,8 @@ export interface SettingsUserRecord {
   status: 'ACTIVE' | 'INVITED' | 'SUSPENDED';
   isCurrentUser?: boolean;
   photoUrl?: string | null;
+  invitationEmailSent?: boolean;
+  invitationEmailError?: string | null;
 }
 
 export interface SettingsActivityEntry {
@@ -846,8 +849,18 @@ export async function cloneRole(id: string): Promise<RoleDefinition> {
 }
 
 const DEFAULT_INVITE_PASSWORD = 'ChangeMe1!';
+const INVITATION_EXPIRY_DAYS = 7;
 
-export async function createUser(input: CreateSettingsUserInput): Promise<SettingsUserRecord> {
+function invitationExpiresAt(): Date {
+  const expires = new Date();
+  expires.setDate(expires.getDate() + INVITATION_EXPIRY_DAYS);
+  return expires;
+}
+
+export async function createUser(
+  input: CreateSettingsUserInput,
+  actorUserId?: string,
+): Promise<SettingsUserRecord> {
   const displayName = input.displayName?.trim();
   const email = input.email?.trim().toLowerCase();
   const role = input.role?.trim();
@@ -866,9 +879,17 @@ export async function createUser(input: CreateSettingsUserInput): Promise<Settin
   }
 
   if (isDatabaseEnabled()) {
-    const existing = await userRepo.findUserByEmail(email);
-    if (existing) {
+    const existing = await userRepo.findAnyUserByEmail(email);
+    if (existing && !existing.deletedAt) {
+      if (existing.status === 'INVITED') {
+        throw new Error('CONFLICT:An invitation is already pending for this email address.');
+      }
       throw new Error('VALIDATION:A user with this email already exists.');
+    }
+    if (existing?.deletedAt) {
+      throw new Error(
+        'CONFLICT:This email belongs to a deleted account. Restore or permanently remove it before re-inviting.',
+      );
     }
   }
 
@@ -883,29 +904,50 @@ export async function createUser(input: CreateSettingsUserInput): Promise<Settin
     });
     created.lastLoginLabel = 'Invited';
     created.status = 'INVITED';
+    created.invitationEmailSent = true;
     return created;
   }
 
   const db = getDb();
   const passwordHash = await hashPassword(DEFAULT_INVITE_PASSWORD);
   const userId = uuidv7();
+  const expiresAt = invitationExpiresAt();
 
-  await db.insert(users).values({
-    id: userId,
-    email,
-    passwordHash,
-    displayName,
-    role: role as typeof users.$inferInsert.role,
-    status: 'INVITED',
-  });
+  try {
+    await db.insert(users).values({
+      id: userId,
+      email,
+      passwordHash,
+      displayName,
+      role: role as typeof users.$inferInsert.role,
+      status: 'INVITED',
+    });
+  } catch (error) {
+    const mapped = mapDatabaseError(error);
+    if (mapped) {
+      throw mapped;
+    }
+    throw error;
+  }
 
   const row = await userRepo.getUserById(userId);
   if (!row) {
     throw new Error('SERVER');
   }
 
+  appendAuditEntry({
+    action: 'user.invited',
+    actorId: actorUserId ?? 'system',
+    targetEntityId: userId,
+    targetEntityType: 'user',
+    reason: `email=${email} role=${role}`,
+  });
+
   const record = mapUserRowToSettingsRecord(row);
   record.lastLoginLabel = 'Invited';
+
+  let invitationEmailSent = false;
+  let invitationEmailError: string | null = null;
 
   try {
     await notifyUserInvitation({
@@ -913,12 +955,18 @@ export async function createUser(input: CreateSettingsUserInput): Promise<Settin
       displayName,
       temporaryPassword: DEFAULT_INVITE_PASSWORD,
       userId,
+      expiresAt,
     });
+    invitationEmailSent = true;
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Invitation email failed to send.';
-    throw new Error(`VALIDATION:${message}`);
+    invitationEmailError =
+      error instanceof Error ? error.message : 'Invitation email could not be delivered.';
+    console.error('[settings] invitation email failed:', error);
+    throw new Error(`VALIDATION:${invitationEmailError}`);
   }
 
+  record.invitationEmailSent = invitationEmailSent;
+  record.invitationEmailError = invitationEmailError;
   return record;
 }
 

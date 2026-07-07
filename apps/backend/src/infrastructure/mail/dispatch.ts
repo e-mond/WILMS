@@ -121,6 +121,8 @@ export async function dispatchMail(input: DispatchMailInput): Promise<MailSendRe
       loanId: input.loanId,
       userId: input.userId,
       communicationMessageId: input.communicationMessageId,
+    }).catch((logError) => {
+      console.error('[mail] delivery log failed after successful send:', logError);
     });
 
     return result;
@@ -141,7 +143,18 @@ export async function dispatchMail(input: DispatchMailInput): Promise<MailSendRe
       loanId: input.loanId,
       userId: input.userId,
       communicationMessageId: input.communicationMessageId,
+    }).catch((logError) => {
+      console.error('[mail] delivery log failed after send error:', logError);
     });
-    throw error;
+
+    if (message.includes('not configured')) {
+      throw new Error('VALIDATION:Email delivery is not configured. Contact your administrator.');
+    }
+
+    if (message.includes('Vercel mail relay failed')) {
+      throw new Error('VALIDATION:Email relay is unavailable. Invitation has been queued for retry.');
+    }
+
+    throw new Error(`VALIDATION:Email delivery failed: ${message}`);
   }
 }

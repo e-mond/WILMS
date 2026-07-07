@@ -2,6 +2,25 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.2.1] — Production Communication & Invitation Stabilization
+
+### Fixed
+- User invitation HTTP 500 when email belongs to soft-deleted account (Postgres `23505` unhandled).
+- Generic "A server error occurred" masking real backend errors on 5xx responses.
+- Delivery logging failures aborting successful email sends in `dispatchMail()`.
+- Pending invitation and deleted-account conflicts now return clear 409/422 messages.
+
+### Changed
+- `createUser()` writes audit log, checks all email conflict states, passes actor to audit.
+- Invitation emails include expiry date and support contact; skip open/click tracking.
+- Shared `mapServiceError()` and `mapDatabaseError()` for consistent API errors.
+- Frontend displays backend error messages for 409/5xx when available.
+
+### Added
+- `findAnyUserByEmail()` repository helper.
+- `apps/backend/src/tests/settings/invitation.test.ts`.
+- Stabilization reports: `V1.2.1_INVITATION_FIX_REPORT.md`, `INVITATION_ROOT_CAUSE_ANALYSIS.md`, and related verification reports.
+
 ## [1.2.0] — Communication Platform Completion
 
 ### Added

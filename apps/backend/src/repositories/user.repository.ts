@@ -24,6 +24,20 @@ export async function findUserByEmail(email: string): Promise<DemoUser | undefin
   };
 }
 
+export async function findAnyUserByEmail(
+  email: string,
+): Promise<typeof users.$inferSelect | undefined> {
+  const db = getDb();
+  const normalized = email.trim().toLowerCase();
+  const [row] = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, normalized))
+    .limit(1);
+
+  return row;
+}
+
 export async function updateLastLoginAt(userId: string): Promise<void> {
   const db = getDb();
   await db
