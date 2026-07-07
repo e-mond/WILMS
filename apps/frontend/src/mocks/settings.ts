@@ -1,8 +1,9 @@
 import { RECONCILIATION_VARIANCE_THRESHOLD_PERCENT } from '@/constants/reconciliation';
+import { DEFAULT_ADMIN_FEE_PESEWAS } from '@/constants/admin-fee';
 import type { SystemSettings } from '@/types/settings';
 
 export const MOCK_SYSTEM_SETTINGS: SystemSettings = {
-  adminFeePesewas: 5000,
+  adminFeePesewas: DEFAULT_ADMIN_FEE_PESEWAS,
   reconciliationVarianceThresholdPercent: RECONCILIATION_VARIANCE_THRESHOLD_PERCENT,
   smsNotificationsEnabled: true,
   emailNotificationsEnabled: true,
