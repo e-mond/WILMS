@@ -33,6 +33,7 @@ import { analyticsRouter } from '../modules/analytics/routes.js';
 import { photoCaptureRouter } from '../modules/photo-capture/routes.js';
 import { transactionsRouter } from '../modules/transactions/routes.js';
 import { messagesRouter } from '../modules/messages/routes.js';
+import { communicationsRouter } from '../modules/communications/routes.js';
 
 function mountBusinessRoutes(app: express.Application, basePath = '') {
   const prefix = basePath.replace(/\/$/, '');
@@ -60,6 +61,7 @@ function mountBusinessRoutes(app: express.Application, basePath = '') {
   app.use(`${prefix}`, photoCaptureRouter);
   app.use(`${prefix}`, transactionsRouter);
   app.use(`${prefix}`, messagesRouter);
+  app.use(`${prefix}`, communicationsRouter);
   app.use(`${prefix}`, syncRouter);
   app.use(`${prefix}`, uploadsRouter);
 }

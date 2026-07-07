@@ -21,6 +21,7 @@ export const {
   loanService,
   locationService,
   messageService,
+  communicationService,
   notificationService,
   offlineSyncService,
   overpaymentReviewService,

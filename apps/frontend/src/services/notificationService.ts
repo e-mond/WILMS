@@ -15,6 +15,14 @@ const notificationService: INotificationService = {
     return apiClient.patch<void>(`/notifications/${notificationId}/read`, {});
   },
 
+  markAllAsRead(): Promise<void> {
+    return apiClient.post<void>('/notifications/mark-all-read', {});
+  },
+
+  deleteNotification(notificationId: string): Promise<void> {
+    return apiClient.delete<void>(`/notifications/${notificationId}`);
+  },
+
   sendNotification(input: SendNotificationInput): Promise<NotificationDelivery> {
     return apiClient.post<NotificationDelivery>('/notifications', input);
   },

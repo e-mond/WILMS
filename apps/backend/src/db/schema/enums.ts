@@ -47,7 +47,7 @@ export const expenseCategoryEnum = pgEnum('expense_category', [
 
 export const expenseStatusEnum = pgEnum('expense_status', ['PENDING', 'APPROVED', 'REJECTED']);
 
-export const notificationChannelEnum = pgEnum('notification_channel', ['SMS', 'EMAIL']);
+export const notificationChannelEnum = pgEnum('notification_channel', ['SMS', 'EMAIL', 'IN_APP']);
 
 export const notificationEventEnum = pgEnum('notification_event', [
   'REGISTRATION_APPROVED',
@@ -60,6 +60,17 @@ export const notificationEventEnum = pgEnum('notification_event', [
   'LOAN_COMPLETED',
   'GUARANTOR_ALERT',
   'SUPERVISOR_ALERT',
+  'USER_INVITED',
+  'LOAN_APPROVED',
+  'LOAN_REJECTED',
+  'BORROWER_BLACKLISTED',
+  'PAYMENT_REVERSAL',
+  'USER_ACTIVATED',
+  'USER_DISABLED',
+  'ROLE_CHANGED',
+  'GROUP_CREATED',
+  'COLLECTOR_ASSIGNED',
+  'COMMUNICATION',
 ]);
 
 export const notificationSeverityEnum = pgEnum('notification_severity', [

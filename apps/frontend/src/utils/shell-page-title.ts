@@ -7,6 +7,7 @@ const EXACT_TITLES: Record<string, string> = {
   '/collectors': 'Collectors',
   '/groups': 'Groups',
   '/risk-flags': 'Risk & Flags',
+  '/communication-center': 'Communication Center',
   '/adjustments': 'Adjustments',
   '/settings': 'System Settings',
   '/reports': 'Reports',
