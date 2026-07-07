@@ -61,6 +61,7 @@ export interface OfficerRegistrationSummary {
   canEdit: boolean;
   canDelete: boolean;
   photoUrl?: string | null;
+  isDraft?: boolean;
 }
 
 export interface PendingApplicationSummary {

@@ -24,3 +24,4 @@ export * from './messages';
 export * from './registration-drafts';
 export * from './photo-capture-sessions';
 export * from './ghana-locations';
+export * from './message-deliveries';

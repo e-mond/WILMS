@@ -14,7 +14,7 @@ import { pesewasToDecimal } from '../../domain/money.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import { runWithIdempotency } from '../../infrastructure/idempotency/run-with-idempotency.js';
 import * as borrowerRepo from '../../repositories/borrower.repository.js';
-import { maybeSendPaymentConfirmationSms, maybeSendMissedPaymentSms } from '../../infrastructure/sms/notifications.js';
+import { notifyPaymentReceived, notifyMissedPayment } from '../../infrastructure/notifications/event-dispatch.js';
 import * as ledgerRepo from '../../repositories/ledger.repository.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import * as paymentRepo from '../../repositories/payment.repository.js';
@@ -68,9 +68,10 @@ export async function getPaymentEntryContext(borrowerId: string, referenceDate?:
   const loan = mapLoanRowToDetail(activeLoan);
   const newlyMissedWeeks = await scheduleRepo.applyMissedWeekMarking(loan.id, ref);
   if (newlyMissedWeeks.length > 0 && borrower.phone?.trim()) {
-    void maybeSendMissedPaymentSms({
-      borrowerPhone: borrower.phone,
+    void notifyMissedPayment({
+      borrowerId,
       borrowerName: borrower.fullName,
+      borrowerPhone: borrower.phone,
       weeksOverdue: newlyMissedWeeks.length,
       amountPesewas: loan.weeklyPaymentPesewas * newlyMissedWeeks.length,
     });
@@ -249,11 +250,15 @@ async function postPayment(
   });
 
   const borrower = await borrowerRepo.getBorrower(input.borrowerId);
-  if (borrower?.phone) {
-    void maybeSendPaymentConfirmationSms({
+  if (borrower) {
+    void notifyPaymentReceived({
+      borrowerId: borrower.id,
+      borrowerName: borrower.fullName,
       borrowerPhone: borrower.phone,
+      borrowerEmail: borrower.profile?.email,
       amountPesewas: input.amountPesewas,
       paymentDate: input.paymentDate,
+      loanDisplayId: loan.displayId ?? loan.id,
     });
   }
 

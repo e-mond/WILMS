@@ -20,6 +20,7 @@ export interface BorrowerRegistrationFormValues {
   businessName: string;
   businessAddress: string;
   typeOfWork: string;
+  typeOfWorkOther?: string;
   guarantorName: string;
   guarantorPhone: string;
   guarantorRelationship: string;
