@@ -1,38 +1,30 @@
 # WILMS - Project Status
 
-**Last updated:** 2026-07-07 (v1.2.0 ready)  
-**Package version:** `1.2.0`  
-**Branch:** `feature/v1.2.0-communication-platform`  
-**Production:** v1.1.3 deployed — v1.2.0 pending
+**Last updated:** 2026-07-07 (v1.2.1 ready)  
+**Package version:** `1.2.1`  
+**Branch:** `feature/v1.2.1-communication-stabilization`  
+**Production:** v1.2.0 deployed — v1.2.1 pending
 
 ---
 
 ## Summary
 
-v1.2.0 completes the Communication Platform roadmap: rich text composer, attachments, password reset UI, push notifications, email open/click tracking, provider webhooks, expanded analytics, recurring scheduler, template builder, and user notification preferences. All tests pass locally.
+v1.2.1 stabilizes the communication platform for production. The primary fix resolves user invitation failures that returned generic HTTP 500 errors. All v1.2.0 features remain operational.
 
 ---
 
-## v1.2.0 scope
+## v1.2.1 scope
 
-| Phase | Status |
-|-------|--------|
-| Rich text composer | ✅ |
-| Attachments | ✅ |
-| Password reset flow | ✅ |
-| Push notifications | ✅ |
-| Email open tracking | ✅ |
-| Email click tracking | ✅ |
-| Provider webhooks | ✅ |
-| Communication analytics | ✅ |
-| Recurring scheduler | ✅ |
-| Template builder | ✅ |
-| User notification preferences | ✅ |
-| Mobile composer experience | ✅ |
-| Security hardening | ✅ |
-| Tests & documentation | ✅ |
+| Item | Status |
+|------|--------|
+| Invitation 500 fix | ✅ |
+| Meaningful API errors | ✅ |
+| Delivery log hardening | ✅ |
+| Invitation email template | ✅ |
+| Communication verification | ✅ |
+| Tests & smoke | ✅ |
 
-See [V1.2_COMMUNICATION_PLATFORM_REPORT.md](./V1.2_COMMUNICATION_PLATFORM_REPORT.md).
+See [V1.2.1_INVITATION_FIX_REPORT.md](./V1.2.1_INVITATION_FIX_REPORT.md) and [INVITATION_ROOT_CAUSE_ANALYSIS.md](./INVITATION_ROOT_CAUSE_ANALYSIS.md).
 
 ---
 
@@ -43,18 +35,17 @@ See [V1.2_COMMUNICATION_PLATFORM_REPORT.md](./V1.2_COMMUNICATION_PLATFORM_REPORT
 | `npm run type-check` | **PASS** |
 | `npm run lint` | **PASS** |
 | `npm run build` | **PASS** |
-| `npm run test -w @wilms/api` | **62/62** |
+| `npm run test -w @wilms/api` | **65/65** |
 | `npm run test -w @wilms/frontend` | **223/223** |
 | `npm run smoke:production` | **31/31** |
 | `npm run smoke:rbac` | **11/11** |
 
 ---
 
-## After v1.2.0 deploy
+## After v1.2.1 deploy
 
-1. Confirm migrations **17/17** on `/health` (includes `0016_v120`)
-2. Set `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` for push
-3. Configure `RESEND_WEBHOOK_SECRET` if using Resend webhooks
-4. Test forgot-password flow end-to-end
-5. Compose message with rich text + attachment in Communication Center
-6. Verify tracking pixel and click URLs in sent emails
+1. Invite a new user from Settings → Users
+2. Confirm `201` response (not 500)
+3. Verify invitation email in inbox
+4. Check `message_deliveries` for `USER_INVITED` event
+5. Retry duplicate email — expect clear conflict message

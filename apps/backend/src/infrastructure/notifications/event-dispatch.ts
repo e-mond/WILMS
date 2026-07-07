@@ -165,12 +165,14 @@ export async function notifyUserInvitation(input: {
   displayName: string;
   temporaryPassword: string;
   userId: string;
+  expiresAt?: Date;
 }): Promise<void> {
   const template = buildUserInvitationEmail({
     displayName: input.displayName,
     email: input.email,
     temporaryPassword: input.temporaryPassword,
     appUrl: env.appUrl,
+    expiresAt: input.expiresAt,
   });
 
   await dispatchMail({
@@ -180,6 +182,7 @@ export async function notifyUserInvitation(input: {
     text: template.text,
     html: template.html,
     userId: input.userId,
+    enableTracking: false,
   });
 
   void createInAppNotification({
