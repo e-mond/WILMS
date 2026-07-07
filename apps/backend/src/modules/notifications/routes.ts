@@ -33,6 +33,22 @@ notificationsRouter.patch(
 );
 
 notificationsRouter.post(
+  '/notifications/mark-all-read',
+  asyncHandler(async (req, res) => {
+    await notificationService.markAllAsRead(req.session!.userId);
+    sendData(res, { ok: true });
+  }),
+);
+
+notificationsRouter.delete(
+  '/notifications/:id',
+  asyncHandler(async (req, res) => {
+    await notificationService.archiveNotification(req.params.id!, req.session!.userId);
+    sendData(res, { ok: true });
+  }),
+);
+
+notificationsRouter.post(
   '/notifications',
   asyncHandler(async (req, res) => {
     sendData(

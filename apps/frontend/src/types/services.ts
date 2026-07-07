@@ -404,6 +404,8 @@ export interface INotificationService {
   listInbox(): Promise<import('@/types/notification').NotificationInboxItem[]>;
   getUnreadCount(): Promise<number>;
   markAsRead(notificationId: string): Promise<void>;
+  markAllAsRead(): Promise<void>;
+  deleteNotification(notificationId: string): Promise<void>;
   sendNotification(input: SendNotificationInput): Promise<NotificationDelivery>;
   sendSupervisorAlert(input: SupervisorAlertInput): Promise<void>;
 }
@@ -482,4 +484,19 @@ export interface IMessageService {
   getThread(threadId: string): Promise<MessageThreadDetail>;
   createThread(input: CreateMessageThreadInput): Promise<MessageThreadDetail>;
   sendMessage(input: SendMessageInput): Promise<MessageDto>;
+}
+
+export interface ICommunicationService {
+  listTemplates(): Promise<import('@/types/communication').CommunicationTemplate[]>;
+  createTemplate(
+    input: import('@/types/communication').CreateCommunicationTemplateInput,
+  ): Promise<import('@/types/communication').CommunicationTemplate>;
+  listMessages(status?: string): Promise<import('@/types/communication').CommunicationMessage[]>;
+  createMessage(
+    input: import('@/types/communication').CreateCommunicationMessageInput,
+  ): Promise<import('@/types/communication').CommunicationMessage>;
+  sendMessage(messageId: string): Promise<import('@/types/communication').CommunicationMessage>;
+  getAnalytics(): Promise<import('@/types/communication').DeliveryAnalytics>;
+  listFailedDeliveries(): Promise<import('@/types/communication').FailedDelivery[]>;
+  searchDeliveryLogs(query?: string): Promise<unknown[]>;
 }

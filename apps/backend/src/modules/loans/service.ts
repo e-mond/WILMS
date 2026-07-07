@@ -18,7 +18,7 @@ import {
 import { generateLoanScheduleWeeks } from '../../domain/loan/schedule.js';
 import { runWithIdempotency } from '../../infrastructure/idempotency/run-with-idempotency.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
-import { notifyLoanDisbursed, notifyLoanApproved } from '../../infrastructure/notifications/event-dispatch.js';
+import { notifyLoanDisbursed, notifyLoanApproved, notifyLoanRejected } from '../../infrastructure/notifications/event-dispatch.js';
 import * as borrowerRepo from '../../repositories/borrower.repository.js';
 import * as disbursementRepo from '../../repositories/loan-disbursement.repository.js';
 import * as ledgerRepo from '../../repositories/ledger.repository.js';
@@ -254,7 +254,21 @@ export async function rejectLoan(
     reason: reason.trim(),
   });
 
-  return mapLoanRowToDetail(updated);
+  const dto = mapLoanRowToDetail(updated);
+  const borrower = await borrowerRepo.getBorrower(loan.borrowerId);
+  if (borrower) {
+    void notifyLoanRejected({
+      borrowerId: borrower.id,
+      borrowerName: borrower.fullName,
+      borrowerPhone: borrower.phone,
+      borrowerEmail: borrower.profile?.email,
+      loanId,
+      loanDisplayId: dto.displayId ?? loanId,
+      reason: reason.trim(),
+    });
+  }
+
+  return dto;
 }
 
 export async function disburseLoan(

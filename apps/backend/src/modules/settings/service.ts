@@ -16,7 +16,7 @@ import { listMessageDeliveries } from '../../infrastructure/notifications/delive
 import { getSmsProvider } from '../../infrastructure/sms/index.js';
 import { getSmsConfig } from '../../infrastructure/sms/config.js';
 import { fetchSmsNotifyGhBalance } from '../../infrastructure/sms/smsnotifygh-adapter.js';
-import { notifyUserInvitation } from '../../infrastructure/notifications/event-dispatch.js';
+import { notifyUserInvitation, notifyAccountActivated, notifyAccountDisabled, notifyAccountEnabled, notifyUserRoleChanged, notifyWelcome } from '../../infrastructure/notifications/event-dispatch.js';
 import { getMailProvider } from '../../infrastructure/mail/index.js';
 import {
   DEFAULT_SYSTEM_SETTINGS,
@@ -950,6 +950,7 @@ export async function updateUser(
     throw new Error('NOT_FOUND');
   }
 
+  const previousRole = row.role;
   const db = getDb();
   const role = input.role ?? row.role;
   await db
@@ -967,15 +968,55 @@ export async function updateUser(
   if (!updated) {
     throw new Error('NOT_FOUND');
   }
-  return mapUserRowToSettingsRecord(updated);
+  const record = mapUserRowToSettingsRecord(updated);
+
+  if (input.role && input.role !== previousRole) {
+    void notifyUserRoleChanged({
+      email: record.email,
+      displayName: record.displayName,
+      userId: record.id,
+      previousRole,
+      newRole: input.role,
+    });
+  }
+
+  return record;
 }
 
 export async function disableUser(id: string): Promise<SettingsUserRecord> {
-  return updateUser(id, { status: 'SUSPENDED' });
+  const record = await updateUser(id, { status: 'SUSPENDED' });
+  void notifyAccountDisabled({
+    email: record.email,
+    displayName: record.displayName,
+    userId: record.id,
+  });
+  return record;
 }
 
 export async function activateUser(id: string): Promise<SettingsUserRecord> {
-  return updateUser(id, { status: 'ACTIVE' });
+  const row = await userRepo.getUserById(id);
+  const wasSuspended = row?.status === 'SUSPENDED';
+  const record = await updateUser(id, { status: 'ACTIVE' });
+  if (wasSuspended) {
+    void notifyAccountEnabled({
+      email: record.email,
+      displayName: record.displayName,
+      userId: record.id,
+    });
+  } else {
+    void notifyAccountActivated({
+      email: record.email,
+      displayName: record.displayName,
+      userId: record.id,
+    });
+    void notifyWelcome({
+      email: record.email,
+      displayName: record.displayName,
+      role: record.role,
+      userId: record.id,
+    });
+  }
+  return record;
 }
 
 export async function deleteUser(id: string, currentUserId?: string): Promise<void> {

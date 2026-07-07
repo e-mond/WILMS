@@ -12,12 +12,14 @@ import { mapReversalToPaymentResult } from '../../domain/reversal/mappers.js';
 import { LOAN_LIFECYCLE, type LoanLifecycleStatus } from '../../domain/loan/lifecycle.js';
 import { decimalToPesewas, pesewasToDecimal } from '../../domain/money.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
+import { notifyPaymentReversal } from '../../infrastructure/notifications/event-dispatch.js';
 import { runWithIdempotency } from '../../infrastructure/idempotency/run-with-idempotency.js';
 import * as ledgerRepo from '../../repositories/ledger.repository.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import * as paymentRepo from '../../repositories/payment.repository.js';
 import * as scheduleRepo from '../../repositories/loan-schedule.repository.js';
 import * as reversalRepo from '../../repositories/reversal.repository.js';
+import * as borrowerRepo from '../../repositories/borrower.repository.js';
 
 const AUDIT_ACTION = {
   REVERSAL_REQUESTED: 'reversal.requested',
@@ -257,6 +259,22 @@ async function executePaymentReversal(
     targetEntityType: 'reversal',
     reason: input.reason.trim(),
   });
+
+  const borrower = await borrowerRepo.getBorrower(payment.borrowerId);
+  if (borrower && loan) {
+    const loanDisplayId = loan.id;
+    void notifyPaymentReversal({
+      borrowerId: borrower.id,
+      borrowerName: borrower.fullName,
+      borrowerEmail: borrower.profile?.email,
+      borrowerPhone: borrower.phone,
+      amountPesewas: payment.amountPesewas,
+      loanDisplayId,
+      loanId: loan.id,
+      reason: input.reason.trim(),
+      reversalDate: new Date().toISOString().slice(0, 10),
+    });
+  }
 
   return mapReversalToPaymentResult(executed, input.actorDisplayName.trim());
 }

@@ -14,7 +14,7 @@ import { pesewasToDecimal } from '../../domain/money.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import { runWithIdempotency } from '../../infrastructure/idempotency/run-with-idempotency.js';
 import * as borrowerRepo from '../../repositories/borrower.repository.js';
-import { notifyPaymentReceived, notifyMissedPayment } from '../../infrastructure/notifications/event-dispatch.js';
+import { notifyPaymentReceived, notifyMissedPayment, notifyLoanFullyPaid } from '../../infrastructure/notifications/event-dispatch.js';
 import * as ledgerRepo from '../../repositories/ledger.repository.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import * as paymentRepo from '../../repositories/payment.repository.js';
@@ -259,7 +259,23 @@ async function postPayment(
       amountPesewas: input.amountPesewas,
       paymentDate: input.paymentDate,
       loanDisplayId: loan.displayId ?? loan.id,
+      loanId: loan.id,
+      outstandingBalancePesewas: newBalancePesewas,
+      collectorUserId: input.collectorId,
     });
+
+    if (newBalancePesewas === 0) {
+      void notifyLoanFullyPaid({
+        borrowerId: borrower.id,
+        borrowerName: borrower.fullName,
+        borrowerPhone: borrower.phone,
+        borrowerEmail: borrower.profile?.email,
+        loanId: loan.id,
+        loanDisplayId: loan.displayId ?? loan.id,
+        totalPaidPesewas: loan.amountPesewas,
+        collectorUserId: input.collectorId,
+      });
+    }
   }
 
   return {
