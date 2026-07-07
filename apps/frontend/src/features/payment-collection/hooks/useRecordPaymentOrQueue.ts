@@ -2,8 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { paymentEntryContextQueryKey } from '@/features/payment-collection/hooks/usePaymentEntryContext';
-import { loanProgressQueryKey } from '@/features/loan-management/hooks/useLoanProgress';
-import { loanPaymentLogQueryKey } from '@/features/loan-management/hooks/useLoanPaymentLog';
+import { invalidateAfterPayment } from '@/features/payment-collection/utils/invalidate-after-payment';
 import { paymentService } from '@/services';
 import { useOfflineQueueStore } from '@/state/offlineQueueStore';
 import { useAuthStore } from '@/state/authStore';
@@ -79,16 +78,7 @@ export function useRecordPaymentOrQueue() {
 
       notifyMutationSuccess('Payment recorded', 'The payment has been applied to the schedule.');
 
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: paymentEntryContextQueryKey(variables.borrowerId),
-        }),
-        queryClient.invalidateQueries({ queryKey: ['collector'] }),
-        queryClient.invalidateQueries({ queryKey: ['loans', variables.loanId] }),
-        queryClient.invalidateQueries({ queryKey: loanProgressQueryKey(variables.loanId) }),
-        queryClient.invalidateQueries({ queryKey: loanPaymentLogQueryKey(variables.loanId) }),
-        queryClient.invalidateQueries({ queryKey: ['borrowers', variables.borrowerId, 'loans'] }),
-      ]);
+      await invalidateAfterPayment(queryClient, variables);
     },
     onError: (error) => {
       notifyMutationError('Payment failed', error, 'Unable to record this payment.');

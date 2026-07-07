@@ -49,9 +49,9 @@ const createTemplateSchema = z.object({
 const updateTemplateSchema = createTemplateSchema.partial();
 
 const previewTemplateSchema = z.object({
-  subject: z.string().min(1),
-  bodyHtml: z.string().min(1),
-  bodyText: z.string().min(1),
+  subject: z.string().optional().default(''),
+  bodyHtml: z.string().optional().default(''),
+  bodyText: z.string().optional(),
   sampleVariables: z.record(z.string()).optional(),
 });
 

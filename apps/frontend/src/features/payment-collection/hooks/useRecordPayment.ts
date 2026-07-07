@@ -1,11 +1,9 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { paymentEntryContextQueryKey } from '@/features/payment-collection/hooks/usePaymentEntryContext';
-import { loanProgressQueryKey } from '@/features/loan-management/hooks/useLoanProgress';
-import { loanPaymentLogQueryKey } from '@/features/loan-management/hooks/useLoanPaymentLog';
 import { paymentService } from '@/services';
 import { useAuthStore } from '@/state/authStore';
+import { invalidateAfterPayment } from '@/features/payment-collection/utils/invalidate-after-payment';
 import type { GpsCoordinates } from '@/types/payment';
 
 export interface RecordPaymentVariables {
@@ -36,16 +34,7 @@ export function useRecordPayment() {
       });
     },
     onSuccess: async (_result, variables) => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: paymentEntryContextQueryKey(variables.borrowerId),
-        }),
-        queryClient.invalidateQueries({ queryKey: ['collector'] }),
-        queryClient.invalidateQueries({ queryKey: ['loans', variables.loanId] }),
-        queryClient.invalidateQueries({ queryKey: loanProgressQueryKey(variables.loanId) }),
-        queryClient.invalidateQueries({ queryKey: loanPaymentLogQueryKey(variables.loanId) }),
-        queryClient.invalidateQueries({ queryKey: ['borrowers', variables.borrowerId, 'loans'] }),
-      ]);
+      await invalidateAfterPayment(queryClient, variables);
     },
   });
 }

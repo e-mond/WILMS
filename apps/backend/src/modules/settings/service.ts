@@ -947,33 +947,20 @@ export async function createUser(
 
   const record = mapUserRowToSettingsRecord(row);
   record.lastLoginLabel = 'Invited';
+  record.invitationEmailSent = false;
+  record.invitationEmailStatus = 'PENDING';
+  record.invitationEmailError = null;
 
-  let invitationEmailSent = false;
-  let invitationEmailStatus: SettingsUserRecord['invitationEmailStatus'] = 'PENDING';
-  let invitationEmailError: string | null = null;
+  void notifyUserInvitation({
+    email,
+    displayName,
+    temporaryPassword: DEFAULT_INVITE_PASSWORD,
+    userId,
+    expiresAt,
+  }).catch((error) => {
+    console.error('[settings] invitation email failed (async):', error);
+  });
 
-  try {
-    await notifyUserInvitation({
-      email,
-      displayName,
-      temporaryPassword: DEFAULT_INVITE_PASSWORD,
-      userId,
-      expiresAt,
-    });
-    invitationEmailSent = true;
-    invitationEmailStatus = 'SENT';
-  } catch (error) {
-    invitationEmailError =
-      error instanceof Error
-        ? error.message.replace(/^VALIDATION:/, '')
-        : 'Invitation email could not be delivered.';
-    invitationEmailStatus = 'FAILED';
-    console.error('[settings] invitation email failed:', error);
-  }
-
-  record.invitationEmailSent = invitationEmailSent;
-  record.invitationEmailStatus = invitationEmailStatus;
-  record.invitationEmailError = invitationEmailError;
   return record;
 }
 

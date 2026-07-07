@@ -29,6 +29,8 @@ export function useRecordAdminFee(borrowerId: string) {
         queryClient.invalidateQueries({ queryKey: awaitingAdminFeeQueryKey }),
         queryClient.invalidateQueries({ queryKey: adminFeeStatusQueryKey(borrowerId) }),
         queryClient.invalidateQueries({ queryKey: ['borrowers', borrowerId, 'disbursement-eligibility'] }),
+        queryClient.invalidateQueries({ queryKey: ['dashboard', 'summary'] }),
+        queryClient.invalidateQueries({ queryKey: ['collection-metrics'] }),
       ]);
     },
     onError: (error) => {

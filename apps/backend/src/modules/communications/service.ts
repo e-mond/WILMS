@@ -253,12 +253,27 @@ export async function createTemplate(input: {
 }
 
 export async function previewCommunicationTemplate(input: {
-  subject: string;
-  bodyHtml: string;
-  bodyText: string;
+  subject?: string;
+  bodyHtml?: string;
+  bodyText?: string;
   sampleVariables?: TemplateVariables;
 }) {
-  return previewTemplate(input);
+  const bodyHtml = input.bodyHtml ?? '';
+  const bodyText =
+    input.bodyText?.trim() ||
+    bodyHtml
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/p>/gi, '\n\n')
+      .replace(/<[^>]+>/g, '')
+      .trim() ||
+    '(No body content)';
+
+  return previewTemplate({
+    subject: input.subject?.trim() || '(Preview)',
+    bodyHtml,
+    bodyText,
+    sampleVariables: input.sampleVariables,
+  });
 }
 
 export async function duplicateTemplate(
