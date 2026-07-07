@@ -70,12 +70,28 @@ function mapStatusToError(status: number, body: ApiErrorBody | null): ApiError {
     );
   }
 
+  if (status === 409) {
+    return new ApiError(
+      message === 'Request failed'
+        ? 'This action conflicts with an existing record.'
+        : message,
+      API_ERROR_CODE.CONFLICT,
+      status,
+    );
+  }
+
   if (status === 422) {
     return new ApiError(message, API_ERROR_CODE.VALIDATION, status);
   }
 
   if (status >= 500) {
-    return new ApiError('A server error occurred. Please try again.', API_ERROR_CODE.SERVER, status);
+    return new ApiError(
+      message === 'Request failed'
+        ? 'A server error occurred. Please try again.'
+        : message,
+      API_ERROR_CODE.SERVER,
+      status,
+    );
   }
 
   return new ApiError(message, API_ERROR_CODE.VALIDATION, status);
