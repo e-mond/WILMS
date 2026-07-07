@@ -85,7 +85,11 @@ const settingsService: ISettingsService = {
   },
 
   createUser(input: CreateSettingsUserInput) {
-    return apiClient.post('/settings/users', input);
+    return apiClient.post('/settings/users', input, { timeoutMs: 30_000 });
+  },
+
+  resendInvitation(id: string) {
+    return apiClient.post(`/settings/users/${id}/resend-invitation`, {}, { timeoutMs: 30_000 });
   },
 
   updateUser(id: string, input: UpdateSettingsUserInput) {
