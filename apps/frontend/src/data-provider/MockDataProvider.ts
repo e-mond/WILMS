@@ -24,6 +24,7 @@ import groupFormationServiceMock from '@/services/mock/groupFormationService.moc
 import locationServiceMock from '@/services/mock/locationService.mock';
 import uploadServiceMock from '@/services/mock/uploadService.mock';
 import messageServiceMock from '@/services/mock/messageService.mock';
+import communicationServiceMock from '@/services/mock/communicationService.mock';
 import offlineSyncServiceMock from '@/services/mock/offlineSyncService.mock';
 import type { IDataProvider } from '@/data-provider/types';
 
@@ -42,6 +43,7 @@ export const mockDataProvider: IDataProvider = {
   loanService: loanServiceMock,
   locationService: locationServiceMock,
   messageService: messageServiceMock,
+  communicationService: communicationServiceMock,
   offlineSyncService: offlineSyncServiceMock,
   paymentService: paymentServiceMock,
   reconciliationService: reconciliationServiceMock,

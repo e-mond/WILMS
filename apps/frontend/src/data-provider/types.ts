@@ -14,6 +14,7 @@ import type {
   ILoanService,
   ILocationService,
   IMessageService,
+  ICommunicationService,
   INotificationService,
   IOfflineSyncService,
   IOverpaymentReviewService,
@@ -51,6 +52,7 @@ export interface IDataProvider {
   readonly loanService: ILoanService;
   readonly locationService: ILocationService;
   readonly messageService: IMessageService;
+  readonly communicationService: ICommunicationService;
   readonly notificationService: INotificationService;
   readonly offlineSyncService: IOfflineSyncService;
   readonly overpaymentReviewService: IOverpaymentReviewService;

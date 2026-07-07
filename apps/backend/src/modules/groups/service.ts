@@ -11,6 +11,7 @@ import * as userRepo from '../../repositories/user.repository.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import { groupRepository } from '../../repositories/index.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
+import { notifyGroupCreated, notifyCollectorAssigned } from '../../infrastructure/notifications/event-dispatch.js';
 
 type GroupRiskLevel = 'LOW_RISK' | 'AT_RISK' | 'FLAGGED' | 'SUSPENDED';
 type GroupStatus = 'ACTIVE' | 'AT_RISK' | 'FLAGGED' | 'SUSPENDED';
@@ -796,5 +797,33 @@ export async function createGroup(
     reason: `Created group ${displayName}`,
   });
 
-  return getGroupDetail(groupId);
+  const detail = await getGroupDetail(groupId);
+
+  if (input.collectorUserId) {
+    const collector = await userRepo.getUserById(input.collectorUserId);
+    if (collector) {
+      void notifyCollectorAssigned({
+        collectorEmail: collector.email,
+        collectorName: collector.displayName,
+        collectorUserId: collector.id,
+        groupName: name,
+        groupDisplayId: systemId,
+        memberCount: memberIds.length,
+      });
+    }
+  }
+
+  const actor = await userRepo.getUserById(actorId);
+  if (actor) {
+    void notifyGroupCreated({
+      recipientEmail: actor.email,
+      recipientName: actor.displayName,
+      recipientUserId: actor.id,
+      groupName: name,
+      groupDisplayId: systemId,
+      community,
+    });
+  }
+
+  return detail;
 }

@@ -35,6 +35,7 @@ export const SUPER_ADMIN_NAV: ShellNavItem[] = [
   { href: '/collectors', label: 'Collectors', icon: 'collectors' },
   { href: '/groups', label: 'Groups', icon: 'groups' },
   { href: '/risk-flags', label: 'Risk & Flags', icon: 'risk' },
+  { href: '/communication-center', label: 'Communication Center', icon: 'reports' },
   { href: '/reports/audit-log', label: 'Audit Log', exact: true, icon: 'audit' },
   { href: '/reports', label: 'Reports', exact: true, icon: 'reports' },
   { href: '/settings', label: 'Settings', exact: true, icon: 'settings' },

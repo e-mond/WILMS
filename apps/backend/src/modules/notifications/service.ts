@@ -7,6 +7,10 @@ import { users } from '../../db/schema/users.js';
 import { getSettings } from '../settings/service.js';
 import { getMailProvider } from '../../infrastructure/mail/index.js';
 import { getSmsProvider } from '../../infrastructure/sms/index.js';
+import {
+  archiveNotification as archiveInAppNotification,
+  markAllNotificationsRead,
+} from '../../infrastructure/notifications/in-app-notify.js';
 
 export interface NotificationInboxItem {
   id: string;
@@ -178,6 +182,32 @@ export async function markAsRead(notificationId: string, userId: string): Promis
         isNull(notifications.deletedAt),
       ),
     );
+}
+
+export async function markAllAsRead(userId: string): Promise<void> {
+  if (!isDatabaseEnabled()) {
+    const items = memoryInbox.get(userId) ?? [];
+    memoryInbox.set(
+      userId,
+      items.map((item) => ({ ...item, isRead: true })),
+    );
+    return;
+  }
+
+  await markAllNotificationsRead(userId);
+}
+
+export async function archiveNotification(notificationId: string, userId: string): Promise<void> {
+  if (!isDatabaseEnabled()) {
+    const items = memoryInbox.get(userId) ?? [];
+    memoryInbox.set(
+      userId,
+      items.filter((item) => item.id !== notificationId),
+    );
+    return;
+  }
+
+  await archiveInAppNotification(notificationId, userId);
 }
 
 export async function sendNotification(
