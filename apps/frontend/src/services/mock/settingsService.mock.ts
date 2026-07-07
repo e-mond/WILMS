@@ -166,7 +166,26 @@ const settingsServiceMock: ISettingsService = {
 
   async createUser(input) {
     await simulateDelay();
-    return createSettingsUser(input);
+    const user = createSettingsUser(input);
+    return {
+      ...user,
+      invitationEmailSent: true,
+      invitationEmailStatus: 'SENT' as const,
+    };
+  },
+
+  async resendInvitation(id) {
+    await simulateDelay();
+    const user = getSettingsUsersStore().find((entry) => entry.id === id);
+    if (!user) {
+      throw new Error('NOT_FOUND');
+    }
+    return {
+      ...user,
+      invitationEmailSent: true,
+      invitationEmailStatus: 'SENT' as const,
+      invitationEmailError: null,
+    };
   },
 
   async updateUser(id, input) {

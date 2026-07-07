@@ -223,6 +223,18 @@ settingsRouter.post(
   }),
 );
 
+settingsRouter.post(
+  '/settings/users/:id/resend-invitation',
+  requirePermission(PERMISSION.MANAGE_USERS),
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(res, await settingsService.resendInvitation(req.params.id!, req.session!.userId));
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
 settingsRouter.patch(
   '/settings/users/:id',
   requirePermission(PERMISSION.EDIT_USERS),
