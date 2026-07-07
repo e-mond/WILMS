@@ -17,7 +17,7 @@ import { getSmsProvider } from '../../infrastructure/sms/index.js';
 import { getSmsConfig } from '../../infrastructure/sms/config.js';
 import { fetchSmsNotifyGhBalance } from '../../infrastructure/sms/smsnotifygh-adapter.js';
 import { notifyUserInvitation, notifyAccountActivated, notifyAccountDisabled, notifyAccountEnabled, notifyUserRoleChanged, notifyWelcome } from '../../infrastructure/notifications/event-dispatch.js';
-import { getMailProvider } from '../../infrastructure/mail/index.js';
+import { dispatchMail, isMailDeliveryConfigured } from '../../infrastructure/mail/dispatch.js';
 import { mapDatabaseError } from '../../lib/db-errors.js';
 import {
   DEFAULT_SYSTEM_SETTINGS,
@@ -480,22 +480,22 @@ export async function sendTestEmail(userId: string, email: string): Promise<{ ok
   }
 
   const integration = getIntegrationStatus();
-  const mail = getMailProvider();
-  if (!mail.isConfigured()) {
+  if (!isMailDeliveryConfigured()) {
     throw new Error(`VALIDATION:Mail provider is not configured. ${integration.mail.setupHint}`);
   }
 
   const profile = await getSettingsMe(userId);
   const providerLabel = integration.mail.provider;
 
-  await mail.send({
+  await dispatchMail({
+    event: 'MAIL_TEST',
     to: normalizedEmail,
     subject: 'WILMS test email',
     text: `Hello ${profile.displayName}, this is a test email from WILMS (${providerLabel}).`,
     html: `<p>Hello <strong>${profile.displayName}</strong>,</p><p>This is a test email from WILMS (${providerLabel}).</p>`,
-  }).catch((error: unknown) => {
-    const message = error instanceof Error ? error.message : 'Failed to send test email.';
-    throw new Error(`VALIDATION:${message}`);
+    userId,
+    enableTracking: false,
+    maxRetries: 0,
   });
 
   return { ok: true };
@@ -947,20 +947,76 @@ export async function createUser(
 
   const record = mapUserRowToSettingsRecord(row);
   record.lastLoginLabel = 'Invited';
-  record.invitationEmailSent = false;
-  record.invitationEmailStatus = 'PENDING';
-  record.invitationEmailError = null;
 
-  void notifyUserInvitation({
-    email,
-    displayName,
+  let invitationEmailSent = false;
+  let invitationEmailStatus: SettingsUserRecord['invitationEmailStatus'] = 'PENDING';
+  let invitationEmailError: string | null = null;
+
+  try {
+    await notifyUserInvitation({
+      email,
+      displayName,
+      temporaryPassword: DEFAULT_INVITE_PASSWORD,
+      userId,
+      expiresAt,
+    });
+    invitationEmailSent = true;
+    invitationEmailStatus = 'SENT';
+  } catch (error) {
+    invitationEmailError =
+      error instanceof Error
+        ? error.message.replace(/^VALIDATION:/, '')
+        : 'Invitation email could not be delivered.';
+    invitationEmailStatus = 'FAILED';
+    console.error('[settings] invitation email failed:', error);
+  }
+
+  record.invitationEmailSent = invitationEmailSent;
+  record.invitationEmailStatus = invitationEmailStatus;
+  record.invitationEmailError = invitationEmailError;
+  return record;
+}
+
+export async function resendInvitation(
+  userId: string,
+  actorUserId?: string,
+): Promise<SettingsUserRecord> {
+  if (!isDatabaseEnabled()) {
+    throw new Error('VALIDATION:Resend invitation requires database persistence.');
+  }
+
+  const row = await userRepo.getUserById(userId);
+  if (!row) {
+    throw new Error('NOT_FOUND');
+  }
+
+  if (row.status !== 'INVITED') {
+    throw new Error('VALIDATION:Only invited users can receive a resent invitation email.');
+  }
+
+  const expiresAt = invitationExpiresAt();
+
+  await notifyUserInvitation({
+    email: row.email,
+    displayName: row.displayName,
     temporaryPassword: DEFAULT_INVITE_PASSWORD,
-    userId,
+    userId: row.id,
     expiresAt,
-  }).catch((error) => {
-    console.error('[settings] invitation email failed (async):', error);
   });
 
+  appendAuditEntry({
+    action: 'user.invitation_resent',
+    actorId: actorUserId ?? 'system',
+    targetEntityId: row.id,
+    targetEntityType: 'user',
+    reason: `email=${row.email}`,
+  });
+
+  const record = mapUserRowToSettingsRecord(row);
+  record.lastLoginLabel = 'Invited';
+  record.invitationEmailSent = true;
+  record.invitationEmailStatus = 'SENT';
+  record.invitationEmailError = null;
   return record;
 }
 

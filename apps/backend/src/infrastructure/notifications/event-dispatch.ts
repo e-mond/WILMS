@@ -183,6 +183,7 @@ export async function notifyUserInvitation(input: {
     html: template.html,
     userId: input.userId,
     enableTracking: false,
+    maxRetries: 0,
   });
 
   void createInAppNotification({

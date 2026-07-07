@@ -34,7 +34,7 @@ const UsersIcon = SETTINGS_SECTION_ICONS.users;
 export function SettingsUsersSection() {
   const toast = useToast();
   const { data: users, isLoading } = useSettingsUsers();
-  const { createUser, updateUser, disableUser, activateUser, deleteUser } = useSettingsUserMutations();
+  const { createUser, updateUser, disableUser, activateUser, deleteUser, resendInvitation } = useSettingsUserMutations();
   const [searchQuery, setSearchQuery] = useState('');
   const [modalMode, setModalMode] = useState<'invite' | 'edit' | null>(null);
   const [selectedUser, setSelectedUser] = useState<SettingsUserRecord | null>(null);
@@ -61,7 +61,8 @@ export function SettingsUsersSection() {
     updateUser.isPending ||
     disableUser.isPending ||
     activateUser.isPending ||
-    deleteUser.isPending;
+    deleteUser.isPending ||
+    resendInvitation.isPending;
 
   function closeModal() {
     setModalMode(null);
@@ -75,11 +76,15 @@ export function SettingsUsersSection() {
         toast.success('Invite sent', {
           message: `${values.displayName} was added and the invitation email was sent.`,
         });
-      } else {
-        toast.success('User invited', {
-          message: `${values.displayName} was added. The invitation email is being sent.`,
-        });
+        closeModal();
+        return;
       }
+
+      toast.warning('User invited — email not sent', {
+        message:
+          created.invitationEmailError ??
+          'The user was added but the invitation email could not be delivered. Use Resend Invitation from the user row.',
+      });
       closeModal();
     } catch (error) {
       const message =
@@ -87,6 +92,19 @@ export function SettingsUsersSection() {
           ? error.message
           : 'Check the email address and try again.';
       toast.error('Unable to invite user', { message });
+    }
+  }
+
+  async function handleResendInvitation(user: SettingsUserRecord) {
+    try {
+      await resendInvitation.mutateAsync(user.id);
+      toast.success('Invitation resent', {
+        message: `A new invitation email was sent to ${user.email}.`,
+      });
+    } catch (error) {
+      const message =
+        error instanceof ApiError ? error.message : 'Try again shortly.';
+      toast.error('Unable to resend invitation', { message });
     }
   }
 
@@ -253,6 +271,18 @@ export function SettingsUsersSection() {
                     >
                       View profile
                     </button>
+                    {row.status === 'INVITED' ? (
+                      <PermissionGate permission={PERMISSION.MANAGE_USERS}>
+                        <button
+                          type="button"
+                          className="text-small font-semibold text-brand-primary hover:underline disabled:opacity-50"
+                          disabled={resendInvitation.isPending}
+                          onClick={() => void handleResendInvitation(row)}
+                        >
+                          Resend invite
+                        </button>
+                      </PermissionGate>
+                    ) : null}
                     <button
                       type="button"
                       className="text-small font-semibold text-executive-gold hover:underline"

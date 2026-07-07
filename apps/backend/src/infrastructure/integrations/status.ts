@@ -1,5 +1,5 @@
 import { getMailConfig } from '../mail/config.js';
-import { getMailProvider } from '../mail/index.js';
+import { isMailDeliveryConfigured } from '../mail/dispatch.js';
 import { getSmsConfig } from '../sms/config.js';
 import { getSmsProvider } from '../sms/index.js';
 
@@ -44,7 +44,7 @@ function smsSetupHint(provider: string): string {
 function mailSetupHint(provider: string): string {
   switch (provider) {
     case 'gmail':
-      return 'Set MAIL_PROVIDER=gmail, GMAIL_USER, GMAIL_APP_PASSWORD, and MAIL_FROM on Railway. For Settings → Test Email, also set GMAIL_USER and GMAIL_APP_PASSWORD on Vercel.';
+      return 'Set MAIL_PROVIDER=gmail and MAIL_FROM on Railway. Set GMAIL_USER + GMAIL_APP_PASSWORD on Vercel, plus WILMS_VERCEL_MAIL_URL and WILMS_INTERNAL_MAIL_SECRET on Railway for invitation delivery.';
     case 'resend':
       return 'Set MAIL_PROVIDER=resend, RESEND_API_KEY, and MAIL_FROM on Railway (see README).';
     case 'smtp':
@@ -59,7 +59,6 @@ export function getIntegrationStatus(): IntegrationStatusReport {
   const mailProviderLabel = resolveMailProviderLabel();
   const mailConfig = getMailConfig();
   const sms = getSmsProvider();
-  const mail = getMailProvider();
 
   return {
     sms: {
@@ -69,7 +68,7 @@ export function getIntegrationStatus(): IntegrationStatusReport {
     },
     mail: {
       provider: mailProviderLabel === 'none' && mailConfig.provider !== 'none' ? mailConfig.provider : mailProviderLabel,
-      configured: mail.isConfigured(),
+      configured: isMailDeliveryConfigured(),
       setupHint: mailSetupHint(mailProviderLabel),
     },
   };

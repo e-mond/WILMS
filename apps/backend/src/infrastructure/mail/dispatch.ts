@@ -8,20 +8,48 @@ import {
 } from '../notifications/email-tracking.js';
 import { sanitizeHtml } from '../notifications/html-sanitize.js';
 
-const MAX_RETRIES = 2;
+const DEFAULT_MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 750;
 const RELAY_FETCH_TIMEOUT_MS = 12_000;
 
+export function isMailRelayConfigured(): boolean {
+  return Boolean(
+    process.env.WILMS_VERCEL_MAIL_URL?.trim() &&
+      process.env.WILMS_INTERNAL_MAIL_SECRET?.trim(),
+  );
+}
+
+export function isMailDeliveryConfigured(): boolean {
+  return getMailProvider().isConfigured() || isMailRelayConfigured();
+}
+
 function shouldUseVercelRelay(): boolean {
+  if (!isMailRelayConfigured()) {
+    return false;
+  }
+
+  const rawProvider = (process.env.MAIL_PROVIDER ?? 'none').toLowerCase();
+  if (rawProvider === 'gmail' || rawProvider === 'smtp') {
+    return true;
+  }
+
   const config = getMailConfig();
-  const relayUrl = process.env.WILMS_VERCEL_MAIL_URL?.trim();
-  const relaySecret = process.env.WILMS_INTERNAL_MAIL_SECRET?.trim();
-  return Boolean(relayUrl && relaySecret && (config.provider === 'smtp' || process.env.MAIL_PROVIDER === 'gmail'));
+  if (config.provider === 'smtp') {
+    return true;
+  }
+
+  // Relay-only: Gmail creds on Vercel while Railway has no outbound SMTP.
+  if (!getMailProvider().isConfigured() && rawProvider !== 'resend' && rawProvider !== 'none') {
+    return true;
+  }
+
+  return false;
 }
 
 async function sendViaVercelRelay(message: MailMessage): Promise<MailSendResult> {
   const relayUrl = process.env.WILMS_VERCEL_MAIL_URL!.trim().replace(/\/$/, '');
   const relaySecret = process.env.WILMS_INTERNAL_MAIL_SECRET!.trim();
+  const config = getMailConfig();
 
   const response = await fetch(`${relayUrl}/api/mail/send`, {
     method: 'POST',
@@ -34,7 +62,7 @@ async function sendViaVercelRelay(message: MailMessage): Promise<MailSendResult>
       subject: message.subject,
       text: message.text,
       html: message.html,
-      from: message.from,
+      from: message.from ?? config.fromAddress,
     }),
     signal: AbortSignal.timeout(RELAY_FETCH_TIMEOUT_MS),
   });
@@ -52,17 +80,17 @@ async function sendViaVercelRelay(message: MailMessage): Promise<MailSendResult>
 }
 
 async function sendWithRetries(
-  message: MailMessage,
   send: () => Promise<MailSendResult>,
-): Promise<MailSendResult> {
+  maxRetries: number,
+): Promise<{ result: MailSendResult; retryAttempts: number }> {
   let lastError: unknown;
 
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt += 1) {
+  for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
     try {
       if (attempt > 0) {
         await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS * attempt));
       }
-      return await send();
+      return { result: await send(), retryAttempts: attempt };
     } catch (error) {
       lastError = error;
     }
@@ -78,11 +106,12 @@ export interface DispatchMailInput extends MailMessage {
   userId?: string;
   communicationMessageId?: string;
   enableTracking?: boolean;
+  maxRetries?: number;
 }
 
 export async function dispatchMail(input: DispatchMailInput): Promise<MailSendResult> {
   const mail = getMailProvider();
-  if (!mail.isConfigured() && !shouldUseVercelRelay()) {
+  if (!isMailDeliveryConfigured()) {
     throw new Error('Mail provider is not configured.');
   }
 
@@ -92,21 +121,23 @@ export async function dispatchMail(input: DispatchMailInput): Promise<MailSendRe
   const htmlWithTracking = trackingToken
     ? injectEmailTracking(sanitizedHtml, trackingToken)
     : sanitizedHtml;
+  const config = getMailConfig();
 
   const outbound: MailMessage = {
     ...input,
+    from: input.from ?? config.fromAddress,
     html: htmlWithTracking,
   };
 
-  let retryAttempts = 0;
+  const maxRetries = input.maxRetries ?? DEFAULT_MAX_RETRIES;
 
   try {
-    const result = await sendWithRetries(outbound, async () => {
+    const { result, retryAttempts } = await sendWithRetries(async () => {
       if (shouldUseVercelRelay()) {
         return sendViaVercelRelay(outbound);
       }
       return mail.send(outbound);
-    });
+    }, maxRetries);
 
     await logMessageDelivery({
       event: input.event,
@@ -139,7 +170,7 @@ export async function dispatchMail(input: DispatchMailInput): Promise<MailSendRe
       bodyPreview: input.text,
       success: false,
       failureReason: message,
-      retryAttempts: MAX_RETRIES,
+      retryAttempts: maxRetries,
       trackingToken,
       borrowerId: input.borrowerId,
       loanId: input.loanId,
@@ -154,7 +185,7 @@ export async function dispatchMail(input: DispatchMailInput): Promise<MailSendRe
     }
 
     if (message.includes('Vercel mail relay failed')) {
-      throw new Error('VALIDATION:Email relay is unavailable. Invitation has been queued for retry.');
+      throw new Error('VALIDATION:Email relay is unavailable. Check Vercel Gmail credentials and WILMS_INTERNAL_MAIL_SECRET.');
     }
 
     if (message.includes('aborted') || message.includes('timeout')) {
