@@ -70,8 +70,16 @@ export function SettingsUsersSection() {
 
   async function handleInvite(values: { displayName: string; email: string; role: string }) {
     try {
-      await createUser.mutateAsync(values);
-      toast.success('Invite sent', { message: `${values.displayName} was added to the user directory.` });
+      const created = await createUser.mutateAsync(values);
+      if (created.invitationEmailStatus === 'SENT' || created.invitationEmailSent) {
+        toast.success('Invite sent', {
+          message: `${values.displayName} was added and the invitation email was sent.`,
+        });
+      } else {
+        toast.success('User invited', {
+          message: `${values.displayName} was added. The invitation email is being sent.`,
+        });
+      }
       closeModal();
     } catch (error) {
       const message =

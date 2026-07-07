@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { CurrencyAmount, DataTable, KpiCard, UtilisationBar } from '@/components/data-display';
 import { LoanPoolsKpiIcon } from '@/components/icons/LoanPoolsKpiIcon';
 import {
@@ -48,6 +48,10 @@ export function LoanPoolsPanel() {
   const [poolSource, setPoolSource] = useState('');
   const [capitalGhs, setCapitalGhs] = useState('');
   const [cycleLabel, setCycleLabel] = useState('');
+
+  const closeCreateModal = useCallback(() => {
+    setCreateModalOpen(false);
+  }, []);
 
   const filteredPools = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -294,11 +298,11 @@ export function LoanPoolsPanel() {
 
       <Modal
         isOpen={createModalOpen}
-        onClose={() => setCreateModalOpen(false)}
+        onClose={closeCreateModal}
         title="Create Loan Pool"
         footer={
           <>
-            <Button type="button" variant="secondary" size="sm" onClick={() => setCreateModalOpen(false)}>
+            <Button type="button" variant="secondary" size="sm" onClick={closeCreateModal}>
               Cancel
             </Button>
             <Button
@@ -349,7 +353,7 @@ export function LoanPoolsPanel() {
                 cycleLabel: cycleLabel.trim(),
               })
               .then(() => {
-                setCreateModalOpen(false);
+                closeCreateModal();
                 setPoolName('');
                 setPoolRegion('');
                 setPoolSource('');

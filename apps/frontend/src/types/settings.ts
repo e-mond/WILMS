@@ -57,6 +57,9 @@ export interface SettingsUserRecord {
   status: 'ACTIVE' | 'INVITED' | 'SUSPENDED';
   isCurrentUser?: boolean;
   photoUrl?: string | null;
+  invitationEmailSent?: boolean;
+  invitationEmailStatus?: 'PENDING' | 'SENT' | 'FAILED';
+  invitationEmailError?: string | null;
 }
 
 export interface SettingsActivityEntry {
