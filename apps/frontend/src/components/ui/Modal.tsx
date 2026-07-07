@@ -34,59 +34,81 @@ export function Modal({
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
+  const wasOpenRef = useRef(false);
 
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-        return;
-      }
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
-      if (event.key !== 'Tab' || !panelRef.current) {
-        return;
-      }
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      onCloseRef.current();
+      return;
+    }
 
-      const focusable = Array.from(
-        panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
-      );
+    if (event.key !== 'Tab' || !panelRef.current) {
+      return;
+    }
 
-      if (focusable.length === 0) {
-        event.preventDefault();
-        return;
-      }
+    const focusable = Array.from(
+      panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+    );
 
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
+    if (focusable.length === 0) {
+      event.preventDefault();
+      return;
+    }
 
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    },
-    [onClose],
-  );
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }, []);
 
   useEffect(() => {
     if (!isOpen) {
+      wasOpenRef.current = false;
       return;
     }
+
+    const shouldAutofocus = !wasOpenRef.current;
+    wasOpenRef.current = true;
 
     previousFocusRef.current = document.activeElement as HTMLElement | null;
     document.addEventListener('keydown', handleKeyDown);
 
-    const focusTimer = window.setTimeout(() => {
-      const focusable = panelRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
-      const first = focusable?.[0];
-      if (first?.isConnected) {
-        first.focus();
-      }
-    }, 0);
+    let focusTimer: number | undefined;
+    if (shouldAutofocus) {
+      focusTimer = window.setTimeout(() => {
+        const panel = panelRef.current;
+        if (!panel) {
+          return;
+        }
+
+        const target =
+          panel.querySelector<HTMLElement>('[autofocus]') ??
+          panel.querySelector<HTMLElement>(
+            'input:not([disabled]), textarea:not([disabled]), select:not([disabled])',
+          ) ??
+          panel.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
+
+        if (target?.isConnected) {
+          target.focus();
+        }
+      }, 0);
+    }
 
     return () => {
-      window.clearTimeout(focusTimer);
+      if (focusTimer !== undefined) {
+        window.clearTimeout(focusTimer);
+      }
       document.removeEventListener('keydown', handleKeyDown);
       const previous = previousFocusRef.current;
       previousFocusRef.current = null;
@@ -105,9 +127,8 @@ export function Modal({
       className="fixed inset-0 z-50 flex items-center justify-center p-wilms-4"
       role="presentation"
     >
-      <button
-        type="button"
-        aria-label="Close dialog overlay"
+      <div
+        aria-hidden="true"
         className="absolute inset-0 bg-text-primary/40"
         onClick={onClose}
       />

@@ -40,6 +40,7 @@ export interface SettingsUserRecord {
   isCurrentUser?: boolean;
   photoUrl?: string | null;
   invitationEmailSent?: boolean;
+  invitationEmailStatus?: 'PENDING' | 'SENT' | 'FAILED';
   invitationEmailError?: string | null;
 }
 
@@ -905,6 +906,7 @@ export async function createUser(
     created.lastLoginLabel = 'Invited';
     created.status = 'INVITED';
     created.invitationEmailSent = true;
+    created.invitationEmailStatus = 'SENT';
     return created;
   }
 
@@ -945,28 +947,20 @@ export async function createUser(
 
   const record = mapUserRowToSettingsRecord(row);
   record.lastLoginLabel = 'Invited';
+  record.invitationEmailSent = false;
+  record.invitationEmailStatus = 'PENDING';
+  record.invitationEmailError = null;
 
-  let invitationEmailSent = false;
-  let invitationEmailError: string | null = null;
+  void notifyUserInvitation({
+    email,
+    displayName,
+    temporaryPassword: DEFAULT_INVITE_PASSWORD,
+    userId,
+    expiresAt,
+  }).catch((error) => {
+    console.error('[settings] invitation email failed (async):', error);
+  });
 
-  try {
-    await notifyUserInvitation({
-      email,
-      displayName,
-      temporaryPassword: DEFAULT_INVITE_PASSWORD,
-      userId,
-      expiresAt,
-    });
-    invitationEmailSent = true;
-  } catch (error) {
-    invitationEmailError =
-      error instanceof Error ? error.message : 'Invitation email could not be delivered.';
-    console.error('[settings] invitation email failed:', error);
-    throw new Error(`VALIDATION:${invitationEmailError}`);
-  }
-
-  record.invitationEmailSent = invitationEmailSent;
-  record.invitationEmailError = invitationEmailError;
   return record;
 }
 

@@ -10,6 +10,7 @@ import { sanitizeHtml } from '../notifications/html-sanitize.js';
 
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 750;
+const RELAY_FETCH_TIMEOUT_MS = 12_000;
 
 function shouldUseVercelRelay(): boolean {
   const config = getMailConfig();
@@ -35,6 +36,7 @@ async function sendViaVercelRelay(message: MailMessage): Promise<MailSendResult>
       html: message.html,
       from: message.from,
     }),
+    signal: AbortSignal.timeout(RELAY_FETCH_TIMEOUT_MS),
   });
 
   if (!response.ok) {
@@ -153,6 +155,10 @@ export async function dispatchMail(input: DispatchMailInput): Promise<MailSendRe
 
     if (message.includes('Vercel mail relay failed')) {
       throw new Error('VALIDATION:Email relay is unavailable. Invitation has been queued for retry.');
+    }
+
+    if (message.includes('aborted') || message.includes('timeout')) {
+      throw new Error('VALIDATION:Email relay timed out. Please retry sending the invitation.');
     }
 
     throw new Error(`VALIDATION:Email delivery failed: ${message}`);
