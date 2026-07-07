@@ -373,6 +373,7 @@ export interface ISettingsService {
   deleteRole(id: string): Promise<void>;
   cloneRole(id: string): Promise<RoleDefinition>;
   createUser(input: CreateSettingsUserInput): Promise<SettingsUserRecord>;
+  resendInvitation(id: string): Promise<SettingsUserRecord>;
   updateUser(id: string, input: UpdateSettingsUserInput): Promise<SettingsUserRecord>;
   disableUser(id: string): Promise<SettingsUserRecord>;
   activateUser(id: string): Promise<SettingsUserRecord>;

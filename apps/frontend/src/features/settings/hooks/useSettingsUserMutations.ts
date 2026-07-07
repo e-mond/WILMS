@@ -34,5 +34,10 @@ export function useSettingsUserMutations() {
     onSuccess: invalidateUsers,
   });
 
-  return { createUser, updateUser, disableUser, activateUser, deleteUser };
+  const resendInvitation = useMutation({
+    mutationFn: (id: string) => settingsService.resendInvitation(id),
+    onSuccess: invalidateUsers,
+  });
+
+  return { createUser, updateUser, disableUser, activateUser, deleteUser, resendInvitation };
 }
