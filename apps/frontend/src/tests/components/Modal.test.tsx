@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { Modal } from '@/components/ui/Modal';
 
@@ -40,5 +41,27 @@ describe('Modal', () => {
 
     await user.click(screen.getByRole('button', { name: 'Close' }));
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it('keeps focus in an input when modal content re-renders', async () => {
+    const user = userEvent.setup();
+
+    function Harness() {
+      const [value, setValue] = useState('');
+      return (
+        <Modal isOpen onClose={vi.fn()} title="Create pool">
+          <input aria-label="Pool name" value={value} onChange={(event) => setValue(event.target.value)} />
+        </Modal>
+      );
+    }
+
+    render(<Harness />);
+
+    const input = screen.getByRole('textbox', { name: 'Pool name' });
+    await user.click(input);
+    await user.type(input, 'North');
+
+    expect(input).toHaveValue('North');
+    expect(input).toHaveFocus();
   });
 });
