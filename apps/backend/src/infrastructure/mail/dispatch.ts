@@ -10,7 +10,7 @@ import { sanitizeHtml } from '../notifications/html-sanitize.js';
 
 const DEFAULT_MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 750;
-const RELAY_FETCH_TIMEOUT_MS = 12_000;
+const RELAY_FETCH_TIMEOUT_MS = 8_000;
 
 export function isMailRelayConfigured(): boolean {
   return Boolean(

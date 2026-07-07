@@ -30,6 +30,8 @@ export function useEditPayment(
       queryClient.invalidateQueries({
         queryKey: collectorDashboardQueryKey(collectorId, referenceDate),
       });
+      void queryClient.invalidateQueries({ queryKey: ['dashboard', 'summary'] });
+      void queryClient.invalidateQueries({ queryKey: ['collection-metrics'] });
     },
     onError: (error) => {
       notifyMutationError('Correction failed', error, 'Unable to save this payment correction.');

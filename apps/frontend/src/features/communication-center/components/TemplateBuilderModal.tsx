@@ -130,7 +130,12 @@ export function TemplateBuilderModal({ isOpen, onClose, onSaved }: TemplateBuild
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="button" variant="secondary" disabled={previewTemplate.isPending} onClick={() => previewTemplate.mutate()}>
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={previewTemplate.isPending || !subject.trim()}
+            onClick={() => previewTemplate.mutate()}
+          >
             Preview
           </Button>
           <Button

@@ -76,15 +76,11 @@ export function SettingsUsersSection() {
         toast.success('Invite sent', {
           message: `${values.displayName} was added and the invitation email was sent.`,
         });
-        closeModal();
-        return;
+      } else {
+        toast.success('User invited', {
+          message: `${values.displayName} was added. The invitation email is being sent — use Resend invite if it does not arrive.`,
+        });
       }
-
-      toast.warning('User invited — email not sent', {
-        message:
-          created.invitationEmailError ??
-          'The user was added but the invitation email could not be delivered. Use Resend Invitation from the user row.',
-      });
       closeModal();
     } catch (error) {
       const message =
