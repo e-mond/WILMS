@@ -14,6 +14,11 @@ export const PAGE_GUIDANCE = {
     body: 'Risk flags surface missed payments, duplicate registrations, group escalations, and other operational signals that need review.',
     example: 'Resolve or acknowledge flags to keep portfolio risk visible to supervisors.',
   },
+  communicationCenter: {
+    title: 'Communication Center',
+    body: 'Send targeted messages to staff and borrowers via email, SMS, and in-app notifications. Review delivery reports and manage reusable templates.',
+    example: 'Compose a broadcast to all collectors, or schedule a payment reminder for borrowers with active loans.',
+  },
   reports: {
     title: 'Choosing a report',
     body: 'Reports are read-only views for audits, collections, portfolio health, and compliance. Export when you need to share evidence offline.',

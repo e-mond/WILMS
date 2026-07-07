@@ -43,6 +43,10 @@ export const PERMISSION = {
   VIEW_ALL_COLLECTORS: 'view-all-collectors',
   FORCE_LOGOUT: 'force-logout',
   ENABLE_MFA: 'enable-mfa',
+  MANAGE_COMMUNICATIONS: 'manage-communications',
+  VIEW_COMMUNICATION_ANALYTICS: 'view-communication-analytics',
+  MANAGE_COMMUNICATION_SCHEDULER: 'manage-communication-scheduler',
+  SEND_BROADCAST: 'send-broadcast',
 } as const;
 
 export type PermissionId = (typeof PERMISSION)[keyof typeof PERMISSION];

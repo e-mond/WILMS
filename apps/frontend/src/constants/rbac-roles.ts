@@ -43,6 +43,10 @@ export const PERMISSION_DEFINITIONS: PermissionDefinition[] = [
   { id: PERMISSION.MANAGE_SYSTEM_SETTINGS, label: 'Manage system settings', description: 'Configure platform settings', category: 'Administration' },
   { id: PERMISSION.MANAGE_EXPENSES, label: 'Manage expenses', description: 'Record and approve expenses', category: 'Finance' },
   { id: PERMISSION.VIEW_ALL_COLLECTORS, label: 'View all collectors', description: 'View organisation-wide collector roster', category: 'Administration' },
+  { id: PERMISSION.MANAGE_COMMUNICATIONS, label: 'Manage communications', description: 'Compose and send messages via Communication Center', category: 'Communications' },
+  { id: PERMISSION.VIEW_COMMUNICATION_ANALYTICS, label: 'View communication analytics', description: 'View delivery reports and analytics', category: 'Communications' },
+  { id: PERMISSION.MANAGE_COMMUNICATION_SCHEDULER, label: 'Manage communication scheduler', description: 'Schedule and manage recurring messages', category: 'Communications' },
+  { id: PERMISSION.SEND_BROADCAST, label: 'Send broadcast', description: 'Send broadcast messages to filtered audiences', category: 'Communications' },
 ];
 
 export const ROLE_DEFINITIONS: RoleDefinition[] = [

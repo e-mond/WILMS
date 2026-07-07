@@ -192,6 +192,18 @@ const notificationServiceMock: INotificationService = {
 
   },
 
+  async markAllAsRead(): Promise<void> {
+    await simulateDelay();
+    for (const item of buildInboxItems()) {
+      readNotificationIds.add(item.id);
+    }
+  },
+
+  async deleteNotification(notificationId: string): Promise<void> {
+    await simulateDelay();
+    readNotificationIds.add(notificationId);
+  },
+
 
 
   async sendNotification(input: SendNotificationInput): Promise<NotificationDelivery> {

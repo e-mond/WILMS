@@ -2,7 +2,7 @@
 
 Women's Interest-Free Loan Management System (WILMS) is a TypeScript monorepo for borrower onboarding, group lending, loan lifecycle management, weekly collections, audit trails, and role-based reporting.
 
-Version 1.0.0 is the production release. v1.1 UX stabilization is on `main`. Hotfix **v1.1.2** addresses notification delivery, user invitations, registration officer access, and registration form fixes — see `V1.1.2_NOTIFICATION_REPORT.md`. Prior hotfix **v1.1.1** — see `V1.1.1_HOTFIX_REPORT.md`.
+Version 1.0.0 is the production release. v1.1 UX stabilization is on `main`. Hotfix **v1.1.3** adds the Communication Center and complete notification system — see `V1.1.3_COMMUNICATION_CENTER_REPORT.md`. Prior releases: **v1.1.2** (notifications hotfix), **v1.1.1** (production fixes).
 
 ## Production Services
 
@@ -64,9 +64,13 @@ npm run smoke:rbac
 
 Production smoke requires `WILMS_APP_URL` and `WILMS_API_URL` environment variables.
 
-## Notifications (v1.1.2)
+## Notifications (v1.1.2+)
 
-Outbound email from Railway uses a Vercel Gmail relay when `WILMS_VERCEL_MAIL_URL` and `WILMS_INTERNAL_MAIL_SECRET` are set on the API. Gmail credentials (`GMAIL_USER`, `GMAIL_APP_PASSWORD`) must be on Vercel. Delivery attempts are logged to `message_deliveries` and queryable via `GET /settings/delivery-logs`.
+Outbound email from Railway uses a Vercel Gmail relay when `WILMS_VERCEL_MAIL_URL` and `WILMS_INTERNAL_MAIL_SECRET` are set on the API. Gmail credentials (`GMAIL_USER`, `GMAIL_APP_PASSWORD`) must be on Vercel. Delivery attempts are logged to `message_deliveries` and queryable via `GET /settings/delivery-logs` or the Communication Center.
+
+## Communication Center (v1.1.3)
+
+Super admins can access `/communication-center` to compose broadcasts, manage templates, review delivery analytics, and monitor failed messages across Email, SMS, and In-App channels.
 
 Additional verification:
 

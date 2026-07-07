@@ -1,3 +1,15 @@
+import {
+  buildEmailTemplate,
+  emailAlert,
+  emailButton,
+  emailCard,
+  emailDivider,
+  emailParagraph,
+  emailReceipt,
+  emailSummary,
+  type EmailTemplate,
+} from './email-layout.js';
+
 export interface PaymentConfirmationSmsInput {
   amountPesewas: number;
   paymentDate: string;
@@ -19,6 +31,7 @@ export interface PaymentConfirmationEmailInput {
   amountPesewas: number;
   paymentDate: string;
   loanDisplayId: string;
+  outstandingBalancePesewas?: number;
 }
 
 export interface LoanApprovalEmailInput {
@@ -30,6 +43,8 @@ export interface LoanApprovalEmailInput {
 export function formatGhsAmount(amountPesewas: number): string {
   return (amountPesewas / 100).toFixed(2);
 }
+
+// ─── SMS templates ───────────────────────────────────────────────────────────
 
 export function buildPaymentConfirmationSmsBody(input: PaymentConfirmationSmsInput): string {
   const amountGhs = formatGhsAmount(input.amountPesewas);
@@ -50,139 +65,8 @@ export function buildBorrowerRegistrationApprovalSmsBody(input: { borrowerName: 
   return `WILMS: Hi ${input.borrowerName}, your registration has been approved. Your collector will contact you about next steps.`;
 }
 
-export function buildPaymentConfirmationEmail(input: PaymentConfirmationEmailInput): {
-  subject: string;
-  text: string;
-  html: string;
-} {
-  const amountGhs = formatGhsAmount(input.amountPesewas);
-  const subject = `WILMS payment receipt — GHS ${amountGhs}`;
-  const text = [
-    `Dear ${input.borrowerName},`,
-    '',
-    `We received your payment of GHS ${amountGhs} on ${input.paymentDate} for loan ${input.loanDisplayId}.`,
-    '',
-    'Thank you for staying on track with your repayments.',
-    '',
-    '— WILMS',
-  ].join('\n');
-
-  const html = [
-    `<p>Dear ${input.borrowerName},</p>`,
-    `<p>We received your payment of <strong>GHS ${amountGhs}</strong> on ${input.paymentDate} for loan <strong>${input.loanDisplayId}</strong>.</p>`,
-    '<p>Thank you for staying on track with your repayments.</p>',
-    '<p>— WILMS</p>',
-  ].join('');
-
-  return { subject, text, html };
-}
-
-export function buildLoanApprovalEmail(input: LoanApprovalEmailInput): {
-  subject: string;
-  text: string;
-  html: string;
-} {
-  const amountGhs = formatGhsAmount(input.amountPesewas);
-  const subject = `WILMS loan approved — ${input.loanDisplayId}`;
-  const text = [
-    `Dear ${input.borrowerName},`,
-    '',
-    `Your interest-free loan application (${input.loanDisplayId}) for GHS ${amountGhs} has been approved.`,
-    '',
-    'Your collector will contact you about disbursement and weekly repayments.',
-    '',
-    '— WILMS',
-  ].join('\n');
-
-  const html = [
-    `<p>Dear ${input.borrowerName},</p>`,
-    `<p>Your interest-free loan application (<strong>${input.loanDisplayId}</strong>) for <strong>GHS ${amountGhs}</strong> has been approved.</p>`,
-    '<p>Your collector will contact you about disbursement and weekly repayments.</p>',
-    '<p>— WILMS</p>',
-  ].join('');
-
-  return { subject, text, html };
-}
-
-export function buildUserInvitationEmail(input: {
-  displayName: string;
-  email: string;
-  temporaryPassword: string;
-  appUrl?: string;
-}): { subject: string; text: string; html: string } {
-  const loginUrl = input.appUrl?.trim() || 'https://wilms.vercel.app/login';
-  const subject = 'You have been invited to WILMS';
-  const text = [
-    `Hello ${input.displayName},`,
-    '',
-    'Your WILMS account has been invited.',
-    '',
-    `Sign in: ${loginUrl}`,
-    `Email: ${input.email}`,
-    `Temporary password: ${input.temporaryPassword}`,
-    '',
-    'Please sign in and change your password immediately.',
-    '',
-    '— WILMS',
-  ].join('\n');
-
-  const html = [
-    `<p>Hello <strong>${input.displayName}</strong>,</p>`,
-    '<p>Your WILMS account has been invited.</p>',
-    `<p><a href="${loginUrl}">Sign in to WILMS</a></p>`,
-    `<p>Email: <strong>${input.email}</strong><br/>Temporary password: <strong>${input.temporaryPassword}</strong></p>`,
-    '<p>Please sign in and change your password immediately.</p>',
-    '<p>— WILMS</p>',
-  ].join('');
-
-  return { subject, text, html };
-}
-
-export function buildRegistrationRejectedEmail(input: {
-  borrowerName: string;
-  reason?: string;
-}): { subject: string; text: string; html: string } {
-  const subject = 'WILMS registration update';
-  const reason = input.reason?.trim() || 'Please contact your registration officer for details.';
-  const text = [
-    `Dear ${input.borrowerName},`,
-    '',
-    'Your registration could not be approved at this time.',
-    '',
-    reason,
-    '',
-    '— WILMS',
-  ].join('\n');
-
-  const html = [
-    `<p>Dear ${input.borrowerName},</p>`,
-    '<p>Your registration could not be approved at this time.</p>',
-    `<p>${reason}</p>`,
-    '<p>— WILMS</p>',
-  ].join('');
-
-  return { subject, text, html };
-}
-
-export function buildRegistrationApprovedEmail(input: {
-  borrowerName: string;
-}): { subject: string; text: string; html: string } {
-  const subject = 'WILMS registration approved';
-  const text = [
-    `Dear ${input.borrowerName},`,
-    '',
-    'Your registration has been approved. Your collector will contact you about next steps.',
-    '',
-    '— WILMS',
-  ].join('\n');
-
-  const html = [
-    `<p>Dear ${input.borrowerName},</p>`,
-    '<p>Your registration has been approved. Your collector will contact you about next steps.</p>',
-    '<p>— WILMS</p>',
-  ].join('');
-
-  return { subject, text, html };
+export function buildRegistrationRejectedSmsBody(input: { borrowerName: string }): string {
+  return `WILMS: Hi ${input.borrowerName}, your registration could not be approved. Contact your registration officer for details.`;
 }
 
 export function buildLoanRejectedSmsBody(input: { borrowerName: string }): string {
@@ -200,4 +84,706 @@ export function buildLoanDisbursedSmsBody(input: {
 
 export function buildBlacklistSmsBody(input: { borrowerName: string }): string {
   return `WILMS: Hi ${input.borrowerName}, your application has been flagged for review. Contact your registration officer.`;
+}
+
+export function buildLoanReminderSmsBody(input: {
+  borrowerName: string;
+  loanDisplayId: string;
+  amountPesewas: number;
+  dueDate: string;
+}): string {
+  const amountGhs = formatGhsAmount(input.amountPesewas);
+  return `WILMS: Hi ${input.borrowerName}, payment of GHS ${amountGhs} for loan ${input.loanDisplayId} is due on ${input.dueDate}.`;
+}
+
+export function buildCollectionReminderSmsBody(input: {
+  borrowerName: string;
+  amountPesewas: number;
+  collectorName: string;
+}): string {
+  const amountGhs = formatGhsAmount(input.amountPesewas);
+  return `WILMS: Hi ${input.borrowerName}, your collector ${input.collectorName} will collect GHS ${amountGhs} this week.`;
+}
+
+// ─── Email templates (branded) ───────────────────────────────────────────────
+
+export function buildPaymentConfirmationEmail(input: PaymentConfirmationEmailInput): EmailTemplate {
+  const amountGhs = formatGhsAmount(input.amountPesewas);
+  const outstanding = input.outstandingBalancePesewas
+    ? formatGhsAmount(input.outstandingBalancePesewas)
+    : null;
+
+  return buildEmailTemplate({
+    subject: `WILMS payment receipt — GHS ${amountGhs}`,
+    greeting: input.borrowerName,
+    preheader: `Payment of GHS ${amountGhs} received for loan ${input.loanDisplayId}`,
+    theme: 'success',
+    textLines: [
+      `Dear ${input.borrowerName},`,
+      '',
+      `We received your payment of GHS ${amountGhs} on ${input.paymentDate} for loan ${input.loanDisplayId}.`,
+      outstanding ? `Outstanding balance: GHS ${outstanding}` : '',
+      '',
+      'Thank you for staying on track with your repayments.',
+      '',
+      '— WILMS',
+    ].filter(Boolean),
+    htmlBody: [
+      emailParagraph('We received your payment. Thank you for staying on track with your repayments.'),
+      emailReceipt([
+        { label: 'Loan ID', value: input.loanDisplayId },
+        { label: 'Amount Paid', value: `GHS ${amountGhs}` },
+        { label: 'Payment Date', value: input.paymentDate },
+        ...(outstanding ? [{ label: 'Outstanding Balance', value: `GHS ${outstanding}` }] : []),
+      ]),
+      emailButton('View Loan', `https://wilms.vercel.app/loans`),
+    ].join(''),
+  });
+}
+
+export function buildLoanApprovalEmail(input: LoanApprovalEmailInput): EmailTemplate {
+  const amountGhs = formatGhsAmount(input.amountPesewas);
+
+  return buildEmailTemplate({
+    subject: `WILMS loan approved — ${input.loanDisplayId}`,
+    greeting: input.borrowerName,
+    preheader: `Your loan ${input.loanDisplayId} for GHS ${amountGhs} has been approved`,
+    theme: 'success',
+    textLines: [
+      `Dear ${input.borrowerName},`,
+      '',
+      `Your interest-free loan application (${input.loanDisplayId}) for GHS ${amountGhs} has been approved.`,
+      'Your collector will contact you about disbursement and weekly repayments.',
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailAlert('Your loan application has been approved!', 'success'),
+      emailCard('Loan Details', [
+        { label: 'Loan ID', value: input.loanDisplayId },
+        { label: 'Approved Amount', value: `GHS ${amountGhs}` },
+      ]),
+      emailParagraph('Your collector will contact you about disbursement and weekly repayments.'),
+      emailButton('View Loan', `https://wilms.vercel.app/loans`),
+    ].join(''),
+  });
+}
+
+export function buildUserInvitationEmail(input: {
+  displayName: string;
+  email: string;
+  temporaryPassword: string;
+  appUrl?: string;
+}): EmailTemplate {
+  const loginUrl = input.appUrl?.trim() || 'https://wilms.vercel.app/login';
+
+  return buildEmailTemplate({
+    subject: 'You have been invited to WILMS',
+    greeting: input.displayName,
+    preheader: 'Your WILMS account has been created. Sign in to get started.',
+    theme: 'info',
+    textLines: [
+      `Hello ${input.displayName},`,
+      '',
+      'Your WILMS account has been invited.',
+      `Sign in: ${loginUrl}`,
+      `Email: ${input.email}`,
+      `Temporary password: ${input.temporaryPassword}`,
+      '',
+      'Please sign in and change your password immediately.',
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailParagraph('Your WILMS account has been created. Use the credentials below to sign in.'),
+      emailCard('Account Details', [
+        { label: 'Email', value: input.email },
+        { label: 'Temporary Password', value: input.temporaryPassword },
+      ]),
+      emailAlert('Please change your password immediately after signing in.', 'warning'),
+      emailButton('Accept Invitation', loginUrl, 'primary'),
+    ].join(''),
+  });
+}
+
+export function buildInvitationReminderEmail(input: {
+  displayName: string;
+  email: string;
+  appUrl?: string;
+}): EmailTemplate {
+  const loginUrl = input.appUrl?.trim() || 'https://wilms.vercel.app/login';
+
+  return buildEmailTemplate({
+    subject: 'Reminder: Complete your WILMS account setup',
+    greeting: input.displayName,
+    preheader: 'Your WILMS invitation is still pending',
+    theme: 'warning',
+    textLines: [
+      `Hello ${input.displayName},`,
+      '',
+      'This is a reminder that your WILMS account invitation is still pending.',
+      `Sign in: ${loginUrl}`,
+      `Email: ${input.email}`,
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailAlert('Your WILMS account invitation is still pending.', 'warning'),
+      emailParagraph('Please sign in to complete your account setup.'),
+      emailButton('Complete Setup', loginUrl, 'primary'),
+    ].join(''),
+  });
+}
+
+export function buildRegistrationRejectedEmail(input: {
+  borrowerName: string;
+  reason?: string;
+}): EmailTemplate {
+  const reason = input.reason?.trim() || 'Please contact your registration officer for details.';
+
+  return buildEmailTemplate({
+    subject: 'WILMS registration update',
+    greeting: input.borrowerName,
+    preheader: 'Your registration requires attention',
+    theme: 'warning',
+    textLines: [
+      `Dear ${input.borrowerName},`,
+      '',
+      'Your registration could not be approved at this time.',
+      reason,
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailAlert('Your registration could not be approved at this time.', 'warning'),
+      emailParagraph(reason),
+    ].join(''),
+  });
+}
+
+export function buildRegistrationApprovedEmail(input: { borrowerName: string }): EmailTemplate {
+  return buildEmailTemplate({
+    subject: 'WILMS registration approved',
+    greeting: input.borrowerName,
+    preheader: 'Your registration has been approved',
+    theme: 'success',
+    textLines: [
+      `Dear ${input.borrowerName},`,
+      '',
+      'Your registration has been approved. Your collector will contact you about next steps.',
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailAlert('Congratulations! Your registration has been approved.', 'success'),
+      emailParagraph('Your collector will contact you about next steps.'),
+      emailButton('Complete Registration', 'https://wilms.vercel.app/login', 'success'),
+    ].join(''),
+  });
+}
+
+export function buildWelcomeEmail(input: {
+  displayName: string;
+  role: string;
+  appUrl?: string;
+}): EmailTemplate {
+  const loginUrl = input.appUrl?.trim() || 'https://wilms.vercel.app/login';
+
+  return buildEmailTemplate({
+    subject: 'Welcome to WILMS',
+    greeting: input.displayName,
+    preheader: 'Welcome to the WILMS platform',
+    theme: 'success',
+    textLines: [
+      `Hello ${input.displayName},`,
+      '',
+      `Welcome to WILMS! Your account is now active as ${input.role}.`,
+      `Sign in: ${loginUrl}`,
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailParagraph(`Welcome to WILMS! Your account is now active as <strong>${input.role}</strong>.`),
+      emailSummary('Getting Started', [
+        'Sign in to your account',
+        'Complete your profile settings',
+        'Explore your dashboard',
+      ]),
+      emailButton('Login', loginUrl, 'success'),
+    ].join(''),
+  });
+}
+
+export function buildPasswordResetEmail(input: {
+  displayName: string;
+  resetUrl: string;
+  expiresInMinutes?: number;
+}): EmailTemplate {
+  const expiry = input.expiresInMinutes ?? 60;
+
+  return buildEmailTemplate({
+    subject: 'Reset your WILMS password',
+    greeting: input.displayName,
+    preheader: 'Password reset request for your WILMS account',
+    theme: 'info',
+    textLines: [
+      `Hello ${input.displayName},`,
+      '',
+      'We received a request to reset your WILMS password.',
+      `Reset link: ${input.resetUrl}`,
+      `This link expires in ${expiry} minutes.`,
+      '',
+      'If you did not request this, please ignore this email.',
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailParagraph('We received a request to reset your WILMS password.'),
+      emailButton('Reset Password', input.resetUrl, 'info'),
+      emailAlert(`This link expires in ${expiry} minutes. If you did not request this, please ignore this email.`, 'warning'),
+    ].join(''),
+  });
+}
+
+export function buildAccountActivatedEmail(input: {
+  displayName: string;
+  appUrl?: string;
+}): EmailTemplate {
+  const loginUrl = input.appUrl?.trim() || 'https://wilms.vercel.app/login';
+
+  return buildEmailTemplate({
+    subject: 'Your WILMS account has been activated',
+    greeting: input.displayName,
+    preheader: 'Your account is now active',
+    theme: 'success',
+    textLines: [
+      `Hello ${input.displayName},`,
+      '',
+      'Your WILMS account has been activated. You can now sign in.',
+      `Sign in: ${loginUrl}`,
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailAlert('Your account has been activated.', 'success'),
+      emailButton('Login', loginUrl, 'success'),
+    ].join(''),
+  });
+}
+
+export function buildAccountDisabledEmail(input: {
+  displayName: string;
+  reason?: string;
+}): EmailTemplate {
+  const reason = input.reason?.trim() || 'Please contact your administrator for more information.';
+
+  return buildEmailTemplate({
+    subject: 'Your WILMS account has been disabled',
+    greeting: input.displayName,
+    preheader: 'Your account access has been suspended',
+    theme: 'critical',
+    textLines: [
+      `Hello ${input.displayName},`,
+      '',
+      'Your WILMS account has been disabled.',
+      reason,
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailAlert('Your account has been disabled.', 'critical'),
+      emailParagraph(reason),
+    ].join(''),
+  });
+}
+
+export function buildAccountEnabledEmail(input: {
+  displayName: string;
+  appUrl?: string;
+}): EmailTemplate {
+  const loginUrl = input.appUrl?.trim() || 'https://wilms.vercel.app/login';
+
+  return buildEmailTemplate({
+    subject: 'Your WILMS account has been re-enabled',
+    greeting: input.displayName,
+    preheader: 'Your account access has been restored',
+    theme: 'success',
+    textLines: [
+      `Hello ${input.displayName},`,
+      '',
+      'Your WILMS account has been re-enabled. You can sign in again.',
+      `Sign in: ${loginUrl}`,
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailAlert('Your account access has been restored.', 'success'),
+      emailButton('Login', loginUrl, 'success'),
+    ].join(''),
+  });
+}
+
+export function buildLoanRejectedEmail(input: {
+  borrowerName: string;
+  loanDisplayId: string;
+  reason?: string;
+}): EmailTemplate {
+  const reason = input.reason?.trim() || 'Please contact your collector for more information.';
+
+  return buildEmailTemplate({
+    subject: `WILMS loan update — ${input.loanDisplayId}`,
+    greeting: input.borrowerName,
+    preheader: `Update on loan ${input.loanDisplayId}`,
+    theme: 'critical',
+    textLines: [
+      `Dear ${input.borrowerName},`,
+      '',
+      `Your loan application (${input.loanDisplayId}) was not approved.`,
+      reason,
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailAlert(`Loan ${input.loanDisplayId} was not approved.`, 'critical'),
+      emailCard('Loan Details', [{ label: 'Loan ID', value: input.loanDisplayId }]),
+      emailParagraph(reason),
+    ].join(''),
+  });
+}
+
+export function buildLoanClosedEmail(input: {
+  borrowerName: string;
+  loanDisplayId: string;
+}): EmailTemplate {
+  return buildEmailTemplate({
+    subject: `WILMS loan closed — ${input.loanDisplayId}`,
+    greeting: input.borrowerName,
+    preheader: `Loan ${input.loanDisplayId} has been closed`,
+    theme: 'info',
+    textLines: [
+      `Dear ${input.borrowerName},`,
+      '',
+      `Your loan ${input.loanDisplayId} has been closed.`,
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailParagraph(`Your loan <strong>${input.loanDisplayId}</strong> has been closed.`),
+      emailButton('View Loan History', 'https://wilms.vercel.app/loans', 'info'),
+    ].join(''),
+  });
+}
+
+export function buildLoanFullyPaidEmail(input: {
+  borrowerName: string;
+  loanDisplayId: string;
+  totalPaidPesewas: number;
+}): EmailTemplate {
+  const totalGhs = formatGhsAmount(input.totalPaidPesewas);
+
+  return buildEmailTemplate({
+    subject: `Congratulations! Loan ${input.loanDisplayId} fully paid`,
+    greeting: input.borrowerName,
+    preheader: `You have fully repaid loan ${input.loanDisplayId}`,
+    theme: 'success',
+    textLines: [
+      `Dear ${input.borrowerName},`,
+      '',
+      `Congratulations! You have fully repaid loan ${input.loanDisplayId}.`,
+      `Total repaid: GHS ${totalGhs}`,
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailAlert('Congratulations! Your loan has been fully repaid.', 'success'),
+      emailCard('Loan Summary', [
+        { label: 'Loan ID', value: input.loanDisplayId },
+        { label: 'Total Repaid', value: `GHS ${totalGhs}` },
+        { label: 'Status', value: 'Fully Paid' },
+      ]),
+      emailButton('Download Receipt', 'https://wilms.vercel.app/loans', 'success'),
+    ].join(''),
+  });
+}
+
+export function buildPaymentReversalEmail(input: {
+  borrowerName: string;
+  amountPesewas: number;
+  loanDisplayId: string;
+  reason: string;
+  reversalDate: string;
+}): EmailTemplate {
+  const amountGhs = formatGhsAmount(input.amountPesewas);
+
+  return buildEmailTemplate({
+    subject: `WILMS payment reversal — GHS ${amountGhs}`,
+    greeting: input.borrowerName,
+    preheader: `Payment of GHS ${amountGhs} has been reversed`,
+    theme: 'warning',
+    textLines: [
+      `Dear ${input.borrowerName},`,
+      '',
+      `A payment of GHS ${amountGhs} for loan ${input.loanDisplayId} has been reversed on ${input.reversalDate}.`,
+      `Reason: ${input.reason}`,
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailAlert('A payment has been reversed on your account.', 'warning'),
+      emailCard('Reversal Details', [
+        { label: 'Loan ID', value: input.loanDisplayId },
+        { label: 'Amount', value: `GHS ${amountGhs}` },
+        { label: 'Date', value: input.reversalDate },
+        { label: 'Reason', value: input.reason },
+      ]),
+    ].join(''),
+  });
+}
+
+export function buildLoanDefaultEmail(input: {
+  borrowerName: string;
+  loanDisplayId: string;
+  outstandingPesewas: number;
+  weeksOverdue: number;
+}): EmailTemplate {
+  const amountGhs = formatGhsAmount(input.outstandingPesewas);
+
+  return buildEmailTemplate({
+    subject: `WILMS loan default notice — ${input.loanDisplayId}`,
+    greeting: input.borrowerName,
+    preheader: `Important notice regarding loan ${input.loanDisplayId}`,
+    theme: 'critical',
+    textLines: [
+      `Dear ${input.borrowerName},`,
+      '',
+      `Your loan ${input.loanDisplayId} is in default. Outstanding: GHS ${amountGhs}. Weeks overdue: ${input.weeksOverdue}.`,
+      'Please contact your collector immediately.',
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailAlert('Your loan is in default. Please contact your collector immediately.', 'critical'),
+      emailCard('Default Details', [
+        { label: 'Loan ID', value: input.loanDisplayId },
+        { label: 'Outstanding', value: `GHS ${amountGhs}` },
+        { label: 'Weeks Overdue', value: String(input.weeksOverdue) },
+      ]),
+    ].join(''),
+  });
+}
+
+export function buildLoanReminderEmail(input: {
+  borrowerName: string;
+  loanDisplayId: string;
+  amountPesewas: number;
+  dueDate: string;
+}): EmailTemplate {
+  const amountGhs = formatGhsAmount(input.amountPesewas);
+
+  return buildEmailTemplate({
+    subject: `WILMS payment reminder — ${input.loanDisplayId}`,
+    greeting: input.borrowerName,
+    preheader: `Payment of GHS ${amountGhs} due on ${input.dueDate}`,
+    theme: 'warning',
+    textLines: [
+      `Dear ${input.borrowerName},`,
+      '',
+      `Your payment of GHS ${amountGhs} for loan ${input.loanDisplayId} is due on ${input.dueDate}.`,
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailAlert(`Payment of GHS ${amountGhs} is due on ${input.dueDate}.`, 'warning'),
+      emailCard('Payment Due', [
+        { label: 'Loan ID', value: input.loanDisplayId },
+        { label: 'Amount Due', value: `GHS ${amountGhs}` },
+        { label: 'Due Date', value: input.dueDate },
+      ]),
+      emailButton('View Payment', 'https://wilms.vercel.app/loans', 'warning'),
+    ].join(''),
+  });
+}
+
+export function buildCollectionReminderEmail(input: {
+  borrowerName: string;
+  amountPesewas: number;
+  collectorName: string;
+  collectionDate: string;
+}): EmailTemplate {
+  const amountGhs = formatGhsAmount(input.amountPesewas);
+
+  return buildEmailTemplate({
+    subject: 'WILMS collection reminder',
+    greeting: input.borrowerName,
+    preheader: `Collection of GHS ${amountGhs} scheduled for ${input.collectionDate}`,
+    theme: 'info',
+    textLines: [
+      `Dear ${input.borrowerName},`,
+      '',
+      `Your collector ${input.collectorName} will collect GHS ${amountGhs} on ${input.collectionDate}.`,
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailParagraph(`Your collector <strong>${input.collectorName}</strong> will visit on <strong>${input.collectionDate}</strong>.`),
+      emailCard('Collection Details', [
+        { label: 'Collector', value: input.collectorName },
+        { label: 'Amount', value: `GHS ${amountGhs}` },
+        { label: 'Date', value: input.collectionDate },
+      ]),
+    ].join(''),
+  });
+}
+
+export function buildGroupCreatedEmail(input: {
+  recipientName: string;
+  groupName: string;
+  groupDisplayId: string;
+  community: string;
+}): EmailTemplate {
+  return buildEmailTemplate({
+    subject: `New group created — ${input.groupName}`,
+    greeting: input.recipientName,
+    preheader: `Group ${input.groupDisplayId} has been created`,
+    theme: 'info',
+    textLines: [
+      `Hello ${input.recipientName},`,
+      '',
+      `A new group "${input.groupName}" (${input.groupDisplayId}) has been created in ${input.community}.`,
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailParagraph('A new lending group has been created.'),
+      emailCard('Group Details', [
+        { label: 'Group Name', value: input.groupName },
+        { label: 'Group ID', value: input.groupDisplayId },
+        { label: 'Community', value: input.community },
+      ]),
+      emailButton('View Group', 'https://wilms.vercel.app/groups', 'info'),
+    ].join(''),
+  });
+}
+
+export function buildGroupLeaderAssignedEmail(input: {
+  leaderName: string;
+  groupName: string;
+  groupDisplayId: string;
+}): EmailTemplate {
+  return buildEmailTemplate({
+    subject: `You have been assigned as group leader — ${input.groupName}`,
+    greeting: input.leaderName,
+    preheader: `You are now the leader of ${input.groupName}`,
+    theme: 'success',
+    textLines: [
+      `Dear ${input.leaderName},`,
+      '',
+      `You have been assigned as the leader of group "${input.groupName}" (${input.groupDisplayId}).`,
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailAlert(`You are now the leader of ${input.groupName}.`, 'success'),
+      emailCard('Group Details', [
+        { label: 'Group Name', value: input.groupName },
+        { label: 'Group ID', value: input.groupDisplayId },
+        { label: 'Your Role', value: 'Group Leader' },
+      ]),
+    ].join(''),
+  });
+}
+
+export function buildCollectorAssignedEmail(input: {
+  collectorName: string;
+  groupName: string;
+  groupDisplayId: string;
+  memberCount: number;
+}): EmailTemplate {
+  return buildEmailTemplate({
+    subject: `Collector assignment — ${input.groupName}`,
+    greeting: input.collectorName,
+    preheader: `You have been assigned to group ${input.groupName}`,
+    theme: 'info',
+    textLines: [
+      `Hello ${input.collectorName},`,
+      '',
+      `You have been assigned as collector for group "${input.groupName}" (${input.groupDisplayId}) with ${input.memberCount} members.`,
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailParagraph(`You have been assigned as collector for <strong>${input.groupName}</strong>.`),
+      emailCard('Assignment Details', [
+        { label: 'Group', value: input.groupName },
+        { label: 'Group ID', value: input.groupDisplayId },
+        { label: 'Members', value: String(input.memberCount) },
+      ]),
+      emailButton('View Group', 'https://wilms.vercel.app/groups', 'info'),
+    ].join(''),
+  });
+}
+
+export function buildUserRoleChangedEmail(input: {
+  displayName: string;
+  previousRole: string;
+  newRole: string;
+  appUrl?: string;
+}): EmailTemplate {
+  const loginUrl = input.appUrl?.trim() || 'https://wilms.vercel.app/login';
+
+  return buildEmailTemplate({
+    subject: 'Your WILMS role has been updated',
+    greeting: input.displayName,
+    preheader: `Your role has changed from ${input.previousRole} to ${input.newRole}`,
+    theme: 'info',
+    textLines: [
+      `Hello ${input.displayName},`,
+      '',
+      `Your WILMS role has been updated from ${input.previousRole} to ${input.newRole}.`,
+      `Sign in: ${loginUrl}`,
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailParagraph('Your account role has been updated.'),
+      emailCard('Role Change', [
+        { label: 'Previous Role', value: input.previousRole },
+        { label: 'New Role', value: input.newRole },
+      ]),
+      emailDivider(),
+      emailButton('Login', loginUrl, 'info'),
+    ].join(''),
+  });
+}
+
+export function buildLoanDisbursedEmail(input: {
+  borrowerName: string;
+  loanDisplayId: string;
+  amountPesewas: number;
+  disbursedDate: string;
+}): EmailTemplate {
+  const amountGhs = formatGhsAmount(input.amountPesewas);
+
+  return buildEmailTemplate({
+    subject: `WILMS loan disbursed — ${input.loanDisplayId}`,
+    greeting: input.borrowerName,
+    preheader: `GHS ${amountGhs} disbursed for loan ${input.loanDisplayId}`,
+    theme: 'success',
+    textLines: [
+      `Dear ${input.borrowerName},`,
+      '',
+      `Your loan ${input.loanDisplayId} for GHS ${amountGhs} has been disbursed on ${input.disbursedDate}.`,
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailAlert(`GHS ${amountGhs} has been disbursed to your account.`, 'success'),
+      emailCard('Disbursement Details', [
+        { label: 'Loan ID', value: input.loanDisplayId },
+        { label: 'Amount', value: `GHS ${amountGhs}` },
+        { label: 'Date', value: input.disbursedDate },
+      ]),
+      emailButton('View Loan', 'https://wilms.vercel.app/loans', 'success'),
+    ].join(''),
+  });
 }
