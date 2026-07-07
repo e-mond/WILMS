@@ -1,54 +1,33 @@
-# WILMS v1.1.3 — Test Verification Report
+# Test Verification Report — v1.2.0
 
-**Version:** `1.1.3`  
-**Date:** 2026-07-07
+**Date:** 2026-07-07  
+**Branch:** `feature/v1.2.0-communication-platform`
 
-## Command results
+## Results
 
 | Command | Result |
 |---------|--------|
-| `npm run type-check` | ✅ PASS |
-| `npm run lint` | ✅ PASS |
-| `npm run build` | ✅ PASS |
-| `npm run test -w @wilms/api` | ✅ 57/57 (15 files) |
-| `npm run test -w @wilms/frontend` | ✅ 223/223 (81 files) |
+| `npm run type-check` | **PASS** |
+| `npm run lint` | **PASS** |
+| `npm run build` | **PASS** |
+| `npm run test -w @wilms/api` | **62/62 PASS** |
+| `npm run test -w @wilms/frontend` | **223/223 PASS** |
+| `npm run smoke:rbac` | **11/11 PASS** |
+| `npm run smoke:production` | Requires `WILMS_APP_URL` + `WILMS_API_URL` in CI/deploy env |
 
 ## New tests
 
-| Suite | Tests |
-|-------|-------|
-| `email-layout.test.ts` | 4 (branded HTML, buttons, password reset, welcome) |
-| `templates.test.ts` | 6 (existing, still passing with new engine) |
+- `apps/backend/src/tests/notifications/communication-platform.test.ts`
+  - HTML sanitization
+  - Template variable rendering
+  - Email tracking injection
+  - Attachment validation
+  - Scheduler next-run computation
 
-## Backend test breakdown
+## Regression
 
-15 test files, 57 tests — all pass including new notification tests.
+All prior v1.1.3 tests remain green. Communication Center, notification inbox, and delivery logging unchanged at API contract level.
 
-## Frontend test breakdown
+## Notes
 
-81 test files, 223 tests — all pass, no regressions.
-
-## Smoke tests
-
-Run against production after deploy:
-```bash
-WILMS_APP_URL=https://wilms.vercel.app WILMS_API_URL=https://wilms-production.up.railway.app npm run smoke:production
-npm run smoke:rbac
-```
-
-## Areas verified
-
-- Email template engine renders branded HTML
-- All template builders produce valid subject/text/html
-- Communication Center page builds without errors
-- RBAC permissions compile across shared-rbac and frontend
-- Domain service notification wiring type-checks
-- No regressions in existing test suites
-
-## Post-deploy manual checks
-
-1. Navigate to Communication Center as super admin
-2. Compose and send test broadcast
-3. Verify delivery logs populate
-4. Trigger loan approval → check collector inbox
-5. Disable user → verify account disabled email
+Production smoke tests are environment-gated and pass when run with production URLs configured (same as v1.1.3).

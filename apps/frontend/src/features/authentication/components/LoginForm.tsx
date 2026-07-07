@@ -178,6 +178,12 @@ export function LoginForm() {
             {...register('password')}
           />
 
+          <p className="text-right text-small">
+            <a href="/forgot-password" className="font-semibold text-brand-primary">
+              Forgot password?
+            </a>
+          </p>
+
           <Checkbox
             id="login-remember-email"
             label="Remember my email on this device"

@@ -1,12 +1,39 @@
 import { Router } from 'express';
+import { z } from 'zod';
 import { asyncHandler } from '../../http/async-handler.js';
 import { sendData } from '../../http/response.js';
 import { PERMISSION } from '../../infrastructure/permissions/matrix.js';
 import { requireAuth } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/require-permission.js';
+import { validateBody } from '../../middleware/validate-body.js';
 import * as notificationService from './service.js';
+import * as pushService from './push.service.js';
+import * as preferencesService from './preferences.service.js';
 
 export const notificationsRouter = Router();
+
+const pushSubscriptionSchema = z.object({
+  endpoint: z.string().url(),
+  keys: z.object({
+    p256dh: z.string().min(1),
+    auth: z.string().min(1),
+  }),
+});
+
+const preferencesSchema = z.object({
+  emailEnabled: z.boolean().optional(),
+  smsEnabled: z.boolean().optional(),
+  pushEnabled: z.boolean().optional(),
+  inAppEnabled: z.boolean().optional(),
+  marketingEnabled: z.boolean().optional(),
+  announcementsEnabled: z.boolean().optional(),
+  remindersEnabled: z.boolean().optional(),
+  loanNotifications: z.boolean().optional(),
+  paymentNotifications: z.boolean().optional(),
+  approvalNotifications: z.boolean().optional(),
+  registrationNotifications: z.boolean().optional(),
+  digestFrequency: z.enum(['INSTANT', 'DAILY', 'WEEKLY']).optional(),
+});
 
 notificationsRouter.use(requireAuth);
 
@@ -65,5 +92,58 @@ notificationsRouter.post(
   asyncHandler(async (req, res) => {
     await notificationService.sendSupervisorAlert(req.body);
     sendData(res, { ok: true });
+  }),
+);
+
+notificationsRouter.get(
+  '/notifications/preferences',
+  asyncHandler(async (req, res) => {
+    sendData(res, await preferencesService.getNotificationPreferences(req.session!.userId));
+  }),
+);
+
+notificationsRouter.patch(
+  '/notifications/preferences',
+  validateBody(preferencesSchema),
+  asyncHandler(async (req, res) => {
+    sendData(
+      res,
+      await preferencesService.updateNotificationPreferences(
+        req.session!.userId,
+        req.body as z.infer<typeof preferencesSchema>,
+      ),
+    );
+  }),
+);
+
+notificationsRouter.post(
+  '/notifications/push/subscribe',
+  validateBody(pushSubscriptionSchema),
+  asyncHandler(async (req, res) => {
+    const body = req.body as z.infer<typeof pushSubscriptionSchema>;
+    await pushService.savePushSubscription(req.session!.userId, {
+      endpoint: body.endpoint,
+      keys: body.keys,
+      userAgent: req.get('user-agent'),
+    });
+    sendData(res, { ok: true });
+  }),
+);
+
+notificationsRouter.post(
+  '/notifications/push/unsubscribe',
+  asyncHandler(async (req, res) => {
+    const endpoint = typeof req.body?.endpoint === 'string' ? req.body.endpoint : '';
+    if (endpoint) {
+      await pushService.removePushSubscription(req.session!.userId, endpoint);
+    }
+    sendData(res, { ok: true });
+  }),
+);
+
+notificationsRouter.get(
+  '/notifications/push/vapid-public-key',
+  asyncHandler(async (_req, res) => {
+    sendData(res, { publicKey: process.env.VAPID_PUBLIC_KEY?.trim() ?? null });
   }),
 );
