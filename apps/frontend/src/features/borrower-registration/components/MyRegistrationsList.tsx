@@ -291,7 +291,11 @@ export function MyRegistrationsList() {
             cell: (row) => (
               <div className="flex flex-wrap gap-wilms-2">
                 <Link
-                  href={`/borrowers/${row.id}`}
+                  href={
+                    'isDraft' in row && row.isDraft
+                      ? `/officer/register?edit=${row.id}`
+                      : `/officer/my-registrations/${row.id}`
+                  }
                   className="text-small font-semibold text-brand-primary hover:underline"
                 >
                   View

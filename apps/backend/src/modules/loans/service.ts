@@ -18,6 +18,7 @@ import {
 import { generateLoanScheduleWeeks } from '../../domain/loan/schedule.js';
 import { runWithIdempotency } from '../../infrastructure/idempotency/run-with-idempotency.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
+import { notifyLoanDisbursed, notifyLoanApproved } from '../../infrastructure/notifications/event-dispatch.js';
 import * as borrowerRepo from '../../repositories/borrower.repository.js';
 import * as disbursementRepo from '../../repositories/loan-disbursement.repository.js';
 import * as ledgerRepo from '../../repositories/ledger.repository.js';
@@ -207,7 +208,21 @@ export async function approveLoan(loanId: string, actorId: string): Promise<Loan
     targetEntityType: 'loan',
   });
 
-  return mapLoanRowToDetail(updated);
+  const dto = mapLoanRowToDetail(updated);
+  const borrower = await borrowerRepo.getBorrower(loan.borrowerId);
+  if (borrower) {
+    void notifyLoanApproved({
+      borrowerId: borrower.id,
+      borrowerName: borrower.fullName,
+      borrowerPhone: borrower.phone,
+      borrowerEmail: borrower.profile?.email,
+      amountPesewas: Math.round(Number(loan.principalAmount) * 100),
+      loanId,
+      loanDisplayId: dto.displayId ?? loanId,
+    });
+  }
+
+  return dto;
 }
 
 export async function rejectLoan(
@@ -318,6 +333,19 @@ export async function disburseLoan(
         targetEntityId: loanId,
         targetEntityType: 'loan',
       });
+
+      const borrower = await borrowerRepo.getBorrower(loan.borrowerId);
+      if (borrower?.phone) {
+        const amountPesewas = Math.round(Number(amountDecimal) * 100);
+        void notifyLoanDisbursed({
+          borrowerId: borrower.id,
+          borrowerName: borrower.fullName,
+          borrowerPhone: borrower.phone,
+          loanId,
+          loanDisplayId: dto.displayId ?? loanId,
+          amountPesewas,
+        });
+      }
 
       return dto;
     },

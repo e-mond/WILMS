@@ -1,17 +1,32 @@
 # WILMS - Project Status
 
-**Last updated:** 2026-07-05 (v1.1.1 released)  
-**Package version:** `1.1.1`  
-**Branch:** `main` @ `e13af37`  
-**Tag:** `v1.1.1` ? `e13af37`  
-**Production (Railway API):** `d2a64bb` ? redeploy pending (migration 0013 not applied yet)  
+**Last updated:** 2026-07-07 (v1.1.2 hotfix ready)  
+**Package version:** `1.1.2`  
+**Branch:** `hotfix/v1.1.2-user-management-notifications`  
+**Production (Railway API):** `v1.1.1` — v1.1.2 deploy pending  
 **Production (Vercel UI):** `v1.1.1` on login page
 
 ---
 
 ## Summary
 
-v1.1.1 is **merged to main**, **tagged**, and **pushed**. Local repo is synced on `main` with a clean working tree. Production smoke **32/32** and RBAC **11/11** pass on the current live API. Railway must redeploy from `main`/`v1.1.1` to apply hotfix backend (migration `0013`, disburse IDs, audit fixes).
+v1.1.2 hotfix addresses notification delivery (email/SMS), user invitation reliability, registration officer access, address field stability, and Type of Work "Other" input. All local verification passes. Production deploy pending after PR merge.
+
+---
+
+## v1.1.2 hotfix scope
+
+| Phase | Status |
+|-------|--------|
+| Email & SMS delivery + logging | ✅ Complete |
+| Registration Officer My Registrations view | ✅ Complete |
+| Registration form (address, Type of Work) | ✅ Complete |
+| User notifications (email/SMS wiring) | ✅ Core events wired |
+| Delivery logging (`message_deliveries`) | ✅ Complete |
+| Tests & smoke | ✅ All pass locally |
+| Documentation & reports | ✅ Complete |
+
+See [V1.1.2_NOTIFICATION_REPORT.md](./V1.1.2_NOTIFICATION_REPORT.md) for full details.
 
 ---
 
@@ -19,27 +34,39 @@ v1.1.1 is **merged to main**, **tagged**, and **pushed**. Local repo is synced o
 
 | Check | Result |
 |-------|--------|
-| Merge PR #53 ? `main` | **Done** (`e13af37`) |
-| Tag `v1.1.1` pushed | **Done** |
-| Local sync (`main`, clean) | **Done** |
-| `verify:deploy-sync` vs `e13af37` | **Pending** ? API still `d2a64bb` |
-| Railway `/health` | PASS (200, DB, Cloudinary, 13/13 migrations) |
-| Vercel login + BFF | PASS (`WILMS v1.1.1`) |
-| `smoke:production` | **32/32** |
-| `smoke:rbac` | **11/11** |
-
-See [V1.1.1_HOTFIX_REPORT.md](./V1.1.1_HOTFIX_REPORT.md) and [POST_RELEASE_VERIFICATION.md](./POST_RELEASE_VERIFICATION.md).
+| `npm run type-check` | **PASS** |
+| `npm run lint` | **PASS** |
+| `npm run build` | **PASS** |
+| `npm run test -w @wilms/api` | **53/53** |
+| `npm run test -w @wilms/frontend` | **223/223** |
+| `smoke:production` (live v1.1.1) | **31/31** |
+| `smoke:rbac` (live) | **11/11** |
 
 ---
 
-## After Railway redeploy
+## Production configuration (v1.1.2)
 
-1. Re-run `verify:deploy-sync` with `EXPECTED_GIT_COMMIT=e13af37`
-2. Confirm migrations **14/14** and `gitCommit` matches tag
-3. Manual UX pass for hotfixes (registration, disburse, `DIS-*` IDs, audit labels)
+**Railway (API):**
+- `WILMS_VERCEL_MAIL_URL=https://wilms.vercel.app`
+- `WILMS_INTERNAL_MAIL_SECRET=<shared-secret>`
+- `WILMS_APP_URL=https://wilms.vercel.app`
+
+**Vercel (frontend):**
+- `GMAIL_USER`, `GMAIL_APP_PASSWORD`, `MAIL_FROM`
+- `WILMS_INTERNAL_MAIL_SECRET=<same-shared-secret>`
+
+---
+
+## After v1.1.2 deploy
+
+1. Confirm migrations **15/15** on `/health`
+2. Send test email from Settings
+3. Create test user — verify invitation email delivered
+4. Officer login → My Registrations → View borrower detail
+5. Check `GET /settings/delivery-logs` for delivery audit trail
 
 ---
 
 ## Ready for v1.2
 
-Repository root decluttered, archives organized, v1.1.1 gate complete pending Railway deploy sync.
+v1.1.2 closes notification and registration gaps. Remaining enhancements (invite tokens, password reset emails, payment reminder scheduler, full in-app inbox) tracked for v1.2.
