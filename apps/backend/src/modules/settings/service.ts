@@ -483,6 +483,9 @@ export async function sendTestEmail(userId: string, email: string): Promise<{ ok
     subject: 'WILMS test email',
     text: `Hello ${profile.displayName}, this is a test email from WILMS (${providerLabel}).`,
     html: `<p>Hello <strong>${profile.displayName}</strong>,</p><p>This is a test email from WILMS (${providerLabel}).</p>`,
+  }).catch((error: unknown) => {
+    const message = error instanceof Error ? error.message : 'Failed to send test email.';
+    throw new Error(`VALIDATION:${message}`);
   });
 
   return { ok: true };

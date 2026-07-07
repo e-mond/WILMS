@@ -42,6 +42,9 @@ export async function sendGmailSmtpMessage(input: {
       user: config.user,
       pass: config.appPassword,
     },
+    connectionTimeout: 10_000,
+    greetingTimeout: 10_000,
+    socketTimeout: 15_000,
   });
 
   const info = await transport.sendMail({
