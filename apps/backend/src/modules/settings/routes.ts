@@ -1,25 +1,17 @@
 import { Router } from 'express';
 import { asyncHandler } from '../../http/async-handler.js';
-import { AppError, ERROR_CODE } from '../../http/errors.js';
 import { sendData } from '../../http/response.js';
 import { PERMISSION } from '../../infrastructure/permissions/matrix.js';
 import { requireAuth } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/require-permission.js';
+import { mapServiceError } from '../../http/map-service-error.js';
 import * as settingsService from './service.js';
 
-function mapError(error: unknown): never {
-  if (error instanceof Error) {
-    if (error.message === 'NOT_FOUND') {
-      throw new AppError('Resource not found.', ERROR_CODE.NOT_FOUND, 404);
-    }
-    if (error.message.startsWith('VALIDATION:')) {
-      throw new AppError(error.message.slice('VALIDATION:'.length), ERROR_CODE.VALIDATION, 422);
-    }
-  }
-  throw error;
-}
-
 export const settingsRouter = Router();
+
+function mapError(error: unknown): never {
+  mapServiceError(error);
+}
 
 settingsRouter.use(requireAuth);
 
@@ -224,7 +216,7 @@ settingsRouter.post(
   requirePermission(PERMISSION.MANAGE_USERS),
   asyncHandler(async (req, res) => {
     try {
-      sendData(res, await settingsService.createUser(req.body), 201);
+      sendData(res, await settingsService.createUser(req.body, req.session!.userId), 201);
     } catch (error) {
       mapError(error);
     }
