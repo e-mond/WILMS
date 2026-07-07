@@ -15,16 +15,23 @@ const resendIntegration: IntegrationStatusReport = {
 describe('sendTestEmailViaBestRoute', () => {
   it('uses the Vercel Gmail route for gmail providers', async () => {
     const sendViaApi = vi.fn().mockResolvedValue({ ok: true });
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ configured: true }),
-      })
-      .mockResolvedValueOnce({
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      if (url === '/api/mail/gmail' && (!init || init.method === 'GET' || init.method === undefined)) {
+        return {
+          ok: true,
+          json: async () => ({ configured: true }),
+        };
+      }
+
+      if (url === '/api/auth/csrf') {
+        return { ok: true, json: async () => ({}) };
+      }
+
+      return {
         ok: true,
         json: async () => ({ ok: true }),
-      });
+      };
+    });
     vi.stubGlobal('fetch', fetchMock);
 
     await sendTestEmailViaBestRoute(

@@ -218,9 +218,9 @@ export function BorrowerRegistrationWizard() {
   }, [watchedFullName, watchedPhone, watchedIdType, watchedIdNumber]);
 
   const watchedGuarantorIdType = watch('guarantorIdType');
+  const watchedTypeOfWork = watch('typeOfWork');
   const watchedRegion = watch('region');
   const watchedDistrict = watch('district');
-  const reviewSummary = watch();
   const [locationFeedback, setLocationFeedback] = useState<string | null>(null);
   const [isLocating, setIsLocating] = useState(false);
 
@@ -785,6 +785,21 @@ export function BorrowerRegistrationWizard() {
               ))}
             </Select>
           </FormField>
+          {watchedTypeOfWork === 'Other' ? (
+            <FormField
+              label="Please specify"
+              htmlFor="typeOfWorkOther"
+              required
+              error={errors.typeOfWorkOther?.message}
+              className="md:col-span-2"
+            >
+              <Input
+                id="typeOfWorkOther"
+                hasError={Boolean(errors.typeOfWorkOther)}
+                {...register('typeOfWorkOther')}
+              />
+            </FormField>
+          ) : null}
           <FormField
             label="Business address"
             htmlFor="businessAddress"
@@ -1051,7 +1066,7 @@ export function BorrowerRegistrationWizard() {
 
       {currentStep === 6 ? (
         <RegistrationReviewPanel
-          values={reviewSummary}
+          values={getValues()}
           guarantorEligibility={guarantorEligibility}
           officerName={user?.displayName ?? 'Registration Officer'}
         />

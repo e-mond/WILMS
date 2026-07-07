@@ -2,7 +2,7 @@
 
 Women's Interest-Free Loan Management System (WILMS) is a TypeScript monorepo for borrower onboarding, group lending, loan lifecycle management, weekly collections, audit trails, and role-based reporting.
 
-Version 1.0.0 is the production release. v1.1 UX stabilization is on `main`. Hotfix **v1.1.1** (`hotfix/v1.1.1-production-fixes`) addresses verified production defects ? see `V1.1.1_HOTFIX_REPORT.md`.
+Version 1.0.0 is the production release. v1.1 UX stabilization is on `main`. Hotfix **v1.1.2** addresses notification delivery, user invitations, registration officer access, and registration form fixes — see `V1.1.2_NOTIFICATION_REPORT.md`. Prior hotfix **v1.1.1** — see `V1.1.1_HOTFIX_REPORT.md`.
 
 ## Production Services
 
@@ -61,6 +61,12 @@ npm run db:migrate -w @wilms/api
 npm run smoke:production
 npm run smoke:rbac
 ```
+
+Production smoke requires `WILMS_APP_URL` and `WILMS_API_URL` environment variables.
+
+## Notifications (v1.1.2)
+
+Outbound email from Railway uses a Vercel Gmail relay when `WILMS_VERCEL_MAIL_URL` and `WILMS_INTERNAL_MAIL_SECRET` are set on the API. Gmail credentials (`GMAIL_USER`, `GMAIL_APP_PASSWORD`) must be on Vercel. Delivery attempts are logged to `message_deliveries` and queryable via `GET /settings/delivery-logs`.
 
 Additional verification:
 

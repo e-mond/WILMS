@@ -103,3 +103,101 @@ export function buildLoanApprovalEmail(input: LoanApprovalEmailInput): {
 
   return { subject, text, html };
 }
+
+export function buildUserInvitationEmail(input: {
+  displayName: string;
+  email: string;
+  temporaryPassword: string;
+  appUrl?: string;
+}): { subject: string; text: string; html: string } {
+  const loginUrl = input.appUrl?.trim() || 'https://wilms.vercel.app/login';
+  const subject = 'You have been invited to WILMS';
+  const text = [
+    `Hello ${input.displayName},`,
+    '',
+    'Your WILMS account has been invited.',
+    '',
+    `Sign in: ${loginUrl}`,
+    `Email: ${input.email}`,
+    `Temporary password: ${input.temporaryPassword}`,
+    '',
+    'Please sign in and change your password immediately.',
+    '',
+    '— WILMS',
+  ].join('\n');
+
+  const html = [
+    `<p>Hello <strong>${input.displayName}</strong>,</p>`,
+    '<p>Your WILMS account has been invited.</p>',
+    `<p><a href="${loginUrl}">Sign in to WILMS</a></p>`,
+    `<p>Email: <strong>${input.email}</strong><br/>Temporary password: <strong>${input.temporaryPassword}</strong></p>`,
+    '<p>Please sign in and change your password immediately.</p>',
+    '<p>— WILMS</p>',
+  ].join('');
+
+  return { subject, text, html };
+}
+
+export function buildRegistrationRejectedEmail(input: {
+  borrowerName: string;
+  reason?: string;
+}): { subject: string; text: string; html: string } {
+  const subject = 'WILMS registration update';
+  const reason = input.reason?.trim() || 'Please contact your registration officer for details.';
+  const text = [
+    `Dear ${input.borrowerName},`,
+    '',
+    'Your registration could not be approved at this time.',
+    '',
+    reason,
+    '',
+    '— WILMS',
+  ].join('\n');
+
+  const html = [
+    `<p>Dear ${input.borrowerName},</p>`,
+    '<p>Your registration could not be approved at this time.</p>',
+    `<p>${reason}</p>`,
+    '<p>— WILMS</p>',
+  ].join('');
+
+  return { subject, text, html };
+}
+
+export function buildRegistrationApprovedEmail(input: {
+  borrowerName: string;
+}): { subject: string; text: string; html: string } {
+  const subject = 'WILMS registration approved';
+  const text = [
+    `Dear ${input.borrowerName},`,
+    '',
+    'Your registration has been approved. Your collector will contact you about next steps.',
+    '',
+    '— WILMS',
+  ].join('\n');
+
+  const html = [
+    `<p>Dear ${input.borrowerName},</p>`,
+    '<p>Your registration has been approved. Your collector will contact you about next steps.</p>',
+    '<p>— WILMS</p>',
+  ].join('');
+
+  return { subject, text, html };
+}
+
+export function buildLoanRejectedSmsBody(input: { borrowerName: string }): string {
+  return `WILMS: Hi ${input.borrowerName}, your loan application was not approved. Contact your collector for details.`;
+}
+
+export function buildLoanDisbursedSmsBody(input: {
+  borrowerName: string;
+  loanDisplayId: string;
+  amountPesewas: number;
+}): string {
+  const amountGhs = formatGhsAmount(input.amountPesewas);
+  return `WILMS: Hi ${input.borrowerName}, loan ${input.loanDisplayId} for GHS ${amountGhs} has been disbursed.`;
+}
+
+export function buildBlacklistSmsBody(input: { borrowerName: string }): string {
+  return `WILMS: Hi ${input.borrowerName}, your application has been flagged for review. Contact your registration officer.`;
+}

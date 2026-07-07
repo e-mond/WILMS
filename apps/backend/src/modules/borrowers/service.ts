@@ -14,7 +14,17 @@ import {
 import * as userRepo from '../../repositories/user.repository.js';
 import { resolveUploadAccessUrlById } from '../../infrastructure/uploads/index.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
-import { maybeSendBorrowerApprovalSms } from '../../infrastructure/sms/notifications.js';
+import {
+  notifyRegistrationApproved,
+  notifyRegistrationBlacklisted,
+  notifyRegistrationRejected,
+} from '../../infrastructure/notifications/event-dispatch.js';
+import * as draftRepo from '../../repositories/registration-draft.repository.js';
+import {
+  canDeleteRegistrationWorkflow,
+  canEditRegistrationWorkflow,
+  resolveRegistrationWorkflowStatus,
+} from './registration-workflow.js';
 import { processApprovedBorrower } from '../group-formation/service.js';
 import * as loanService from '../loans/service.js';
 import { buildBorrowerRiskSummary } from './borrower-risk.js';
@@ -108,6 +118,8 @@ function toPending(record: BorrowerRecord, officerDisplayName: string) {
 }
 
 function toRegistration(record: BorrowerRecord, sequence?: number) {
+  const registrationStatus = resolveRegistrationWorkflowStatus(record.status, record.registeredAt);
+
   return {
     id: record.id,
     displayId: formatBorrowerDisplayId(
@@ -117,11 +129,11 @@ function toRegistration(record: BorrowerRecord, sequence?: number) {
     fullName: record.fullName,
     phone: record.phone,
     status: record.status,
-    registrationStatus: record.status === BORROWER_STATUS.PENDING ? 'PENDING_REVIEW' : record.status,
+    registrationStatus,
     community: record.community,
     registeredAt: record.registeredAt,
-    canEdit: record.status === BORROWER_STATUS.PENDING,
-    canDelete: record.status === BORROWER_STATUS.PENDING,
+    canEdit: canEditRegistrationWorkflow(registrationStatus),
+    canDelete: canDeleteRegistrationWorkflow(registrationStatus),
     photoUrl: uploadContentUrl(record.profile.photoUploadId),
   };
 }
@@ -247,12 +259,46 @@ export async function listMyRegistrations(officerId: string) {
   );
   const sequenceById = new Map(sorted.map((record, index) => [record.id, index + 1]));
 
-  return records
+  const submitted = records
     .map((record) => toRegistration(record, sequenceById.get(record.id)))
     .sort(
       (left, right) =>
         new Date(right.registeredAt).getTime() - new Date(left.registeredAt).getTime(),
     );
+
+  if (!isDatabaseEnabled()) {
+    return submitted;
+  }
+
+  const drafts = await draftRepo.listRegistrationDrafts(officerId);
+  const draftRows = drafts.map((draft) => {
+    const payload = draft.draftPayload;
+    const fullName = typeof payload.fullName === 'string' ? payload.fullName : 'Draft registration';
+    const phone = typeof payload.phone === 'string' ? payload.phone : '';
+    const community =
+      typeof payload.city === 'string' && payload.city
+        ? payload.city
+        : typeof payload.community === 'string'
+          ? payload.community
+          : '';
+
+    return {
+      id: draft.id,
+      displayId: `DRAFT-${draft.id.slice(0, 8).toUpperCase()}`,
+      fullName,
+      phone,
+      status: BORROWER_STATUS.PENDING,
+      registrationStatus: resolveRegistrationWorkflowStatus('DRAFT', draft.updatedAt),
+      community,
+      registeredAt: draft.updatedAt,
+      canEdit: true,
+      canDelete: true,
+      photoUrl: undefined,
+      isDraft: true,
+    };
+  });
+
+  return [...draftRows, ...submitted];
 }
 
 export async function listReviewedApplications(approverId: string) {
@@ -422,9 +468,11 @@ export async function approveBorrower(id: string, actorId: string, actorDisplayN
   });
 
   if (record.phone?.trim()) {
-    void maybeSendBorrowerApprovalSms({
-      borrowerPhone: record.phone,
+    void notifyRegistrationApproved({
+      borrowerId: record.id,
       borrowerName: record.fullName,
+      borrowerPhone: record.phone,
+      borrowerEmail: record.profile.email,
     });
   }
 
@@ -451,6 +499,14 @@ export async function rejectBorrower(
     reason: record.rejectionReason,
   });
 
+  void notifyRegistrationRejected({
+    borrowerId: record.id,
+    borrowerName: record.fullName,
+    borrowerPhone: record.phone,
+    borrowerEmail: record.profile.email,
+    reason: record.rejectionReason,
+  });
+
   return toSummary(record);
 }
 
@@ -471,6 +527,13 @@ export async function blacklistBorrower(
     actorDisplayName,
     targetEntityId: id,
     targetEntityType: 'borrower',
+    reason: record.rejectionReason,
+  });
+
+  void notifyRegistrationBlacklisted({
+    borrowerId: record.id,
+    borrowerName: record.fullName,
+    borrowerPhone: record.phone,
     reason: record.rejectionReason,
   });
 
