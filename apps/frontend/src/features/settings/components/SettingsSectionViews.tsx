@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/useToast';
 import { settingsService } from '@/services';
 import type { SystemSettings, UpdateSystemSettingsInput } from '@/types/settings';
 import { CurrencyAmount } from '@/components/data-display';
+import { ghsInputToPesewas } from '@/utils/reconciliation.schema';
 
 const SecurityIcon = SETTINGS_SECTION_ICONS.security;
 const LoanRulesIcon = SETTINGS_SECTION_ICONS.loanRules;
@@ -346,6 +347,7 @@ export function LoanRulesSectionView({ settings }: { settings: SystemSettings })
   );
   const [allowLoanRollovers, setAllowLoanRollovers] = useState(settings.allowLoanRollovers);
   const [latePaymentGraceDays, setLatePaymentGraceDays] = useState(String(settings.latePaymentGraceDays));
+  const [adminFeeGhs, setAdminFeeGhs] = useState((settings.adminFeePesewas / 100).toFixed(2));
 
   useEffect(() => {
     setMinGroupSize(String(settings.minGroupSize));
@@ -354,6 +356,7 @@ export function LoanRulesSectionView({ settings }: { settings: SystemSettings })
     setDefaultLoanDurationWeeks(String(settings.defaultLoanDurationWeeks));
     setAllowLoanRollovers(settings.allowLoanRollovers);
     setLatePaymentGraceDays(String(settings.latePaymentGraceDays));
+    setAdminFeeGhs((settings.adminFeePesewas / 100).toFixed(2));
   }, [settings]);
 
   return (
@@ -362,6 +365,33 @@ export function LoanRulesSectionView({ settings }: { settings: SystemSettings })
       description="Default caps and calculation parameters."
       icon={<LoanRulesIcon />}
     >
+      <SettingsSettingRow
+        title="Administration Fee"
+        description="One-time fee collected before loan disbursement."
+        control={
+          isSuperAdmin ? (
+            <Input
+              type="number"
+              min={0}
+              step="0.01"
+              value={adminFeeGhs}
+              onChange={(event) => setAdminFeeGhs(event.target.value)}
+              aria-label="Administration fee in GHS"
+            />
+          ) : (
+            <Input
+              value={`GHS ${(settings.adminFeePesewas / 100).toFixed(2)}`}
+              readOnly
+              aria-label="Administration fee"
+            />
+          )
+        }
+      />
+      {!isSuperAdmin ? (
+        <p className="text-small text-text-muted">
+          Current administration fee: <CurrencyAmount value={settings.adminFeePesewas} />
+        </p>
+      ) : null}
       <SettingsSettingRow
         title="Max Loan Amount"
         description="Per borrower ceiling."
@@ -465,7 +495,12 @@ export function LoanRulesSectionView({ settings }: { settings: SystemSettings })
               type="button"
               size="sm"
               disabled={isPending}
-              onClick={() =>
+              onClick={() => {
+                const parsedAdminFee = ghsInputToPesewas(adminFeeGhs);
+                if (Number.isNaN(parsedAdminFee) || parsedAdminFee < 0) {
+                  return;
+                }
+
                 void save(
                   {
                     minGroupSize: Number.parseInt(minGroupSize, 10),
@@ -474,10 +509,11 @@ export function LoanRulesSectionView({ settings }: { settings: SystemSettings })
                     defaultLoanDurationWeeks: Number.parseInt(defaultLoanDurationWeeks, 10),
                     allowLoanRollovers,
                     latePaymentGraceDays: Number.parseInt(latePaymentGraceDays, 10),
+                    adminFeePesewas: parsedAdminFee,
                   },
                   'Loan rules updated',
-                )
-              }
+                );
+              }}
             >
               Save loan rules
             </Button>
