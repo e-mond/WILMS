@@ -159,6 +159,8 @@ export interface IUploadService {
 
 export interface IAuthService {
   login(input: LoginInput): Promise<LoginResult>;
+  requestPasswordReset(email: string): Promise<{ ok: true }>;
+  resetPassword(token: string, newPassword: string): Promise<{ ok: true }>;
 }
 
 export interface IBorrowerService {
@@ -491,6 +493,13 @@ export interface ICommunicationService {
   createTemplate(
     input: import('@/types/communication').CreateCommunicationTemplateInput,
   ): Promise<import('@/types/communication').CommunicationTemplate>;
+  previewTemplate(input: {
+    subject: string;
+    bodyHtml: string;
+    bodyText: string;
+    sampleVariables?: Record<string, string>;
+  }): Promise<import('@/types/communication').TemplatePreviewResult>;
+  duplicateTemplate(templateId: string): Promise<import('@/types/communication').CommunicationTemplate>;
   listMessages(status?: string): Promise<import('@/types/communication').CommunicationMessage[]>;
   createMessage(
     input: import('@/types/communication').CreateCommunicationMessageInput,
@@ -499,4 +508,23 @@ export interface ICommunicationService {
   getAnalytics(): Promise<import('@/types/communication').DeliveryAnalytics>;
   listFailedDeliveries(): Promise<import('@/types/communication').FailedDelivery[]>;
   searchDeliveryLogs(query?: string): Promise<unknown[]>;
+  createAttachment(input: {
+    messageId?: string;
+    uploadId: string;
+    fileName: string;
+    mimeType: string;
+    sizeBytes: number;
+    url?: string;
+  }): Promise<import('@/types/communication').MessageAttachment>;
+  deleteAttachment(attachmentId: string): Promise<void>;
+  replaceAttachment(
+    attachmentId: string,
+    input: {
+      uploadId: string;
+      fileName: string;
+      mimeType: string;
+      sizeBytes: number;
+      url?: string;
+    },
+  ): Promise<import('@/types/communication').MessageAttachment>;
 }

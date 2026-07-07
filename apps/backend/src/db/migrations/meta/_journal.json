@@ -113,6 +113,13 @@
       "when": 1783092800000,
       "tag": "0015_v113_communication_center",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1783179200000,
+      "tag": "0016_v120_communication_platform",
+      "breakpoints": true
     }
   ]
 }

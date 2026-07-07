@@ -9,14 +9,17 @@ import { PermissionGate } from '@/components/auth/PermissionGate';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { Textarea } from '@/components/ui/Textarea';
 import { Modal } from '@/components/ui/Modal';
 import { Badge } from '@/components/ui/Badge';
 import { PERMISSION } from '@/constants/permissions';
 import { communicationService } from '@/services';
 import { useToast } from '@/hooks/useToast';
-import type { AudienceType, CommunicationChannel, MessageStatus } from '@/types/communication';
+import type { AudienceType, CommunicationChannel, MessageAttachment, MessageStatus } from '@/types/communication';
 import { formatDisplayDate } from '@/utils/format-date';
+import { RichTextEditor } from '@/features/communication-center/components/RichTextEditor';
+import { AttachmentUploader } from '@/features/communication-center/components/AttachmentUploader';
+import { AnalyticsCharts } from '@/features/communication-center/components/AnalyticsCharts';
+import { TemplateBuilderModal } from '@/features/communication-center/components/TemplateBuilderModal';
 
 const TABS = [
   { id: 'compose', label: 'Compose' },
@@ -36,6 +39,15 @@ const AUDIENCE_OPTIONS: { value: AudienceType; label: string }[] = [
   { value: 'ALL_ADMINS', label: 'All Super Admins' },
 ];
 
+const RECURRENCE_OPTIONS = [
+  { value: '', label: 'Send immediately' },
+  { value: 'SCHEDULED', label: 'Scheduled (one-time)' },
+  { value: 'DAILY', label: 'Daily' },
+  { value: 'WEEKLY', label: 'Weekly' },
+  { value: 'MONTHLY', label: 'Monthly' },
+  { value: '0 9 * * *', label: 'Custom (daily 9:00 UTC)' },
+];
+
 function statusVariant(status: MessageStatus): 'default' | 'success' | 'warning' | 'danger' {
   switch (status) {
     case 'SENT':
@@ -49,14 +61,26 @@ function statusVariant(status: MessageStatus): 'default' | 'success' | 'warning'
   }
 }
 
+function htmlToText(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<[^>]+>/g, '')
+    .trim();
+}
+
 export function CommunicationCenterPanel() {
   const [activeTab, setActiveTab] = useState<TabId>('compose');
   const [statusFilter, setStatusFilter] = useState('');
   const [showCompose, setShowCompose] = useState(false);
+  const [showTemplateBuilder, setShowTemplateBuilder] = useState(false);
   const [subject, setSubject] = useState('');
-  const [body, setBody] = useState('');
+  const [bodyHtml, setBodyHtml] = useState('');
   const [audienceType, setAudienceType] = useState<AudienceType>('ALL_USERS');
   const [channels, setChannels] = useState<CommunicationChannel[]>(['EMAIL', 'IN_APP']);
+  const [scheduleMode, setScheduleMode] = useState('');
+  const [scheduledAt, setScheduledAt] = useState('');
+  const [attachments, setAttachments] = useState<MessageAttachment[]>([]);
   const { success: toastSuccess, error: toastError } = useToast();
   const queryClient = useQueryClient();
 
@@ -84,20 +108,37 @@ export function CommunicationCenterPanel() {
   });
 
   const createMessage = useMutation({
-    mutationFn: () =>
-      communicationService.createMessage({
+    mutationFn: async () => {
+      const isScheduled = scheduleMode === 'SCHEDULED';
+      const recurrenceRule =
+        scheduleMode && scheduleMode !== 'SCHEDULED' ? scheduleMode : undefined;
+
+      const message = await communicationService.createMessage({
         subject,
-        bodyHtml: `<p>${body.replace(/\n/g, '<br/>')}</p>`,
-        bodyText: body,
+        bodyHtml,
+        bodyText: htmlToText(bodyHtml),
         channels,
         audienceType,
-      }),
-    onSuccess: async (message) => {
-      await communicationService.sendMessage(message.id);
-      toastSuccess('Message sent');
+        scheduledAt: isScheduled && scheduledAt ? new Date(scheduledAt).toISOString() : undefined,
+        recurrenceRule,
+        recurrenceTimezone: 'Africa/Accra',
+        attachmentIds: attachments.map((entry) => entry.id),
+      });
+
+      if (!isScheduled && !recurrenceRule) {
+        await communicationService.sendMessage(message.id);
+      }
+
+      return message;
+    },
+    onSuccess: () => {
+      toastSuccess(scheduleMode ? 'Message scheduled' : 'Message sent');
       setShowCompose(false);
       setSubject('');
-      setBody('');
+      setBodyHtml('');
+      setAttachments([]);
+      setScheduleMode('');
+      setScheduledAt('');
       void queryClient.invalidateQueries({ queryKey: ['communications'] });
     },
     onError: () => toastError('Failed to send message'),
@@ -139,11 +180,16 @@ export function CommunicationCenterPanel() {
       <ManagementToolbar
         search={<Input placeholder="Search messages…" aria-label="Search messages" disabled />}
         actions={
-          <PermissionGate permission={PERMISSION.MANAGE_COMMUNICATIONS}>
-            <Button type="button" onClick={() => setShowCompose(true)}>
-              Compose Message
-            </Button>
-          </PermissionGate>
+          <div className="flex flex-wrap gap-wilms-2">
+            <PermissionGate permission={PERMISSION.MANAGE_COMMUNICATIONS}>
+              <Button type="button" variant="secondary" onClick={() => setShowTemplateBuilder(true)}>
+                New Template
+              </Button>
+              <Button type="button" onClick={() => setShowCompose(true)}>
+                Compose Message
+              </Button>
+            </PermissionGate>
+          </div>
         }
       />
 
@@ -206,6 +252,11 @@ export function CommunicationCenterPanel() {
               { id: 'category', header: 'Category', cell: (row) => row.category },
               { id: 'subject', header: 'Subject', cell: (row) => row.subject },
               { id: 'channels', header: 'Channels', cell: (row) => row.channels.join(', ') },
+              {
+                id: 'variables',
+                header: 'Variables',
+                cell: (row) => (row.variables?.length ? row.variables.join(', ') : '—'),
+              },
             ]}
           />
         </QueryStatePanel>
@@ -214,20 +265,7 @@ export function CommunicationCenterPanel() {
       {activeTab === 'delivery' ? (
         <div className="rounded-lg border border-border bg-card p-wilms-6">
           <h3 className="text-h3 font-semibold text-text-primary">Delivery Analytics</h3>
-          <div className="mt-wilms-4 grid gap-wilms-4 sm:grid-cols-3">
-            <div>
-              <p className="text-small text-text-muted">Emails</p>
-              <p className="text-h2 font-semibold">{analyticsQuery.data?.emailCount ?? 0}</p>
-            </div>
-            <div>
-              <p className="text-small text-text-muted">SMS</p>
-              <p className="text-h2 font-semibold">{analyticsQuery.data?.smsCount ?? 0}</p>
-            </div>
-            <div>
-              <p className="text-small text-text-muted">Click Rate</p>
-              <p className="text-h2 font-semibold">{analyticsQuery.data?.clickRate ?? 0}%</p>
-            </div>
-          </div>
+          <AnalyticsCharts analytics={analyticsQuery.data} />
         </div>
       ) : null}
 
@@ -276,14 +314,9 @@ export function CommunicationCenterPanel() {
           </div>
           <div>
             <label className="mb-wilms-2 block text-small font-medium text-text-primary">Message</label>
-            <Textarea
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              rows={6}
-              placeholder="Write your message..."
-              aria-label="Message"
-            />
+            <RichTextEditor value={bodyHtml} onChange={setBodyHtml} draftKey="communication-compose" />
           </div>
+          <AttachmentUploader attachments={attachments} onChange={setAttachments} />
           <div>
             <label className="mb-wilms-2 block text-small font-medium text-text-primary">Audience</label>
             <Select
@@ -291,12 +324,31 @@ export function CommunicationCenterPanel() {
               onChange={(e) => setAudienceType(e.target.value as AudienceType)}
               aria-label="Audience"
             >
-            {AUDIENCE_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
+              {AUDIENCE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </Select>
+          </div>
+          <div>
+            <label className="mb-wilms-2 block text-small font-medium text-text-primary">Schedule</label>
+            <Select value={scheduleMode} onChange={(e) => setScheduleMode(e.target.value)} aria-label="Schedule">
+              {RECURRENCE_OPTIONS.map((option) => (
+                <option key={option.value || 'immediate'} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+            {scheduleMode === 'SCHEDULED' ? (
+              <input
+                type="datetime-local"
+                className="mt-wilms-2 h-10 w-full rounded-sm border border-border bg-card px-wilms-3 text-body"
+                value={scheduledAt}
+                onChange={(e) => setScheduledAt(e.target.value)}
+                aria-label="Scheduled date and time"
+              />
+            ) : null}
           </div>
           <div>
             <p className="mb-wilms-2 text-small font-medium text-text-primary">Channels</p>
@@ -319,14 +371,20 @@ export function CommunicationCenterPanel() {
             </Button>
             <Button
               type="button"
-              disabled={!subject.trim() || !body.trim() || createMessage.isPending}
+              disabled={!subject.trim() || !bodyHtml.trim() || createMessage.isPending}
               onClick={() => createMessage.mutate()}
             >
-              {createMessage.isPending ? 'Sending…' : 'Send'}
+              {createMessage.isPending ? 'Sending…' : scheduleMode ? 'Schedule' : 'Send'}
             </Button>
           </div>
         </div>
       </Modal>
+
+      <TemplateBuilderModal
+        isOpen={showTemplateBuilder}
+        onClose={() => setShowTemplateBuilder(false)}
+        onSaved={() => void queryClient.invalidateQueries({ queryKey: ['communications', 'templates'] })}
+      />
     </div>
   );
 }

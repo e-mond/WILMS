@@ -34,6 +34,8 @@ import { photoCaptureRouter } from '../modules/photo-capture/routes.js';
 import { transactionsRouter } from '../modules/transactions/routes.js';
 import { messagesRouter } from '../modules/messages/routes.js';
 import { communicationsRouter } from '../modules/communications/routes.js';
+import { trackingRouter } from '../modules/tracking/routes.js';
+import { webhooksRouter } from '../modules/webhooks/routes.js';
 
 function mountBusinessRoutes(app: express.Application, basePath = '') {
   const prefix = basePath.replace(/\/$/, '');
@@ -94,6 +96,8 @@ export function createApp() {
   app.use(optionalAuth);
 
   app.use(healthRouter);
+  app.use(trackingRouter);
+  app.use(webhooksRouter);
   app.use(authRouter);
 
   mountBusinessRoutes(app, '/api/v1');
