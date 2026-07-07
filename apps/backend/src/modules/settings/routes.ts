@@ -87,6 +87,21 @@ settingsRouter.get(
 );
 
 settingsRouter.get(
+  '/settings/delivery-logs',
+  requirePermission(PERMISSION.MANAGE_SYSTEM_SETTINGS),
+  asyncHandler(async (req, res) => {
+    sendData(
+      res,
+      await settingsService.getDeliveryLogs({
+        event: typeof req.query.event === 'string' ? req.query.event : undefined,
+        recipient: typeof req.query.recipient === 'string' ? req.query.recipient : undefined,
+        limit: req.query.limit ? Number(req.query.limit) : undefined,
+      }),
+    );
+  }),
+);
+
+settingsRouter.get(
   '/settings/sms/balance',
   requirePermission(PERMISSION.MANAGE_SYSTEM_SETTINGS),
   asyncHandler(async (_req, res) => {

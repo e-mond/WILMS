@@ -22,6 +22,7 @@ export const DEFAULT_REGISTRATION_VALUES: BorrowerRegistrationFormValues = {
   businessName: '',
   businessAddress: '',
   typeOfWork: '',
+  typeOfWorkOther: '',
   guarantorName: '',
   guarantorPhone: '',
   guarantorRelationship: '',
@@ -90,7 +91,10 @@ export function toRegisterBorrowerPayload(
     district: input.district,
     businessName: input.businessName,
     businessAddress: input.businessAddress,
-    typeOfWork: input.typeOfWork,
+    typeOfWork:
+      input.typeOfWork === 'Other' && input.typeOfWorkOther?.trim()
+        ? input.typeOfWorkOther.trim()
+        : input.typeOfWork,
     guarantorName: input.guarantorName,
     guarantorPhone: input.guarantorPhone,
     guarantorRelationship: input.guarantorRelationship,

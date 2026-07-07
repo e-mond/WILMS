@@ -6,6 +6,7 @@ import { PERMISSION } from '../../infrastructure/permissions/matrix.js';
 import { requireAuth } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/require-permission.js';
 import * as borrowerService from './service.js';
+import { assertBorrowerReadAccess, resolveOfficerIdForList } from './access.js';
 
 export const borrowersRouter = Router();
 
@@ -36,6 +37,10 @@ function mapError(error: unknown): never {
     if (error.message === 'UNAUTHORIZED') {
       throw new AppError('You cannot delete this registration.', ERROR_CODE.UNAUTHORIZED, 403);
     }
+
+    if (error.message === 'FORBIDDEN') {
+      throw new AppError('You do not have permission to view this registration.', ERROR_CODE.UNAUTHORIZED, 403);
+    }
   }
 
   throw error;
@@ -59,7 +64,10 @@ borrowersRouter.get(
   '/borrowers/my-registrations',
   requirePermission(PERMISSION.REGISTER_BORROWERS),
   asyncHandler(async (req, res) => {
-    const officerId = String(req.query.officerId ?? req.session!.userId);
+    const officerId = resolveOfficerIdForList(
+      req.session!,
+      typeof req.query.officerId === 'string' ? req.query.officerId : undefined,
+    );
     sendData(res, await borrowerService.listMyRegistrations(officerId));
   }),
 );
@@ -251,6 +259,7 @@ borrowersRouter.get(
   '/borrowers/:id',
   asyncHandler(async (req, res) => {
     try {
+      await assertBorrowerReadAccess(req.session!, req.params.id!);
       sendData(res, await borrowerService.getBorrowerDetail(req.params.id!));
     } catch (error) {
       mapError(error);
@@ -262,6 +271,7 @@ borrowersRouter.get(
   '/borrowers/:id/full-profile',
   asyncHandler(async (req, res) => {
     try {
+      await assertBorrowerReadAccess(req.session!, req.params.id!);
       sendData(res, await borrowerService.getBorrowerFullProfile(req.params.id!));
     } catch (error) {
       mapError(error);
@@ -273,6 +283,7 @@ borrowersRouter.get(
   '/borrowers/:id/review',
   asyncHandler(async (req, res) => {
     try {
+      await assertBorrowerReadAccess(req.session!, req.params.id!);
       sendData(res, await borrowerService.getBorrowerReviewDetail(req.params.id!));
     } catch (error) {
       mapError(error);

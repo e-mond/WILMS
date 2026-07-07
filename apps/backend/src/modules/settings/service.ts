@@ -12,9 +12,11 @@ import * as userRepo from '../../repositories/user.repository.js';
 import * as systemSettingsRepo from '../../repositories/system-settings.repository.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import { getIntegrationStatus } from '../../infrastructure/integrations/status.js';
+import { listMessageDeliveries } from '../../infrastructure/notifications/delivery-log.js';
 import { getSmsProvider } from '../../infrastructure/sms/index.js';
 import { getSmsConfig } from '../../infrastructure/sms/config.js';
 import { fetchSmsNotifyGhBalance } from '../../infrastructure/sms/smsnotifygh-adapter.js';
+import { notifyUserInvitation } from '../../infrastructure/notifications/event-dispatch.js';
 import { getMailProvider } from '../../infrastructure/mail/index.js';
 import {
   DEFAULT_SYSTEM_SETTINGS,
@@ -437,6 +439,10 @@ export async function updateSettingsMe(
 
 export function getIntegrationsStatus() {
   return getIntegrationStatus();
+}
+
+export async function getDeliveryLogs(input?: { event?: string; recipient?: string; limit?: number }) {
+  return listMessageDeliveries(input);
 }
 
 export async function sendTestSms(userId: string, phone: string): Promise<{ ok: true }> {
@@ -901,18 +907,16 @@ export async function createUser(input: CreateSettingsUserInput): Promise<Settin
   const record = mapUserRowToSettingsRecord(row);
   record.lastLoginLabel = 'Invited';
 
-  const mail = getMailProvider();
-  if (mail.isConfigured()) {
-    void mail
-      .send({
-        to: email,
-        subject: 'WILMS account invited',
-        text: `Hello ${displayName},\n\nYour WILMS account has been invited. Your temporary password is: ${DEFAULT_INVITE_PASSWORD}\n\nPlease log in and change your password.`,
-        html: `<p>Hello <strong>${displayName}</strong>,</p><p>Your WILMS account has been invited.</p><p>Your temporary password is: <strong>${DEFAULT_INVITE_PASSWORD}</strong></p><p>Please log in and change your password.</p>`,
-      })
-      .catch((error) => {
-        console.error('[mail] welcome email failed:', error);
-      });
+  try {
+    await notifyUserInvitation({
+      email,
+      displayName,
+      temporaryPassword: DEFAULT_INVITE_PASSWORD,
+      userId,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Invitation email failed to send.';
+    throw new Error(`VALIDATION:${message}`);
   }
 
   return record;

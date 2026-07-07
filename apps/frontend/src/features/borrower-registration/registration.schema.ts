@@ -72,6 +72,7 @@ export const businessSchema = z.object({
   businessName: z.string().trim().min(1, 'Business name is required.'),
   businessAddress: z.string().trim().min(1, 'Business address is required.'),
   typeOfWork: z.string().trim().min(1, 'Type of work is required.'),
+  typeOfWorkOther: z.string().trim().optional(),
 });
 
 const guarantorBaseSchema = z.object({
@@ -120,6 +121,16 @@ export const signatureSchema = z.object({
   guarantorThumbprintManualPlaceholder: z.boolean().optional(),
 });
 
+export const businessStepSchema = businessSchema.superRefine((data, ctx) => {
+  if (data.typeOfWork === 'Other' && !data.typeOfWorkOther?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Please specify the type of work.',
+      path: ['typeOfWorkOther'],
+    });
+  }
+});
+
 export const borrowerRegistrationSchema = personalDetailsBaseSchema
   .merge(addressSchema)
   .merge(businessSchema)
@@ -129,6 +140,13 @@ export const borrowerRegistrationSchema = personalDetailsBaseSchema
   .superRefine((data, ctx) => {
     refineBorrowerId(ctx, data.idType, data.idNumber, 'idNumber');
     refineBorrowerId(ctx, data.guarantorIdType, data.guarantorIdNumber, 'guarantorIdNumber');
+    if (data.typeOfWork === 'Other' && !data.typeOfWorkOther?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Please specify the type of work.',
+        path: ['typeOfWorkOther'],
+      });
+    }
   })
   .refine((data) => data.guarantorPhone !== data.phone, {
     message: 'Guarantor phone must differ from borrower phone.',
@@ -145,7 +163,7 @@ export type BorrowerRegistrationInput = z.infer<typeof borrowerRegistrationSchem
 export const REGISTRATION_STEP_SCHEMAS = [
   personalDetailsSchema,
   addressSchema,
-  businessSchema,
+  businessStepSchema,
   guarantorSchema,
   photoSchema,
   signatureSchema,
