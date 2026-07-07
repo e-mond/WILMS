@@ -2,6 +2,27 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.2.0] — Communication Platform Completion
+
+### Added
+- Rich text composer with formatting, tables, images, emojis, undo/redo, HTML preview, and auto-save drafts.
+- Message attachments (PDF, DOCX, XLSX, CSV, PNG, JPG, WEBP) with upload, preview, delete, and replace.
+- Complete password reset UI: `/forgot-password`, `/reset-password` with secure token flow.
+- Push notification subscriptions, service worker, VAPID endpoints, and user preference gates.
+- Email open tracking (pixel) and click tracking (wrapped links) with analytics dashboard.
+- Provider webhooks: Resend (signed) and generic mail provider receiver.
+- Expanded communication analytics: delivery/bounce rates, time series, top recipients/campaigns.
+- Recurring scheduler: daily, weekly, monthly, custom cron, timezone-aware, retry on failure.
+- Template builder with `{{variable}}` support, preview, duplicate, and version history.
+- User notification preferences (email, SMS, push, in-app, categories, digest frequency).
+- Migration `0016_v120_communication_platform.sql`.
+- Deliverable reports: `V1.2_COMMUNICATION_PLATFORM_REPORT.md` and related reports.
+
+### Changed
+- `dispatchMail()` sanitizes HTML and injects tracking pixel/links.
+- Communication Center compose uses rich text editor and attachment uploader.
+- `sendMessage()` respects user notification preferences and sends push when enabled.
+
 ## [1.1.3] — Communication Center & notification system
 
 ### Added

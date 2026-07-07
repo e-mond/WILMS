@@ -16,9 +16,11 @@ export interface DeliveryLogInput {
   success: boolean;
   failureReason?: string;
   retryAttempts?: number;
+  trackingToken?: string;
   borrowerId?: string;
   loanId?: string;
   userId?: string;
+  communicationMessageId?: string;
 }
 
 export interface DeliveryLogRecord {
@@ -33,6 +35,7 @@ export interface DeliveryLogRecord {
   success: boolean;
   failureReason: string | null;
   retryAttempts: number;
+  trackingToken: string | null;
   borrowerId: string | null;
   loanId: string | null;
   userId: string | null;
@@ -58,6 +61,7 @@ function mapRow(row: typeof messageDeliveries.$inferSelect): DeliveryLogRecord {
     success: row.success,
     failureReason: row.failureReason,
     retryAttempts: row.retryAttempts,
+    trackingToken: row.trackingToken,
     borrowerId: row.borrowerId,
     loanId: row.loanId,
     userId: row.userId,
@@ -78,6 +82,7 @@ export async function logMessageDelivery(input: DeliveryLogInput): Promise<Deliv
     success: input.success,
     failureReason: input.failureReason ?? null,
     retryAttempts: input.retryAttempts ?? 0,
+    trackingToken: input.trackingToken ?? null,
     borrowerId: input.borrowerId ?? null,
     loanId: input.loanId ?? null,
     userId: input.userId ?? null,
@@ -104,9 +109,11 @@ export async function logMessageDelivery(input: DeliveryLogInput): Promise<Deliv
       success: record.success,
       failureReason: record.failureReason,
       retryAttempts: record.retryAttempts,
+      trackingToken: record.trackingToken,
       borrowerId: record.borrowerId,
       loanId: record.loanId,
       userId: record.userId,
+      communicationMessageId: input.communicationMessageId ?? null,
       createdAt: new Date(record.createdAt),
     })
     .returning();

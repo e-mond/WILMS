@@ -20,9 +20,9 @@ import {
 } from '@/constants/role-settings-sections';
 import { USER_ROLE, type UserRole } from '@/constants/roles';
 import { useAuth } from '@/hooks/useAuth';
-import { useNotificationSound } from '@/hooks/useNotificationSound';
 import { useToast } from '@/hooks/useToast';
 import { useSettingsMe, useUpdateSettingsMe } from '@/features/settings/hooks/useSettingsMe';
+import { NotificationPreferencesSection } from '@/features/settings/components/NotificationPreferencesSection';
 import { roleSettingsPreferences } from '@/features/settings/utils/role-settings-preferences';
 import { PhotoUpload } from '@/components/forms/PhotoUpload';
 import { UPLOAD_PURPOSE } from '@/types/upload';
@@ -143,65 +143,7 @@ function ProfileSection() {
 }
 
 function NotificationsSection() {
-  const toast = useToast();
-  const { setEnabled, isEnabled } = useNotificationSound();
-  const [pushNotifications, setPushNotifications] = useState(true);
-  const [emailSummaries, setEmailSummaries] = useState(false);
-  const [soundEnabled, setSoundEnabled] = useState(true);
-
-  useEffect(() => {
-    setPushNotifications(roleSettingsPreferences.getPushNotifications());
-    setEmailSummaries(roleSettingsPreferences.getEmailSummaries());
-    setSoundEnabled(isEnabled());
-  }, [isEnabled]);
-
-  return (
-    <SettingsSectionCard
-      title="Notifications"
-      description="Alerts and messaging preferences."
-      icon={<span aria-hidden="true">🔔</span>}
-    >
-      <SettingsSettingRow
-        title="Push Notifications"
-        description="Receive in-app alerts for assigned work."
-        control={
-          <Switch
-            checked={pushNotifications}
-            label="Push notifications"
-            onChange={setPushNotifications}
-          />
-        }
-      />
-      <SettingsSettingRow
-        title="Email Summaries"
-        description="Daily digest of activity."
-        control={
-          <Switch checked={emailSummaries} label="Email summaries" onChange={setEmailSummaries} />
-        }
-      />
-      <SettingsSettingRow
-        title="Notification Sounds"
-        description="Play tones on login, logout, and workflow events."
-        control={
-          <Switch checked={soundEnabled} label="Notification sounds" onChange={setSoundEnabled} />
-        }
-      />
-      <div className="flex justify-end pt-wilms-2">
-        <Button
-          type="button"
-          size="sm"
-          onClick={() => {
-            roleSettingsPreferences.setPushNotifications(pushNotifications);
-            roleSettingsPreferences.setEmailSummaries(emailSummaries);
-            setEnabled(soundEnabled);
-            toast.success('Notification preferences saved');
-          }}
-        >
-          Save notifications
-        </Button>
-      </div>
-    </SettingsSectionCard>
-  );
+  return <NotificationPreferencesSection />;
 }
 
 function SyncSection() {

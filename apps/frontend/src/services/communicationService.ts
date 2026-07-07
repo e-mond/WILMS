@@ -5,6 +5,8 @@ import type {
   CreateCommunicationTemplateInput,
   DeliveryAnalytics,
   FailedDelivery,
+  MessageAttachment,
+  TemplatePreviewResult,
 } from '@/types/communication';
 import type { ICommunicationService } from '@/types/services';
 import { apiClient } from '@/utils/apiClient';
@@ -16,6 +18,19 @@ const communicationService: ICommunicationService = {
 
   createTemplate(input: CreateCommunicationTemplateInput): Promise<CommunicationTemplate> {
     return apiClient.post<CommunicationTemplate>('/communications/templates', input);
+  },
+
+  previewTemplate(input: {
+    subject: string;
+    bodyHtml: string;
+    bodyText: string;
+    sampleVariables?: Record<string, string>;
+  }): Promise<TemplatePreviewResult> {
+    return apiClient.post<TemplatePreviewResult>('/communications/templates/preview', input);
+  },
+
+  duplicateTemplate(templateId: string): Promise<CommunicationTemplate> {
+    return apiClient.post<CommunicationTemplate>(`/communications/templates/${templateId}/duplicate`, {});
   },
 
   listMessages(status?: string): Promise<CommunicationMessage[]> {
@@ -42,6 +57,34 @@ const communicationService: ICommunicationService = {
   searchDeliveryLogs(query?: string): Promise<unknown[]> {
     const q = query ? `?q=${encodeURIComponent(query)}` : '';
     return apiClient.get<unknown[]>(`/communications/delivery-logs${q}`);
+  },
+
+  createAttachment(input: {
+    messageId?: string;
+    uploadId: string;
+    fileName: string;
+    mimeType: string;
+    sizeBytes: number;
+    url?: string;
+  }): Promise<MessageAttachment> {
+    return apiClient.post<MessageAttachment>('/communications/attachments', input);
+  },
+
+  deleteAttachment(attachmentId: string): Promise<void> {
+    return apiClient.delete(`/communications/attachments/${attachmentId}`);
+  },
+
+  replaceAttachment(
+    attachmentId: string,
+    input: {
+      uploadId: string;
+      fileName: string;
+      mimeType: string;
+      sizeBytes: number;
+      url?: string;
+    },
+  ): Promise<MessageAttachment> {
+    return apiClient.patch<MessageAttachment>(`/communications/attachments/${attachmentId}`, input);
   },
 };
 

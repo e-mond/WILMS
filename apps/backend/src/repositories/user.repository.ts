@@ -32,6 +32,14 @@ export async function updateLastLoginAt(userId: string): Promise<void> {
     .where(eq(users.id, userId));
 }
 
+export async function updateUserPassword(userId: string, passwordHash: string): Promise<void> {
+  const db = getDb();
+  await db
+    .update(users)
+    .set({ passwordHash, updatedAt: new Date() })
+    .where(eq(users.id, userId));
+}
+
 export async function upsertDemoUser(user: DemoUser & { passwordHash?: string }): Promise<void> {
   const db = getDb();
   await db

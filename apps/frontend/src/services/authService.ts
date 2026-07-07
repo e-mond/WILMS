@@ -55,6 +55,56 @@ const authService: IAuthService = {
 
     return response.json() as Promise<LoginResult>;
   },
+
+  async requestPasswordReset(email: string): Promise<{ ok: true }> {
+    await ensureCsrfToken();
+
+    const response = await fetch('/api/wilms/auth/forgot-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...csrfHeaders(),
+      },
+      credentials: 'include',
+      body: JSON.stringify({ email }),
+    });
+
+    if (!response.ok) {
+      const body = (await response.json().catch(() => null)) as { message?: string } | null;
+      throw new ApiError(
+        body?.message ?? 'Unable to process reset request.',
+        API_ERROR_CODE.VALIDATION,
+        response.status,
+      );
+    }
+
+    return { ok: true };
+  },
+
+  async resetPassword(token: string, newPassword: string): Promise<{ ok: true }> {
+    await ensureCsrfToken();
+
+    const response = await fetch('/api/wilms/auth/reset-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...csrfHeaders(),
+      },
+      credentials: 'include',
+      body: JSON.stringify({ token, newPassword }),
+    });
+
+    if (!response.ok) {
+      const body = (await response.json().catch(() => null)) as { message?: string } | null;
+      throw new ApiError(
+        body?.message ?? 'Unable to reset password.',
+        API_ERROR_CODE.VALIDATION,
+        response.status,
+      );
+    }
+
+    return { ok: true };
+  },
 };
 
 export default authService;
