@@ -2,6 +2,11 @@ import { getMailConfig } from './config.js';
 import { getMailProvider } from './index.js';
 import type { MailMessage, MailSendResult } from './types.js';
 import { logMessageDelivery } from '../notifications/delivery-log.js';
+import {
+  generateTrackingToken,
+  injectEmailTracking,
+} from '../notifications/email-tracking.js';
+import { sanitizeHtml } from '../notifications/html-sanitize.js';
 
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 750;
@@ -69,6 +74,8 @@ export interface DispatchMailInput extends MailMessage {
   borrowerId?: string;
   loanId?: string;
   userId?: string;
+  communicationMessageId?: string;
+  enableTracking?: boolean;
 }
 
 export async function dispatchMail(input: DispatchMailInput): Promise<MailSendResult> {
@@ -77,14 +84,26 @@ export async function dispatchMail(input: DispatchMailInput): Promise<MailSendRe
     throw new Error('Mail provider is not configured.');
   }
 
+  const trackingToken =
+    input.enableTracking !== false ? generateTrackingToken() : undefined;
+  const sanitizedHtml = sanitizeHtml(input.html ?? '');
+  const htmlWithTracking = trackingToken
+    ? injectEmailTracking(sanitizedHtml, trackingToken)
+    : sanitizedHtml;
+
+  const outbound: MailMessage = {
+    ...input,
+    html: htmlWithTracking,
+  };
+
   let retryAttempts = 0;
 
   try {
-    const result = await sendWithRetries(input, async () => {
+    const result = await sendWithRetries(outbound, async () => {
       if (shouldUseVercelRelay()) {
-        return sendViaVercelRelay(input);
+        return sendViaVercelRelay(outbound);
       }
-      return mail.send(input);
+      return mail.send(outbound);
     });
 
     await logMessageDelivery({
@@ -97,9 +116,11 @@ export async function dispatchMail(input: DispatchMailInput): Promise<MailSendRe
       bodyPreview: input.text,
       success: true,
       retryAttempts,
+      trackingToken,
       borrowerId: input.borrowerId,
       loanId: input.loanId,
       userId: input.userId,
+      communicationMessageId: input.communicationMessageId,
     });
 
     return result;
@@ -115,9 +136,11 @@ export async function dispatchMail(input: DispatchMailInput): Promise<MailSendRe
       success: false,
       failureReason: message,
       retryAttempts: MAX_RETRIES,
+      trackingToken,
       borrowerId: input.borrowerId,
       loanId: input.loanId,
       userId: input.userId,
+      communicationMessageId: input.communicationMessageId,
     });
     throw error;
   }

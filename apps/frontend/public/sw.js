@@ -1,70 +1,27 @@
-const CACHE_NAME = 'wilms-shell-v2';
-const PAYMENT_SYNC_TAG = 'wilms-payment-sync';
-const PAYMENT_SYNC_MESSAGE = 'WILMS_PAYMENT_SYNC';
-const SHELL_URLS = ['/login', '/manifest.webmanifest'];
+self.addEventListener('push', (event) => {
+  const payload = event.data?.json() ?? {};
+  const title = payload.title ?? 'WILMS';
+  const options = {
+    body: payload.body ?? '',
+    data: { url: payload.url ?? '/', category: payload.category ?? 'general' },
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
+  };
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) => cache.addAll(SHELL_URLS))
-      .then(() => self.skipWaiting()),
-  );
+  event.waitUntil(self.registration.showNotification(title, options));
 });
 
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches
-      .keys()
-      .then((keys) =>
-        Promise.all(
-          keys.filter((key) => key.startsWith('wilms-shell-') && key !== CACHE_NAME).map((key) => caches.delete(key)),
-        ),
-      )
-      .then(() => self.clients.claim()),
-  );
-});
-
-self.addEventListener('message', (event) => {
-  if (event.data?.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-});
-
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-
-  if (request.method !== 'GET') {
-    return;
-  }
-
-  const url = new URL(request.url);
-
-  if (url.origin !== self.location.origin) {
-    return;
-  }
-
-  if (url.pathname.startsWith('/api/')) {
-    return;
-  }
-
-  event.respondWith(
-    fetch(request).catch(() =>
-      caches.match(request).then((cached) => cached ?? caches.match('/login')),
-    ),
-  );
-});
-
-self.addEventListener('sync', (event) => {
-  if (event.tag !== PAYMENT_SYNC_TAG) {
-    return;
-  }
-
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const targetUrl = event.notification.data?.url ?? '/';
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
-      clients.forEach((client) => {
-        client.postMessage({ type: PAYMENT_SYNC_MESSAGE });
-      });
+      for (const client of clients) {
+        if ('focus' in client) {
+          return client.focus();
+        }
+      }
+      return self.clients.openWindow(targetUrl);
     }),
   );
 });

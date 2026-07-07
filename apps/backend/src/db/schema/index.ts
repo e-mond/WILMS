@@ -26,3 +26,4 @@ export * from './photo-capture-sessions';
 export * from './ghana-locations';
 export * from './message-deliveries';
 export * from './communications';
+export * from './communication-platform';

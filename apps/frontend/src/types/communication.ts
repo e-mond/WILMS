@@ -20,6 +20,8 @@ export interface CommunicationTemplate {
   bodyText: string;
   channels: CommunicationChannel[];
   isSystem: boolean;
+  variables?: string[];
+  version?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -52,6 +54,30 @@ export interface DeliveryAnalytics {
   successRate: number;
   openRate: number;
   clickRate: number;
+  deliveryRate?: number;
+  bounceRate?: number;
+  timeSeries?: Array<{ date: string; sent: number; opened: number; clicked: number; failed: number }>;
+  topRecipients?: Array<{ recipient: string; count: number }>;
+  topTemplates?: Array<{ templateId: string; name: string; count: number }>;
+}
+
+export interface MessageAttachment {
+  id: string;
+  messageId: string | null;
+  uploadId: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  url: string;
+  createdByUserId: string;
+  createdAt: string;
+}
+
+export interface TemplatePreviewResult {
+  subject: string;
+  bodyHtml: string;
+  bodyText: string;
+  variables: string[];
 }
 
 export interface FailedDelivery {
@@ -73,6 +99,9 @@ export interface CreateCommunicationMessageInput {
   audienceFilter?: Record<string, unknown>;
   scheduledAt?: string;
   templateId?: string;
+  recurrenceRule?: string;
+  recurrenceTimezone?: string;
+  attachmentIds?: string[];
 }
 
 export interface CreateCommunicationTemplateInput {
