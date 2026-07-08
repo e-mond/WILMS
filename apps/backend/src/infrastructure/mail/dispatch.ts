@@ -29,21 +29,22 @@ function shouldUseVercelRelay(): boolean {
   }
 
   const rawProvider = (process.env.MAIL_PROVIDER ?? 'none').toLowerCase();
+  // Resend uses HTTPS from Railway directly — never route through Gmail relay.
+  if (rawProvider === 'resend') {
+    return false;
+  }
+
+  return true;
+}
+
+function isGmailSmtpProvider(): boolean {
+  const rawProvider = (process.env.MAIL_PROVIDER ?? 'none').toLowerCase();
   if (rawProvider === 'gmail' || rawProvider === 'smtp') {
     return true;
   }
 
   const config = getMailConfig();
-  if (config.provider === 'smtp') {
-    return true;
-  }
-
-  // Relay-only: Gmail creds on Vercel while Railway has no outbound SMTP.
-  if (!getMailProvider().isConfigured() && rawProvider !== 'resend' && rawProvider !== 'none') {
-    return true;
-  }
-
-  return false;
+  return config.smtp.host === 'smtp.gmail.com';
 }
 
 async function sendViaVercelRelay(message: MailMessage): Promise<MailSendResult> {
@@ -113,6 +114,12 @@ export async function dispatchMail(input: DispatchMailInput): Promise<MailSendRe
   const mail = getMailProvider();
   if (!isMailDeliveryConfigured()) {
     throw new Error('Mail provider is not configured.');
+  }
+
+  if (isGmailSmtpProvider() && !isMailRelayConfigured()) {
+    throw new Error(
+      'VALIDATION:Gmail SMTP cannot be used from Railway. Set WILMS_VERCEL_MAIL_URL and WILMS_INTERNAL_MAIL_SECRET on Railway, and GMAIL_USER + GMAIL_APP_PASSWORD on Vercel.',
+    );
   }
 
   const trackingToken =
@@ -190,6 +197,12 @@ export async function dispatchMail(input: DispatchMailInput): Promise<MailSendRe
 
     if (message.includes('aborted') || message.includes('timeout')) {
       throw new Error('VALIDATION:Email relay timed out. Please retry sending the invitation.');
+    }
+
+    if (message.includes('ENETUNREACH') || message.includes('ECONNREFUSED') || message.includes(':587')) {
+      throw new Error(
+        'VALIDATION:Gmail SMTP is unreachable from Railway. Configure WILMS_VERCEL_MAIL_URL and WILMS_INTERNAL_MAIL_SECRET on Railway so mail sends via the Vercel relay.',
+      );
     }
 
     throw new Error(`VALIDATION:Email delivery failed: ${message}`);
