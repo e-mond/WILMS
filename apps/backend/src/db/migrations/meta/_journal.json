@@ -120,6 +120,27 @@
       "when": 1783179200000,
       "tag": "0016_v120_communication_platform",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1783265600000,
+      "tag": "0017_auth_otp_challenges",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1783352000000,
+      "tag": "0018_v122_security_user_lifecycle",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1783438400000,
+      "tag": "0019_v123_platform_stabilization",
+      "breakpoints": true
     }
   ]
 }

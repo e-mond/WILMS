@@ -39,15 +39,15 @@ import {
   buildWelcomeEmail,
 } from './templates.js';
 import { logMessageDelivery } from './delivery-log.js';
+import { normalizeGhanaPhone } from '../sms/normalize-phone.js';
 
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 750;
 
-function normalizeGhanaPhone(phone: string): string {
-  const digits = phone.replace(/\D/g, '');
-  if (digits.startsWith('233')) return digits;
-  if (digits.startsWith('0')) return `233${digits.slice(1)}`;
-  return digits;
+export interface SmsDispatchResult {
+  success: boolean;
+  failureReason?: string;
+  providerMessageId?: string;
 }
 
 async function dispatchSms(input: {
@@ -58,14 +58,19 @@ async function dispatchSms(input: {
   borrowerId?: string;
   loanId?: string;
   userId?: string;
-}): Promise<void> {
-  if (!input.enabled || !input.to.trim()) return;
+}): Promise<SmsDispatchResult> {
+  if (!input.enabled || !input.to.trim()) {
+    return { success: false, failureReason: 'SMS notifications are disabled or recipient is missing.' };
+  }
 
   const settings = await getSettings();
-  if (!settings.smsNotificationsEnabled) return;
+  if (!settings.smsNotificationsEnabled) {
+    return { success: false, failureReason: 'SMS notifications are disabled in system settings.' };
+  }
 
   const provider = getSmsProvider();
   if (!provider.isConfigured()) {
+    const failureReason = 'SMS provider is not configured.';
     await logMessageDelivery({
       event: input.event,
       channel: 'SMS',
@@ -73,12 +78,12 @@ async function dispatchSms(input: {
       provider: provider.name,
       bodyPreview: input.body,
       success: false,
-      failureReason: 'SMS provider is not configured.',
+      failureReason,
       borrowerId: input.borrowerId,
       loanId: input.loanId,
       userId: input.userId,
     });
-    return;
+    return { success: false, failureReason };
   }
 
   let lastError: unknown;
@@ -104,7 +109,7 @@ async function dispatchSms(input: {
         loanId: input.loanId,
         userId: input.userId,
       });
-      return;
+      return { success: true, providerMessageId: result.id };
     } catch (error) {
       lastError = error;
     }
@@ -124,6 +129,7 @@ async function dispatchSms(input: {
     loanId: input.loanId,
     userId: input.userId,
   });
+  return { success: false, failureReason: message };
 }
 
 async function dispatchEmailWhenEnabled(input: {
@@ -167,7 +173,12 @@ export async function notifyUserInvitation(input: {
   userId: string;
   phone?: string;
   expiresAt?: Date;
-}): Promise<void> {
+}): Promise<{
+  emailSent: boolean;
+  emailError?: string;
+  smsSent: boolean;
+  smsError?: string;
+}> {
   const template = buildUserInvitationEmail({
     displayName: input.displayName,
     email: input.email,
@@ -176,26 +187,37 @@ export async function notifyUserInvitation(input: {
     expiresAt: input.expiresAt,
   });
 
-  await dispatchMail({
-    event: 'USER_INVITED',
-    to: input.email,
-    subject: template.subject,
-    text: template.text,
-    html: template.html,
-    userId: input.userId,
-    enableTracking: false,
-    maxRetries: 0,
-  });
+  let emailSent = false;
+  let emailError: string | undefined;
+  try {
+    await dispatchMail({
+      event: 'USER_INVITED',
+      to: input.email,
+      subject: template.subject,
+      text: template.text,
+      html: template.html,
+      userId: input.userId,
+      enableTracking: false,
+      maxRetries: 0,
+    });
+    emailSent = true;
+  } catch (error) {
+    emailError = error instanceof Error ? error.message : 'Email delivery failed.';
+  }
 
+  let smsSent = false;
+  let smsError: string | undefined;
   if (input.phone?.trim()) {
     const settings = await getSettings();
-    await dispatchSms({
+    const smsResult = await dispatchSms({
       event: 'USER_INVITED',
       to: input.phone,
       body: `WILMS: You have been invited. Check ${input.email} for your invitation email and tap Accept Invitation to set up your account.`,
       enabled: settings.smsNotificationsEnabled,
       userId: input.userId,
     });
+    smsSent = smsResult.success;
+    smsError = smsResult.failureReason;
   }
 
   void createInAppNotification({
@@ -205,6 +227,8 @@ export async function notifyUserInvitation(input: {
     body: 'Your account has been created. Please sign in and change your password.',
     href: '/settings',
   });
+
+  return { emailSent, emailError, smsSent, smsError };
 }
 
 export async function notifyInvitationReminder(input: {

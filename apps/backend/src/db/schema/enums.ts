@@ -116,6 +116,11 @@ export const auditActionEnum = pgEnum('audit_action', [
   'LOAN_REJECTED',
   'LOAN_DISBURSED',
   'LOAN_POOL_REPLENISHED',
+  'USER_INVITED',
+  'USER_INVITATION_RESENT',
+  'USER_ACTIVATED',
+  'USER_SUSPENDED',
+  'USER_DELETED',
 ]);
 
 export const auditTargetEntityEnum = pgEnum('audit_target_entity', [

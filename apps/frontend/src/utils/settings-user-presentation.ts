@@ -25,7 +25,14 @@ export function resolveSettingsUserPresentation(
   return base;
 }
 
-export function formatSettingsUserStatus(status: SettingsUserRecord['status']): string {
+export function formatSettingsUserStatus(
+  status: SettingsUserRecord['status'],
+  statusLabel?: string | null,
+): string {
+  if (statusLabel) {
+    return statusLabel;
+  }
+
   switch (status) {
     case 'ACTIVE':
       return 'Active';

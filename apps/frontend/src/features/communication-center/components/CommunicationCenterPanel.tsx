@@ -13,6 +13,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Badge } from '@/components/ui/Badge';
 import { PERMISSION } from '@/constants/permissions';
 import { communicationService } from '@/services';
+import { formatDeliveryFailure } from '@/utils/format-delivery-failure';
 import { useToast } from '@/hooks/useToast';
 import type { AudienceType, CommunicationChannel, MessageAttachment, MessageStatus } from '@/types/communication';
 import { formatDisplayDate } from '@/utils/format-date';
@@ -286,7 +287,19 @@ export function CommunicationCenterPanel() {
               { id: 'event', header: 'Event', cell: (row) => row.event },
               { id: 'channel', header: 'Channel', cell: (row) => row.channel },
               { id: 'recipient', header: 'Recipient', cell: (row) => row.recipient },
-              { id: 'reason', header: 'Reason', cell: (row) => row.failureReason ?? '—' },
+              {
+                id: 'reason',
+                header: 'Reason',
+                cell: (row) => {
+                  const failure = formatDeliveryFailure(row.failureReason);
+                  return (
+                    <div>
+                      <p className="font-semibold text-text-primary">{failure.summary}</p>
+                      <p className="text-small text-text-muted">{failure.details}</p>
+                    </div>
+                  );
+                },
+              },
             ]}
           />
         </QueryStatePanel>

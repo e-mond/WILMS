@@ -60,6 +60,12 @@ export interface SettingsUserRecord {
   invitationEmailSent?: boolean;
   invitationEmailStatus?: 'PENDING' | 'SENT' | 'FAILED';
   invitationEmailError?: string | null;
+  invitationSmsStatus?: 'PENDING' | 'SENT' | 'FAILED' | 'SKIPPED';
+  invitationSmsError?: string | null;
+  invitedAt?: string | null;
+  acceptedAt?: string | null;
+  firstLoginAt?: string | null;
+  statusLabel?: string;
 }
 
 export interface SettingsActivityEntry {

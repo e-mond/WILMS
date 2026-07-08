@@ -22,6 +22,27 @@ import {
   resetPasswordWithToken,
 } from './password-reset.service.js';
 
+async function recordSuccessfulLogin(user: AuthUser): Promise<void> {
+  if (!isDatabaseEnabled()) {
+    return;
+  }
+
+  if (user.status === 'INVITED') {
+    await userRepository.recordFirstLogin(user.id);
+    appendAuditEntry({
+      action: 'user.invitation_accepted',
+      actorId: user.id,
+      actorDisplayName: user.displayName,
+      targetEntityId: user.id,
+      targetEntityType: 'user',
+      reason: 'first-login',
+    });
+    return;
+  }
+
+  await userRepository.updateLastLoginAt(user.id);
+}
+
 export const authRouter = Router();
 
 const forgotPasswordLimiter = rateLimit({
@@ -180,6 +201,40 @@ function buildLoginResponse(user: AuthUser) {
 }
 
 authRouter.post(
+  '/auth/accept-invitation',
+  asyncHandler(async (req, res) => {
+    const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+    if (!email || !email.includes('@')) {
+      throw new AppError('A valid email address is required.', ERROR_CODE.VALIDATION, 422);
+    }
+
+    if (!isDatabaseEnabled()) {
+      sendData(res, { accepted: true });
+      return;
+    }
+
+    const user = await userRepository.findAnyUserByEmail(email);
+    if (!user || user.deletedAt || user.status !== 'INVITED') {
+      sendData(res, { accepted: false });
+      return;
+    }
+
+    await userRepository.recordInvitationAccepted(user.id);
+
+    appendAuditEntry({
+      action: 'user.invitation_accepted',
+      actorId: user.id,
+      actorDisplayName: user.displayName,
+      targetEntityId: user.id,
+      targetEntityType: 'user',
+      reason: 'accept-invitation-link',
+    });
+
+    sendData(res, { accepted: true });
+  }),
+);
+
+authRouter.post(
   '/auth/login',
   loginRateLimiter,
   validateBody(loginApiSchema),
@@ -226,9 +281,7 @@ authRouter.post(
       return;
     }
 
-    if (isDatabaseEnabled()) {
-      await userRepository.updateLastLoginAt(user.id);
-    }
+    await recordSuccessfulLogin(user);
 
     logLoginAttempt({
       success: true,

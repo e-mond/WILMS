@@ -2,6 +2,29 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.2.3] — Platform Stabilization
+
+### Fixed
+- Invited users who accept and sign in now record `invited_at`, `accepted_at`, and `first_login_at` milestones; Settings shows **Pending setup** until onboarding completes and **Active** after password change.
+- Invitation SMS delivery logs failures instead of failing silently; phone numbers are normalized and validated for Ghana mobile format.
+- `createObjectURL` memory leaks in photo/document upload previews and premature revocation in DOCX exports.
+- Registered user profile modal no longer crashes on missing arrays or unknown borrower statuses.
+- Failed communication deliveries display human-readable reasons instead of raw JSON.
+- Permanent user deletion also purges `message_deliveries` linked to the user.
+
+### Added
+- Migration `0019_v123_platform_stabilization.sql` with invitation lifecycle columns and audit action enum values.
+- `POST /auth/accept-invitation` to record invitation acceptance from email links.
+- Centralized `normalizeGhanaPhone` / `isValidGhanaMobile` in `infrastructure/sms/normalize-phone.ts`.
+- `formatDeliveryFailure()` utility for Communication Center failed-message presentation.
+- `useObjectUrl` hook for safe blob preview lifecycle.
+- Tests for invitation lifecycle, phone normalization, and delivery failure formatting.
+
+### Changed
+- `notifyUserInvitation()` returns per-channel delivery results; `createUser()` awaits delivery and surfaces email/SMS status.
+- Audit repository maps `user.invited`, `user.activated`, `user.deleted`, and related actions to correct enum values.
+- Application version bumped to `1.2.3` across root, frontend, and API packages.
+
 ## [1.2.2] — Security & User Lifecycle Stabilization
 
 ### Fixed

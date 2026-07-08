@@ -5,6 +5,7 @@ export interface SettingsUserProfile {
   role: string;
   roleLabel: string;
   status: 'ACTIVE' | 'INVITED' | 'SUSPENDED';
+  statusLabel?: string;
   phone: string;
   email: string;
   branch: string;
