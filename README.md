@@ -2,7 +2,16 @@
 
 Women's Interest-Free Loan Management System (WILMS) is a TypeScript monorepo for borrower onboarding, group lending, loan lifecycle management, weekly collections, audit trails, and role-based reporting.
 
-Version 1.0.0 is the production release. **v1.3.0** delivers field operations foundations (offline PWA shell, device health, background uploads, sync conflict review, advanced lending domain). **v1.2.3** stabilizes user management, SMS invitations, and production UI reliability.
+## Current Release
+
+| Version | Focus |
+|---------|-------|
+| **v1.3.0** | Field operations — offline PWA shell, device health, background uploads, sync conflict review, advanced lending domain |
+| **v1.2.3** | Platform stabilization — invitation lifecycle, SMS delivery, UI hardening |
+| **v1.2.2** | Security — session invalidation, permanent deletion, admin fee persistence |
+| **v1.0.0** | Production baseline |
+
+See `CHANGELOG.md` and `PROJECT_STATUS.md` for full release history.
 
 ## Production Services
 
@@ -64,6 +73,20 @@ npm run smoke:rbac
 
 Production smoke requires `WILMS_APP_URL` and `WILMS_API_URL` environment variables.
 
+## Field Operations (v1.3.0)
+
+Collectors work in low-connectivity environments with:
+
+- **Offline payment queue** — record collections without network; sync on reconnect
+- **PWA shell** — installable app with cached navigation (`/collector/dashboard` start URL)
+- **Background uploads** — photos and attachments queued in IndexedDB
+- **Device health** — battery and storage monitoring in collector settings
+- **Sync review** — approvers resolve offline financial operations at `/approver/sync-conflicts`
+- **QR / barcode scanning** — borrower and loan lookup in the field
+- **Receipt printing** — thermal-friendly text receipts
+
+Grace periods, repayment cadences, fees, penalties, and guarantor scoring domain modules ship in v1.3.0 (see `docs/advanced-lending.md`).
+
 ## Notifications (v1.1.2+)
 
 Outbound email from Railway uses a Vercel Gmail relay when `WILMS_VERCEL_MAIL_URL` and `WILMS_INTERNAL_MAIL_SECRET` are set on the API. Gmail credentials (`GMAIL_USER`, `GMAIL_APP_PASSWORD`) must be on Vercel. Delivery attempts are logged to `message_deliveries` and queryable via `GET /settings/delivery-logs` or the Communication Center.
@@ -120,17 +143,35 @@ See `docs/deployment-guide.md` and `docs/production-guide.md` for operational de
 
 ## Documentation
 
-Current authoritative docs:
+### Release & status
 
-- `PROJECT_STATUS.md`
-- `CHANGELOG.md`
-- `docs/architecture/architecture.md`
-- `docs/deployment-guide.md`
-- `docs/security-guide.md`
-- `REPOSITORY_STRUCTURE.md`
-- `MAINTENANCE_SUMMARY.md`
+- `PROJECT_STATUS.md` — current version and verification status
+- `CHANGELOG.md` — release notes
+- `docs/version-history.md` — version timeline
 
-Maintenance reports for v1.0.1:
+### Architecture & operations
+
+- `docs/architecture/architecture.md` — system architecture
+- `docs/offline-architecture.md` — offline mode and PWA
+- `docs/synchronization-guide.md` — offline sync and conflict resolution
+- `docs/device-management.md` — battery, storage, compression
+- `docs/mobile-guide.md` — PWA install, camera, scanning, receipts
+- `docs/advanced-lending.md` — repayment engine, fees, penalties
+- `docs/api-overview.md` — API surface reference
+- `docs/deployment-guide.md` — deploy procedures
+- `docs/production-guide.md` — production operations
+- `docs/security-guide.md` — security controls
+- `docs/authentication.md` — auth flows and session management
+
+### v1.3.0 reports
+
+- `V1.3.0_FIELD_OPERATIONS_REPORT.md`
+- `OFFLINE_MODE_REPORT.md`
+- `MOBILE_PLATFORM_REPORT.md`
+- `DEVICE_MANAGEMENT_REPORT.md`
+- `ADVANCED_LENDING_REPORT.md`
+
+### Maintenance (v1.0.1)
 
 - `REPOSITORY_CLEANUP_REPORT.md`
 - `DOCUMENT_ARCHIVE_REPORT.md`

@@ -1,6 +1,6 @@
 # WILMS Security Guide
 
-**Last updated:** 2026-07-08 (v1.2.2)
+**Last updated:** 2026-07-08 (v1.3.0)
 
 ## Current controls
 
@@ -15,6 +15,15 @@
 | Uploads | MIME/size validation and Cloudinary-backed production storage |
 | Audit trail | Backend audit entries for sensitive workflows |
 | User deletion | Invited users hard-deleted; active users anonymized with credentials removed |
+| Offline sync | Financial offline mutations require approver review before posting |
+| Field device | App lock PIN stored locally; upload queue in IndexedDB on device |
+
+## Offline & field security (v1.3.0)
+
+- Offline payment batches are ingested but not auto-applied; approvers must approve at `/approver/sync-conflicts`.
+- Service worker caches shell assets only; API calls require valid session.
+- Upload queue blobs remain on-device until successfully uploaded.
+- Battery saver mode pauses background sync to reduce exposure window on low power.
 
 ## User lifecycle
 

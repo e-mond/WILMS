@@ -1,6 +1,6 @@
 # WILMS Production Guide
 
-**Last updated:** 2026-07-05 (v1.0.1 maintenance)
+**Last updated:** 2026-07-08 (v1.3.0)
 
 ## Live services
 
@@ -17,6 +17,16 @@
 - Historical repair scripts are retained for auditability but should not run without an explicit recovery plan.
 - Uploads use Cloudinary in production.
 - SMS uses SMSNotifyGH in production.
+- Offline financial mutations require approver review before posting.
+
+## Field operations (v1.3.0)
+
+| Concern | Guidance |
+|---------|----------|
+| PWA updates | Service worker cache version `wilms-v130-shell`; users may need refresh after deploy |
+| Offline payments | Queue drains to `/sync/offline/batch`; approvers resolve at `/approver/sync-conflicts` |
+| Upload queue | IndexedDB on device; monitor via collector Device health panel |
+| Grace periods | `latePaymentGraceDays` in system settings (default 3) |
 
 ## Verification commands
 

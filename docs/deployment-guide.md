@@ -1,6 +1,6 @@
 # WILMS Deployment Guide
 
-**Last updated:** 2026-07-05 (v1.0.1 maintenance)
+**Last updated:** 2026-07-08 (v1.3.0)
 
 ## Deployment model
 
@@ -12,6 +12,21 @@
 | Uploads | Cloudinary | Railway production env |
 
 Always deploy from the monorepo root. Do not deploy `apps/backend/` in isolation because the API depends on workspace packages.
+
+## Database migrations
+
+Run before or during API deploy:
+
+```bash
+npm run db:migrate -w @wilms/api
+```
+
+Recent migrations:
+
+| Tag | Release | Purpose |
+|-----|---------|---------|
+| `0019_v123_platform_stabilization` | v1.2.3 | Invitation lifecycle timestamps, audit enums |
+| `0020_v130_field_operations` | v1.3.0 | Repayment cadence, holidays, fees, penalties |
 
 ## API deploy
 
@@ -34,6 +49,8 @@ vercel deploy --prod --yes
 
 Production domain: https://wilms.vercel.app
 
+After deploy, collectors should hard-refresh or reinstall the PWA to pick up the v1.3.0 service worker (`wilms-v130-shell` cache).
+
 ## Required production secrets
 
 See `.env.example` for the full reference. Production must include:
@@ -51,6 +68,8 @@ See `.env.example` for the full reference. Production must include:
 - `SMS_PROVIDER=smsnotifygh`
 - `SMSNOTIFYGH_API_KEY`
 - `SMSNOTIFYGH_SENDER_ID`
+- `WILMS_VERCEL_MAIL_URL` (origin only, no `/api/mail` suffix)
+- `WILMS_INTERNAL_MAIL_SECRET`
 
 ## Post-deploy validation
 
@@ -62,6 +81,13 @@ npm run smoke:production
 WILMS_APP_URL=https://wilms.vercel.app \
 npm run smoke:rbac
 ```
+
+### v1.3.0 field checks
+
+1. Collector Settings → Device — confirm battery and storage panel loads
+2. Record a test payment offline (devtools → offline) — verify queue banner
+3. Approver → Offline Sync — confirm conflict list endpoint responds
+4. Install PWA — verify `start_url` opens collector dashboard
 
 ## Historical deployment evidence
 
