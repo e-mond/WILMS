@@ -1,30 +1,29 @@
 # WILMS - Project Status
 
-**Last updated:** 2026-07-07 (v1.2.1 ready)  
-**Package version:** `1.2.1`  
-**Branch:** `feature/v1.2.1-communication-stabilization`  
-**Production:** v1.2.0 deployed — v1.2.1 pending
+**Last updated:** 2026-07-08 (v1.2.2 ready)  
+**Package version:** `1.2.2`  
+**Branch:** `hotfix/v1.2.2-security-user-lifecycle`  
+**Production:** v1.2.1 deployed — v1.2.2 pending
 
 ---
 
 ## Summary
 
-v1.2.1 stabilizes the communication platform for production. The primary fix resolves user invitation failures that returned generic HTTP 500 errors. All v1.2.0 features remain operational.
+v1.2.2 stabilizes security and user lifecycle operations: durable borrower admin fees, permanent user deletion, and immediate session invalidation when account status changes.
 
 ---
 
-## v1.2.1 scope
+## v1.2.2 scope
 
 | Item | Status |
 |------|--------|
-| Invitation 500 fix | ✅ |
-| Meaningful API errors | ✅ |
-| Delivery log hardening | ✅ |
-| Invitation email template | ✅ |
-| Communication verification | ✅ |
-| Tests & smoke | ✅ |
+| Admin fee persistence (no login prompt) | ✅ |
+| Permanent user deletion | ✅ |
+| Session invalidation on suspend/delete/role change | ✅ |
+| Auth documentation | ✅ |
+| Tests & reports | ✅ |
 
-See [V1.2.1_INVITATION_FIX_REPORT.md](./V1.2.1_INVITATION_FIX_REPORT.md) and [INVITATION_ROOT_CAUSE_ANALYSIS.md](./INVITATION_ROOT_CAUSE_ANALYSIS.md).
+See [V1.2.2_SECURITY_REPORT.md](./V1.2.2_SECURITY_REPORT.md).
 
 ---
 
@@ -35,8 +34,8 @@ See [V1.2.1_INVITATION_FIX_REPORT.md](./V1.2.1_INVITATION_FIX_REPORT.md) and [IN
 | `npm run type-check` | **PASS** |
 | `npm run lint` | **PASS** |
 | `npm run build` | **PASS** |
-| `npm run test -w @wilms/api` | **65/65** |
-| `npm run test -w @wilms/frontend` | **223/223** |
+| `npm run test -w @wilms/api` | **76/76** |
+| `npm run test -w @wilms/frontend` | **225/225** |
 | `npm run smoke:production` | **31/31** |
 | `npm run smoke:rbac` | **11/11** |
 

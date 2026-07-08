@@ -1,24 +1,36 @@
-# Test Verification Report — v1.2.1
+# Test Verification Report
 
-**Date:** 2026-07-07  
-**Branch:** `feature/v1.2.1-communication-stabilization`
+**Release:** 1.2.2  
+**Date:** 2026-07-08
+
+## Commands
 
 | Command | Result |
 |---------|--------|
 | `npm run type-check` | **PASS** |
 | `npm run lint` | **PASS** |
-| `npm run build` | **PASS** |
-| `npm run test -w @wilms/api` | **65/65 PASS** |
-| `npm run test -w @wilms/frontend` | **223/223 PASS** |
-| `npm run smoke:production` | **31/31 PASS** |
-| `npm run smoke:rbac` | **11/11 PASS** |
+| `npm run build` (frontend) | **PASS** |
+| `npm run test -w @wilms/api` | **76/76 PASS** |
+| `npm run test -w @wilms/frontend` | **225/225 PASS** (shard 1/2 sequential) |
 
-## New tests (v1.2.1)
+## New tests (v1.2.2)
 
-- `apps/backend/src/tests/settings/invitation.test.ts`
-  - Unique violation mapping
-  - Invitation email template content
+| File | Coverage |
+|------|----------|
+| `apps/backend/src/tests/transactions/admin-fee-workflow.test.ts` | Login gate false; per-borrower fee idempotency |
+| `apps/backend/src/tests/auth/session-invalidation.test.ts` | Token session version; DB invalidation |
+| `apps/backend/src/tests/users/user-purge.test.ts` | Permanent delete invited users |
 
-## Regression
+## Smoke suites
 
-All v1.2.0 communication platform tests remain green.
+Run after deploy:
+
+```bash
+npm run smoke:production
+npm run smoke:rbac
+```
+
+## Regression focus
+
+- Login and collector dashboard flows unchanged (no admin-fee redirect).
+- Existing invitation, communication, and payment tests remain green on API package.
