@@ -103,12 +103,16 @@ See `context/adrs/ADR-001-state-management.md` for the full decision record.
 | Borrower / Loan / Transaction data | TanStack Query | Server state; cached with stale-while-revalidate; invalidated on mutations |
 | Form state | React Hook Form (local) | Controlled locally; never hoisted to global store |
 
-### Offline Queue Strategy
-1. Collector records payment while offline → action pushed to `offlineQueueStore`
-2. UI shows "Pending Sync" badge on each queued item
-3. On reconnection, queue drains in FIFO order via TanStack Query mutations
-4. Each synced item receives server confirmation → status updated
-5. Sync failure → item remains in queue; Collector notified
+### Offline Queue Strategy (v1.3.0)
+1. Collector records payment while offline → action pushed to `offlineQueueStore` (localStorage)
+2. Photos/attachments → IndexedDB upload queue (`upload-queue.ts`)
+3. UI shows pending count via `OfflineBanner`
+4. On reconnection or service worker `sync` event, queue drains in FIFO order
+5. Financial operations → `POST /sync/offline/batch` → approver review at `/approver/sync-conflicts`
+6. Upload queue drained by `BackgroundUploadProcessor` when online
+7. Sync respects collector auto-sync interval and pauses during battery saver mode
+
+See `docs/offline-architecture.md` and `docs/synchronization-guide.md`.
 
 ---
 
