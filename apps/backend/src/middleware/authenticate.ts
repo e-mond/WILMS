@@ -9,6 +9,7 @@ export interface SessionUser {
   role: UserRole;
   displayName?: string;
   expiresAt: number;
+  status?: 'ACTIVE' | 'INVITED' | 'SUSPENDED';
 }
 
 declare global {
@@ -58,6 +59,7 @@ function parseSessionPayload(payloadBase64: string): SessionUser | null {
       role: parsed.role as UserRole,
       displayName: parsed.displayName,
       expiresAt: parsed.expiresAt,
+      status: parsed.status as SessionUser['status'] | undefined,
     };
   } catch {
     return null;

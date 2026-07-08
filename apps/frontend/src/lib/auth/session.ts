@@ -37,6 +37,10 @@ export function decodeSessionPayload(value: string | undefined | null): SessionP
       role: parsed.role,
       displayName: typeof parsed.displayName === 'string' ? parsed.displayName : undefined,
       expiresAt: parsed.expiresAt,
+      status:
+        parsed.status === 'ACTIVE' || parsed.status === 'INVITED' || parsed.status === 'SUSPENDED'
+          ? parsed.status
+          : undefined,
     };
   } catch {
     return null;
@@ -56,6 +60,7 @@ export function toAuthSession(payload: SessionPayload): AuthSession {
     id: payload.userId,
     role: payload.role,
     displayName: payload.displayName,
+    status: payload.status,
   };
 
   return {

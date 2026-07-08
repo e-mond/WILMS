@@ -252,7 +252,7 @@ settingsRouter.post(
   requirePermission(PERMISSION.SUSPEND_USERS),
   asyncHandler(async (req, res) => {
     try {
-      sendData(res, await settingsService.disableUser(req.params.id!));
+      sendData(res, await settingsService.disableUser(req.params.id!, req.session!.userId));
     } catch (error) {
       mapError(error);
     }

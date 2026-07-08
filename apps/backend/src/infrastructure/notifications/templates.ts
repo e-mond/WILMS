@@ -176,7 +176,8 @@ export function buildUserInvitationEmail(input: {
   appUrl?: string;
   expiresAt?: Date;
 }): EmailTemplate {
-  const loginUrl = input.appUrl?.trim() || 'https://wilms.vercel.app/login';
+  const baseUrl = input.appUrl?.trim() || 'https://wilms.vercel.app';
+  const acceptUrl = `${baseUrl.replace(/\/$/, '')}/accept-invitation?email=${encodeURIComponent(input.email)}`;
   const expiryLabel = input.expiresAt
     ? input.expiresAt.toISOString().slice(0, 10)
     : '7 days from invite';
@@ -190,7 +191,7 @@ export function buildUserInvitationEmail(input: {
       `Hello ${input.displayName},`,
       '',
       'Your WILMS account has been invited.',
-      `Sign in: ${loginUrl}`,
+      `Accept invitation: ${acceptUrl}`,
       `Email: ${input.email}`,
       `Temporary password: ${input.temporaryPassword}`,
       `Invitation expires: ${expiryLabel}`,
@@ -209,7 +210,7 @@ export function buildUserInvitationEmail(input: {
         { label: 'Invitation Expires', value: expiryLabel },
       ]),
       emailAlert('Please change your password immediately after signing in.', 'warning'),
-      emailButton('Accept Invitation', loginUrl, 'primary'),
+      emailButton('Accept Invitation', acceptUrl, 'primary'),
       emailParagraph('Need help? Contact your WILMS administrator or support@wilms.org'),
     ].join(''),
   });

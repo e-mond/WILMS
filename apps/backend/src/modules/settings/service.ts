@@ -71,6 +71,7 @@ export interface CreateSettingsUserInput {
   displayName: string;
   email: string;
   role: string;
+  phone?: string;
 }
 
 export interface UpdateSettingsUserInput {
@@ -921,6 +922,7 @@ export async function createUser(
       email,
       passwordHash,
       displayName,
+      phone: input.phone?.trim() || null,
       role: role as typeof users.$inferInsert.role,
       status: 'INVITED',
     });
@@ -956,6 +958,7 @@ export async function createUser(
     displayName,
     temporaryPassword: DEFAULT_INVITE_PASSWORD,
     userId,
+    phone: input.phone?.trim(),
     expiresAt,
   }).catch((error) => {
     console.error('[settings] invitation email failed (async):', error);
@@ -988,6 +991,7 @@ export async function resendInvitation(
     displayName: row.displayName,
     temporaryPassword: DEFAULT_INVITE_PASSWORD,
     userId: row.id,
+    phone: row.phone ?? undefined,
     expiresAt,
   });
 
@@ -1068,7 +1072,26 @@ export async function updateUser(
   return record;
 }
 
-export async function disableUser(id: string): Promise<SettingsUserRecord> {
+export async function disableUser(id: string, actorUserId?: string): Promise<SettingsUserRecord> {
+  if (actorUserId && id === actorUserId) {
+    const actor = await userRepo.getUserById(actorUserId);
+    if (actor?.role === USER_ROLE.SUPER_ADMIN) {
+      const peers = await userRepo.listUsers();
+      const hasOtherActiveSuperAdmin = peers.some(
+        (peer) =>
+          peer.id !== actorUserId &&
+          peer.role === USER_ROLE.SUPER_ADMIN &&
+          peer.status === 'ACTIVE' &&
+          !peer.deletedAt,
+      );
+      if (!hasOtherActiveSuperAdmin) {
+        throw new Error(
+          'VALIDATION:You cannot suspend your own account unless another active super admin exists.',
+        );
+      }
+    }
+  }
+
   const record = await updateUser(id, { status: 'SUSPENDED' });
   void notifyAccountDisabled({
     email: record.email,
