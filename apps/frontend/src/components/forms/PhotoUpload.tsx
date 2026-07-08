@@ -5,7 +5,11 @@ import { Button } from '@/components/ui/Button';
 import { PhoneCaptureSessionPanel } from '@/components/forms/PhoneCaptureSessionPanel';
 import { WebcamCapture } from '@/components/forms/WebcamCapture';
 import type { UploadPurpose, UploadRecord } from '@/types/upload';
-import { deleteUploadedFile, uploadFileViaService } from '@/utils/upload-file';
+import {
+  deleteUploadedFile,
+  isQueuedUpload,
+  uploadFileWithOfflineQueue,
+} from '@/utils/upload-file';
 import { validateBorrowerPhoto } from '@/utils/photo-validation';
 import { cn } from '@/utils/cn';
 
@@ -123,7 +127,7 @@ export function PhotoUpload({
         await deleteUploadedFile(uploadRecord.id);
       }
 
-      const record = await uploadFileViaService({
+      const result = await uploadFileWithOfflineQueue({
         file,
         purpose: uploadPurpose,
         entityId,
@@ -134,9 +138,33 @@ export function PhotoUpload({
         blobUrlRef.current = null;
       }
 
-      setUploadRecord(record);
-      setPreviewUrl(record.url);
-      onUploadRecordChange?.(record);
+      if (isQueuedUpload(result)) {
+        setUploadRecord({
+          id: result.id,
+          url: result.url,
+          fileName: result.fileName,
+          purpose: uploadPurpose,
+          mimeType: file.type || 'application/octet-stream',
+          sizeBytes: file.size,
+          uploadedAt: new Date().toISOString(),
+        });
+        setPreviewUrl(result.url);
+        onUploadRecordChange?.({
+          id: result.id,
+          url: result.url,
+          fileName: result.fileName,
+          purpose: uploadPurpose,
+          mimeType: file.type || 'application/octet-stream',
+          sizeBytes: file.size,
+          uploadedAt: new Date().toISOString(),
+        });
+        setLocalError(null);
+        return;
+      }
+
+      setUploadRecord(result);
+      setPreviewUrl(result.url);
+      onUploadRecordChange?.(result);
     } catch {
       setLocalError('Unable to upload photo. Try again.');
       setUploadRecord(null);

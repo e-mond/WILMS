@@ -7,7 +7,7 @@ const offlineSyncServiceMock: IOfflineSyncService = {
     return {
       results: items.map((item) => ({
         idempotencyKey: item.id,
-        status: 'APPLIED' as const,
+        status: 'QUEUED_FOR_REVIEW' as const,
         operationId: `op-${item.id}`,
       })),
     };

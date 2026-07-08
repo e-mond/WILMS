@@ -6,8 +6,8 @@ import { isAutoSyncEnabled, resolveOfflineSyncIntervalMs, shouldPauseBackgroundS
 import { useBatteryStatus } from '@/hooks/useBatteryStatus';
 import { logger } from '@/utils/logger';
 import { useOfflineQueueStore } from '@/state/offlineQueueStore';
-import { OFFLINE_QUEUE_ITEM_STATUS } from '@/types/offline-queue';
-import type { OfflinePaymentSyncHandler } from '@/types/offline-queue';
+import { OFFLINE_QUEUE_ITEM_STATUS, OFFLINE_QUEUE_ITEM_TYPE } from '@/types/offline-queue';
+import type { OfflinePaymentQueueItem, OfflinePaymentSyncHandler } from '@/types/offline-queue';
 import { useOfflineStatus } from '@/hooks/useOfflineStatus';
 
 interface UseOfflineQueueSyncOptions {
@@ -23,6 +23,7 @@ export function useOfflineQueueSync({ syncHandler }: UseOfflineQueueSyncOptions)
   const syncState = useOfflineQueueStore((state) => state.syncState);
   const markSyncing = useOfflineQueueStore((state) => state.markSyncing);
   const markSynced = useOfflineQueueStore((state) => state.markSynced);
+  const markQueuedForReview = useOfflineQueueStore((state) => state.markQueuedForReview);
   const markFailed = useOfflineQueueStore((state) => state.markFailed);
   const removeSyncedItems = useOfflineQueueStore((state) => state.removeSyncedItems);
   const setSyncState = useOfflineQueueStore((state) => state.setSyncState);
@@ -39,13 +40,14 @@ export function useOfflineQueueSync({ syncHandler }: UseOfflineQueueSyncOptions)
     }
 
     const currentItems = useOfflineQueueStore.getState().items;
-    const hasDrainable = currentItems.some(
-      (item) =>
-        item.status === OFFLINE_QUEUE_ITEM_STATUS.PENDING ||
-        item.status === OFFLINE_QUEUE_ITEM_STATUS.FAILED,
+    const paymentItems = currentItems.filter(
+      (item): item is OfflinePaymentQueueItem =>
+        item.type === OFFLINE_QUEUE_ITEM_TYPE.RECORD_PAYMENT &&
+        (item.status === OFFLINE_QUEUE_ITEM_STATUS.PENDING ||
+          item.status === OFFLINE_QUEUE_ITEM_STATUS.FAILED),
     );
 
-    if (!hasDrainable) {
+    if (paymentItems.length === 0) {
       return;
     }
 
@@ -55,11 +57,18 @@ export function useOfflineQueueSync({ syncHandler }: UseOfflineQueueSyncOptions)
     try {
       const wrappedHandler: OfflinePaymentSyncHandler = async (item) => {
         markSyncing(item.id);
-        await syncHandler(item);
-        markSynced(item.id);
+        const outcome = await syncHandler(item);
+
+        if (outcome === 'queued_for_review') {
+          markQueuedForReview(item.id);
+        } else {
+          markSynced(item.id);
+        }
+
+        return outcome;
       };
 
-      const result = await drainOfflineQueue(currentItems, wrappedHandler);
+      const result = await drainOfflineQueue(paymentItems, wrappedHandler);
 
       for (const failure of result.failed) {
         markFailed(failure.id, failure.error);
@@ -85,6 +94,7 @@ export function useOfflineQueueSync({ syncHandler }: UseOfflineQueueSyncOptions)
   }, [
     isOnline,
     markFailed,
+    markQueuedForReview,
     markSynced,
     markSyncing,
     removeSyncedItems,
@@ -106,8 +116,9 @@ export function useOfflineQueueSync({ syncHandler }: UseOfflineQueueSyncOptions)
 
     const hasPending = items.some(
       (item) =>
-        item.status === OFFLINE_QUEUE_ITEM_STATUS.PENDING ||
-        item.status === OFFLINE_QUEUE_ITEM_STATUS.FAILED,
+        item.type === OFFLINE_QUEUE_ITEM_TYPE.RECORD_PAYMENT &&
+        (item.status === OFFLINE_QUEUE_ITEM_STATUS.PENDING ||
+          item.status === OFFLINE_QUEUE_ITEM_STATUS.FAILED),
     );
 
     if (!hasPending) {

@@ -92,6 +92,8 @@ describe('guarantor eligibility', () => {
     );
 
     expect(result.isEligible).toBe(true);
+    expect(result.eligibilityScore).toBeGreaterThan(0);
+    expect(result.riskRating).toBeDefined();
   });
 
   it('does not count pending registrations toward guarantee limit', () => {

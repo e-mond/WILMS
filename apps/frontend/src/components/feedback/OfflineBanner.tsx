@@ -3,6 +3,7 @@ import { cn } from '@/utils/cn';
 export interface OfflineBannerProps {
   isOffline: boolean;
   pendingCount: number;
+  reviewCount: number;
   isSyncing: boolean;
   hasQueueWarning: boolean;
   className?: string;
@@ -11,6 +12,7 @@ export interface OfflineBannerProps {
 function getBannerMessage({
   isOffline,
   pendingCount,
+  reviewCount,
   isSyncing,
   hasQueueWarning,
 }: Omit<OfflineBannerProps, 'className'>): string {
@@ -30,6 +32,10 @@ function getBannerMessage({
     return `${pendingCount} payment${pendingCount === 1 ? '' : 's'} pending sync.`;
   }
 
+  if (reviewCount > 0) {
+    return `${reviewCount} payment${reviewCount === 1 ? '' : 's'} awaiting approver review.`;
+  }
+
   return '';
 }
 
@@ -42,6 +48,7 @@ export function OfflineBanner(props: OfflineBannerProps) {
   }
 
   const isCritical = status.hasQueueWarning;
+  const isReviewOnly = !status.isOffline && status.pendingCount === 0 && status.reviewCount > 0;
 
   return (
     <div
@@ -51,7 +58,9 @@ export function OfflineBanner(props: OfflineBannerProps) {
         'border-b px-wilms-4 py-wilms-2 text-small font-semibold',
         isCritical
           ? 'border-danger bg-danger-light text-text-primary'
-          : 'border-warning bg-warning-light text-text-primary',
+          : isReviewOnly
+            ? 'border-status-info bg-status-info-light text-text-primary'
+            : 'border-warning bg-warning-light text-text-primary',
         className,
       )}
     >

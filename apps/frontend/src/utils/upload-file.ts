@@ -1,5 +1,23 @@
+import { enqueueUpload } from '@/lib/offline-queue/upload-queue';
 import { uploadService } from '@/services';
 import type { UploadFileInput, UploadPurpose, UploadRecord } from '@/types/upload';
+
+export interface QueuedUploadResult {
+  queued: true;
+  id: string;
+  url: string;
+  fileName: string;
+}
+
+export type UploadFileResult = UploadRecord | QueuedUploadResult;
+
+export function isQueuedUpload(result: UploadFileResult): result is QueuedUploadResult {
+  return 'queued' in result && result.queued === true;
+}
+
+function isBrowserOffline(): boolean {
+  return typeof navigator !== 'undefined' && !navigator.onLine;
+}
 
 export async function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -36,6 +54,38 @@ export async function uploadFileViaService(input: {
   };
 
   return uploadService.uploadFile(payload);
+}
+
+export async function uploadFileWithOfflineQueue(input: {
+  file: File;
+  purpose: UploadPurpose;
+  entityId?: string;
+}): Promise<UploadFileResult> {
+  if (isBrowserOffline()) {
+    const id = crypto.randomUUID();
+    const previewUrl = URL.createObjectURL(input.file);
+
+    await enqueueUpload({
+      id,
+      purpose: input.purpose,
+      entityId: input.entityId,
+      fileName: input.file.name,
+      mimeType: input.file.type || 'application/octet-stream',
+      blob: input.file,
+      createdAt: Date.now(),
+      attemptCount: 0,
+      lastError: null,
+    });
+
+    return {
+      queued: true,
+      id,
+      url: previewUrl,
+      fileName: input.file.name,
+    };
+  }
+
+  return uploadFileViaService(input);
 }
 
 export async function deleteUploadedFile(uploadId: string | null | undefined): Promise<void> {
