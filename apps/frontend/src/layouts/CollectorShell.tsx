@@ -7,6 +7,7 @@ import type { ReactNode } from 'react';
 import { DashboardShell } from '@/components/layout/shell/DashboardShell';
 
 import { CollectorOfflineShell } from '@/components/offline/CollectorOfflineShell';
+import { BackgroundUploadProcessor } from '@/components/offline/BackgroundUploadProcessor';
 
 import { COLLECTOR_NAV } from '@/constants/navigation';
 
@@ -35,7 +36,7 @@ export function CollectorShell({ children }: CollectorShellProps) {
   return (
 
     <CollectorOfflineShell>
-
+      <BackgroundUploadProcessor />
       <DashboardShell
 
         shellId="collector"

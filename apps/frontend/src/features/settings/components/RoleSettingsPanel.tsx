@@ -23,6 +23,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import { useSettingsMe, useUpdateSettingsMe } from '@/features/settings/hooks/useSettingsMe';
 import { NotificationPreferencesSection } from '@/features/settings/components/NotificationPreferencesSection';
+import { DeviceHealthPanel } from '@/features/device-management/components/DeviceHealthPanel';
 import { roleSettingsPreferences } from '@/features/settings/utils/role-settings-preferences';
 import { PhotoUpload } from '@/components/forms/PhotoUpload';
 import { UPLOAD_PURPOSE } from '@/types/upload';
@@ -209,37 +210,42 @@ function DeviceSection() {
   }, []);
 
   return (
-    <SettingsSectionCard
-      title="Device Settings"
-      description="Field device preferences."
-      icon={<span aria-hidden="true">📱</span>}
-    >
-      <SettingsSettingRow
-        title="GPS Verification"
-        description="Require location on collections."
-        control={
-          <Switch checked={gpsVerification} label="GPS verification" onChange={setGpsVerification} />
-        }
-      />
-      <SettingsSettingRow
-        title="Low Data Mode"
-        description="Reduce image upload size in the field."
-        control={<Switch checked={lowDataMode} label="Low data mode" onChange={setLowDataMode} />}
-      />
-      <div className="flex justify-end pt-wilms-2">
-        <Button
-          type="button"
-          size="sm"
-          onClick={() => {
-            roleSettingsPreferences.setGpsVerification(gpsVerification);
-            roleSettingsPreferences.setLowDataMode(lowDataMode);
-            toast.success('Device preferences saved');
-          }}
-        >
-          Save device settings
-        </Button>
+    <>
+      <SettingsSectionCard
+        title="Device Settings"
+        description="Field device preferences."
+        icon={<span aria-hidden="true">📱</span>}
+      >
+        <SettingsSettingRow
+          title="GPS Verification"
+          description="Require location on collections."
+          control={
+            <Switch checked={gpsVerification} label="GPS verification" onChange={setGpsVerification} />
+          }
+        />
+        <SettingsSettingRow
+          title="Low Data Mode"
+          description="Reduce image upload size in the field."
+          control={<Switch checked={lowDataMode} label="Low data mode" onChange={setLowDataMode} />}
+        />
+        <div className="flex justify-end pt-wilms-2">
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => {
+              roleSettingsPreferences.setGpsVerification(gpsVerification);
+              roleSettingsPreferences.setLowDataMode(lowDataMode);
+              toast.success('Device preferences saved');
+            }}
+          >
+            Save device settings
+          </Button>
+        </div>
+      </SettingsSectionCard>
+      <div className="mt-wilms-4">
+        <DeviceHealthPanel />
       </div>
-    </SettingsSectionCard>
+    </>
   );
 }
 

@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useRef } from 'react';
-import { OFFLINE_SYNC_RETRY_INTERVAL_MS } from '@/constants/offline-queue';
 import { drainOfflineQueue } from '@/lib/offline-queue/sync';
+import { isAutoSyncEnabled, resolveOfflineSyncIntervalMs, shouldPauseBackgroundSync } from '@/lib/device/sync-policy';
+import { useBatteryStatus } from '@/hooks/useBatteryStatus';
 import { logger } from '@/utils/logger';
 import { useOfflineQueueStore } from '@/state/offlineQueueStore';
 import { OFFLINE_QUEUE_ITEM_STATUS } from '@/types/offline-queue';
@@ -15,6 +16,7 @@ interface UseOfflineQueueSyncOptions {
 
 export function useOfflineQueueSync({ syncHandler }: UseOfflineQueueSyncOptions) {
   const { isOnline } = useOfflineStatus();
+  const battery = useBatteryStatus();
   const isSyncingRef = useRef(false);
 
   const items = useOfflineQueueStore((state) => state.items);
@@ -26,7 +28,13 @@ export function useOfflineQueueSync({ syncHandler }: UseOfflineQueueSyncOptions)
   const setSyncState = useOfflineQueueStore((state) => state.setSyncState);
 
   const runSync = useCallback(async () => {
-    if (!syncHandler || !isOnline || isSyncingRef.current) {
+    if (
+      !syncHandler ||
+      !isOnline ||
+      isSyncingRef.current ||
+      !isAutoSyncEnabled() ||
+      shouldPauseBackgroundSync(battery.savingMode, battery.savingMode)
+    ) {
       return;
     }
 
@@ -82,6 +90,7 @@ export function useOfflineQueueSync({ syncHandler }: UseOfflineQueueSyncOptions)
     removeSyncedItems,
     setSyncState,
     syncHandler,
+    battery.savingMode,
   ]);
 
   useEffect(() => {
@@ -107,7 +116,7 @@ export function useOfflineQueueSync({ syncHandler }: UseOfflineQueueSyncOptions)
 
     const intervalId = window.setInterval(() => {
       void runSync();
-    }, OFFLINE_SYNC_RETRY_INTERVAL_MS);
+    }, resolveOfflineSyncIntervalMs());
 
     return () => {
       window.clearInterval(intervalId);

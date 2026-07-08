@@ -116,16 +116,28 @@ export async function revertWeekPaid(
   return result[0]!;
 }
 
+function addGraceDays(isoDate: string, graceDays: number): string {
+  if (graceDays <= 0) {
+    return isoDate;
+  }
+  const [year, month, day] = isoDate.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  date.setUTCDate(date.getUTCDate() + graceDays);
+  return date.toISOString().slice(0, 10);
+}
+
 export async function applyMissedWeekMarking(
   loanId: string,
   referenceDate: string,
+  graceDays = 0,
   tx: WilmsDb = getDb(),
 ): Promise<number[]> {
   const weeks = await listScheduleWeeks(loanId, tx);
   const newlyMissed: number[] = [];
 
   for (const week of weeks) {
-    if (week.status === 'PENDING' && week.dueDate < referenceDate) {
+    const missedThreshold = addGraceDays(week.dueDate, graceDays);
+    if (week.status === 'PENDING' && missedThreshold < referenceDate) {
       await tx
         .update(loanSchedules)
         .set({ status: 'MISSED', updatedAt: new Date(), version: week.version + 1 })
