@@ -1,4 +1,4 @@
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq, isNull, sql } from 'drizzle-orm';
 import { USER_ROLE } from '@wilms/shared-rbac';
 import { getDb } from '../db/client.js';
 import { collectors, users } from '../db/schema/users.js';
@@ -40,10 +40,41 @@ export async function findAnyUserByEmail(
 
 export async function updateLastLoginAt(userId: string): Promise<void> {
   const db = getDb();
+  const now = new Date();
   await db
     .update(users)
-    .set({ lastLoginAt: new Date(), updatedAt: new Date() })
+    .set({
+      lastLoginAt: now,
+      firstLoginAt: sql`COALESCE(${users.firstLoginAt}, ${now})`,
+      updatedAt: now,
+    })
     .where(eq(users.id, userId));
+}
+
+export async function recordInvitationAccepted(userId: string): Promise<void> {
+  const db = getDb();
+  const now = new Date();
+  await db
+    .update(users)
+    .set({
+      acceptedAt: sql`COALESCE(${users.acceptedAt}, ${now})`,
+      updatedAt: now,
+    })
+    .where(and(eq(users.id, userId), isNull(users.deletedAt)));
+}
+
+export async function recordFirstLogin(userId: string): Promise<void> {
+  const db = getDb();
+  const now = new Date();
+  await db
+    .update(users)
+    .set({
+      lastLoginAt: now,
+      firstLoginAt: sql`COALESCE(${users.firstLoginAt}, ${now})`,
+      acceptedAt: sql`COALESCE(${users.acceptedAt}, ${now})`,
+      updatedAt: now,
+    })
+    .where(and(eq(users.id, userId), isNull(users.deletedAt)));
 }
 
 export async function updateUserPassword(userId: string, passwordHash: string): Promise<void> {

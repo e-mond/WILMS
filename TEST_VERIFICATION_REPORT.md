@@ -1,36 +1,35 @@
-# Test Verification Report
-
-**Release:** 1.2.2  
-**Date:** 2026-07-08
+# Test Verification Report — v1.2.3
 
 ## Commands
 
-| Command | Result |
-|---------|--------|
-| `npm run type-check` | **PASS** |
-| `npm run lint` | **PASS** |
-| `npm run build` (frontend) | **PASS** |
-| `npm run test -w @wilms/api` | **76/76 PASS** |
-| `npm run test -w @wilms/frontend` | **225/225 PASS** (shard 1/2 sequential) |
-
-## New tests (v1.2.2)
-
-| File | Coverage |
-|------|----------|
-| `apps/backend/src/tests/transactions/admin-fee-workflow.test.ts` | Login gate false; per-borrower fee idempotency |
-| `apps/backend/src/tests/auth/session-invalidation.test.ts` | Token session version; DB invalidation |
-| `apps/backend/src/tests/users/user-purge.test.ts` | Permanent delete invited users |
-
-## Smoke suites
-
-Run after deploy:
-
 ```bash
-npm run smoke:production
-npm run smoke:rbac
+npm run type-check
+npm run lint
+npm run build
+npm run test -w @wilms/api
+NODE_OPTIONS="--max-old-space-size=12288" npm run test -w @wilms/frontend -- --pool=forks --maxWorkers=1
+npm run smoke:production   # requires WILMS_APP_URL
+npm run smoke:rbac         # requires live API
 ```
 
-## Regression focus
+## Results (CI agent environment)
 
-- Login and collector dashboard flows unchanged (no admin-fee redirect).
-- Existing invitation, communication, and payment tests remain green on API package.
+| Suite | Result |
+|-------|--------|
+| Type check | Pass |
+| Lint | Pass |
+| Build | Pass |
+| API tests | 79/79 pass |
+| Frontend tests (shard 1/2) | 228/228 pass |
+| Frontend tests (shard 2/2) | OOM at default heap; run with 12GB+ or in CI |
+| smoke:rbac | 7/8 without full production URL |
+| smoke:production | Skipped (no `WILMS_APP_URL`) |
+
+## New Tests
+
+- `apps/backend/src/tests/settings/invitation-lifecycle.test.ts`
+- `apps/frontend/src/tests/utils/format-delivery-failure.test.ts`
+
+## Regression Coverage
+
+Existing suites for session invalidation, user purge, admin fees, invitation email templates, mail dispatch, and RBAC remain green.

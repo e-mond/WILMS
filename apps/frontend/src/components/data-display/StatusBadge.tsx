@@ -8,7 +8,10 @@ export interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
-  const display = BORROWER_STATUS_DISPLAY[status];
+  const display = BORROWER_STATUS_DISPLAY[status] ?? {
+    label: status ?? 'Unknown',
+    variant: 'muted' as const,
+  };
 
   return (
     <Badge variant={display.variant} className={className}>

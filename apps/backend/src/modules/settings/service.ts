@@ -14,6 +14,7 @@ import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import { getIntegrationStatus } from '../../infrastructure/integrations/status.js';
 import { listMessageDeliveries } from '../../infrastructure/notifications/delivery-log.js';
 import { getSmsProvider } from '../../infrastructure/sms/index.js';
+import { normalizeGhanaPhone, isValidGhanaMobile } from '../../infrastructure/sms/normalize-phone.js';
 import { getSmsConfig } from '../../infrastructure/sms/config.js';
 import { fetchSmsNotifyGhBalance } from '../../infrastructure/sms/smsnotifygh-adapter.js';
 import { notifyUserInvitation, notifyAccountActivated, notifyAccountDisabled, notifyAccountEnabled, notifyUserRoleChanged, notifyWelcome } from '../../infrastructure/notifications/event-dispatch.js';
@@ -44,6 +45,12 @@ export interface SettingsUserRecord {
   invitationEmailSent?: boolean;
   invitationEmailStatus?: 'PENDING' | 'SENT' | 'FAILED';
   invitationEmailError?: string | null;
+  invitationSmsStatus?: 'PENDING' | 'SENT' | 'FAILED' | 'SKIPPED';
+  invitationSmsError?: string | null;
+  invitedAt?: string | null;
+  acceptedAt?: string | null;
+  firstLoginAt?: string | null;
+  statusLabel?: string;
 }
 
 export interface SettingsActivityEntry {
@@ -261,11 +268,38 @@ function resolveRolePresentation(role: string) {
   return ROLE_PRESENTATION[role] ?? { roleLabel: role, roleTone: 'muted' as const };
 }
 
-function formatLastLoginLabel(lastLoginAt: Date | null | undefined): string {
+function formatLastLoginLabel(
+  lastLoginAt: Date | null | undefined,
+  row?: Pick<typeof users.$inferSelect, 'status' | 'firstLoginAt' | 'acceptedAt'>,
+): string {
+  if (row?.status === 'INVITED' && !row.firstLoginAt) {
+    return 'Not yet';
+  }
   if (!lastLoginAt) {
     return 'Never';
   }
   return lastLoginAt.toISOString().slice(0, 10);
+}
+
+function resolveUserStatusLabel(
+  row: Pick<typeof users.$inferSelect, 'status' | 'firstLoginAt' | 'acceptedAt'>,
+): string {
+  if (row.status === 'ACTIVE') {
+    return 'Active';
+  }
+  if (row.status === 'SUSPENDED') {
+    return 'Suspended';
+  }
+  if (row.status === 'INVITED') {
+    if (row.firstLoginAt) {
+      return 'Pending setup';
+    }
+    if (row.acceptedAt) {
+      return 'Accepted';
+    }
+    return 'Invited';
+  }
+  return row.status;
 }
 
 function mapUserRowToSettingsRecord(
@@ -282,9 +316,13 @@ function mapUserRowToSettingsRecord(
     role: row.role,
     roleLabel: presentation.roleLabel,
     roleTone: presentation.roleTone,
-    lastLoginLabel: formatLastLoginLabel(row.lastLoginAt),
+    lastLoginLabel: formatLastLoginLabel(row.lastLoginAt, row),
     status: row.status,
+    statusLabel: resolveUserStatusLabel(row),
     isCurrentUser: currentUserId ? row.id === currentUserId : undefined,
+    invitedAt: row.invitedAt?.toISOString() ?? null,
+    acceptedAt: row.acceptedAt?.toISOString() ?? null,
+    firstLoginAt: row.firstLoginAt?.toISOString() ?? null,
   };
 }
 
@@ -453,9 +491,12 @@ export async function getDeliveryLogs(input?: { event?: string; recipient?: stri
 }
 
 export async function sendTestSms(userId: string, phone: string): Promise<{ ok: true }> {
-  const normalizedPhone = phone.trim();
+  const normalizedPhone = normalizeGhanaPhone(phone.trim());
   if (!normalizedPhone) {
     throw new Error('VALIDATION:Phone number is required for test SMS.');
+  }
+  if (!isValidGhanaMobile(phone)) {
+    throw new Error('VALIDATION:Enter a valid Ghana mobile number (e.g. 0241234567).');
   }
 
   const integration = getIntegrationStatus();
@@ -917,6 +958,7 @@ export async function createUser(
   const passwordHash = await hashPassword(DEFAULT_INVITE_PASSWORD);
   const userId = uuidv7();
   const expiresAt = invitationExpiresAt();
+  const invitedAt = new Date();
 
   try {
     await db.insert(users).values({
@@ -927,6 +969,7 @@ export async function createUser(
       phone: input.phone?.trim() || null,
       role: role as typeof users.$inferInsert.role,
       status: 'INVITED',
+      invitedAt,
     });
   } catch (error) {
     const mapped = mapDatabaseError(error);
@@ -950,21 +993,48 @@ export async function createUser(
   });
 
   const record = mapUserRowToSettingsRecord(row);
-  record.lastLoginLabel = 'Invited';
+  record.lastLoginLabel = 'Not yet';
   record.invitationEmailSent = false;
   record.invitationEmailStatus = 'PENDING';
   record.invitationEmailError = null;
+  record.invitationSmsStatus = input.phone?.trim() ? 'PENDING' : 'SKIPPED';
+  record.invitationSmsError = null;
 
-  void notifyUserInvitation({
-    email,
-    displayName,
-    temporaryPassword: DEFAULT_INVITE_PASSWORD,
-    userId,
-    phone: input.phone?.trim(),
-    expiresAt,
-  }).catch((error) => {
-    console.error('[settings] invitation email failed (async):', error);
-  });
+  try {
+    const delivery = await notifyUserInvitation({
+      email,
+      displayName,
+      temporaryPassword: DEFAULT_INVITE_PASSWORD,
+      userId,
+      phone: input.phone?.trim(),
+      expiresAt,
+    });
+
+    record.invitationEmailSent = delivery.emailSent;
+    record.invitationEmailStatus = delivery.emailSent ? 'SENT' : 'FAILED';
+    record.invitationEmailError = delivery.emailError ?? null;
+
+    if (input.phone?.trim()) {
+      record.invitationSmsStatus = delivery.smsSent ? 'SENT' : 'FAILED';
+      record.invitationSmsError = delivery.smsError ?? null;
+    }
+
+    if (!delivery.emailSent && delivery.emailError) {
+      console.error('[settings] invitation email failed:', delivery.emailError);
+    }
+    if (input.phone?.trim() && !delivery.smsSent && delivery.smsError) {
+      console.error('[settings] invitation SMS failed:', delivery.smsError);
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Invitation delivery failed.';
+    record.invitationEmailStatus = 'FAILED';
+    record.invitationEmailError = message;
+    if (input.phone?.trim()) {
+      record.invitationSmsStatus = 'FAILED';
+      record.invitationSmsError = message;
+    }
+    console.error('[settings] invitation delivery failed:', error);
+  }
 
   return record;
 }
@@ -988,7 +1058,7 @@ export async function resendInvitation(
 
   const expiresAt = invitationExpiresAt();
 
-  await notifyUserInvitation({
+  const delivery = await notifyUserInvitation({
     email: row.email,
     displayName: row.displayName,
     temporaryPassword: DEFAULT_INVITE_PASSWORD,
@@ -1006,10 +1076,16 @@ export async function resendInvitation(
   });
 
   const record = mapUserRowToSettingsRecord(row);
-  record.lastLoginLabel = 'Invited';
-  record.invitationEmailSent = true;
-  record.invitationEmailStatus = 'SENT';
-  record.invitationEmailError = null;
+  record.lastLoginLabel = formatLastLoginLabel(row.lastLoginAt, row);
+  record.invitationEmailSent = delivery.emailSent;
+  record.invitationEmailStatus = delivery.emailSent ? 'SENT' : 'FAILED';
+  record.invitationEmailError = delivery.emailError ?? null;
+  if (row.phone) {
+    record.invitationSmsStatus = delivery.smsSent ? 'SENT' : 'FAILED';
+    record.invitationSmsError = delivery.smsError ?? null;
+  } else {
+    record.invitationSmsStatus = 'SKIPPED';
+  }
   return record;
 }
 

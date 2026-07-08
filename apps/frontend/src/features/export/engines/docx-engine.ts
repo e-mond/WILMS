@@ -96,6 +96,8 @@ export async function downloadWilmsDocx(
   const anchor = window.document.createElement('a');
   anchor.href = url;
   anchor.download = filename.endsWith('.docx') ? filename : `${filename}.docx`;
+  window.document.body.appendChild(anchor);
   anchor.click();
-  URL.revokeObjectURL(url);
+  window.document.body.removeChild(anchor);
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
 }

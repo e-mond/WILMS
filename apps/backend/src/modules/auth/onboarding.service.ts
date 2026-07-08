@@ -50,6 +50,8 @@ export async function completeOnboarding(
       region: input.region?.trim() || row.region,
       zone: input.zone?.trim() || row.zone,
       status: 'ACTIVE',
+      acceptedAt: row.acceptedAt ?? new Date(),
+      firstLoginAt: row.firstLoginAt ?? row.lastLoginAt ?? new Date(),
       updatedAt: new Date(),
     })
     .where(eq(users.id, userId));

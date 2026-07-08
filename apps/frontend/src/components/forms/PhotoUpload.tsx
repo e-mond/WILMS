@@ -53,6 +53,7 @@ export function PhotoUpload({
   const helperId = useId();
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const blobUrlRef = useRef<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [localError, setLocalError] = useState<string | null>(null);
   const [mode, setMode] = useState<'idle' | 'camera' | 'phone'>('idle');
@@ -63,15 +64,26 @@ export function PhotoUpload({
 
   useEffect(() => {
     if (!value) {
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
       setPreviewUrl(null);
       return;
     }
 
     const objectUrl = URL.createObjectURL(value);
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+    }
+    blobUrlRef.current = objectUrl;
     setPreviewUrl(objectUrl);
 
     return () => {
-      URL.revokeObjectURL(objectUrl);
+      if (blobUrlRef.current === objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+        blobUrlRef.current = null;
+      }
     };
   }, [value]);
 
@@ -116,6 +128,11 @@ export function PhotoUpload({
         purpose: uploadPurpose,
         entityId,
       });
+
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
 
       setUploadRecord(record);
       setPreviewUrl(record.url);

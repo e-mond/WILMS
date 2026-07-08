@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm';
 import { createHash, randomBytes } from 'node:crypto';
 import { getDb, isDatabaseEnabled } from '../../db/client.js';
 import { authOtpChallenges, passwordResetTokens, pushSubscriptions, userNotificationPreferences } from '../../db/schema/communication-platform.js';
+import { messageDeliveries } from '../../db/schema/message-deliveries.js';
 import { notifications } from '../../db/schema/notifications.js';
 import { userPermissionOverrides, userRoles } from '../../db/schema/rbac.js';
 import { users } from '../../db/schema/users.js';
@@ -22,6 +23,7 @@ async function purgeUserAuthArtifacts(userId: string): Promise<void> {
   await db.delete(pushSubscriptions).where(eq(pushSubscriptions.userId, userId));
   await db.delete(userNotificationPreferences).where(eq(userNotificationPreferences.userId, userId));
   await db.delete(notifications).where(eq(notifications.userId, userId));
+  await db.delete(messageDeliveries).where(eq(messageDeliveries.userId, userId));
   await db.delete(userRoles).where(eq(userRoles.userId, userId));
   await db.delete(userPermissionOverrides).where(eq(userPermissionOverrides.userId, userId));
 }
