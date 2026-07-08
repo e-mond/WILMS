@@ -1,19 +1,35 @@
 # WILMS - Project Status
 
-**Last updated:** 2026-07-08 (v1.2.2 ready)  
-**Package version:** `1.2.2`  
-**Branch:** `hotfix/v1.2.2-security-user-lifecycle`  
-**Production:** v1.2.1 deployed — v1.2.2 pending
+**Last updated:** 2026-07-08 (v1.2.3 ready)  
+**Package version:** `1.2.3`  
+**Branch:** `cursor/v123-platform-stabilization-8847`  
+**Production:** v1.2.2 deployed — v1.2.3 pending
 
 ---
 
 ## Summary
 
-v1.2.2 stabilizes security and user lifecycle operations: durable borrower admin fees, permanent user deletion, and immediate session invalidation when account status changes.
+v1.2.3 completes invitation lifecycle tracking, SMS invitation delivery hardening, failed-message UI readability, and production stability fixes (`createObjectURL`, user profile crashes). Builds on v1.2.2 security controls.
 
 ---
 
-## v1.2.2 scope
+## v1.2.3 scope
+
+| Item | Status |
+|------|--------|
+| Invitation lifecycle timestamps & status labels | ✅ |
+| SMS invitation delivery & logging | ✅ |
+| Permanent deletion (message deliveries) | ✅ |
+| Failed message human-readable reasons | ✅ |
+| createObjectURL / upload preview fixes | ✅ |
+| User profile crash fixes | ✅ |
+| Tests & reports | ✅ |
+
+See [V1.2.3_PLATFORM_STABILIZATION_REPORT.md](./V1.2.3_PLATFORM_STABILIZATION_REPORT.md).
+
+---
+
+## v1.2.2 scope (shipped)
 
 | Item | Status |
 |------|--------|

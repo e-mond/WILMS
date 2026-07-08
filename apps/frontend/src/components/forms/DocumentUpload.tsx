@@ -45,6 +45,7 @@ export function DocumentUpload({
 }: DocumentUploadProps) {
   const helperId = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const blobUrlRef = useRef<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [localError, setLocalError] = useState<string | null>(null);
   const [uploadRecord, setUploadRecord] = useState<UploadRecord | null>(null);
@@ -52,15 +53,26 @@ export function DocumentUpload({
 
   useEffect(() => {
     if (!value) {
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
       setPreviewUrl(null);
       return;
     }
 
     if (isPreviewableImage(value.type)) {
       const objectUrl = URL.createObjectURL(value);
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+      }
+      blobUrlRef.current = objectUrl;
       setPreviewUrl(objectUrl);
       return () => {
-        URL.revokeObjectURL(objectUrl);
+        if (blobUrlRef.current === objectUrl) {
+          URL.revokeObjectURL(objectUrl);
+          blobUrlRef.current = null;
+        }
       };
     }
 
@@ -105,6 +117,11 @@ export function DocumentUpload({
         purpose: uploadPurpose,
         entityId,
       });
+
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
 
       setUploadRecord(record);
       if (isPreviewableImage(file.type)) {

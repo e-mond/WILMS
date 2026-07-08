@@ -14,6 +14,11 @@ export function AcceptInvitationRedirect() {
 
     if (email) {
       loginUrl.searchParams.set('email', email);
+      void fetch('/api/wilms/auth/accept-invitation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      }).catch(() => undefined);
     }
 
     router.replace(`${loginUrl.pathname}${loginUrl.search}`);

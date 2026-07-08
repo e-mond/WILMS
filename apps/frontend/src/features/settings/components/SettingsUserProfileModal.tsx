@@ -2,6 +2,7 @@
 
 import { Avatar, CurrencyAmount } from '@/components/data-display';
 import { PermissionGate } from '@/components/auth/PermissionGate';
+import { QueryErrorState } from '@/components/feedback/QueryErrorState';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
@@ -20,7 +21,7 @@ export interface SettingsUserProfileModalProps {
 }
 
 export function SettingsUserProfileModal({ userId, onClose }: SettingsUserProfileModalProps) {
-  const { data, isLoading } = useSettingsUserProfile(userId);
+  const { data, isLoading, isError, error } = useSettingsUserProfile(userId);
   const { disableUser } = useSettingsUserMutations();
   const toast = useToast();
   const currentUserId = useAuthStore((state) => state.user?.id);
@@ -42,8 +43,15 @@ export function SettingsUserProfileModal({ userId, onClose }: SettingsUserProfil
 
   return (
     <Modal isOpen={Boolean(userId)} onClose={onClose} title="User Profile">
-      {isLoading || !data ? (
+      {isLoading ? (
         <LoadingSpinner label="Loading user profile" className="py-wilms-6" />
+      ) : isError ? (
+        <QueryErrorState
+          title="Unable to load user profile"
+          description={error instanceof Error ? error.message : 'Try again shortly.'}
+        />
+      ) : !data ? (
+        <QueryErrorState title="User not found" description="This profile could not be loaded." />
       ) : (
         <div className="space-y-wilms-5">
           <div className="flex flex-wrap items-start gap-wilms-4">
@@ -60,7 +68,7 @@ export function SettingsUserProfileModal({ userId, onClose }: SettingsUserProfil
               <h3 className="text-heading-3 font-semibold text-text-primary">{data.displayName}</h3>
               <p className="text-small text-text-muted">{data.staffId}</p>
               <p className="mt-wilms-1 text-body">
-                {data.roleLabel} · {formatSettingsUserStatus(data.status)}
+                {data.roleLabel} · {formatSettingsUserStatus(data.status, data.statusLabel)}
               </p>
               <p className="mt-wilms-1 text-small text-text-muted">
                 Last login: {data.lastLoginAt}
@@ -161,7 +169,7 @@ export function SettingsUserProfileModal({ userId, onClose }: SettingsUserProfil
           <section>
             <h4 className="text-body font-semibold text-text-primary">Assigned permissions</h4>
             <ul className="mt-wilms-2 flex flex-wrap gap-wilms-2">
-              {data.assignedPermissionIds.map((permissionId) => (
+              {(data.assignedPermissionIds ?? []).map((permissionId) => (
                 <li
                   key={permissionId}
                   className="rounded-sm border border-border bg-background px-wilms-2 py-wilms-1 text-small font-semibold text-text-primary"
@@ -172,14 +180,14 @@ export function SettingsUserProfileModal({ userId, onClose }: SettingsUserProfil
             </ul>
           </section>
 
-          {data.delegatedPermissionIds.length > 0 ? (
+          {(data.delegatedPermissionIds ?? []).length > 0 ? (
             <section>
               <h4 className="text-body font-semibold text-text-primary">Delegated permissions</h4>
               <p className="mt-wilms-1 text-small text-text-muted">
                 Additional permissions beyond the base role composition.
               </p>
               <ul className="mt-wilms-2 flex flex-wrap gap-wilms-2">
-                {data.delegatedPermissionIds.map((permissionId) => (
+                {(data.delegatedPermissionIds ?? []).map((permissionId) => (
                   <li
                     key={permissionId}
                     className="rounded-sm border border-brand-primary bg-brand-primary-light px-wilms-2 py-wilms-1 text-small font-semibold text-brand-primary"
@@ -194,7 +202,7 @@ export function SettingsUserProfileModal({ userId, onClose }: SettingsUserProfil
           <section>
             <h4 className="text-body font-semibold text-text-primary">Device history</h4>
             <ul className="mt-wilms-2 space-y-wilms-2 text-small">
-              {data.deviceHistory.map((device) => (
+              {(data.deviceHistory ?? []).map((device) => (
                 <li key={device.id}>
                   {device.deviceLabel} · {device.platform} · {formatDisplayDate(device.lastSeenAt)}
                 </li>
@@ -205,7 +213,7 @@ export function SettingsUserProfileModal({ userId, onClose }: SettingsUserProfil
           <section>
             <h4 className="text-body font-semibold text-text-primary">Login history</h4>
             <ul className="mt-wilms-2 space-y-wilms-2 text-small">
-              {data.loginHistory.map((item) => (
+              {(data.loginHistory ?? []).map((item) => (
                 <li key={item.id}>
                   {item.deviceLabel} · {item.locationLabel} · {formatDisplayDate(item.occurredAt)}
                 </li>
