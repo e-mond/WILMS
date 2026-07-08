@@ -47,6 +47,36 @@ describe('mail dispatch configuration', () => {
     expect(fetchMock).toHaveBeenCalled();
   });
 
+  it('normalizes relay base URL when WILMS_VERCEL_MAIL_URL includes /api/mail', async () => {
+    process.env.MAIL_PROVIDER = 'gmail';
+    process.env.WILMS_VERCEL_MAIL_URL = 'https://wilms.vercel.app/api/mail';
+    process.env.WILMS_INTERNAL_MAIL_SECRET = 'secret';
+    delete process.env.GMAIL_USER;
+    delete process.env.GMAIL_APP_PASSWORD;
+
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ messageId: 'relay-1' }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { dispatchMail } = await import('../../infrastructure/mail/dispatch.js');
+    await dispatchMail({
+      event: 'USER_INVITED',
+      to: 'invite@example.com',
+      subject: 'Invite',
+      text: 'Welcome',
+      html: '<p>Welcome</p>',
+      enableTracking: false,
+      maxRetries: 0,
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://wilms.vercel.app/api/mail/send',
+      expect.objectContaining({ method: 'POST' }),
+    );
+  });
+
   it('rejects direct Gmail SMTP from Railway when relay is not configured', async () => {
     process.env.MAIL_PROVIDER = 'gmail';
     process.env.GMAIL_USER = 'noreply@wilms.org';
