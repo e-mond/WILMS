@@ -2,6 +2,25 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.2.2] — Security & User Lifecycle Stabilization
+
+### Fixed
+- Borrower administration fees now persist in the database instead of an in-memory map that reset on API restart.
+- Collectors are never prompted for administration fees on login; fees remain a per-borrower pre-disbursement step only.
+- Suspended, disabled, role-changed, and deleted users are logged out on the next API request via session version invalidation.
+- User deletion permanently removes invited accounts and anonymizes active accounts with financial history.
+
+### Added
+- `users.session_version` for immediate session revocation.
+- `borrower_admin_fees` table for durable admin-fee records.
+- `session.service.ts`, `purge.service.ts`, and migration `0018_v122_security_user_lifecycle.sql`.
+- Tests for admin-fee workflow, session invalidation, and permanent deletion.
+- Reports: `V1.2.2_SECURITY_REPORT.md`, `USER_LIFECYCLE_REPORT.md`, `SESSION_INVALIDATION_REPORT.md`, `COLLECTOR_WORKFLOW_REPORT.md`, `TEST_VERIFICATION_REPORT.md`.
+
+### Changed
+- Application version bumped to `1.2.2` across root, frontend, and API packages.
+- Authentication documentation updated for session invalidation and user lifecycle.
+
 ## [1.2.1] — Production Communication & Invitation Stabilization
 
 ### Fixed
