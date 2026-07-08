@@ -1,3 +1,5 @@
+import { getCadenceDayOffset, type RepaymentCadence } from './schedule-cadence.js';
+
 export const PAYMENT_DAY_TO_JS_DAY: Record<string, number> = {
   Sunday: 0,
   Monday: 1,
@@ -43,12 +45,14 @@ export function generateLoanScheduleWeeks(input: {
   weeklyPaymentPesewas: number;
   startDate: string;
   paymentDay: string;
+  cadence?: RepaymentCadence;
 }): ScheduleWeekDraft[] {
   const firstDueIso = getFirstDueDateIso(input.startDate, input.paymentDay);
+  const dayOffset = getCadenceDayOffset(input.cadence ?? 'WEEKLY');
 
   return Array.from({ length: input.durationWeeks }, (_, index) => ({
     weekNumber: index + 1,
-    dueDate: addDays(firstDueIso, index * 7),
+    dueDate: addDays(firstDueIso, index * dayOffset),
     amountPesewas: input.weeklyPaymentPesewas,
     status: 'PENDING' as const,
   }));

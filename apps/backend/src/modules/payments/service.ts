@@ -19,6 +19,7 @@ import * as ledgerRepo from '../../repositories/ledger.repository.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import * as paymentRepo from '../../repositories/payment.repository.js';
 import * as scheduleRepo from '../../repositories/loan-schedule.repository.js';
+import { getSettings } from '../settings/service.js';
 
 export const recordPaymentSchema = z.object({
   borrowerId: z.string().min(1),
@@ -66,7 +67,12 @@ export async function getPaymentEntryContext(borrowerId: string, referenceDate?:
   }
 
   const loan = mapLoanRowToDetail(activeLoan);
-  const newlyMissedWeeks = await scheduleRepo.applyMissedWeekMarking(loan.id, ref);
+  const settings = await getSettings();
+  const newlyMissedWeeks = await scheduleRepo.applyMissedWeekMarking(
+    loan.id,
+    ref,
+    settings.latePaymentGraceDays,
+  );
   if (newlyMissedWeeks.length > 0 && borrower.phone?.trim()) {
     void notifyMissedPayment({
       borrowerId,
@@ -157,7 +163,12 @@ async function postPayment(
   }
 
   const loan = mapLoanRowToDetail(activeLoan);
-  await scheduleRepo.applyMissedWeekMarking(loan.id, input.paymentDate);
+  const settings = await getSettings();
+  await scheduleRepo.applyMissedWeekMarking(
+    loan.id,
+    input.paymentDate,
+    settings.latePaymentGraceDays,
+  );
   const scheduleRows = await scheduleRepo.listScheduleWeeks(loan.id);
   const scheduleWeeks = scheduleRows.map(mapScheduleRow);
 

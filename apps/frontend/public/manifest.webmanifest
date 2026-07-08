@@ -2,12 +2,12 @@
   "name": "WILMS - Women's Interest-Free Loan Management",
   "short_name": "WILMS",
   "description": "Women's Interest-Free Loan Management System",
-  "start_url": "/login",
+  "start_url": "/collector/dashboard",
   "scope": "/",
   "display": "standalone",
   "background_color": "#f1efe8",
   "theme_color": "#0f6e56",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "icons": [
     {
       "src": "/icons/icon-192.png",

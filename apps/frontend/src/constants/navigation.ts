@@ -58,6 +58,7 @@ export const REGISTRATION_OFFICER_NAV: ShellNavItem[] = [
 
 export const APPROVER_NAV: ShellNavItem[] = [
   { href: '/approver/pending', label: 'Pending Queue', exact: true, icon: 'queue' },
+  { href: '/approver/sync-conflicts', label: 'Offline Sync', icon: 'queue' },
   { href: '/approver/reviewed', label: 'Reviewed', icon: 'reviewed' },
   { href: '/approver/settings', label: 'Settings', icon: 'settings' },
 ];
