@@ -47,12 +47,19 @@ function isGmailSmtpProvider(): boolean {
   return config.smtp.host === 'smtp.gmail.com';
 }
 
+function resolveVercelRelayBaseUrl(): string {
+  const raw = process.env.WILMS_VERCEL_MAIL_URL!.trim().replace(/\/+$/, '');
+  // Accept either https://app.example.com or https://app.example.com/api/mail
+  return raw.replace(/\/api\/mail$/i, '');
+}
+
 async function sendViaVercelRelay(message: MailMessage): Promise<MailSendResult> {
-  const relayUrl = process.env.WILMS_VERCEL_MAIL_URL!.trim().replace(/\/$/, '');
+  const relayBase = resolveVercelRelayBaseUrl();
   const relaySecret = process.env.WILMS_INTERNAL_MAIL_SECRET!.trim();
   const config = getMailConfig();
+  const endpoint = `${relayBase}/api/mail/send`;
 
-  const response = await fetch(`${relayUrl}/api/mail/send`, {
+  const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -70,7 +77,17 @@ async function sendViaVercelRelay(message: MailMessage): Promise<MailSendResult>
 
   if (!response.ok) {
     const body = await response.text();
-    throw new Error(`Vercel mail relay failed (${response.status}): ${body}`);
+    const snippet = body.startsWith('<!DOCTYPE') || body.startsWith('<html')
+      ? 'HTML error page (check relay URL)'
+      : body.slice(0, 300);
+
+    if (response.status === 404) {
+      throw new Error(
+        `Vercel mail relay failed (404): POST ${endpoint} not found. Set WILMS_VERCEL_MAIL_URL to your app origin only (e.g. https://wilms.vercel.app), not /api/mail.`,
+      );
+    }
+
+    throw new Error(`Vercel mail relay failed (${response.status}): ${snippet}`);
   }
 
   const payload = (await response.json()) as { messageId?: string };
