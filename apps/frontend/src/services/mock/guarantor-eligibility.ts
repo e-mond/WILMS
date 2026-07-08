@@ -7,6 +7,30 @@ import {
 import type { BorrowerRegistryEntry } from '@/mocks/borrower-registry';
 import { getBorrowerRegistryEntries } from '@/services/mock/borrower-registry.store';
 
+function scoreFromMetrics(activeGuaranteeCount: number, maxGuarantees: number): {
+  eligibilityScore: number;
+  riskRating: 'LOW' | 'MEDIUM' | 'HIGH';
+  scoreFactors: string[];
+} {
+  const utilization = activeGuaranteeCount / Math.max(maxGuarantees, 1);
+  const factors: string[] = [];
+  let score = 100;
+
+  if (utilization >= 1) {
+    score -= 40;
+    factors.push('Maximum active guarantees reached');
+  } else if (utilization >= 0.66) {
+    score -= 20;
+    factors.push('High guarantee utilization');
+  }
+
+  const eligibilityScore = Math.max(0, Math.min(100, score));
+  const riskRating =
+    eligibilityScore >= 75 ? 'LOW' : eligibilityScore >= 50 ? 'MEDIUM' : 'HIGH';
+
+  return { eligibilityScore, riskRating, scoreFactors: factors };
+}
+
 export function checkGuarantorEligibility(
   input: GuarantorEligibilityInput,
 ): GuarantorEligibilityResult {
@@ -22,6 +46,7 @@ export function checkGuarantorEligibility(
       isDuplicateRegistration: false,
       validationStatus: GUARANTOR_VALIDATION_STATUS.VALID,
       message: 'Guarantor phone must differ from borrower phone.',
+      ...scoreFromMetrics(0, MAX_GUARANTOR_GUARANTEES),
     };
   }
 
@@ -39,6 +64,7 @@ export function checkGuarantorEligibility(
 
   const isExempt = Boolean(input.isGroupLeader || input.isApprovedCommunityLeader);
   const maxGuarantees = isExempt ? MAX_GUARANTOR_GUARANTEES + 2 : MAX_GUARANTOR_GUARANTEES;
+  const score = scoreFromMetrics(activeGuaranteeCount, maxGuarantees);
 
   if (duplicateRegistration) {
     return {
@@ -48,6 +74,7 @@ export function checkGuarantorEligibility(
       isDuplicateRegistration: true,
       validationStatus: GUARANTOR_VALIDATION_STATUS.DUPLICATE,
       message: 'This guarantor profile is already linked to an active registration.',
+      ...score,
     };
   }
 
@@ -59,6 +86,7 @@ export function checkGuarantorEligibility(
       isDuplicateRegistration: false,
       validationStatus: GUARANTOR_VALIDATION_STATUS.EXEMPT,
       message: 'Group or community leader exemption applied.',
+      ...score,
     };
   }
 
@@ -70,6 +98,7 @@ export function checkGuarantorEligibility(
       isDuplicateRegistration: false,
       validationStatus: GUARANTOR_VALIDATION_STATUS.AT_LIMIT,
       message: `Guarantor has reached the maximum of ${MAX_GUARANTOR_GUARANTEES} active guarantees.`,
+      ...score,
     };
   }
 
@@ -80,5 +109,6 @@ export function checkGuarantorEligibility(
     isDuplicateRegistration: false,
     validationStatus: GUARANTOR_VALIDATION_STATUS.VALID,
     message: `Current Guarantees: ${activeGuaranteeCount} of ${MAX_GUARANTOR_GUARANTEES}`,
+    ...score,
   };
 }

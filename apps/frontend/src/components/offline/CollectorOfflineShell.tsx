@@ -11,6 +11,7 @@ import { replayQueuedPayment } from '@/lib/offline-queue/paymentSyncHandler';
 import {
   selectHasQueueWarning,
   selectPendingQueueCount,
+  selectQueuedForReviewCount,
   useOfflineQueueStore,
 } from '@/state/offlineQueueStore';
 import type { OfflinePaymentSyncHandler } from '@/types/offline-queue';
@@ -51,8 +52,9 @@ export function CollectorOfflineShell({
   }, [runSync]);
 
   const pendingCount = selectPendingQueueCount(items);
+  const reviewCount = selectQueuedForReviewCount(items);
   const hasQueueWarning = selectHasQueueWarning(items);
-  const showBanner = isOffline || pendingCount > 0 || hasQueueWarning;
+  const showBanner = isOffline || pendingCount > 0 || reviewCount > 0 || hasQueueWarning;
 
   return (
     <div className="min-h-screen bg-background text-text-primary">
@@ -61,6 +63,7 @@ export function CollectorOfflineShell({
         <OfflineBanner
           isOffline={isOffline}
           pendingCount={pendingCount}
+          reviewCount={reviewCount}
           isSyncing={syncState === 'syncing'}
           hasQueueWarning={hasQueueWarning}
         />

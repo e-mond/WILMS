@@ -11,7 +11,9 @@ import {
 import { GuidedEmptyState } from '@/components/feedback/GuidedEmptyState';
 import { QueryErrorState } from '@/components/feedback/QueryErrorState';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { Button } from '@/components/ui/Button';
 import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
+import { QrBarcodeScanner } from '@/features/mobile/components/QrBarcodeScanner';
 import { matchesAnySearchField } from '@/utils/search-match';
 import { ExecutiveKpiGrid, ManagementToolbar } from '@/components/layout/executive';
 import { Input } from '@/components/ui/Input';
@@ -60,6 +62,7 @@ function sortBorrowers(borrowers: CollectorDashboardBorrower[]): CollectorDashbo
 export function CollectorMyBorrowersPanel() {
   const { data, isLoading, isError, error, refetch } = useCollectorBorrowers();
   const [searchQuery, setSearchQuery] = useState('');
+  const [showScanner, setShowScanner] = useState(false);
 
   const borrowers = useMemo(
     () => sortBorrowers(filterBorrowers(data ?? [], searchQuery)),
@@ -113,7 +116,25 @@ export function CollectorMyBorrowersPanel() {
             onChange={(event) => setSearchQuery(event.target.value)}
           />
         }
+        actions={
+          <Button type="button" variant="secondary" size="sm" onClick={() => setShowScanner(true)}>
+            Scan code
+          </Button>
+        }
       />
+
+      {showScanner ? (
+        <div className="rounded-sm border border-border bg-card p-wilms-4">
+          <QrBarcodeScanner
+            title="Scan borrower or loan code"
+            onScan={(value) => {
+              setSearchQuery(value.trim());
+              setShowScanner(false);
+            }}
+            onClose={() => setShowScanner(false)}
+          />
+        </div>
+      ) : null}
 
       <DataTable<CollectorDashboardBorrower>
         variant="executive"

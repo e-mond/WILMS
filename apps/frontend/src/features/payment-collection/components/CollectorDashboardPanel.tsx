@@ -15,6 +15,7 @@ import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
 import { DetailSidebarCard, ExecutiveKpiGrid } from '@/components/layout/executive';
 import { ExecutiveDetailLayout } from '@/components/layout/ExecutiveDetailLayout';
 import { useCollectorDashboard } from '@/features/payment-collection/hooks/useCollectorDashboard';
+import { CollectorSyncStatusCard } from '@/features/payment-collection/components/CollectorSyncStatusCard';
 import { useAuth } from '@/hooks/useAuth';
 import { ApiError } from '@/types/api';
 import {
@@ -240,6 +241,8 @@ export function CollectorDashboardPanel() {
           ))}
         </div>
       ) : null}
+
+      <CollectorSyncStatusCard />
 
       <ExecutiveKpiGrid className="sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard variant="executive" label="Groups Due Today" value={summary.borrowersDueCount} />

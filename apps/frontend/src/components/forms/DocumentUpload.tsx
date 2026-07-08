@@ -3,7 +3,11 @@
 import { useEffect, useId, useRef, useState, type ChangeEvent } from 'react';
 import { Button } from '@/components/ui/Button';
 import type { UploadPurpose, UploadRecord } from '@/types/upload';
-import { deleteUploadedFile, uploadFileViaService } from '@/utils/upload-file';
+import {
+  deleteUploadedFile,
+  isQueuedUpload,
+  uploadFileWithOfflineQueue,
+} from '@/utils/upload-file';
 import { cn } from '@/utils/cn';
 
 const DEFAULT_ACCEPT = 'image/*,application/pdf';
@@ -112,7 +116,7 @@ export function DocumentUpload({
         await deleteUploadedFile(uploadRecord.id);
       }
 
-      const record = await uploadFileViaService({
+      const result = await uploadFileWithOfflineQueue({
         file,
         purpose: uploadPurpose,
         entityId,
@@ -123,11 +127,29 @@ export function DocumentUpload({
         blobUrlRef.current = null;
       }
 
-      setUploadRecord(record);
-      if (isPreviewableImage(file.type)) {
-        setPreviewUrl(record.url);
+      if (isQueuedUpload(result)) {
+        const queuedRecord = {
+          id: result.id,
+          url: result.url,
+          fileName: result.fileName,
+          purpose: uploadPurpose,
+          mimeType: file.type || 'application/octet-stream',
+          sizeBytes: file.size,
+          uploadedAt: new Date().toISOString(),
+        };
+        setUploadRecord(queuedRecord);
+        if (isPreviewableImage(file.type)) {
+          setPreviewUrl(result.url);
+        }
+        onUploadRecordChange?.(queuedRecord);
+        return;
       }
-      onUploadRecordChange?.(record);
+
+      setUploadRecord(result);
+      if (isPreviewableImage(file.type)) {
+        setPreviewUrl(result.url);
+      }
+      onUploadRecordChange?.(result);
     } catch {
       setLocalError('Unable to upload document. Try again.');
       setUploadRecord(null);
