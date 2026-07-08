@@ -1,6 +1,6 @@
 # Authentication
 
-**Version:** 1.2.2
+**Version:** 1.3.0
 
 ## Session model
 
@@ -15,6 +15,7 @@
 | `POST /auth/login` | Email/password; optional 2FA OTP challenge |
 | `POST /auth/verify-otp` | Complete 2FA when enabled |
 | `POST /auth/complete-onboarding` | Invited users set password and profile |
+| `POST /auth/accept-invitation` | Record invitation acceptance from email link |
 | `POST /auth/logout` | Client cookie clear |
 | `POST /auth/forgot-password` | Email + SMS reset notice |
 | `POST /auth/reset-password` | Token-based password reset |
@@ -31,4 +32,6 @@ When an administrator suspends, deletes, or changes a user's role, `users.sessio
 ## Related
 
 - [security-guide.md](./security-guide.md)
+- [synchronization-guide.md](./synchronization-guide.md)
+- [offline-architecture.md](./offline-architecture.md)
 - [USER_LIFECYCLE_REPORT.md](../USER_LIFECYCLE_REPORT.md)

@@ -23,6 +23,7 @@ v1.3.0 establishes field-operations foundations: offline PWA shell, device healt
 | QR/barcode scanner + receipt printing | ✅ |
 | Grace periods in repayment engine | ✅ |
 | Fees, penalties, guarantor scoring (domain) | ✅ |
+| Documentation | ✅ |
 | Tests & reports | ✅ |
 
 See [V1.3.0_FIELD_OPERATIONS_REPORT.md](./V1.3.0_FIELD_OPERATIONS_REPORT.md).
@@ -33,34 +34,47 @@ See [V1.3.0_FIELD_OPERATIONS_REPORT.md](./V1.3.0_FIELD_OPERATIONS_REPORT.md).
 
 | Item | Status |
 |------|--------|
+| Invitation lifecycle timestamps & status labels | ✅ |
+| SMS invitation delivery & logging | ✅ |
+| Permanent deletion (message deliveries) | ✅ |
+| Failed message human-readable reasons | ✅ |
+| createObjectURL / upload preview fixes | ✅ |
+| User profile crash fixes | ✅ |
+
+See [V1.2.3_PLATFORM_STABILIZATION_REPORT.md](./V1.2.3_PLATFORM_STABILIZATION_REPORT.md).
+
+---
+
+## v1.2.2 scope (shipped)
+
+| Item | Status |
+|------|--------|
 | Admin fee persistence (no login prompt) | ✅ |
 | Permanent user deletion | ✅ |
 | Session invalidation on suspend/delete/role change | ✅ |
-| Auth documentation | ✅ |
-| Tests & reports | ✅ |
 
 See [V1.2.2_SECURITY_REPORT.md](./V1.2.2_SECURITY_REPORT.md).
 
 ---
 
-## Verification status
+## Verification status (v1.3.0 branch)
 
 | Check | Result |
 |-------|--------|
 | `npm run type-check` | **PASS** |
 | `npm run lint` | **PASS** |
 | `npm run build` | **PASS** |
-| `npm run test -w @wilms/api` | **76/76** |
-| `npm run test -w @wilms/frontend` | **225/225** |
-| `npm run smoke:production` | **31/31** |
-| `npm run smoke:rbac` | **11/11** |
+| `npm run test -w @wilms/api` | **83/83** |
+| `npm run test -w @wilms/frontend` | **230+** (run sharded with 12GB heap) |
+| `npm run smoke:production` | Requires `WILMS_APP_URL` |
+| `npm run smoke:rbac` | Requires live API |
 
 ---
 
-## After v1.2.1 deploy
+## After v1.3.0 deploy
 
-1. Invite a new user from Settings → Users
-2. Confirm `201` response (not 500)
-3. Verify invitation email in inbox
-4. Check `message_deliveries` for `USER_INVITED` event
-5. Retry duplicate email — expect clear conflict message
+1. Run `npm run db:migrate -w @wilms/api` (migration `0020_v130_field_operations`)
+2. Redeploy Railway API and Vercel frontend
+3. Collector: verify Device health panel in Settings
+4. Test offline payment queue → approver sync conflict review
+5. Reinstall or refresh PWA for new service worker cache

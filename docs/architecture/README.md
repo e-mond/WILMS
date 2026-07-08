@@ -3,6 +3,17 @@
 This folder contains project context files referenced by `AGENTS.md` and
 `production-frontend-prompt.md`.
 
+## v1.3.0 Field Operations Docs
+
+Top-level guides (repository `docs/`):
+
+- `offline-architecture.md` — offline mode, PWA shell, queues
+- `synchronization-guide.md` — sync API, conflict resolution
+- `device-management.md` — battery, storage, compression
+- `mobile-guide.md` — PWA install, camera, scanning
+- `advanced-lending.md` — cadences, grace, fees, penalties
+- `api-overview.md` — REST API reference
+
 ## Source of Truth
 
 `WILMS_BRD_v1.0.pdf` at the project root is the authoritative business source.
