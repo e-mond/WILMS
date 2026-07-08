@@ -11,6 +11,7 @@ import type { BorrowerRegistrationFormValues } from '@/types/borrower-registrati
 import type { GuarantorEligibilityResult } from '@/types/guarantor-eligibility';
 import type { RegistrationLegalConfig } from '@/types/registration-legal';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { useObjectUrl } from '@/hooks/useObjectUrl';
 import {
   buildRegistrationAgreementContent,
   type RegistrationAgreementMedia,
@@ -23,14 +24,6 @@ export interface RegistrationReviewPanelProps {
   officerName: string;
 }
 
-function filePreviewUrl(file: File | null): string | null {
-  if (!file) {
-    return null;
-  }
-
-  return URL.createObjectURL(file);
-}
-
 export function RegistrationReviewPanel({
   values,
   guarantorEligibility,
@@ -41,20 +34,8 @@ export function RegistrationReviewPanel({
   const [resolvedMedia, setResolvedMedia] = useState<RegistrationAgreementMedia | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const borrowerPhotoUrl = useMemo(() => filePreviewUrl(values.photo), [values.photo]);
-  const guarantorPhotoUrl = useMemo(() => filePreviewUrl(values.guarantorPhoto), [values.guarantorPhoto]);
-
-  useEffect(
-    () => () => {
-      if (borrowerPhotoUrl) {
-        URL.revokeObjectURL(borrowerPhotoUrl);
-      }
-      if (guarantorPhotoUrl) {
-        URL.revokeObjectURL(guarantorPhotoUrl);
-      }
-    },
-    [borrowerPhotoUrl, guarantorPhotoUrl],
-  );
+  const borrowerPhotoUrl = useObjectUrl(values.photo);
+  const guarantorPhotoUrl = useObjectUrl(values.guarantorPhoto);
 
   useEffect(() => {
     let cancelled = false;

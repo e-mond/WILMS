@@ -251,7 +251,7 @@ export function SettingsUsersSection() {
                       )}
                       aria-hidden="true"
                     />
-                    {formatSettingsUserStatus(row.status)}
+                    {formatSettingsUserStatus(row.status, row.statusLabel)}
                   </span>
                 ),
               },
