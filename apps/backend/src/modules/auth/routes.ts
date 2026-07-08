@@ -94,6 +94,7 @@ type AuthUser = {
   displayName: string;
   status: 'ACTIVE' | 'INVITED' | 'SUSPENDED';
   phone?: string | null;
+  sessionVersion: number;
 };
 
 async function resolveAuthUser(email: string): Promise<AuthUser | null> {
@@ -110,6 +111,7 @@ async function resolveAuthUser(email: string): Promise<AuthUser | null> {
       displayName: row.displayName,
       status: row.status,
       phone: row.phone,
+      sessionVersion: row.sessionVersion ?? 1,
     };
   }
 
@@ -125,6 +127,7 @@ async function resolveAuthUser(email: string): Promise<AuthUser | null> {
     displayName: demo.displayName,
     status: demo.status ?? 'ACTIVE',
     phone: null,
+    sessionVersion: 1,
   };
 }
 
@@ -151,6 +154,7 @@ function buildSessionPayload(user: AuthUser): SessionUser {
     displayName: user.displayName,
     expiresAt: Date.now() + env.sessionDurationMs,
     status: user.status,
+    sessionVersion: user.sessionVersion,
   };
 }
 

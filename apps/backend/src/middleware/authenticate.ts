@@ -3,6 +3,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { env } from '../config/env.js';
 import { AppError, ERROR_CODE } from '../http/errors.js';
 import type { UserRole } from '../infrastructure/permissions/matrix.js';
+import { assertSessionActive } from '../modules/auth/session.service.js';
 
 export interface SessionUser {
   userId: string;
@@ -10,6 +11,7 @@ export interface SessionUser {
   displayName?: string;
   expiresAt: number;
   status?: 'ACTIVE' | 'INVITED' | 'SUSPENDED';
+  sessionVersion?: number;
 }
 
 declare global {
@@ -60,6 +62,8 @@ function parseSessionPayload(payloadBase64: string): SessionUser | null {
       displayName: parsed.displayName,
       expiresAt: parsed.expiresAt,
       status: parsed.status as SessionUser['status'] | undefined,
+      sessionVersion:
+        typeof parsed.sessionVersion === 'number' ? parsed.sessionVersion : undefined,
     };
   } catch {
     return null;
@@ -124,8 +128,12 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction): v
     return;
   }
 
-  req.session = session;
-  next();
+  void assertSessionActive(session)
+    .then(() => {
+      req.session = session;
+      next();
+    })
+    .catch(next);
 }
 
 export function encodeSessionToken(session: SessionUser): string {
