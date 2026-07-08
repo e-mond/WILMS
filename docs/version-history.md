@@ -2,7 +2,13 @@
 
 | Version | Date | Phase | Summary |
 |---------|------|-------|---------|
-| **1.1.0** | Unreleased | v1.1 UX | User experience: guided empty states, module help, search highlights, dashboard activity |
+| **1.3.0** | 2026-07-08 | Field operations | Offline PWA shell, device health, background uploads, sync conflict UI, advanced lending domain |
+| **1.2.3** | 2026-07-08 | Platform stabilization | Invitation lifecycle, SMS hardening, failed-message UX, createObjectURL fixes |
+| **1.2.2** | 2026-07-08 | Security | Admin fee persistence, session invalidation, permanent user deletion |
+| **1.2.1** | 2026-07-07 | Invitations | Invitation email fixes, delivery logging |
+| **1.2.0** | 2026-07-06 | Communications | Communication platform, templates, analytics |
+| **1.1.3** | 2026-07-05 | Communication center | Broadcasts, scheduler, delivery reports |
+| **1.1.0** | Unreleased | UX | Guided empty states, module help, dashboard activity |
 | **1.0.0** | 2026-07-05 | Production | Official production release (tagged `v1.0.0`) |
 | **0.2.2** | 2026-06-30 | P14.6 | CI/CD, offline sync, P14.6.3 recovery |
 | **0.2.1** | 2026-06-20 | P14.5G | CSRF, health, version UI |
@@ -15,8 +21,8 @@ See `CHANGELOG.md` for detailed release notes.
 
 | Version | Focus |
 |---------|-------|
-| v1.1.x | UX enhancements (current branch) |
-| v1.2.x | Feature enhancements |
+| v1.3.1 | Offline registration, expenses, holiday shifting, guarantor scoring API |
+| v1.3.x | Bluetooth receipt printing, query cache offline, virtualized tables |
 | v2.0.0 | Major platform expansion |
 
 Detail: `docs/archive/page-validation/P14.5G-future-roadmap.md`

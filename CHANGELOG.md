@@ -18,6 +18,7 @@ All notable changes to WILMS are documented in this file.
 - Offline sync interval and auto-sync now honor collector role settings.
 - Background sync pauses during battery saver conditions.
 - Application version bumped to `1.3.0`.
+- Documentation expanded: offline architecture, sync guide, device management, mobile guide, advanced lending, API overview.
 
 ## [1.2.3] — Platform Stabilization
 
