@@ -44,7 +44,7 @@ function smsSetupHint(provider: string): string {
 function mailSetupHint(provider: string): string {
   switch (provider) {
     case 'gmail':
-      return 'Set MAIL_PROVIDER=gmail and MAIL_FROM on Railway. Set GMAIL_USER + GMAIL_APP_PASSWORD on Vercel, plus WILMS_VERCEL_MAIL_URL and WILMS_INTERNAL_MAIL_SECRET on Railway for invitation delivery.';
+      return 'Set MAIL_PROVIDER=gmail and MAIL_FROM on Railway. Set GMAIL_USER + GMAIL_APP_PASSWORD on Vercel. On Railway set WILMS_VERCEL_MAIL_URL to your app origin only (e.g. https://wilms.vercel.app, not /api/mail) and WILMS_INTERNAL_MAIL_SECRET to match Vercel.';
     case 'resend':
       return 'Set MAIL_PROVIDER=resend, RESEND_API_KEY, and MAIL_FROM on Railway (see README).';
     case 'smtp':
