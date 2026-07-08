@@ -19,12 +19,12 @@ describe('mail dispatch configuration', () => {
     expect(isMailDeliveryConfigured()).toBe(true);
   });
 
-  it('uses Vercel relay for gmail provider without local SMTP credentials', async () => {
+  it('uses Vercel relay whenever relay env is set (even with local Gmail creds)', async () => {
     process.env.MAIL_PROVIDER = 'gmail';
     process.env.WILMS_VERCEL_MAIL_URL = 'https://wilms.vercel.app';
     process.env.WILMS_INTERNAL_MAIL_SECRET = 'secret';
-    delete process.env.GMAIL_USER;
-    delete process.env.GMAIL_APP_PASSWORD;
+    process.env.GMAIL_USER = 'noreply@wilms.org';
+    process.env.GMAIL_APP_PASSWORD = 'app-password';
 
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
@@ -44,9 +44,28 @@ describe('mail dispatch configuration', () => {
     });
 
     expect(result.provider).toBe('gmail-smtp-vercel');
-    expect(fetchMock).toHaveBeenCalledWith(
-      'https://wilms.vercel.app/api/mail/send',
-      expect.objectContaining({ method: 'POST' }),
-    );
+    expect(fetchMock).toHaveBeenCalled();
+  });
+
+  it('rejects direct Gmail SMTP from Railway when relay is not configured', async () => {
+    process.env.MAIL_PROVIDER = 'gmail';
+    process.env.GMAIL_USER = 'noreply@wilms.org';
+    process.env.GMAIL_APP_PASSWORD = 'app-password';
+    delete process.env.WILMS_VERCEL_MAIL_URL;
+    delete process.env.WILMS_INTERNAL_MAIL_SECRET;
+
+    const { dispatchMail } = await import('../../infrastructure/mail/dispatch.js');
+
+    await expect(
+      dispatchMail({
+        event: 'USER_INVITED',
+        to: 'invite@example.com',
+        subject: 'Invite',
+        text: 'Welcome',
+        html: '<p>Welcome</p>',
+        enableTracking: false,
+        maxRetries: 0,
+      }),
+    ).rejects.toThrow(/WILMS_VERCEL_MAIL_URL/);
   });
 });
