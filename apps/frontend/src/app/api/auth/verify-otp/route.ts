@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { loginSchema } from '@/features/authentication/login.schema';
-import { authenticateCredentials } from '@/lib/auth/authenticate';
+import { verifyOtpCredentials } from '@/lib/auth/authenticate';
 import { rejectInvalidCsrf, setCsrfCookie } from '@/lib/auth/csrf-server';
 import { getSessionCookieOptions, SESSION_COOKIE_NAME } from '@/lib/auth/cookies';
 import { toAuthSession } from '@/lib/auth/session';
@@ -19,25 +18,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Invalid request body.' }, { status: 422 });
   }
 
-  const parsed = loginSchema.safeParse(body);
+  const challengeId =
+    body && typeof body === 'object' && typeof (body as { challengeId?: unknown }).challengeId === 'string'
+      ? (body as { challengeId: string }).challengeId
+      : '';
+  const code =
+    body && typeof body === 'object' && typeof (body as { code?: unknown }).code === 'string'
+      ? (body as { code: string }).code
+      : '';
 
-  if (!parsed.success) {
-    const firstIssue = parsed.error.issues[0]?.message ?? 'Please check your login details.';
-    return NextResponse.json({ message: firstIssue }, { status: 422 });
+  if (!challengeId || !code.trim()) {
+    return NextResponse.json({ message: 'Verification code is required.' }, { status: 422 });
   }
 
-  const authResult = await authenticateCredentials(parsed.data);
+  const authResult = await verifyOtpCredentials({ challengeId, code });
 
-  if (!authResult) {
-    return NextResponse.json({ message: 'Invalid email or password.' }, { status: 401 });
-  }
-
-  if (authResult.type === 'otp_required') {
-    return NextResponse.json({
-      requiresOtp: true,
-      challengeId: authResult.challengeId,
-      message: authResult.message,
-    });
+  if (!authResult || authResult.type !== 'authenticated') {
+    return NextResponse.json({ message: 'Invalid or expired verification code.' }, { status: 401 });
   }
 
   const session = toAuthSession(authResult.session);

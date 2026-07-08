@@ -12,6 +12,7 @@ import { formatSettingsUserStatus } from '@/utils/settings-user-presentation';
 import { formatDisplayDate } from '@/utils/format-date';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
 import { useToast } from '@/hooks/useToast';
+import { useAuthStore } from '@/state/authStore';
 
 export interface SettingsUserProfileModalProps {
   userId: string | null;
@@ -22,6 +23,7 @@ export function SettingsUserProfileModal({ userId, onClose }: SettingsUserProfil
   const { data, isLoading } = useSettingsUserProfile(userId);
   const { disableUser } = useSettingsUserMutations();
   const toast = useToast();
+  const currentUserId = useAuthStore((state) => state.user?.id);
 
   async function handleSuspendAccount() {
     if (!data) {
@@ -224,17 +226,19 @@ export function SettingsUserProfileModal({ userId, onClose }: SettingsUserProfil
                   Reset PIN
                 </Button>
               </PermissionGate>
-              <PermissionGate permission={PERMISSION.SUSPEND_USERS}>
-                <Button
-                  type="button"
-                  variant="danger"
-                  size="sm"
-                  disabled={disableUser.isPending || data.status === 'SUSPENDED'}
-                  onClick={() => void handleSuspendAccount()}
-                >
-                  Suspend account
-                </Button>
-              </PermissionGate>
+              {data.id !== currentUserId ? (
+                <PermissionGate permission={PERMISSION.SUSPEND_USERS}>
+                  <Button
+                    type="button"
+                    variant="danger"
+                    size="sm"
+                    disabled={disableUser.isPending || data.status === 'SUSPENDED'}
+                    onClick={() => void handleSuspendAccount()}
+                  >
+                    Suspend account
+                  </Button>
+                </PermissionGate>
+              ) : null}
             </div>
           </section>
         </div>

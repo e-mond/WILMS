@@ -33,6 +33,7 @@ export async function requestPasswordReset(input: {
   }
 
   const user = await userRepo.findUserByEmail(email);
+  const userRow = await userRepo.findAnyUserByEmail(email);
 
   // Always return success to prevent email enumeration
   if (!user || user.status === 'SUSPENDED' || !isDatabaseEnabled()) {
@@ -76,6 +77,7 @@ export async function requestPasswordReset(input: {
       displayName: user.displayName,
       resetUrl,
       userId: user.id,
+      phone: userRow?.phone,
     });
   } catch (error) {
     console.error('[password-reset] email failed:', error);

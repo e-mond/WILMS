@@ -1,3 +1,5 @@
+import { formatMailFrom } from './format-from.js';
+
 export type MailProviderName = 'smtp' | 'gmail' | 'resend' | 'none';
 
 export interface MailConfig {
@@ -32,11 +34,13 @@ export function getMailConfig(): MailConfig {
   const smtpPassword = process.env.SMTP_PASSWORD?.trim() || gmailAppPassword;
   const smtpPort = Number(process.env.SMTP_PORT ?? (smtpHost === 'smtp.gmail.com' ? 587 : 587));
 
+  const rawFrom =
+    process.env.MAIL_FROM?.trim() ||
+    (gmailUser ? gmailUser : 'noreply@wilms.local');
+
   return {
     provider: provider === 'gmail' ? 'smtp' : provider,
-    fromAddress:
-      process.env.MAIL_FROM?.trim() ||
-      (gmailUser ? gmailUser : 'noreply@wilms.local'),
+    fromAddress: formatMailFrom(rawFrom),
     smtp: {
       host: smtpHost,
       port: smtpPort,

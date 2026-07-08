@@ -7,7 +7,13 @@ import type {
   GroupFormationStatus,
 } from '@/types/group-formation';
 import type { CurrentLocationResult, LocationCity, LocationDistrict, LocationRegion } from '@/types/location';
-import type { LoginInput, LoginResult } from '@/types/auth';
+import type {
+  CompleteOnboardingInput,
+  LoginInput,
+  LoginResponse,
+  LoginResult,
+  VerifyOtpInput,
+} from '@/types/auth';
 import type {
   BorrowerDetail,
   BorrowerFullProfile,
@@ -158,7 +164,9 @@ export interface IUploadService {
 }
 
 export interface IAuthService {
-  login(input: LoginInput): Promise<LoginResult>;
+  login(input: LoginInput): Promise<LoginResponse>;
+  verifyOtp(input: VerifyOtpInput): Promise<LoginResult>;
+  completeOnboarding(input: CompleteOnboardingInput): Promise<LoginResult>;
   requestPasswordReset(email: string): Promise<{ ok: true }>;
   resetPassword(token: string, newPassword: string): Promise<{ ok: true }>;
 }

@@ -1,5 +1,6 @@
 import 'server-only';
 import nodemailer from 'nodemailer';
+import { formatMailFrom } from '@/lib/mail/format-from';
 
 export interface GmailSmtpConfig {
   user: string;
@@ -19,7 +20,7 @@ export function getGmailSmtpConfig(): GmailSmtpConfig | null {
   return {
     user,
     appPassword,
-    from: process.env.MAIL_FROM?.trim() || user,
+    from: formatMailFrom(process.env.MAIL_FROM?.trim() || user),
   };
 }
 

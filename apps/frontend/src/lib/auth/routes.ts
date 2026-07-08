@@ -5,7 +5,14 @@ import {
   resolveUserPermissionIds,
 } from '@/lib/rbac/permission-matrix';
 
-export const PUBLIC_PATHS = ['/login', '/forgot-password', '/reset-password', '/session-expired', '/capture'] as const;
+export const PUBLIC_PATHS = [
+  '/login',
+  '/forgot-password',
+  '/reset-password',
+  '/session-expired',
+  '/capture',
+  '/accept-invitation',
+] as const;
 
 /** @deprecated Use getPortalHomePath from permission-matrix. */
 export const ROLE_HOME_PATH: Record<UserRole, string> = {
