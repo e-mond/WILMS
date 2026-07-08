@@ -106,5 +106,6 @@ export async function verifyLoginOtpChallenge(input: {
     displayName: user.displayName,
     expiresAt: Date.now() + env.sessionDurationMs,
     status: user.status,
+    sessionVersion: user.sessionVersion ?? 1,
   };
 }

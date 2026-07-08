@@ -17,6 +17,8 @@ import { getSmsProvider } from '../../infrastructure/sms/index.js';
 import { getSmsConfig } from '../../infrastructure/sms/config.js';
 import { fetchSmsNotifyGhBalance } from '../../infrastructure/sms/smsnotifygh-adapter.js';
 import { notifyUserInvitation, notifyAccountActivated, notifyAccountDisabled, notifyAccountEnabled, notifyUserRoleChanged, notifyWelcome } from '../../infrastructure/notifications/event-dispatch.js';
+import { invalidateUserSessions } from '../auth/session.service.js';
+import { permanentlyDeleteUser } from '../users/purge.service.js';
 import { dispatchMail, isMailDeliveryConfigured } from '../../infrastructure/mail/dispatch.js';
 import { mapDatabaseError } from '../../lib/db-errors.js';
 import {
@@ -1060,6 +1062,7 @@ export async function updateUser(
   const record = mapUserRowToSettingsRecord(updated);
 
   if (input.role && input.role !== previousRole) {
+    await invalidateUserSessions(id);
     void notifyUserRoleChanged({
       email: record.email,
       displayName: record.displayName,
@@ -1067,6 +1070,10 @@ export async function updateUser(
       previousRole,
       newRole: input.role,
     });
+  }
+
+  if (input.status && input.status !== row.status) {
+    await invalidateUserSessions(id);
   }
 
   return record;
@@ -1145,11 +1152,7 @@ export async function deleteUser(id: string, currentUserId?: string): Promise<vo
     throw new Error('NOT_FOUND');
   }
 
-  const db = getDb();
-  await db
-    .update(users)
-    .set({ deletedAt: new Date(), updatedAt: new Date() })
-    .where(eq(users.id, id));
+  await permanentlyDeleteUser(id, currentUserId);
 }
 
 export function getRegistrationLegalConfig(): RegistrationLegalConfig {
