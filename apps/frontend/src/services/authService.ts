@@ -1,7 +1,14 @@
 import { API_ERROR_CODE, ApiError } from '@/types/api';
-import type { LoginInput, LoginResult } from '@/types/auth';
+import type {
+  CompleteOnboardingInput,
+  LoginInput,
+  LoginResponse,
+  LoginResult,
+  VerifyOtpInput,
+} from '@/types/auth';
 import type { IAuthService } from '@/types/services';
 import { csrfHeaders, readCsrfFromDocumentCookie } from '@/lib/auth/csrf';
+import { isLoginOtpChallenge } from '@/types/auth';
 
 async function ensureCsrfToken(): Promise<void> {
   if (typeof document === 'undefined' || readCsrfFromDocumentCookie()) {
@@ -13,47 +20,63 @@ async function ensureCsrfToken(): Promise<void> {
 
 export { ensureCsrfToken };
 
-const authService: IAuthService = {
-  async login(input: LoginInput): Promise<LoginResult> {
-    await ensureCsrfToken();
+async function postAuthJson<T>(path: string, body: unknown): Promise<T> {
+  await ensureCsrfToken();
 
-    const response = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...csrfHeaders(),
-      },
-      credentials: 'include',
-      body: JSON.stringify(input),
-    });
+  const response = await fetch(path, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...csrfHeaders(),
+    },
+    credentials: 'include',
+    body: JSON.stringify(body),
+  });
 
-    if (!response.ok) {
-      const body = (await response.json().catch(() => null)) as { message?: string } | null;
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as { message?: string } | null;
 
-      if (response.status === 401) {
-        throw new ApiError(
-          body?.message ?? 'Invalid email or password.',
-          API_ERROR_CODE.UNAUTHORIZED,
-          401,
-        );
-      }
-
-      if (response.status === 422) {
-        throw new ApiError(
-          body?.message ?? 'Please check your login details.',
-          API_ERROR_CODE.VALIDATION,
-          422,
-        );
-      }
-
+    if (response.status === 401) {
       throw new ApiError(
-        'Unable to sign in right now. Please try again.',
-        API_ERROR_CODE.SERVER,
-        response.status,
+        payload?.message ?? 'Authentication failed.',
+        API_ERROR_CODE.UNAUTHORIZED,
+        401,
       );
     }
 
-    return response.json() as Promise<LoginResult>;
+    if (response.status === 422) {
+      throw new ApiError(
+        payload?.message ?? 'Please check your details.',
+        API_ERROR_CODE.VALIDATION,
+        422,
+      );
+    }
+
+    throw new ApiError(
+      payload?.message ?? 'Unable to complete the request.',
+      API_ERROR_CODE.SERVER,
+      response.status,
+    );
+  }
+
+  return response.json() as Promise<T>;
+}
+
+const authService: IAuthService = {
+  async login(input: LoginInput): Promise<LoginResponse> {
+    const result = await postAuthJson<LoginResponse>('/api/auth/login', input);
+    if (isLoginOtpChallenge(result)) {
+      return result;
+    }
+    return result;
+  },
+
+  async verifyOtp(input: VerifyOtpInput): Promise<LoginResult> {
+    return postAuthJson<LoginResult>('/api/auth/verify-otp', input);
+  },
+
+  async completeOnboarding(input: CompleteOnboardingInput): Promise<LoginResult> {
+    return postAuthJson<LoginResult>('/api/auth/complete-onboarding', input);
   },
 
   async requestPasswordReset(email: string): Promise<{ ok: true }> {

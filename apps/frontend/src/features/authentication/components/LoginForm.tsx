@@ -18,6 +18,8 @@ import { useAuthStore } from '@/state/authStore';
 import { useAppLockStore } from '@/state/appLockStore';
 import { useLoginPreferencesStore } from '@/state/loginPreferencesStore';
 import { ApiError } from '@/types/api';
+import { isLoginOtpChallenge } from '@/types/auth';
+import { VerifyOtpForm } from '@/features/authentication/components/VerifyOtpForm';
 
 export function LoginForm() {
   const router = useRouter();
@@ -29,6 +31,9 @@ export function LoginForm() {
   const setRememberEmail = useLoginPreferencesStore((state) => state.setRememberEmail);
   const setRememberedEmail = useLoginPreferencesStore((state) => state.setRememberedEmail);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [otpChallenge, setOtpChallenge] = useState<{ challengeId: string; message?: string } | null>(
+    null,
+  );
   const { playLogin } = useNotificationSound();
   const [hasMounted, setHasMounted] = useState(false);
   const isFormReady = hasMounted && isPreferencesHydrated;
@@ -59,11 +64,13 @@ export function LoginForm() {
       return;
     }
 
+    const invitedEmail = searchParams.get('email')?.trim();
+
     reset({
-      email: rememberEmail ? rememberedEmail : '',
+      email: invitedEmail || (rememberEmail ? rememberedEmail : ''),
       password: '',
     });
-  }, [isPreferencesHydrated, rememberEmail, rememberedEmail, reset]);
+  }, [isPreferencesHydrated, rememberEmail, rememberedEmail, reset, searchParams]);
 
   useEffect(() => {
     if (!rememberEmail) {
@@ -96,6 +103,15 @@ export function LoginForm() {
 
     try {
       const result = await authService.login(parsed.data);
+
+      if (isLoginOtpChallenge(result)) {
+        setOtpChallenge({
+          challengeId: result.challengeId,
+          message: result.message,
+        });
+        return;
+      }
+
       setSession(result.user, result.expiresAt);
       playLogin();
       useAppLockStore.getState().unlock();
@@ -103,6 +119,11 @@ export function LoginForm() {
 
       if (rememberEmail) {
         setRememberedEmail(parsed.data.email);
+      }
+
+      if (result.mustCompleteOnboarding || result.user.status === 'INVITED') {
+        router.replace('/complete-profile');
+        return;
       }
 
       const nextPath = searchParams.get('next');
@@ -134,6 +155,13 @@ export function LoginForm() {
           </p>
         </div>
 
+        {otpChallenge ? (
+          <VerifyOtpForm
+            challengeId={otpChallenge.challengeId}
+            message={otpChallenge.message}
+            onBack={() => setOtpChallenge(null)}
+          />
+        ) : (
         <form
           className="space-y-wilms-4"
           data-login-ready={isFormReady ? 'true' : undefined}
@@ -195,6 +223,7 @@ export function LoginForm() {
             {isSubmitting ? 'Signing in...' : 'Sign in'}
           </Button>
         </form>
+        )}
 
         {isDemoMode() ? (
           <div className="mt-wilms-6 rounded-sm border border-warning bg-warning-light p-wilms-4">

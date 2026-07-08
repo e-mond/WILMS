@@ -165,6 +165,7 @@ export async function notifyUserInvitation(input: {
   displayName: string;
   temporaryPassword: string;
   userId: string;
+  phone?: string;
   expiresAt?: Date;
 }): Promise<void> {
   const template = buildUserInvitationEmail({
@@ -185,6 +186,17 @@ export async function notifyUserInvitation(input: {
     enableTracking: false,
     maxRetries: 0,
   });
+
+  if (input.phone?.trim()) {
+    const settings = await getSettings();
+    await dispatchSms({
+      event: 'USER_INVITED',
+      to: input.phone,
+      body: `WILMS: You have been invited. Check ${input.email} for your invitation email and tap Accept Invitation to set up your account.`,
+      enabled: settings.smsNotificationsEnabled,
+      userId: input.userId,
+    });
+  }
 
   void createInAppNotification({
     userId: input.userId,
@@ -243,6 +255,7 @@ export async function notifyPasswordReset(input: {
   displayName: string;
   resetUrl: string;
   userId: string;
+  phone?: string | null;
 }): Promise<void> {
   const template = buildPasswordResetEmail({
     displayName: input.displayName,
@@ -256,6 +269,51 @@ export async function notifyPasswordReset(input: {
     html: template.html,
     userId: input.userId,
   });
+
+  if (input.phone?.trim()) {
+    const settings = await getSettings();
+    await dispatchSms({
+      event: 'PASSWORD_RESET',
+      to: input.phone,
+      body: `WILMS: Password reset requested. Check ${input.email} for the reset link. Link expires in 60 minutes.`,
+      enabled: settings.smsNotificationsEnabled,
+      userId: input.userId,
+    });
+  }
+}
+
+export async function notifyLoginOtp(input: {
+  email: string;
+  displayName: string;
+  userId: string;
+  phone?: string | null;
+  code: string;
+}): Promise<void> {
+  const subject = 'Your WILMS sign-in code';
+  const text = `Hello ${input.displayName}, your WILMS sign-in code is ${input.code}. It expires in 10 minutes.`;
+  const html = `<p>Hello <strong>${input.displayName}</strong>,</p><p>Your WILMS sign-in code is <strong>${input.code}</strong>.</p><p>It expires in 10 minutes.</p>`;
+
+  await dispatchMail({
+    event: 'LOGIN_OTP',
+    to: input.email,
+    subject,
+    text,
+    html,
+    userId: input.userId,
+    enableTracking: false,
+    maxRetries: 0,
+  });
+
+  if (input.phone?.trim()) {
+    const settings = await getSettings();
+    await dispatchSms({
+      event: 'LOGIN_OTP',
+      to: input.phone,
+      body: `WILMS sign-in code: ${input.code}. Expires in 10 minutes.`,
+      enabled: settings.smsNotificationsEnabled,
+      userId: input.userId,
+    });
+  }
 }
 
 export async function notifyAccountActivated(input: {
