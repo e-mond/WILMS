@@ -2,6 +2,23 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.3.0] — Field Operations & Lending Platform
+
+### Added
+- Service worker offline shell cache, background sync handler, and collector-first PWA manifest.
+- Device health panel with battery and storage monitoring.
+- IndexedDB background upload queue with compression in low-data mode.
+- Approver offline sync conflict review UI at `/approver/sync-conflicts`.
+- QR/barcode scanner component and thermal receipt printing utilities.
+- Advanced lending domain: repayment cadences, fees, penalties, guarantor scoring.
+- Migration `0020_v130_field_operations.sql` for holidays, fee charges, and penalty rules.
+- Grace period enforcement in missed-week marking using `latePaymentGraceDays`.
+
+### Changed
+- Offline sync interval and auto-sync now honor collector role settings.
+- Background sync pauses during battery saver conditions.
+- Application version bumped to `1.3.0`.
+
 ## [1.2.3] — Platform Stabilization
 
 ### Fixed
