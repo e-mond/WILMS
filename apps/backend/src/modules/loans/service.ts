@@ -24,6 +24,7 @@ import * as disbursementRepo from '../../repositories/loan-disbursement.reposito
 import * as ledgerRepo from '../../repositories/ledger.repository.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import * as scheduleRepo from '../../repositories/loan-schedule.repository.js';
+import { getSettings } from '../settings/service.js';
 
 export interface CreateLoanBody {
   borrowerId: string;
@@ -374,7 +375,8 @@ export async function getLoanSchedule(loanId: string, referenceDate?: string) {
   }
 
   const ref = referenceDate ?? new Date().toISOString().slice(0, 10);
-  await scheduleRepo.applyMissedWeekMarking(loanId, ref);
+  const settings = await getSettings();
+  await scheduleRepo.applyMissedWeekMarking(loanId, ref, settings.latePaymentGraceDays);
   const weeks = await scheduleRepo.listScheduleWeeks(loanId);
 
   if (!weeks.length) {

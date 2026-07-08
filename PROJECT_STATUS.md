@@ -1,35 +1,35 @@
 # WILMS - Project Status
 
-**Last updated:** 2026-07-08 (v1.2.3 ready)  
-**Package version:** `1.2.3`  
-**Branch:** `cursor/v123-platform-stabilization-8847`  
-**Production:** v1.2.2 deployed — v1.2.3 pending
+**Last updated:** 2026-07-08 (v1.3.0 ready)  
+**Package version:** `1.3.0`  
+**Branch:** `cursor/v1.3.0-field-operations-8847`  
+**Production:** v1.2.3 deployed — v1.3.0 pending
 
 ---
 
 ## Summary
 
-v1.2.3 completes invitation lifecycle tracking, SMS invitation delivery hardening, failed-message UI readability, and production stability fixes (`createObjectURL`, user profile crashes). Builds on v1.2.2 security controls.
+v1.3.0 establishes field-operations foundations: offline PWA shell, device health monitoring, background uploads, sync conflict resolution, and advanced lending domain modules.
 
 ---
 
-## v1.2.3 scope
+## v1.3.0 scope
 
 | Item | Status |
 |------|--------|
-| Invitation lifecycle timestamps & status labels | ✅ |
-| SMS invitation delivery & logging | ✅ |
-| Permanent deletion (message deliveries) | ✅ |
-| Failed message human-readable reasons | ✅ |
-| createObjectURL / upload preview fixes | ✅ |
-| User profile crash fixes | ✅ |
+| PWA offline shell + background sync | ✅ |
+| Device health (battery, storage, uploads) | ✅ |
+| Sync conflict approver UI | ✅ |
+| QR/barcode scanner + receipt printing | ✅ |
+| Grace periods in repayment engine | ✅ |
+| Fees, penalties, guarantor scoring (domain) | ✅ |
 | Tests & reports | ✅ |
 
-See [V1.2.3_PLATFORM_STABILIZATION_REPORT.md](./V1.2.3_PLATFORM_STABILIZATION_REPORT.md).
+See [V1.3.0_FIELD_OPERATIONS_REPORT.md](./V1.3.0_FIELD_OPERATIONS_REPORT.md).
 
 ---
 
-## v1.2.2 scope (shipped)
+## v1.2.3 scope (shipped)
 
 | Item | Status |
 |------|--------|

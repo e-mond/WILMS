@@ -1,35 +1,25 @@
-# Test Verification Report — v1.2.3
+# Test Verification Report — v1.3.0
 
-## Commands
-
-```bash
-npm run type-check
-npm run lint
-npm run build
-npm run test -w @wilms/api
-NODE_OPTIONS="--max-old-space-size=12288" npm run test -w @wilms/frontend -- --pool=forks --maxWorkers=1
-npm run smoke:production   # requires WILMS_APP_URL
-npm run smoke:rbac         # requires live API
-```
-
-## Results (CI agent environment)
+## Results
 
 | Suite | Result |
 |-------|--------|
-| Type check | Pass |
-| Lint | Pass |
-| Build | Pass |
-| API tests | 79/79 pass |
-| Frontend tests (shard 1/2) | 228/228 pass |
-| Frontend tests (shard 2/2) | OOM at default heap; run with 12GB+ or in CI |
-| smoke:rbac | 7/8 without full production URL |
-| smoke:production | Skipped (no `WILMS_APP_URL`) |
+| `npm run type-check` | Pass |
+| `npm run lint` | Pass |
+| `npm run test -w @wilms/api` | 83/83 pass |
+| `npm run build` | Pass |
+| Field operations frontend tests | Pass |
 
 ## New Tests
 
-- `apps/backend/src/tests/settings/invitation-lifecycle.test.ts`
-- `apps/frontend/src/tests/utils/format-delivery-failure.test.ts`
+- `apps/backend/src/tests/lending/advanced-lending.test.ts`
+- `apps/frontend/src/tests/field-operations/device-management.test.ts`
 
-## Regression Coverage
+## Smoke Tests
 
-Existing suites for session invalidation, user purge, admin fees, invitation email templates, mail dispatch, and RBAC remain green.
+Run in production with `WILMS_APP_URL` configured:
+
+```bash
+npm run smoke:production
+npm run smoke:rbac
+```

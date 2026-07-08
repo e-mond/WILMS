@@ -141,6 +141,13 @@
       "when": 1783438400000,
       "tag": "0019_v123_platform_stabilization",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1783524800000,
+      "tag": "0020_v130_field_operations",
+      "breakpoints": true
     }
   ]
 }
