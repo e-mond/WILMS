@@ -8,12 +8,15 @@ import { AppError, ERROR_CODE } from '../../http/errors.js';
 import { sendData } from '../../http/response.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import { verifyPassword } from '../../lib/password.js';
-import { encodeSessionToken } from '../../middleware/authenticate.js';
+import { encodeSessionToken, requireAuth, type SessionUser } from '../../middleware/authenticate.js';
 import { loginRateLimiter } from '../../middleware/login-rate-limit.js';
 import { validateBody } from '../../middleware/validate-body.js';
 import { isDatabaseEnabled } from '../../db/client.js';
 import { userRepository } from '../../repositories/index.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
+import { getSettings } from '../settings/service.js';
+import { completeOnboarding } from './onboarding.service.js';
+import { createLoginOtpChallenge, verifyLoginOtpChallenge } from './otp.service.js';
 import {
   requestPasswordReset,
   resetPasswordWithToken,
@@ -36,6 +39,23 @@ const resetPasswordLimiter = rateLimit({
   legacyHeaders: false,
   message: { message: 'Too many reset attempts. Please try again later.' },
 });
+
+const otpVerifyLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many verification attempts. Please try again later.' },
+});
+
+const completeOnboardingSchema = {
+  newPassword: (value: unknown) => typeof value === 'string' && value.length >= 8,
+  displayName: (value: unknown) => value === undefined || (typeof value === 'string' && value.trim().length > 0),
+  phone: (value: unknown) => value === undefined || typeof value === 'string',
+  branch: (value: unknown) => value === undefined || typeof value === 'string',
+  region: (value: unknown) => value === undefined || typeof value === 'string',
+  zone: (value: unknown) => value === undefined || typeof value === 'string',
+};
 
 function mapAuthServiceError(error: unknown): never {
   if (error instanceof Error && error.message.startsWith('VALIDATION:')) {
@@ -67,6 +87,94 @@ function logLoginAttempt(params: {
   });
 }
 
+type AuthUser = {
+  id: string;
+  email: string;
+  role: SessionUser['role'];
+  displayName: string;
+  status: 'ACTIVE' | 'INVITED' | 'SUSPENDED';
+  phone?: string | null;
+};
+
+async function resolveAuthUser(email: string): Promise<AuthUser | null> {
+  if (isDatabaseEnabled()) {
+    const row = await userRepository.findAnyUserByEmail(email);
+    if (!row || row.deletedAt) {
+      return null;
+    }
+
+    return {
+      id: row.id,
+      email: row.email,
+      role: row.role,
+      displayName: row.displayName,
+      status: row.status,
+      phone: row.phone,
+    };
+  }
+
+  const demo = DEMO_USERS.find((entry) => entry.email.toLowerCase() === email);
+  if (!demo) {
+    return null;
+  }
+
+  return {
+    id: demo.id,
+    email: demo.email,
+    role: demo.role,
+    displayName: demo.displayName,
+    status: demo.status ?? 'ACTIVE',
+    phone: null,
+  };
+}
+
+async function resolveAuthPassword(email: string, password: string): Promise<boolean> {
+  if (isDatabaseEnabled()) {
+    const user = await userRepository.findUserByEmail(email);
+    if (!user) {
+      return false;
+    }
+    return verifyPassword(password, user.password);
+  }
+
+  const demo = DEMO_USERS.find((entry) => entry.email.toLowerCase() === email);
+  if (!demo) {
+    return false;
+  }
+  return verifyPassword(password, demo.password);
+}
+
+function buildSessionPayload(user: AuthUser): SessionUser {
+  return {
+    userId: user.id,
+    role: user.role,
+    displayName: user.displayName,
+    expiresAt: Date.now() + env.sessionDurationMs,
+    status: user.status,
+  };
+}
+
+function buildLoginResponse(user: AuthUser) {
+  const session = buildSessionPayload(user);
+  const mustCompleteOnboarding = user.status === 'INVITED';
+
+  return {
+    userId: user.id,
+    role: user.role,
+    displayName: user.displayName,
+    expiresAt: session.expiresAt,
+    status: user.status,
+    user: {
+      id: user.id,
+      role: user.role,
+      displayName: user.displayName,
+      status: user.status,
+    },
+    token: encodeSessionToken(session),
+    mustCompleteOnboarding,
+  };
+}
+
 authRouter.post(
   '/auth/login',
   loginRateLimiter,
@@ -75,16 +183,14 @@ authRouter.post(
     const { email, password } = req.body as z.infer<typeof loginApiSchema>;
     const normalizedEmail = email.trim().toLowerCase();
     const clientIp = req.ip;
-    const user = isDatabaseEnabled()
-      ? await userRepository.findUserByEmail(normalizedEmail)
-      : DEMO_USERS.find((entry) => entry.email.toLowerCase() === normalizedEmail);
+    const user = await resolveAuthUser(normalizedEmail);
 
     if (!user || user.status === 'SUSPENDED') {
       logLoginAttempt({ success: false, email: normalizedEmail, ip: clientIp });
       throw new AppError('Invalid email or password.', ERROR_CODE.UNAUTHORIZED, 401);
     }
 
-    const passwordValid = await verifyPassword(password, user.password);
+    const passwordValid = await resolveAuthPassword(normalizedEmail, password);
 
     if (!passwordValid) {
       logLoginAttempt({
@@ -97,17 +203,28 @@ authRouter.post(
       throw new AppError('Invalid email or password.', ERROR_CODE.UNAUTHORIZED, 401);
     }
 
+    const settings = await getSettings();
+
+    if (settings.twoFactorRequired) {
+      const challenge = await createLoginOtpChallenge({
+        userId: user.id,
+        email: user.email,
+        displayName: user.displayName,
+        phone: user.phone,
+        role: user.role,
+      });
+
+      sendData(res, {
+        requiresOtp: true,
+        challengeId: challenge.challengeId,
+        message: 'Enter the verification code sent to your email and phone.',
+      });
+      return;
+    }
+
     if (isDatabaseEnabled()) {
       await userRepository.updateLastLoginAt(user.id);
     }
-
-    const expiresAt = Date.now() + env.sessionDurationMs;
-    const session = {
-      userId: user.id,
-      role: user.role,
-      displayName: user.displayName,
-      expiresAt,
-    };
 
     logLoginAttempt({
       success: true,
@@ -117,18 +234,94 @@ authRouter.post(
       ip: clientIp,
     });
 
-    sendData(res, {
+    sendData(res, buildLoginResponse(user));
+  }),
+);
+
+authRouter.post(
+  '/auth/verify-otp',
+  otpVerifyLimiter,
+  asyncHandler(async (req, res) => {
+    const challengeId = typeof req.body?.challengeId === 'string' ? req.body.challengeId : '';
+    const code = typeof req.body?.code === 'string' ? req.body.code : '';
+
+    if (!challengeId || !code.trim()) {
+      throw new AppError('Verification code is required.', ERROR_CODE.VALIDATION, 422);
+    }
+
+    const session = await verifyLoginOtpChallenge({ challengeId, code });
+    if (!session) {
+      throw new AppError('Invalid or expired verification code.', ERROR_CODE.UNAUTHORIZED, 401);
+    }
+
+    if (isDatabaseEnabled()) {
+      await userRepository.updateLastLoginAt(session.userId);
+    }
+
+    const user = await resolveAuthUser(
+      (await userRepository.getUserById(session.userId))?.email ??
+        DEMO_USERS.find((entry) => entry.id === session.userId)?.email ??
+        '',
+    );
+
+    if (!user) {
+      throw new AppError('Invalid or expired verification code.', ERROR_CODE.UNAUTHORIZED, 401);
+    }
+
+    logLoginAttempt({
+      success: true,
+      email: user.email,
       userId: user.id,
-      role: user.role,
       displayName: user.displayName,
-      expiresAt,
-      user: {
-        id: user.id,
-        role: user.role,
-        displayName: user.displayName,
-      },
-      token: encodeSessionToken(session),
+      ip: req.ip,
     });
+
+    sendData(res, buildLoginResponse(user));
+  }),
+);
+
+authRouter.post(
+  '/auth/complete-onboarding',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const body = req.body ?? {};
+    const newPassword = typeof body.newPassword === 'string' ? body.newPassword : '';
+    const displayName = typeof body.displayName === 'string' ? body.displayName : undefined;
+    const phone = typeof body.phone === 'string' ? body.phone : undefined;
+    const branch = typeof body.branch === 'string' ? body.branch : undefined;
+    const region = typeof body.region === 'string' ? body.region : undefined;
+    const zone = typeof body.zone === 'string' ? body.zone : undefined;
+
+    if (!completeOnboardingSchema.newPassword(newPassword)) {
+      throw new AppError('Password must be at least 8 characters.', ERROR_CODE.VALIDATION, 422);
+    }
+
+    if (!completeOnboardingSchema.displayName(displayName)) {
+      throw new AppError('Display name is required.', ERROR_CODE.VALIDATION, 422);
+    }
+
+    try {
+      await completeOnboarding(req.session!.userId, {
+        newPassword,
+        displayName,
+        phone,
+        branch,
+        region,
+        zone,
+      });
+    } catch (error) {
+      mapAuthServiceError(error);
+    }
+
+    const user = await resolveAuthUser(
+      (await userRepository.getUserById(req.session!.userId))?.email ?? '',
+    );
+
+    if (!user) {
+      throw new AppError('User not found.', ERROR_CODE.NOT_FOUND, 404);
+    }
+
+    sendData(res, buildLoginResponse({ ...user, status: 'ACTIVE' }));
   }),
 );
 

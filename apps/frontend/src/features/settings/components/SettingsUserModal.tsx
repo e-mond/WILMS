@@ -22,6 +22,7 @@ export interface SettingsUserFormValues {
   displayName: string;
   email: string;
   role: string;
+  phone?: string;
 }
 
 export interface SettingsUserModalProps {
@@ -49,6 +50,7 @@ export function SettingsUserModal({
 }: SettingsUserModalProps) {
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [role, setRole] = useState<string>(USER_ROLE.APPROVER);
 
   useEffect(() => {
@@ -58,10 +60,12 @@ export function SettingsUserModal({
 
     setDisplayName(user?.displayName ?? '');
     setEmail(user?.email ?? '');
+    setPhone('');
     setRole(user?.role ?? USER_ROLE.APPROVER);
   }, [isOpen, user]);
 
   const canDelete = mode === 'edit' && user && !user.isCurrentUser;
+  const canSuspend = mode === 'edit' && user && !user.isCurrentUser;
   const isSuspended = user?.status === 'SUSPENDED';
 
   return (
@@ -79,13 +83,13 @@ export function SettingsUserModal({
                     Activate
                   </Button>
                 </PermissionGate>
-              ) : (
+              ) : canSuspend ? (
                 <PermissionGate permission={PERMISSION.SUSPEND_USERS}>
                   <Button type="button" variant="secondary" size="sm" disabled={isSubmitting} onClick={onDisable}>
                     Suspend
                   </Button>
                 </PermissionGate>
-              )}
+              ) : null}
               {canDelete ? (
                 <PermissionGate permission={PERMISSION.MANAGE_USERS}>
                   <Button type="button" variant="danger" size="sm" disabled={isSubmitting} onClick={onDelete}>
@@ -111,6 +115,7 @@ export function SettingsUserModal({
                   displayName: displayName.trim(),
                   email: email.trim(),
                   role,
+                  phone: phone.trim() || undefined,
                 })
               }
             >
@@ -146,6 +151,24 @@ export function SettingsUserModal({
             placeholder="name@wilms.demo"
           />
         </div>
+        {mode === 'invite' ? (
+          <div>
+            <label htmlFor="settings-user-phone" className="text-small font-semibold text-text-primary">
+              SMS phone (optional)
+            </label>
+            <Input
+              id="settings-user-phone"
+              className="mt-wilms-2"
+              type="tel"
+              value={phone}
+              onChange={(event) => setPhone(event.target.value)}
+              placeholder="+233..."
+            />
+            <p className="mt-wilms-2 text-small text-text-muted">
+              If provided, WILMS sends an SMS asking the user to check their email and accept the invitation.
+            </p>
+          </div>
+        ) : null}
         <div>
           <label htmlFor="settings-user-role" className="text-small font-semibold text-text-primary">
             Role

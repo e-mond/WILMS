@@ -31,6 +31,19 @@ export function resolveMiddlewareAuth(
 
   if (isPublicPath(pathname)) {
     if (sessionState.status === 'valid') {
+      const status = sessionState.session.user.status;
+
+      if (status === 'INVITED') {
+        return { type: 'redirect', destination: '/complete-profile' };
+      }
+
+      if (pathname === '/login' || pathname === '/accept-invitation') {
+        return {
+          type: 'redirect',
+          destination: getRoleHomePath(sessionState.session.user.role),
+        };
+      }
+
       return {
         type: 'redirect',
         destination: getRoleHomePath(sessionState.session.user.role),
@@ -63,6 +76,20 @@ export function resolveMiddlewareAuth(
   }
 
   const session = sessionState.session;
+
+  if (session.user.status === 'INVITED') {
+    if (pathname === '/complete-profile') {
+      return { type: 'allow' };
+    }
+    return { type: 'redirect', destination: '/complete-profile' };
+  }
+
+  if (pathname === '/complete-profile') {
+    return {
+      type: 'redirect',
+      destination: getRoleHomePath(session.user.role),
+    };
+  }
 
   if (pathname === '/') {
     return {
