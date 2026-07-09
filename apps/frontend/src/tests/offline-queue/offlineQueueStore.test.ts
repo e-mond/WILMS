@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { OFFLINE_QUEUE_ITEM_STATUS } from '@/types/offline-queue';
+import { OFFLINE_QUEUE_ITEM_STATUS, OFFLINE_QUEUE_ITEM_TYPE } from '@/types/offline-queue';
 import {
   selectHasQueueWarning,
   selectPendingQueueCount,
@@ -62,6 +62,20 @@ describe('offlineQueueStore', () => {
     expect(stored?.status).toBe(OFFLINE_QUEUE_ITEM_STATUS.FAILED);
     expect(stored?.lastError).toBe('Server unavailable');
     expect(selectPendingQueueCount(useOfflineQueueStore.getState().items)).toBe(1);
+  });
+
+  it('enqueues expense actions with pending status', () => {
+    const item = useOfflineQueueStore.getState().enqueueExpense({
+      category: 'FUEL',
+      amountPesewas: 5_000,
+      expenseDate: '2026-07-08',
+      reason: 'Travel',
+      recordedById: 'c-1',
+      recordedByName: 'Collector',
+    });
+
+    expect(item.type).toBe(OFFLINE_QUEUE_ITEM_TYPE.RECORD_EXPENSE);
+    expect(item.status).toBe(OFFLINE_QUEUE_ITEM_STATUS.PENDING);
   });
 
   it('flags queue warning at threshold', () => {

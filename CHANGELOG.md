@@ -2,6 +2,18 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.3.2] — Field Ops Continuation
+
+### Added
+- Holiday-aware loan schedule generation that shifts due dates off configured organization holidays.
+- Offline expense sync handler and `useRecordExpenseOrQueue` hook for collector expense forms.
+- TanStack Query persistence for collector dashboard and borrower read models (24h local cache).
+- Expense counts in offline banner, toasts, and dashboard sync status card.
+
+### Changed
+- Offline queue sync drains payments and expenses in FIFO order when connectivity returns.
+- Application version bumped to `1.3.2`.
+
 ## [1.3.1] — Offline Expansion
 
 ### Added
