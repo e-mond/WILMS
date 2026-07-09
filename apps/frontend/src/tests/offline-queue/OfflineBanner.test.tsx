@@ -8,6 +8,7 @@ describe('OfflineBanner', () => {
       <OfflineBanner
         isOffline
         pendingCount={0}
+        reviewCount={0}
         isSyncing={false}
         hasQueueWarning={false}
       />,
@@ -23,6 +24,7 @@ describe('OfflineBanner', () => {
       <OfflineBanner
         isOffline={false}
         pendingCount={100}
+        reviewCount={0}
         isSyncing={false}
         hasQueueWarning
       />,
@@ -31,11 +33,26 @@ describe('OfflineBanner', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Sync backlog critical');
   });
 
+  it('shows approver review message when payments are queued for review', () => {
+    render(
+      <OfflineBanner
+        isOffline={false}
+        pendingCount={0}
+        reviewCount={2}
+        isSyncing={false}
+        hasQueueWarning={false}
+      />,
+    );
+
+    expect(screen.getByRole('status')).toHaveTextContent('2 payments awaiting approver review');
+  });
+
   it('renders nothing when online with empty queue', () => {
     const { container } = render(
       <OfflineBanner
         isOffline={false}
         pendingCount={0}
+        reviewCount={0}
         isSyncing={false}
         hasQueueWarning={false}
       />,

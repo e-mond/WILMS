@@ -44,6 +44,16 @@ describe('offlineQueueStore', () => {
     expect(useOfflineQueueStore.getState().items).toHaveLength(0);
   });
 
+  it('retains queued-for-review items after sync', () => {
+    const item = useOfflineQueueStore.getState().enqueuePayment(samplePayload);
+    useOfflineQueueStore.getState().markQueuedForReview(item.id);
+
+    expect(useOfflineQueueStore.getState().items[0]?.status).toBe(
+      OFFLINE_QUEUE_ITEM_STATUS.QUEUED_FOR_REVIEW,
+    );
+    expect(selectPendingQueueCount(useOfflineQueueStore.getState().items)).toBe(0);
+  });
+
   it('retains failed items for retry', () => {
     const item = useOfflineQueueStore.getState().enqueuePayment(samplePayload);
     useOfflineQueueStore.getState().markFailed(item.id, 'Server unavailable');

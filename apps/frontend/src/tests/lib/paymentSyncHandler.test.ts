@@ -46,8 +46,19 @@ describe('replayQueuedPayment', () => {
   it('submits queued payment through offline sync batch API', async () => {
     const item = createQueueItem();
 
-    await replayQueuedPayment(item);
+    const outcome = await replayQueuedPayment(item);
 
     expect(submitOfflinePaymentBatch).toHaveBeenCalledWith([item]);
+    expect(outcome).toBe('queued_for_review');
+  });
+
+  it('returns applied when sync applies payment immediately', async () => {
+    submitOfflinePaymentBatch.mockResolvedValue({
+      results: [{ idempotencyKey: 'queue-item-1', status: 'APPLIED', operationId: 'op-1' }],
+    });
+
+    const outcome = await replayQueuedPayment(createQueueItem());
+
+    expect(outcome).toBe('applied');
   });
 });

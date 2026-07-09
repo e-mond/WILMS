@@ -49,6 +49,7 @@ describe('offline queue sync', () => {
 
     const result = await drainOfflineQueue(items, async (item) => {
       order.push(item.id);
+      return 'applied';
     });
 
     expect(order).toEqual(['first', 'second']);
@@ -59,7 +60,7 @@ describe('offline queue sync', () => {
   it('keeps failed items and reports errors', async () => {
     const syncHandler = vi
       .fn()
-      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce('applied')
       .mockRejectedValueOnce(new Error('Network timeout'));
 
     const items = [

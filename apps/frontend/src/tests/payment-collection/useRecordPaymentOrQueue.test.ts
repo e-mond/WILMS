@@ -4,6 +4,7 @@ import paymentServiceMock, { resetMockPaymentTransactions } from '@/services/moc
 import { USER_ROLE } from '@/constants/roles';
 import { useAuthStore } from '@/state/authStore';
 import { useOfflineQueueStore } from '@/state/offlineQueueStore';
+import { OFFLINE_QUEUE_ITEM_TYPE } from '@/types/offline-queue';
 import { TestQueryProvider } from '@/tests/utils/test-query-client';
 
 const mockRecordPayment = vi.hoisted(() => vi.fn());
@@ -93,6 +94,10 @@ describe('useRecordPaymentOrQueue', () => {
     expect(mockRecordPayment).not.toHaveBeenCalled();
     expect(mockRequestPaymentBackgroundSync).toHaveBeenCalled();
     expect(useOfflineQueueStore.getState().items).toHaveLength(1);
-    expect(useOfflineQueueStore.getState().items[0]?.payload.borrowerId).toBe('borrower-001');
+    const queuedItem = useOfflineQueueStore.getState().items[0];
+    expect(queuedItem?.type).toBe(OFFLINE_QUEUE_ITEM_TYPE.RECORD_PAYMENT);
+    if (queuedItem?.type === OFFLINE_QUEUE_ITEM_TYPE.RECORD_PAYMENT) {
+      expect(queuedItem.payload.borrowerId).toBe('borrower-001');
+    }
   });
 });

@@ -36,6 +36,7 @@ import { messagesRouter } from '../modules/messages/routes.js';
 import { communicationsRouter } from '../modules/communications/routes.js';
 import { trackingRouter } from '../modules/tracking/routes.js';
 import { webhooksRouter } from '../modules/webhooks/routes.js';
+import { organizationHolidaysRouter } from '../modules/organization-holidays/routes.js';
 
 function mountBusinessRoutes(app: express.Application, basePath = '') {
   const prefix = basePath.replace(/\/$/, '');
@@ -66,6 +67,7 @@ function mountBusinessRoutes(app: express.Application, basePath = '') {
   app.use(`${prefix}`, communicationsRouter);
   app.use(`${prefix}`, syncRouter);
   app.use(`${prefix}`, uploadsRouter);
+  app.use(`${prefix}`, organizationHolidaysRouter);
 }
 
 export function createApp() {

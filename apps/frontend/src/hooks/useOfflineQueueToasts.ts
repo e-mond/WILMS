@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/useToast';
 import { useOfflineStatus } from '@/hooks/useOfflineStatus';
 import {
   selectPendingQueueCount,
+  selectQueuedForReviewCount,
   useOfflineQueueStore,
 } from '@/state/offlineQueueStore';
 
@@ -42,8 +43,13 @@ export function useOfflineQueueToasts() {
 
     if (wasSyncing && isIdle) {
       const pendingCount = selectPendingQueueCount(items);
+      const reviewCount = selectQueuedForReviewCount(items);
 
-      if (pendingCount === 0) {
+      if (pendingCount === 0 && reviewCount > 0) {
+        toast.info('Submitted for review', {
+          message: `${reviewCount} payment${reviewCount === 1 ? '' : 's'} sent to approver queue.`,
+        });
+      } else if (pendingCount === 0 && reviewCount === 0) {
         toast.sync('Sync complete', { message: 'All offline payments uploaded.' });
       } else {
         toast.warning('Sync incomplete', {

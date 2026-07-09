@@ -26,4 +26,7 @@ export interface GuarantorEligibilityResult {
   isDuplicateRegistration: boolean;
   validationStatus: GuarantorValidationStatus;
   message?: string;
+  eligibilityScore: number;
+  riskRating: 'LOW' | 'MEDIUM' | 'HIGH';
+  scoreFactors: string[];
 }

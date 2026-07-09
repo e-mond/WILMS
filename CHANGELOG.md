@@ -2,6 +2,21 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.3.1] — Offline Expansion
+
+### Added
+- `QUEUED_FOR_REVIEW` offline queue status with collector banner and toast messaging when payments enter approver review.
+- Offline upload queue wiring in `PhotoUpload` and `DocumentUpload` when the device is offline.
+- Guarantor eligibility scoring fields (`eligibilityScore`, `riskRating`, `scoreFactors`) on API and frontend types.
+- Collector dashboard sync status card (connection, sync state, queued payments, pending uploads).
+- QR/barcode scanner integration on collector My Borrowers search.
+- Organization holidays CRUD API at `/organization-holidays`.
+- Offline expense queue item type and `enqueueExpense` store action (sync handler deferred).
+
+### Changed
+- Mock offline sync now returns `QUEUED_FOR_REVIEW` to match production financial review flow.
+- Application version bumped to `1.3.1`.
+
 ## [1.3.0] — Field Operations & Lending Platform
 
 ### Added
