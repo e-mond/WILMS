@@ -1,15 +1,30 @@
 # WILMS - Project Status
 
-**Last updated:** 2026-07-08 (v1.3.0 ready)  
-**Package version:** `1.3.0`  
-**Branch:** `cursor/v1.3.0-field-operations-8847`  
-**Production:** v1.2.3 deployed — v1.3.0 pending
+**Last updated:** 2026-07-08 (v1.3.1 ready)  
+**Package version:** `1.3.1`  
+**Branch:** `cursor/v1.3.1-offline-expansion-8847`  
+**Production:** v1.3.0 deployed — v1.3.1 pending
 
 ---
 
 ## Summary
 
-v1.3.0 establishes field-operations foundations: offline PWA shell, device health monitoring, background uploads, sync conflict resolution, and advanced lending domain modules.
+v1.3.1 closes offline UX gaps from v1.3.0: upload queue wiring, approver-review messaging, guarantor scoring on the API, collector sync visibility, QR search, and organization holidays CRUD.
+
+---
+
+## v1.3.1 scope
+
+| Item | Status |
+|------|--------|
+| QUEUED_FOR_REVIEW queue UX | ✅ |
+| Offline photo/document upload queue | ✅ |
+| Guarantor scoring on eligibility API | ✅ |
+| Collector dashboard sync widget | ✅ |
+| QR scanner on My Borrowers | ✅ |
+| Organization holidays API | ✅ |
+| Offline expense queue type (foundation) | ✅ |
+| Mock/prod sync status alignment | ✅ |
 
 ---
 
@@ -30,51 +45,19 @@ See [V1.3.0_FIELD_OPERATIONS_REPORT.md](./V1.3.0_FIELD_OPERATIONS_REPORT.md).
 
 ---
 
-## v1.2.3 scope (shipped)
+## Deploy checklist
 
-| Item | Status |
-|------|--------|
-| Invitation lifecycle timestamps & status labels | ✅ |
-| SMS invitation delivery & logging | ✅ |
-| Permanent deletion (message deliveries) | ✅ |
-| Failed message human-readable reasons | ✅ |
-| createObjectURL / upload preview fixes | ✅ |
-| User profile crash fixes | ✅ |
+```bash
+npm run db:migrate -w @wilms/api
+```
 
-See [V1.2.3_PLATFORM_STABILIZATION_REPORT.md](./V1.2.3_PLATFORM_STABILIZATION_REPORT.md).
+Migrations through `0020_v130_field_operations.sql` (includes `organization_holidays` table).
 
 ---
 
-## v1.2.2 scope (shipped)
+## Next candidates
 
-| Item | Status |
-|------|--------|
-| Admin fee persistence (no login prompt) | ✅ |
-| Permanent user deletion | ✅ |
-| Session invalidation on suspend/delete/role change | ✅ |
-
-See [V1.2.2_SECURITY_REPORT.md](./V1.2.2_SECURITY_REPORT.md).
-
----
-
-## Verification status (v1.3.0 branch)
-
-| Check | Result |
-|-------|--------|
-| `npm run type-check` | **PASS** |
-| `npm run lint` | **PASS** |
-| `npm run build` | **PASS** |
-| `npm run test -w @wilms/api` | **83/83** |
-| `npm run test -w @wilms/frontend` | **230+** (run sharded with 12GB heap) |
-| `npm run smoke:production` | Requires `WILMS_APP_URL` |
-| `npm run smoke:rbac` | Requires live API |
-
----
-
-## After v1.3.0 deploy
-
-1. Run `npm run db:migrate -w @wilms/api` (migration `0020_v130_field_operations`)
-2. Redeploy Railway API and Vercel frontend
-3. Collector: verify Device health panel in Settings
-4. Test offline payment queue → approver sync conflict review
-5. Reinstall or refresh PWA for new service worker cache
+- Offline expense sync handler and collector expense form queueing
+- TanStack Query persist for collector read models offline
+- Holiday-aware schedule date shifting in repayment engine
+- Bluetooth thermal receipt printing integration

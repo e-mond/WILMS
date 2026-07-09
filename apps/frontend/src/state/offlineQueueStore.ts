@@ -9,27 +9,43 @@ import {
   OFFLINE_QUEUE_ITEM_TYPE,
 } from '@/types/offline-queue';
 import type {
-  OfflinePaymentQueueItem,
+  OfflineQueueItem,
   OfflineQueueSyncState,
+  RecordExpenseQueuePayload,
 } from '@/types/offline-queue';
 import type { RecordPaymentQueuePayload } from '@/types/payment';
 
 interface OfflineQueueState {
-  items: OfflinePaymentQueueItem[];
+  items: OfflineQueueItem[];
   syncState: OfflineQueueSyncState;
-  enqueuePayment: (payload: RecordPaymentQueuePayload) => OfflinePaymentQueueItem;
+  enqueuePayment: (payload: RecordPaymentQueuePayload) => OfflineQueueItem;
+  enqueueExpense: (payload: RecordExpenseQueuePayload) => OfflineQueueItem;
   markSyncing: (id: string) => void;
   markSynced: (id: string) => void;
+  markQueuedForReview: (id: string) => void;
   markFailed: (id: string, error: string) => void;
   removeSyncedItems: () => void;
   setSyncState: (syncState: OfflineQueueSyncState) => void;
   clearQueue: () => void;
 }
 
-function createQueueItem(payload: RecordPaymentQueuePayload): OfflinePaymentQueueItem {
+function createPaymentQueueItem(payload: RecordPaymentQueuePayload): OfflineQueueItem {
   return {
     id: crypto.randomUUID(),
     type: OFFLINE_QUEUE_ITEM_TYPE.RECORD_PAYMENT,
+    payload,
+    status: OFFLINE_QUEUE_ITEM_STATUS.PENDING,
+    createdAt: Date.now(),
+    lastAttemptAt: null,
+    attemptCount: 0,
+    lastError: null,
+  };
+}
+
+function createExpenseQueueItem(payload: RecordExpenseQueuePayload): OfflineQueueItem {
+  return {
+    id: crypto.randomUUID(),
+    type: OFFLINE_QUEUE_ITEM_TYPE.RECORD_EXPENSE,
     payload,
     status: OFFLINE_QUEUE_ITEM_STATUS.PENDING,
     createdAt: Date.now(),
@@ -46,7 +62,15 @@ export const useOfflineQueueStore = create<OfflineQueueState>()(
       syncState: 'idle',
 
       enqueuePayment: (payload) => {
-        const item = createQueueItem(payload);
+        const item = createPaymentQueueItem(payload);
+        set((state) => ({
+          items: [...state.items, item],
+        }));
+        return item;
+      },
+
+      enqueueExpense: (payload) => {
+        const item = createExpenseQueueItem(payload);
         set((state) => ({
           items: [...state.items, item],
         }));
@@ -76,6 +100,20 @@ export const useOfflineQueueStore = create<OfflineQueueState>()(
               ? {
                   ...item,
                   status: OFFLINE_QUEUE_ITEM_STATUS.SYNCED,
+                  lastError: null,
+                }
+              : item,
+          ),
+        }));
+      },
+
+      markQueuedForReview: (id) => {
+        set((state) => ({
+          items: state.items.map((item) =>
+            item.id === id
+              ? {
+                  ...item,
+                  status: OFFLINE_QUEUE_ITEM_STATUS.QUEUED_FOR_REVIEW,
                   lastError: null,
                 }
               : item,
@@ -121,9 +159,7 @@ export const useOfflineQueueStore = create<OfflineQueueState>()(
   ),
 );
 
-export function selectPendingQueueItems(
-  items: OfflinePaymentQueueItem[],
-): OfflinePaymentQueueItem[] {
+export function selectPendingQueueItems(items: OfflineQueueItem[]): OfflineQueueItem[] {
   return items.filter(
     (item) =>
       item.status === OFFLINE_QUEUE_ITEM_STATUS.PENDING ||
@@ -132,14 +168,19 @@ export function selectPendingQueueItems(
   );
 }
 
-export function selectPendingQueueCount(items: OfflinePaymentQueueItem[]): number {
+export function selectPendingQueueCount(items: OfflineQueueItem[]): number {
   return selectPendingQueueItems(items).length;
 }
 
-export function selectHasQueueWarning(items: OfflinePaymentQueueItem[]): boolean {
+export function selectQueuedForReviewCount(items: OfflineQueueItem[]): number {
+  return items.filter((item) => item.status === OFFLINE_QUEUE_ITEM_STATUS.QUEUED_FOR_REVIEW)
+    .length;
+}
+
+export function selectHasQueueWarning(items: OfflineQueueItem[]): boolean {
   return selectPendingQueueCount(items) >= OFFLINE_QUEUE_WARNING_THRESHOLD;
 }
 
-export function getOfflineQueueSnapshot(): OfflinePaymentQueueItem[] {
+export function getOfflineQueueSnapshot(): OfflineQueueItem[] {
   return useOfflineQueueStore.getState().items;
 }
