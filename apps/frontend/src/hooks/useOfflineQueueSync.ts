@@ -1,20 +1,39 @@
 'use client';
 
 import { useCallback, useEffect, useRef } from 'react';
-import { drainOfflineQueue } from '@/lib/offline-queue/sync';
 import { isAutoSyncEnabled, resolveOfflineSyncIntervalMs, shouldPauseBackgroundSync } from '@/lib/device/sync-policy';
 import { useBatteryStatus } from '@/hooks/useBatteryStatus';
 import { logger } from '@/utils/logger';
 import { useOfflineQueueStore } from '@/state/offlineQueueStore';
 import { OFFLINE_QUEUE_ITEM_STATUS, OFFLINE_QUEUE_ITEM_TYPE } from '@/types/offline-queue';
-import type { OfflinePaymentQueueItem, OfflinePaymentSyncHandler } from '@/types/offline-queue';
+import type {
+  OfflineExpenseQueueItem,
+  OfflineExpenseSyncHandler,
+  OfflinePaymentQueueItem,
+  OfflinePaymentSyncHandler,
+  OfflineQueueItem,
+} from '@/types/offline-queue';
 import { useOfflineStatus } from '@/hooks/useOfflineStatus';
 
 interface UseOfflineQueueSyncOptions {
-  syncHandler: OfflinePaymentSyncHandler | null;
+  paymentSyncHandler?: OfflinePaymentSyncHandler | null;
+  expenseSyncHandler?: OfflineExpenseSyncHandler | null;
 }
 
-export function useOfflineQueueSync({ syncHandler }: UseOfflineQueueSyncOptions) {
+function getDrainableItems(items: OfflineQueueItem[]): OfflineQueueItem[] {
+  return items
+    .filter(
+      (item) =>
+        item.status === OFFLINE_QUEUE_ITEM_STATUS.PENDING ||
+        item.status === OFFLINE_QUEUE_ITEM_STATUS.FAILED,
+    )
+    .sort((left, right) => left.createdAt - right.createdAt);
+}
+
+export function useOfflineQueueSync({
+  paymentSyncHandler = null,
+  expenseSyncHandler = null,
+}: UseOfflineQueueSyncOptions) {
   const { isOnline } = useOfflineStatus();
   const battery = useBatteryStatus();
   const isSyncingRef = useRef(false);
@@ -30,24 +49,22 @@ export function useOfflineQueueSync({ syncHandler }: UseOfflineQueueSyncOptions)
 
   const runSync = useCallback(async () => {
     if (
-      !syncHandler ||
       !isOnline ||
       isSyncingRef.current ||
       !isAutoSyncEnabled() ||
-      shouldPauseBackgroundSync(battery.savingMode, battery.savingMode)
+      shouldPauseBackgroundSync(battery.savingMode, battery.savingMode) ||
+      (!paymentSyncHandler && !expenseSyncHandler)
     ) {
       return;
     }
 
-    const currentItems = useOfflineQueueStore.getState().items;
-    const paymentItems = currentItems.filter(
-      (item): item is OfflinePaymentQueueItem =>
-        item.type === OFFLINE_QUEUE_ITEM_TYPE.RECORD_PAYMENT &&
-        (item.status === OFFLINE_QUEUE_ITEM_STATUS.PENDING ||
-          item.status === OFFLINE_QUEUE_ITEM_STATUS.FAILED),
+    const drainable = getDrainableItems(useOfflineQueueStore.getState().items).filter(
+      (item) =>
+        (item.type === OFFLINE_QUEUE_ITEM_TYPE.RECORD_PAYMENT && paymentSyncHandler) ||
+        (item.type === OFFLINE_QUEUE_ITEM_TYPE.RECORD_EXPENSE && expenseSyncHandler),
     );
 
-    if (paymentItems.length === 0) {
+    if (drainable.length === 0) {
       return;
     }
 
@@ -55,34 +72,33 @@ export function useOfflineQueueSync({ syncHandler }: UseOfflineQueueSyncOptions)
     setSyncState('syncing');
 
     try {
-      const wrappedHandler: OfflinePaymentSyncHandler = async (item) => {
+      for (const item of drainable) {
         markSyncing(item.id);
-        const outcome = await syncHandler(item);
 
-        if (outcome === 'queued_for_review') {
-          markQueuedForReview(item.id);
-        } else {
-          markSynced(item.id);
+        try {
+          if (item.type === OFFLINE_QUEUE_ITEM_TYPE.RECORD_PAYMENT) {
+            const outcome = await paymentSyncHandler!(item);
+
+            if (outcome === 'queued_for_review') {
+              markQueuedForReview(item.id);
+            } else {
+              markSynced(item.id);
+            }
+          } else {
+            await expenseSyncHandler!(item as OfflineExpenseQueueItem);
+            markSynced(item.id);
+          }
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Sync failed';
+          markFailed(item.id, message);
+          logger.warn('Offline queue item sync failed', {
+            itemId: item.id,
+            error: message,
+          });
         }
-
-        return outcome;
-      };
-
-      const result = await drainOfflineQueue(paymentItems, wrappedHandler);
-
-      for (const failure of result.failed) {
-        markFailed(failure.id, failure.error);
-        logger.warn('Offline queue item sync failed', {
-          itemId: failure.id,
-          error: failure.error,
-        });
       }
 
       removeSyncedItems();
-
-      if (result.synced.length > 0) {
-        logger.info('Offline queue drained', { syncedCount: result.synced.length });
-      }
     } catch (error) {
       logger.error('Offline queue drain aborted', {
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -99,26 +115,26 @@ export function useOfflineQueueSync({ syncHandler }: UseOfflineQueueSyncOptions)
     markSyncing,
     removeSyncedItems,
     setSyncState,
-    syncHandler,
+    paymentSyncHandler,
+    expenseSyncHandler,
     battery.savingMode,
   ]);
 
   useEffect(() => {
-    if (isOnline && syncHandler) {
+    if (isOnline && (paymentSyncHandler || expenseSyncHandler)) {
       void runSync();
     }
-  }, [isOnline, items.length, runSync, syncHandler]);
+  }, [isOnline, items.length, runSync, paymentSyncHandler, expenseSyncHandler]);
 
   useEffect(() => {
-    if (!isOnline || !syncHandler) {
+    if (!isOnline || (!paymentSyncHandler && !expenseSyncHandler)) {
       return;
     }
 
     const hasPending = items.some(
       (item) =>
-        item.type === OFFLINE_QUEUE_ITEM_TYPE.RECORD_PAYMENT &&
-        (item.status === OFFLINE_QUEUE_ITEM_STATUS.PENDING ||
-          item.status === OFFLINE_QUEUE_ITEM_STATUS.FAILED),
+        item.status === OFFLINE_QUEUE_ITEM_STATUS.PENDING ||
+        item.status === OFFLINE_QUEUE_ITEM_STATUS.FAILED,
     );
 
     if (!hasPending) {
@@ -132,7 +148,7 @@ export function useOfflineQueueSync({ syncHandler }: UseOfflineQueueSyncOptions)
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [isOnline, items, runSync, syncHandler]);
+  }, [isOnline, items, runSync, paymentSyncHandler, expenseSyncHandler]);
 
   return {
     syncState,

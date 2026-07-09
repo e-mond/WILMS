@@ -16,5 +16,6 @@ export function useCollectorBorrowers(referenceDate?: string) {
     queryKey: collectorBorrowersQueryKey(user?.id, date),
     queryFn: () => collectorService.listAssignedBorrowers(user!.id, date),
     enabled: Boolean(user?.id),
+    gcTime: 1000 * 60 * 60 * 24,
   });
 }

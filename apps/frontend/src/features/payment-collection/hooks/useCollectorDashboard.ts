@@ -10,5 +10,6 @@ export function useCollectorDashboard(collectorId: string | undefined, date?: st
     queryKey: collectorId ? collectorDashboardQueryKey(collectorId, date) : ['collector', 'dashboard'],
     queryFn: () => collectorService.getDashboard(collectorId!, date),
     enabled: Boolean(collectorId),
+    gcTime: 1000 * 60 * 60 * 24,
   });
 }

@@ -2,38 +2,57 @@ import { cn } from '@/utils/cn';
 
 export interface OfflineBannerProps {
   isOffline: boolean;
-  pendingCount: number;
-  reviewCount: number;
+  pendingPayments: number;
+  pendingExpenses: number;
+  reviewPayments: number;
   isSyncing: boolean;
   hasQueueWarning: boolean;
   className?: string;
 }
 
+function formatPendingLabel(pendingPayments: number, pendingExpenses: number): string {
+  const parts: string[] = [];
+
+  if (pendingPayments > 0) {
+    parts.push(`${pendingPayments} payment${pendingPayments === 1 ? '' : 's'}`);
+  }
+
+  if (pendingExpenses > 0) {
+    parts.push(`${pendingExpenses} expense${pendingExpenses === 1 ? '' : 's'}`);
+  }
+
+  return parts.join(' and ');
+}
+
 function getBannerMessage({
   isOffline,
-  pendingCount,
-  reviewCount,
+  pendingPayments,
+  pendingExpenses,
+  reviewPayments,
   isSyncing,
   hasQueueWarning,
 }: Omit<OfflineBannerProps, 'className'>): string {
+  const pendingCount = pendingPayments + pendingExpenses;
+  const pendingLabel = formatPendingLabel(pendingPayments, pendingExpenses);
+
   if (hasQueueWarning) {
-    return `Sync backlog critical: ${pendingCount} payments waiting. Contact your supervisor.`;
+    return `Sync backlog critical: ${pendingCount} saved items waiting. Contact your supervisor.`;
   }
 
-  if (isSyncing) {
-    return `Syncing ${pendingCount} saved payment${pendingCount === 1 ? '' : 's'}...`;
+  if (isSyncing && pendingCount > 0) {
+    return `Syncing ${pendingLabel}...`;
   }
 
   if (isOffline) {
-    return 'You are offline. Payments will be saved and synced when connection returns.';
+    return 'You are offline. Payments and expenses will be saved and synced when connection returns.';
   }
 
   if (pendingCount > 0) {
-    return `${pendingCount} payment${pendingCount === 1 ? '' : 's'} pending sync.`;
+    return `${pendingLabel} pending sync.`;
   }
 
-  if (reviewCount > 0) {
-    return `${reviewCount} payment${reviewCount === 1 ? '' : 's'} awaiting approver review.`;
+  if (reviewPayments > 0) {
+    return `${reviewPayments} payment${reviewPayments === 1 ? '' : 's'} awaiting approver review.`;
   }
 
   return '';
@@ -47,8 +66,10 @@ export function OfflineBanner(props: OfflineBannerProps) {
     return null;
   }
 
+  const pendingCount = status.pendingPayments + status.pendingExpenses;
   const isCritical = status.hasQueueWarning;
-  const isReviewOnly = !status.isOffline && status.pendingCount === 0 && status.reviewCount > 0;
+  const isReviewOnly =
+    !status.isOffline && pendingCount === 0 && status.reviewPayments > 0;
 
   return (
     <div
