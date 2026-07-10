@@ -33,4 +33,10 @@ test.describe('role landing journeys', () => {
     await expect(page).toHaveURL(DEMO_USERS.superAdmin.landingPath);
     await expect(page.getByRole('heading', { name: 'Borrower Status' })).toBeVisible();
   });
+
+  test('auditor reaches reports hub', async ({ page }) => {
+    await signIn(page, DEMO_USERS.auditor);
+    await expect(page).toHaveURL(DEMO_USERS.auditor.landingPath);
+    await expect(page.getByRole('heading', { name: /reports/i })).toBeVisible();
+  });
 });

@@ -62,4 +62,10 @@ export type OfflinePaymentSyncHandler = (
   item: OfflinePaymentQueueItem,
 ) => Promise<OfflinePaymentSyncOutcome>;
 
+export type OfflineExpenseSyncOutcome = 'applied';
+
+export type OfflineExpenseSyncHandler = (
+  item: OfflineExpenseQueueItem,
+) => Promise<OfflineExpenseSyncOutcome>;
+
 export type OfflineQueueSyncState = 'idle' | 'syncing';

@@ -1,4 +1,5 @@
 import { getCadenceDayOffset, type RepaymentCadence } from './schedule-cadence.js';
+import { adjustDueDateForHolidays, normalizeHolidayDates } from './holiday-shift.js';
 
 export const PAYMENT_DAY_TO_JS_DAY: Record<string, number> = {
   Sunday: 0,
@@ -46,16 +47,23 @@ export function generateLoanScheduleWeeks(input: {
   startDate: string;
   paymentDay: string;
   cadence?: RepaymentCadence;
+  holidayDates?: Iterable<string>;
 }): ScheduleWeekDraft[] {
   const firstDueIso = getFirstDueDateIso(input.startDate, input.paymentDay);
   const dayOffset = getCadenceDayOffset(input.cadence ?? 'WEEKLY');
+  const holidayDates = normalizeHolidayDates(input.holidayDates);
 
-  return Array.from({ length: input.durationWeeks }, (_, index) => ({
-    weekNumber: index + 1,
-    dueDate: addDays(firstDueIso, index * dayOffset),
-    amountPesewas: input.weeklyPaymentPesewas,
-    status: 'PENDING' as const,
-  }));
+  return Array.from({ length: input.durationWeeks }, (_, index) => {
+    const rawDueDate = addDays(firstDueIso, index * dayOffset);
+    const dueDate = adjustDueDateForHolidays(rawDueDate, holidayDates);
+
+    return {
+      weekNumber: index + 1,
+      dueDate,
+      amountPesewas: input.weeklyPaymentPesewas,
+      status: 'PENDING' as const,
+    };
+  });
 }
 
 export function getWeekdayNameFromIsoDate(isoDate: string): string {

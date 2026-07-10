@@ -7,15 +7,16 @@ describe('OfflineBanner', () => {
     render(
       <OfflineBanner
         isOffline
-        pendingCount={0}
-        reviewCount={0}
+        pendingPayments={0}
+        pendingExpenses={0}
+        reviewPayments={0}
         isSyncing={false}
         hasQueueWarning={false}
       />,
     );
 
     expect(screen.getByRole('status')).toHaveTextContent(
-      'You are offline. Payments will be saved and synced when connection returns.',
+      'You are offline. Payments and expenses will be saved and synced when connection returns.',
     );
   });
 
@@ -23,8 +24,9 @@ describe('OfflineBanner', () => {
     render(
       <OfflineBanner
         isOffline={false}
-        pendingCount={100}
-        reviewCount={0}
+        pendingPayments={100}
+        pendingExpenses={0}
+        reviewPayments={0}
         isSyncing={false}
         hasQueueWarning
       />,
@@ -37,8 +39,9 @@ describe('OfflineBanner', () => {
     render(
       <OfflineBanner
         isOffline={false}
-        pendingCount={0}
-        reviewCount={2}
+        pendingPayments={0}
+        pendingExpenses={0}
+        reviewPayments={2}
         isSyncing={false}
         hasQueueWarning={false}
       />,
@@ -47,12 +50,28 @@ describe('OfflineBanner', () => {
     expect(screen.getByRole('status')).toHaveTextContent('2 payments awaiting approver review');
   });
 
+  it('mentions pending expenses in sync messaging', () => {
+    render(
+      <OfflineBanner
+        isOffline={false}
+        pendingPayments={1}
+        pendingExpenses={2}
+        reviewPayments={0}
+        isSyncing={false}
+        hasQueueWarning={false}
+      />,
+    );
+
+    expect(screen.getByRole('status')).toHaveTextContent('1 payment and 2 expenses pending sync');
+  });
+
   it('renders nothing when online with empty queue', () => {
     const { container } = render(
       <OfflineBanner
         isOffline={false}
-        pendingCount={0}
-        reviewCount={0}
+        pendingPayments={0}
+        pendingExpenses={0}
+        reviewPayments={0}
         isSyncing={false}
         hasQueueWarning={false}
       />,

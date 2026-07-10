@@ -104,11 +104,16 @@ export async function createLoan(input: CreateLoanBody, actorId: string): Promis
     input.amountPesewas,
     input.durationWeeks,
   );
+
+  const { listHolidays } = await import('../organization-holidays/service.js');
+  const holidays = await listHolidays();
+
   const scheduleWeeks = generateLoanScheduleWeeks({
     durationWeeks: input.durationWeeks,
     weeklyPaymentPesewas,
     startDate: input.startDate,
     paymentDay: input.paymentDay,
+    holidayDates: holidays.map((holiday) => holiday.holidayDate),
   });
 
   try {

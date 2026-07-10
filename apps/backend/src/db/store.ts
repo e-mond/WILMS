@@ -62,9 +62,18 @@ export interface GroupRecord {
   formedAt: string;
 }
 
+export interface AdminFeeRecord {
+  borrowerId: string;
+  transactionId: string;
+  collectorId: string;
+  amountPesewas: number;
+  recordedAt: string;
+}
+
 const borrowers = new Map<string, BorrowerRecord>();
 const payments: PaymentRecord[] = [];
 const groups = new Map<string, GroupRecord>();
+const adminFees = new Map<string, AdminFeeRecord>();
 const approvedByCommunity = new Map<string, { borrowerId: string; fullName: string; community: string; approvedAt: string }[]>();
 const groupSequenceByMonth = new Map<string, number>();
 
@@ -238,4 +247,37 @@ export function assignBorrowerToGroup(borrowerId: string, group: GroupRecord): v
   borrower.groupId = group.id;
   borrower.groupName = group.displayName;
   borrowers.set(borrowerId, borrower);
+}
+
+export function getAdminFee(borrowerId: string): AdminFeeRecord | undefined {
+  return adminFees.get(borrowerId);
+}
+
+export function saveAdminFee(record: AdminFeeRecord): void {
+  adminFees.set(record.borrowerId, record);
+}
+
+export function hasAdminFee(borrowerId: string): boolean {
+  return adminFees.has(borrowerId);
+}
+
+export function listBorrowersAwaitingAdminFeeInMemory(requiredAmountPesewas: number): Array<{
+  id: string;
+  fullName: string;
+  phone: string;
+  community: string;
+  groupName: string;
+  requiredAmountPesewas: number;
+}> {
+  return [...borrowers.values()]
+    .filter((borrower) => borrower.status === BORROWER_STATUS.APPROVED && !adminFees.has(borrower.id))
+    .map((borrower) => ({
+      id: borrower.id,
+      fullName: borrower.fullName,
+      phone: borrower.phone,
+      community: borrower.community,
+      groupName: borrower.groupName || '—',
+      requiredAmountPesewas,
+    }))
+    .sort((left, right) => left.fullName.localeCompare(right.fullName));
 }

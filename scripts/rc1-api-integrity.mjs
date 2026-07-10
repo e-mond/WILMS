@@ -8,12 +8,17 @@ import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(fileURLToPath(new URL('.', import.meta.url)), '..');
-const servicesDir = join(root, 'apps/frontend/src/services');
+const frontendSrc = join(root, 'apps/frontend/src');
+const servicesDir = join(frontendSrc, 'services');
+const featuresDir = join(frontendSrc, 'features');
+const hooksDir = join(frontendSrc, 'hooks');
 const modulesDir = join(root, 'apps/backend/src/modules');
-const appDir = join(root, 'apps/frontend/src/app');
+const appDir = join(frontendSrc, 'app');
 
 const API_CALL_RE =
   /apiClient\.(get|post|patch|put|delete)(?:<[^>]*>)?\(\s*(?:`([^`]+)`|'([^']+)'|"([^"]+)")/g;
+const FETCH_CALL_RE =
+  /fetch\(\s*(?:`([^`]+)`|'([^']+)'|"([^"]+)")/g;
 const ROUTE_RE =
   /\.(get|post|patch|put|delete)\(\s*['"`]([^'"`]+)['"`]/g;
 
@@ -35,19 +40,56 @@ function walkTsFiles(dir, skip = ['mock', 'node_modules']) {
 
 function collectFrontendCalls() {
   const calls = [];
-  for (const file of walkTsFiles(servicesDir)) {
-    const text = readFileSync(file, 'utf8');
-    if (!text.includes('apiClient')) continue;
-    const rel = relative(root, file).replace(/\\/g, '/');
-    API_CALL_RE.lastIndex = 0;
-    let m;
-    while ((m = API_CALL_RE.exec(text)) !== null) {
-      const line = text.slice(0, m.index).split('\n').length;
-      const path = m[2] ?? m[3] ?? m[4] ?? '';
-      calls.push({ method: m[1].toUpperCase(), path: normalizePath(path), file: rel, line });
+  const scanDirs = [
+    { dir: servicesDir, inferMethod: null },
+    { dir: featuresDir, inferMethod: null },
+    { dir: hooksDir, inferMethod: null },
+  ];
+
+  for (const { dir, inferMethod } of scanDirs) {
+    for (const file of walkTsFiles(dir)) {
+      const text = readFileSync(file, 'utf8');
+      const rel = relative(root, file).replace(/\\/g, '/');
+      API_CALL_RE.lastIndex = 0;
+      let m;
+      while ((m = API_CALL_RE.exec(text)) !== null) {
+        const line = text.slice(0, m.index).split('\n').length;
+        const path = m[2] ?? m[3] ?? m[4] ?? '';
+        calls.push({ method: m[1].toUpperCase(), path: normalizePath(path), file: rel, line });
+      }
+
+      if (!text.includes('fetch(')) {
+        continue;
+      }
+
+      FETCH_CALL_RE.lastIndex = 0;
+      while ((m = FETCH_CALL_RE.exec(text)) !== null) {
+        const rawPath = m[1] ?? m[2] ?? m[3] ?? '';
+        if (!rawPath.startsWith('/') || rawPath.startsWith('/api/wilms') || rawPath.startsWith('/api/auth')) {
+          continue;
+        }
+        const line = text.slice(0, m.index).split('\n').length;
+        const method = inferMethod ?? inferFetchMethod(text, m.index);
+        calls.push({
+          method,
+          path: normalizePath(rawPath),
+          file: rel,
+          line,
+        });
+      }
     }
   }
+
   return calls;
+}
+
+function inferFetchMethod(text, index) {
+  const window = text.slice(Math.max(0, index - 80), index + 120);
+  if (/method:\s*['"`]POST['"`]/i.test(window)) return 'POST';
+  if (/method:\s*['"`]PATCH['"`]/i.test(window)) return 'PATCH';
+  if (/method:\s*['"`]PUT['"`]/i.test(window)) return 'PUT';
+  if (/method:\s*['"`]DELETE['"`]/i.test(window)) return 'DELETE';
+  return 'GET';
 }
 
 function collectBackendRoutes() {
