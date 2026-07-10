@@ -6,7 +6,7 @@ import { DataTable, KpiCard, Avatar } from '@/components/data-display';
 import { ExecutiveKpiGrid, ManagementToolbar } from '@/components/layout/executive';
 import { GuidedEmptyState } from '@/components/feedback/GuidedEmptyState';
 import { QueryErrorState } from '@/components/feedback/QueryErrorState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { AuditLogTableSkeleton } from '@/components/feedback/AuditLogTableSkeleton';
 import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -101,7 +101,7 @@ export function AuditLogReportPanel() {
   useShellAsideContent(asideContent);
 
   if (isLoading) {
-    return <LoadingSpinner label="Loading audit log" className="py-wilms-8" />;
+    return <AuditLogTableSkeleton />;
   }
 
   if (isError) {
@@ -196,11 +196,13 @@ export function AuditLogReportPanel() {
             {
               id: 'createdAt',
               header: 'Timestamp',
+              className: 'w-[14%] whitespace-nowrap',
               cell: (entry) => formatAuditTimestamp(entry.createdAt),
             },
             {
               id: 'actor',
               header: 'User',
+              className: 'w-[18%] min-w-[10rem]',
               cell: (entry) => {
                 const label = resolveActorLabel(entry);
                 return (
@@ -218,6 +220,7 @@ export function AuditLogReportPanel() {
             {
               id: 'action',
               header: 'Action',
+              className: 'w-[16%] min-w-[8rem]',
               cell: (entry) =>
                 AUDIT_ACTION_LABELS[entry.action] ??
                 entry.action.replaceAll('_', ' ').toLowerCase(),
@@ -225,16 +228,19 @@ export function AuditLogReportPanel() {
             {
               id: 'targetEntityType',
               header: 'Entity',
+              className: 'w-[12%] min-w-[6rem]',
               cell: (entry) => entry.targetEntityType,
             },
             {
               id: 'targetEntityId',
               header: 'Entity ID',
+              className: 'w-[18%] min-w-[8rem]',
               cell: (entry) => resolveTargetEntityLabel(entry),
             },
             {
               id: 'reason',
               header: 'Reason',
+              className: 'w-[22%] min-w-[10rem]',
               cell: (entry) => entry.reason ?? '—',
             },
           ]}

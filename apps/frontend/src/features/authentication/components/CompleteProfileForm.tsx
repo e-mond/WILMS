@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { Alert } from '@/components/feedback/Alert';
 import { PasswordField } from '@/components/forms/PasswordField';
@@ -24,6 +25,7 @@ interface CompleteProfileFormInput {
 
 export function CompleteProfileForm() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const setSession = useAuthStore((state) => state.setSession);
   const user = useAuthStore((state) => state.user);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -66,6 +68,7 @@ export function CompleteProfileForm() {
       });
 
       setSession(result.user, result.expiresAt);
+      void queryClient.invalidateQueries({ queryKey: ['settings', 'users'] });
       router.replace(resolveSafeRedirect(null, result.user.role));
     } catch (error) {
       if (error instanceof ApiError) {

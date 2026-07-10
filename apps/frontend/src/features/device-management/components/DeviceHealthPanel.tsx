@@ -8,6 +8,7 @@ import { useBatteryStatus } from '@/hooks/useBatteryStatus';
 import { useStorageEstimate } from '@/hooks/useStorageEstimate';
 import { estimatePendingUploadBytes, listPendingUploads } from '@/lib/offline-queue/upload-queue';
 import { selectPendingQueueCount, useOfflineQueueStore } from '@/state/offlineQueueStore';
+import { SettingsDeviceIcon } from '@/features/settings/components/SettingsSectionIcons';
 import { formatBytesLabel } from '@/utils/format-bytes';
 
 export function DeviceHealthPanel() {
@@ -35,7 +36,7 @@ export function DeviceHealthPanel() {
     <SettingsSectionCard
       title="Device health"
       description="Storage, battery, and pending field operations on this device."
-      icon={<span aria-hidden="true">📱</span>}
+      icon={<SettingsDeviceIcon />}
     >
       {storage.critical ? (
         <Alert title="Storage almost full" variant="warning">
