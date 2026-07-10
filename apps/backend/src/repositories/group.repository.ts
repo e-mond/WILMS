@@ -1,5 +1,6 @@
 import { eq, sql } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
+import { BORROWER_STATUS } from '@wilms/shared-contracts';
 import { getDb } from '../db/client.js';
 import {
   groupFormationQueue,
@@ -7,6 +8,11 @@ import {
   groups,
 } from '../db/schema/groups.js';
 import type { GroupRecord } from '../db/store.js';
+
+export interface GroupListStats {
+  collectedPesewas: number;
+  activeMembers: number;
+}
 
 function rowToRecord(row: typeof groups.$inferSelect, memberIds: string[]): GroupRecord {
   return {
@@ -104,4 +110,36 @@ export async function nextGroupSequence(monthKey: string): Promise<number> {
 
 export function nextGroupId(): string {
   return uuidv7();
+}
+
+export async function getGroupListStats(): Promise<Map<string, GroupListStats>> {
+  const db = getDb();
+  const result = await db.execute(sql`
+    SELECT
+      gm.group_id AS group_id,
+      COALESCE(SUM(CASE WHEN p.status IS DISTINCT FROM 'REVERSED' THEN p.amount_pesewas ELSE 0 END), 0)::int AS collected_pesewas,
+      COUNT(DISTINCT CASE WHEN b.status = ${BORROWER_STATUS.APPROVED} THEN b.id END)::int AS active_members
+    FROM group_members gm
+    LEFT JOIN borrowers b
+      ON b.id = gm.borrower_id
+      AND b.deleted_at IS NULL
+    LEFT JOIN payments p
+      ON p.borrower_id = gm.borrower_id
+    WHERE gm.removed_at IS NULL
+    GROUP BY gm.group_id
+  `);
+
+  const stats = new Map<string, GroupListStats>();
+  for (const row of result.rows as Array<{
+    group_id: string;
+    collected_pesewas: number;
+    active_members: number;
+  }>) {
+    stats.set(row.group_id, {
+      collectedPesewas: Number(row.collected_pesewas ?? 0),
+      activeMembers: Number(row.active_members ?? 0),
+    });
+  }
+
+  return stats;
 }

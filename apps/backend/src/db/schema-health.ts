@@ -1,8 +1,8 @@
 import { sql } from 'drizzle-orm';
 import { getDb, isDatabaseEnabled } from './client.js';
 
-/** Tables required for empty-database list endpoints (migrations 0000–0010). */
-export const CORE_APPLICATION_TABLES = [
+/** Core tables (migrations 0000–0010). */
+const LEGACY_CORE_TABLES = [
   'borrowers',
   'loans',
   'payments',
@@ -15,6 +15,21 @@ export const CORE_APPLICATION_TABLES = [
   'risk_flags',
   'message_threads',
   'messages',
+] as const;
+
+/** Tables introduced in migrations 0017–0020 (v1.2.2+). */
+export const EXTENDED_APPLICATION_TABLES = [
+  'auth_otp_challenges',
+  'borrower_admin_fees',
+  'organization_holidays',
+  'loan_fee_charges',
+  'loan_penalty_rules',
+] as const;
+
+/** Full set verified by production health probes. */
+export const CORE_APPLICATION_TABLES = [
+  ...LEGACY_CORE_TABLES,
+  ...EXTENDED_APPLICATION_TABLES,
 ] as const;
 
 export interface SchemaHealthReport {
