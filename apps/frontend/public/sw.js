@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'wilms-v131-shell';
+const CACHE_VERSION = 'wilms-v132-shell';
 const SHELL_ASSETS = [
   '/login',
   '/collector/dashboard',
@@ -9,10 +9,16 @@ const SHELL_ASSETS = [
   '/manifest.webmanifest',
 ];
 
+const SHELL_ASSET_SET = new Set(SHELL_ASSETS);
+
 const PAYMENT_SYNC_TAG = 'wilms-payment-sync';
 const PAYMENT_SYNC_MESSAGE = 'WILMS_PAYMENT_SYNC';
 
-function shouldBypassCache(pathname) {
+function shouldBypassCache(pathname, request) {
+  if (request.mode === 'navigate') {
+    return true;
+  }
+
   return (
     pathname.startsWith('/api/') ||
     pathname.startsWith('/_next/') ||
@@ -21,28 +27,25 @@ function shouldBypassCache(pathname) {
 }
 
 function networkFetch(request) {
-  const init = { redirect: 'follow' };
   if (request.mode === 'navigate') {
-    return fetch(new Request(request.url, { ...init, mode: 'navigate' }));
+    return fetch(request);
   }
-  return fetch(request, init);
+
+  return fetch(request, { redirect: 'follow' });
 }
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches
-      .open(CACHE_VERSION)
-      .then(async (cache) => {
-        await Promise.allSettled(
-          SHELL_ASSETS.map(async (asset) => {
-            const response = await networkFetch(new Request(asset, { redirect: 'follow' }));
-            if (response.ok && response.type !== 'opaqueredirect') {
-              await cache.put(asset, response);
-            }
-          }),
-        );
-      })
-      .then(() => self.skipWaiting()),
+    caches.open(CACHE_VERSION).then(async (cache) => {
+      await Promise.allSettled(
+        SHELL_ASSETS.map(async (asset) => {
+          const response = await networkFetch(new Request(asset, { redirect: 'follow' }));
+          if (response.ok && response.type !== 'opaqueredirect') {
+            await cache.put(asset, response);
+          }
+        }),
+      );
+    }),
   );
 });
 
@@ -74,7 +77,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (shouldBypassCache(url.pathname)) {
+  if (shouldBypassCache(url.pathname, request)) {
+    return;
+  }
+
+  if (!SHELL_ASSET_SET.has(url.pathname)) {
     return;
   }
 
@@ -84,25 +91,7 @@ self.addEventListener('fetch', (event) => {
         return cached;
       }
 
-      return networkFetch(request)
-        .then((response) => {
-          if (!response.ok || response.type === 'opaque' || response.type === 'opaqueredirect') {
-            return response;
-          }
-
-          const copy = response.clone();
-          if (
-            request.destination === 'document' ||
-            request.destination === 'script' ||
-            request.destination === 'style' ||
-            request.destination === 'image'
-          ) {
-            void caches.open(CACHE_VERSION).then((cache) => cache.put(request, copy));
-          }
-
-          return response;
-        })
-        .catch(() => caches.match('/login'));
+      return networkFetch(request).catch(() => caches.match('/login'));
     }),
   );
 });

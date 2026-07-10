@@ -10,6 +10,7 @@ import { USE_MOCK_SERVICES } from '@/config/api';
 import notificationPreferencesService from '@/services/notificationPreferencesService';
 import type { NotificationPreferences } from '@/types/notification-preferences';
 import { PushSubscribePrompt } from '@/features/notifications/components/PushSubscribePrompt';
+import { SettingsNotificationsIcon } from '@/features/settings/components/SettingsSectionIcons';
 import { roleSettingsPreferences } from '@/features/settings/utils/role-settings-preferences';
 
 const DEFAULTS: NotificationPreferences = {
@@ -78,7 +79,7 @@ export function NotificationPreferencesSection() {
     <SettingsSectionCard
       title="Notification Preferences"
       description="Control email, SMS, push, and in-app alerts."
-      icon={<span aria-hidden="true">🔔</span>}
+      icon={<SettingsNotificationsIcon />}
     >
       <PushSubscribePrompt />
       <SettingsSettingRow

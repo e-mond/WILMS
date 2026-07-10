@@ -43,7 +43,12 @@ export function DataTable<T>({
       tabIndex={0}
       className={cn('overflow-x-auto rounded-sm border border-border bg-card', className)}
     >
-      <table className="min-w-full border-collapse text-left text-body">
+      <table
+        className={cn(
+          'min-w-full border-collapse text-left text-body',
+          isExecutive && 'table-fixed',
+        )}
+      >
         {caption ? <caption className="sr-only">{caption}</caption> : null}
         <thead
           className={cn(
