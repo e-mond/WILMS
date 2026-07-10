@@ -246,7 +246,9 @@ Super-admin Communication Center → `/communications/*` APIs; invitation and pa
 
 ---
 
-## 8. Remediation carried on this branch (Stage 2 gaps)
+## 8. Remediation carried on this branch
+
+### Stage 2 RBAC gaps
 
 | Gap ID | Fix |
 |--------|-----|
