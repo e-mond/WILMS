@@ -311,10 +311,6 @@ authRouter.post(
       throw new AppError('Invalid or expired verification code.', ERROR_CODE.UNAUTHORIZED, 401);
     }
 
-    if (isDatabaseEnabled()) {
-      await userRepository.updateLastLoginAt(session.userId);
-    }
-
     const user = await resolveAuthUser(
       (await userRepository.getUserById(session.userId))?.email ??
         DEMO_USERS.find((entry) => entry.id === session.userId)?.email ??
@@ -324,6 +320,8 @@ authRouter.post(
     if (!user) {
       throw new AppError('Invalid or expired verification code.', ERROR_CODE.UNAUTHORIZED, 401);
     }
+
+    await recordSuccessfulLogin(user);
 
     logLoginAttempt({
       success: true,

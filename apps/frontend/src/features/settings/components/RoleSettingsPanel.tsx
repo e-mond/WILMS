@@ -29,6 +29,16 @@ import { PhotoUpload } from '@/components/forms/PhotoUpload';
 import { UPLOAD_PURPOSE } from '@/types/upload';
 import { resolvePersonPhotoUrl } from '@/utils/person-photo';
 import { resolveUserDisplayId } from '@/utils/entity-display-id';
+import {
+  SettingsAuditIcon,
+  SettingsCaptureIcon,
+  SettingsDeviceIcon,
+  SettingsIntegrationsIcon,
+  SettingsProfileIcon,
+  SettingsRulesIcon,
+  SettingsSecurityIcon,
+  SettingsSyncIcon,
+} from '@/features/settings/components/SettingsSectionIcons';
 import { cn } from '@/utils/cn';
 
 function ProfileSection() {
@@ -57,7 +67,7 @@ function ProfileSection() {
     <SettingsSectionCard
       title="Profile"
       description="Your account identity in WILMS."
-      icon={<span aria-hidden="true">👤</span>}
+      icon={<SettingsProfileIcon />}
     >
       <div className="mb-wilms-4 flex items-center gap-wilms-3">
         <Avatar
@@ -161,7 +171,7 @@ function SyncSection() {
     <SettingsSectionCard
       title="Sync"
       description="Offline queue and background sync."
-      icon={<span aria-hidden="true">🔄</span>}
+      icon={<SettingsSyncIcon />}
     >
       <SettingsSettingRow
         title="Auto Sync"
@@ -214,7 +224,7 @@ function DeviceSection() {
       <SettingsSectionCard
         title="Device Settings"
         description="Field device preferences."
-        icon={<span aria-hidden="true">📱</span>}
+        icon={<SettingsDeviceIcon />}
       >
         <SettingsSettingRow
           title="GPS Verification"
@@ -263,7 +273,7 @@ function CameraSection() {
     <SettingsSectionCard
       title="Camera Settings"
       description="Photo capture defaults for registration."
-      icon={<span aria-hidden="true">📷</span>}
+      icon={<SettingsCaptureIcon />}
     >
       <SettingsSettingRow
         title="Preferred Capture"
@@ -308,7 +318,7 @@ function SecuritySection() {
     <SettingsSectionCard
       title="Security"
       description="Authentication and session controls."
-      icon={<span aria-hidden="true">🔒</span>}
+      icon={<SettingsSecurityIcon />}
     >
       <SettingsSettingRow
         title="Session Timeout"
@@ -342,7 +352,7 @@ function AuditPreferencesSection() {
     <SettingsSectionCard
       title="Audit Preferences"
       description="Compliance review defaults."
-      icon={<span aria-hidden="true">📋</span>}
+      icon={<SettingsAuditIcon />}
     >
       <SettingsSettingRow
         title="High-Risk Alerts"
@@ -387,7 +397,7 @@ function IntegrationsSection() {
     <SettingsSectionCard
       title="Integrations"
       description="External services and connectors."
-      icon={<span aria-hidden="true">🔌</span>}
+      icon={<SettingsIntegrationsIcon />}
     >
       <SettingsSettingRow
         title="SMS Gateway"
@@ -408,7 +418,7 @@ function RulesSection() {
     <SettingsSectionCard
       title="Rules"
       description="Programme and loan rule defaults."
-      icon={<span aria-hidden="true">📐</span>}
+      icon={<SettingsRulesIcon />}
     >
       <SettingsSettingRow
         title="Max Group Size"

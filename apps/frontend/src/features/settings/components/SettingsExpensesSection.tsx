@@ -10,6 +10,7 @@ import { PERMISSION } from '@/constants/permissions';
 import { Button } from '@/components/ui/Button';
 import { expenseService } from '@/services';
 import { EXPENSE_STATUS, type ExpenseRecord } from '@/types/expense';
+import { SettingsExpensesIcon } from '@/features/settings/components/SettingsSectionIcons';
 import { useToast } from '@/hooks/useToast';
 
 export function SettingsExpensesSection() {
@@ -59,7 +60,7 @@ export function SettingsExpensesSection() {
       <SettingsSectionCard
         title="Expense Records"
         description="Fuel, transport, airtime, field operations, and office expenses with approval workflow."
-        icon={<span aria-hidden="true">🧾</span>}
+        icon={<SettingsExpensesIcon />}
       >
         <DataTable<ExpenseRecord>
           caption="Expense records"
