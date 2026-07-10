@@ -17,7 +17,8 @@ async function request(
 ): Promise<number> {
   const app = createApp();
   const server = app.listen(0);
-  const port = typeof server.address() === 'object' && server.address() ? server.address()!.port : 0;
+  const address = server.address();
+  const port = typeof address === 'object' && address ? address.port : 0;
 
   try {
     const response = await fetch(`http://127.0.0.1:${port}${path}`, {
