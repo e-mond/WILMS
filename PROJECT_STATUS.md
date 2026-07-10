@@ -1,15 +1,26 @@
 # WILMS - Project Status
 
-**Last updated:** 2026-07-08 (v1.3.1 ready)  
-**Package version:** `1.3.1`  
-**Branch:** `cursor/v1.3.1-offline-expansion-8847`  
-**Production:** v1.3.0 deployed — v1.3.1 pending
+**Last updated:** 2026-07-09 (v1.3.2 ready)  
+**Package version:** `1.3.2`  
+**Branch:** `cursor/v1.3.2-field-ops-8847`  
+**Production:** v1.3.1 deployed — v1.3.2 pending
 
 ---
 
 ## Summary
 
-v1.3.1 closes offline UX gaps from v1.3.0: upload queue wiring, approver-review messaging, guarantor scoring on the API, collector sync visibility, QR search, and organization holidays CRUD.
+v1.3.2 continues field-operations work: holiday-aware schedules, offline expense queueing and sync, and persisted collector read models for offline dashboard access.
+
+---
+
+## v1.3.2 scope
+
+| Item | Status |
+|------|--------|
+| Holiday-aware schedule date shifting | ✅ |
+| Offline expense sync + collector form queueing | ✅ |
+| TanStack Query persist for collector read models | ✅ |
+| Banner/sync UX for mixed payment + expense queues | ✅ |
 
 ---
 
@@ -28,36 +39,19 @@ v1.3.1 closes offline UX gaps from v1.3.0: upload queue wiring, approver-review 
 
 ---
 
-## v1.3.0 scope
-
-| Item | Status |
-|------|--------|
-| PWA offline shell + background sync | ✅ |
-| Device health (battery, storage, uploads) | ✅ |
-| Sync conflict approver UI | ✅ |
-| QR/barcode scanner + receipt printing | ✅ |
-| Grace periods in repayment engine | ✅ |
-| Fees, penalties, guarantor scoring (domain) | ✅ |
-| Documentation | ✅ |
-| Tests & reports | ✅ |
-
-See [V1.3.0_FIELD_OPERATIONS_REPORT.md](./V1.3.0_FIELD_OPERATIONS_REPORT.md).
-
----
-
 ## Deploy checklist
+
+Migrations through `0020_v130_field_operations.sql` are required (includes `organization_holidays`). No new migration in v1.3.2.
 
 ```bash
 npm run db:migrate -w @wilms/api
 ```
 
-Migrations through `0020_v130_field_operations.sql` (includes `organization_holidays` table).
-
 ---
 
 ## Next candidates
 
-- Offline expense sync handler and collector expense form queueing
-- TanStack Query persist for collector read models offline
-- Holiday-aware schedule date shifting in repayment engine
+- Admin UI for organization holidays management
 - Bluetooth thermal receipt printing integration
+- Offline registration draft sync expansion
+- Service worker cache for collector API responses
