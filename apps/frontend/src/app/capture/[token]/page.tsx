@@ -20,18 +20,31 @@ export default function MobileCapturePage({ params }: { params: { token: string 
   const [completed, setCompleted] = useState(false);
 
   useEffect(() => {
-    void fetch(`/api/wilms/photo-capture/sessions/${params.token}`)
+    let cancelled = false;
+
+    void fetch(`/api/wilms/photo-capture/sessions/${params.token}`, { cache: 'no-store' })
       .then(async (response) => {
         if (!response.ok) {
+          if (response.status === 503) {
+            throw new Error('Photo capture is temporarily unavailable. The server database is not configured.');
+          }
           throw new Error('Capture session not found or expired.');
         }
 
         const body = (await response.json()) as { data?: CaptureSession };
-        setSession(body.data ?? null);
+        if (!cancelled) {
+          setSession(body.data ?? null);
+        }
       })
       .catch((fetchError) => {
-        setError(fetchError instanceof Error ? fetchError.message : 'Unable to load capture session.');
+        if (!cancelled) {
+          setError(fetchError instanceof Error ? fetchError.message : 'Unable to load capture session.');
+        }
       });
+
+    return () => {
+      cancelled = true;
+    };
   }, [params.token]);
 
   useEffect(() => {
