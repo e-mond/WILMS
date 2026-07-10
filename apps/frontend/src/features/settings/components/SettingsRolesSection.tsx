@@ -10,6 +10,10 @@ import { PERMISSION } from '@/constants/permissions';
 import { Button } from '@/components/ui/Button';
 import { settingsService } from '@/services';
 import { useToast } from '@/hooks/useToast';
+import {
+  SettingsPermissionsIcon,
+  SettingsRolesIcon,
+} from '@/features/settings/components/SettingsSectionIcons';
 import type { RoleDefinition } from '@/types/user-management';
 
 export function SettingsRolesSection() {
@@ -44,7 +48,7 @@ export function SettingsRolesSection() {
       <SettingsSectionCard
         title="Roles & Permissions"
         description="Create, edit, clone, and assign permissions to staff roles."
-        icon={<span aria-hidden="true">🛡️</span>}
+        icon={<SettingsRolesIcon />}
       >
         <DataTable<RoleDefinition>
           caption="Role definitions"
@@ -94,7 +98,7 @@ export function SettingsRolesSection() {
       <SettingsSectionCard
         title="Permission Catalog"
         description="Backend-ready permission identifiers grouped by category."
-        icon={<span aria-hidden="true">🔐</span>}
+        icon={<SettingsPermissionsIcon />}
       >
         <ul className="grid gap-wilms-3 md:grid-cols-2">
           {(permissions ?? []).map((permission) => (

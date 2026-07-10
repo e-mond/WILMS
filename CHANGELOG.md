@@ -2,6 +2,23 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.3.3] — Stability & UX
+
+### Fixed
+- Service worker no longer reconstructs navigation requests with invalid `mode: navigate`.
+- Service worker stops caching runtime scripts/documents; only explicit shell assets are cached.
+- OTP verification now records invitation acceptance and first-login milestones.
+- Settings user list refreshes after account activation.
+
+### Added
+- In-app update prompt with release summary when a new service worker is waiting.
+- Audit log skeleton loading state with column layout matching the data table.
+
+### Changed
+- Settings section headers use Lucide icons instead of emoji.
+- Sign-in page visual refresh with prominent WILMS branding.
+- Application version bumped to `1.3.3`.
+
 ## [1.3.2] — Field Ops Continuation
 
 ### Added

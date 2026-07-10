@@ -20,6 +20,7 @@ import { useLoginPreferencesStore } from '@/state/loginPreferencesStore';
 import { ApiError } from '@/types/api';
 import { isLoginOtpChallenge } from '@/types/auth';
 import { VerifyOtpForm } from '@/features/authentication/components/VerifyOtpForm';
+import { WilmsBrandMark } from '@/components/icons/WilmsBrandMark';
 
 export function LoginForm() {
   const router = useRouter();
@@ -139,19 +140,21 @@ export function LoginForm() {
   });
 
   return (
-    <div className="w-full max-w-md overflow-hidden rounded-sm border border-border bg-card shadow-none">
-      <div className="border-b border-border bg-brand-primary-light px-wilms-6 py-wilms-6 text-center">
-        <p className="text-display font-bold tracking-wide text-brand-primary">WILMS</p>
-        <p className="mt-wilms-1 text-small font-semibold uppercase tracking-widest text-text-muted">
-          Women&apos;s Interest-Free Loan Management
-        </p>
+    <div className="w-full overflow-hidden rounded-sm border border-border bg-card/95 shadow-lg backdrop-blur-sm">
+      <div className="border-b border-border bg-gradient-to-r from-brand-primary/10 via-brand-primary-light to-executive-gold/10 px-wilms-6 py-wilms-6">
+        <div className="flex flex-col items-center gap-wilms-3 text-center">
+          <WilmsBrandMark roleLabel="Women&apos;s Interest-Free Loan Management" />
+          <p className="text-small text-text-muted">
+            Secure access to your role-based workspace
+          </p>
+        </div>
       </div>
 
       <div className="p-wilms-6">
         <div className="mb-wilms-6 text-center">
           <h1 className="text-heading-1 font-semibold text-text-primary">Sign in</h1>
           <p className="mt-wilms-2 text-body text-text-muted">
-            Access your role-based workspace for loan operations.
+            Enter your credentials to continue to WILMS.
           </p>
         </div>
 

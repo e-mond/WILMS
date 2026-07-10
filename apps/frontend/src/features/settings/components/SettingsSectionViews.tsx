@@ -22,6 +22,13 @@ import { useToast } from '@/hooks/useToast';
 import { settingsService } from '@/services';
 import type { SystemSettings, UpdateSystemSettingsInput } from '@/types/settings';
 import { CurrencyAmount } from '@/components/data-display';
+import {
+  SettingsAuditIcon,
+  SettingsIntegrationsIcon,
+  SettingsNotificationsIcon,
+  SettingsOrganisationIcon,
+  SettingsProfileIcon,
+} from '@/features/settings/components/SettingsSectionIcons';
 import { ghsInputToPesewas } from '@/utils/reconciliation.schema';
 
 const SecurityIcon = SETTINGS_SECTION_ICONS.security;
@@ -81,7 +88,7 @@ export function OrganisationSectionView({ settings }: { settings: SystemSettings
     <SettingsSectionCard
       title="Organisation"
       description="Branding, identity, and system naming."
-      icon={<span aria-hidden="true">🏢</span>}
+      icon={<SettingsOrganisationIcon />}
     >
       <SettingsSettingRow
         title="Organisation Name"
@@ -173,7 +180,7 @@ export function MyAccountSectionView() {
     <SettingsSectionCard
       title="My Account"
       description="Your profile and personal preferences."
-      icon={<span aria-hidden="true">👤</span>}
+      icon={<SettingsProfileIcon />}
     >
       <SettingsSettingRow
         title="Display Name"
@@ -708,7 +715,7 @@ export function NotificationsSectionView({ settings }: { settings: SystemSetting
     <SettingsSectionCard
       title="Notifications"
       description="Channels, triggers, and escalation rules."
-      icon={<span aria-hidden="true">🔔</span>}
+      icon={<SettingsNotificationsIcon />}
     >
       <SettingsSettingRow
         title="Email Notifications"
@@ -807,7 +814,7 @@ export function IntegrationsSectionView({ settings }: { settings: SystemSettings
     <SettingsSectionCard
       title="Integrations"
       description="External services and API connectors."
-      icon={<span aria-hidden="true">🔌</span>}
+      icon={<SettingsIntegrationsIcon />}
     >
       <SettingsSettingRow
         title="SMS Gateway"
@@ -956,7 +963,7 @@ export function AuditSectionView({ settings }: { settings: SystemSettings }) {
     <SettingsSectionCard
       title="Audit & Logs"
       description="Monitoring, export, and retention controls."
-      icon={<span aria-hidden="true">📋</span>}
+      icon={<SettingsAuditIcon />}
     >
       <SettingsSettingRow
         title="Immutable Audit Trail"
