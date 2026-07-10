@@ -9,7 +9,6 @@ import { OFFLINE_QUEUE_ITEM_STATUS, OFFLINE_QUEUE_ITEM_TYPE } from '@/types/offl
 import type {
   OfflineExpenseQueueItem,
   OfflineExpenseSyncHandler,
-  OfflinePaymentQueueItem,
   OfflinePaymentSyncHandler,
   OfflineQueueItem,
 } from '@/types/offline-queue';

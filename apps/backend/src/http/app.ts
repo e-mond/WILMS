@@ -102,8 +102,24 @@ export function createApp() {
   app.use(webhooksRouter);
   app.use(authRouter);
 
+  app.use((req, _res, next) => {
+    const path = req.path;
+    if (
+      path.startsWith('/api/v1') ||
+      path === '/health' ||
+      path.startsWith('/auth') ||
+      path.startsWith('/tracking') ||
+      path.startsWith('/webhooks')
+    ) {
+      next();
+      return;
+    }
+
+    req.url = `/api/v1${req.url}`;
+    next();
+  });
+
   mountBusinessRoutes(app, '/api/v1');
-  mountBusinessRoutes(app, '');
 
   app.use(errorHandler);
 
