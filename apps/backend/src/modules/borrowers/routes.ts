@@ -6,7 +6,7 @@ import { PERMISSION } from '../../infrastructure/permissions/matrix.js';
 import { requireAuth } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/require-permission.js';
 import * as borrowerService from './service.js';
-import { assertBorrowerReadAccess, resolveOfficerIdForList } from './access.js';
+import { assertBorrowerReadAccess, assertBorrowerListAccess, resolveOfficerIdForList } from './access.js';
 
 export const borrowersRouter = Router();
 
@@ -49,14 +49,19 @@ function mapError(error: unknown): never {
 borrowersRouter.get(
   '/borrowers',
   asyncHandler(async (req, res) => {
-    const status = req.query.status;
+    try {
+      const status = typeof req.query.status === 'string' ? req.query.status : undefined;
+      await assertBorrowerListAccess(req, status);
 
-    if (status === 'PENDING') {
-      sendData(res, await borrowerService.listPendingApplications());
-      return;
+      if (status === 'PENDING') {
+        sendData(res, await borrowerService.listPendingApplications());
+        return;
+      }
+
+      sendData(res, await borrowerService.listBorrowerSummaries());
+    } catch (error) {
+      mapError(error);
     }
-
-    sendData(res, await borrowerService.listBorrowerSummaries());
   }),
 );
 
@@ -83,6 +88,12 @@ borrowersRouter.get(
 
 borrowersRouter.get(
   '/borrowers/check-phone',
+  requirePermission(
+    PERMISSION.REGISTER_BORROWERS,
+    PERMISSION.EDIT_BORROWERS,
+    PERMISSION.ACCESS_ADMIN_PORTAL,
+    PERMISSION.APPROVE_BORROWERS,
+  ),
   asyncHandler(async (req, res) => {
     sendData(res, await borrowerService.checkPhone(String(req.query.phone ?? '')));
   }),
@@ -90,6 +101,12 @@ borrowersRouter.get(
 
 borrowersRouter.get(
   '/borrowers/check-id',
+  requirePermission(
+    PERMISSION.REGISTER_BORROWERS,
+    PERMISSION.EDIT_BORROWERS,
+    PERMISSION.ACCESS_ADMIN_PORTAL,
+    PERMISSION.APPROVE_BORROWERS,
+  ),
   asyncHandler(async (req, res) => {
     sendData(
       res,
@@ -100,6 +117,12 @@ borrowersRouter.get(
 
 borrowersRouter.get(
   '/borrowers/check-name',
+  requirePermission(
+    PERMISSION.REGISTER_BORROWERS,
+    PERMISSION.EDIT_BORROWERS,
+    PERMISSION.ACCESS_ADMIN_PORTAL,
+    PERMISSION.APPROVE_BORROWERS,
+  ),
   asyncHandler(async (req, res) => {
     sendData(res, await borrowerService.checkName(String(req.query.fullName ?? '')));
   }),
@@ -107,6 +130,13 @@ borrowersRouter.get(
 
 borrowersRouter.get(
   '/borrowers/check-active-loan',
+  requirePermission(
+    PERMISSION.REGISTER_BORROWERS,
+    PERMISSION.EDIT_BORROWERS,
+    PERMISSION.ACCESS_ADMIN_PORTAL,
+    PERMISSION.APPROVE_BORROWERS,
+    PERMISSION.RECORD_COLLECTIONS,
+  ),
   asyncHandler(async (req, res) => {
     sendData(res, await borrowerService.checkActiveLoan(String(req.query.phone ?? '')));
   }),
@@ -114,6 +144,12 @@ borrowersRouter.get(
 
 borrowersRouter.get(
   '/borrowers/check-blacklist',
+  requirePermission(
+    PERMISSION.REGISTER_BORROWERS,
+    PERMISSION.EDIT_BORROWERS,
+    PERMISSION.ACCESS_ADMIN_PORTAL,
+    PERMISSION.APPROVE_BORROWERS,
+  ),
   asyncHandler(async (req, res) => {
     sendData(
       res,
@@ -128,6 +164,12 @@ borrowersRouter.get(
 
 borrowersRouter.post(
   '/borrowers/check-guarantor-eligibility',
+  requirePermission(
+    PERMISSION.REGISTER_BORROWERS,
+    PERMISSION.EDIT_BORROWERS,
+    PERMISSION.ACCESS_ADMIN_PORTAL,
+    PERMISSION.APPROVE_BORROWERS,
+  ),
   asyncHandler(async (req, res) => {
     sendData(res, await borrowerService.checkGuarantorEligibility(req.body ?? {}));
   }),
@@ -215,6 +257,11 @@ borrowersRouter.post(
 
 borrowersRouter.get(
   '/borrowers/awaiting-admin-fee',
+  requirePermission(
+    PERMISSION.ACCESS_ADMIN_PORTAL,
+    PERMISSION.RECORD_COLLECTIONS,
+    PERMISSION.MANAGE_SYSTEM_SETTINGS,
+  ),
   asyncHandler(async (_req, res) => {
     const { listBorrowersAwaitingAdminFee } = await import('../transactions/service.js');
     sendData(res, await listBorrowersAwaitingAdminFee());
@@ -247,6 +294,7 @@ borrowersRouter.get(
   '/borrowers/:id/admin-fee-status',
   asyncHandler(async (req, res) => {
     try {
+      await assertBorrowerReadAccess(req.session!, req.params.id!);
       const { getAdminFeeStatus } = await import('../transactions/service.js');
       sendData(res, await getAdminFeeStatus(req.params.id!));
     } catch (error) {
