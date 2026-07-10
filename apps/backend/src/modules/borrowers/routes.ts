@@ -1,12 +1,19 @@
 import { Router } from 'express';
 import { asyncHandler } from '../../http/async-handler.js';
 import { AppError, ERROR_CODE } from '../../http/errors.js';
-import { sendData } from '../../http/response.js';
+import { sendData, sendPaginatedData } from '../../http/response.js';
+import {
+  buildPaginatedResult,
+  parseListQuery,
+  resolveListLimit,
+  resolveListOffset,
+} from '../../http/list-pagination.js';
 import { PERMISSION } from '../../infrastructure/permissions/matrix.js';
 import { requireAuth } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/require-permission.js';
 import * as borrowerService from './service.js';
 import { assertBorrowerReadAccess, assertBorrowerListAccess, resolveOfficerIdForList } from './access.js';
+import { countBorrowers } from '../../db/persistence.js';
 
 export const borrowersRouter = Router();
 
@@ -55,6 +62,17 @@ borrowersRouter.get(
 
       if (status === 'PENDING') {
         sendData(res, await borrowerService.listPendingApplications());
+        return;
+      }
+
+      const pagination = parseListQuery(req.query as Record<string, unknown>);
+      if (pagination) {
+        const items = await borrowerService.listBorrowerSummaries({
+          limit: resolveListLimit(pagination),
+          offset: resolveListOffset(pagination),
+        });
+        const total = await countBorrowers();
+        sendPaginatedData(res, buildPaginatedResult(items, total, pagination));
         return;
       }
 
