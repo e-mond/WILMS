@@ -1,21 +1,47 @@
-const CACHE_VERSION = 'wilms-v130-shell';
+const CACHE_VERSION = 'wilms-v131-shell';
 const SHELL_ASSETS = [
-  '/',
   '/login',
   '/collector/dashboard',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
+  '/icons/icon-192-maskable.png',
+  '/icons/icon-512-maskable.png',
   '/manifest.webmanifest',
 ];
 
 const PAYMENT_SYNC_TAG = 'wilms-payment-sync';
 const PAYMENT_SYNC_MESSAGE = 'WILMS_PAYMENT_SYNC';
 
+function shouldBypassCache(pathname) {
+  return (
+    pathname.startsWith('/api/') ||
+    pathname.startsWith('/_next/') ||
+    pathname.startsWith('/capture/')
+  );
+}
+
+function networkFetch(request) {
+  const init = { redirect: 'follow' };
+  if (request.mode === 'navigate') {
+    return fetch(new Request(request.url, { ...init, mode: 'navigate' }));
+  }
+  return fetch(request, init);
+}
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(CACHE_VERSION)
-      .then((cache) => cache.addAll(SHELL_ASSETS))
+      .then(async (cache) => {
+        await Promise.allSettled(
+          SHELL_ASSETS.map(async (asset) => {
+            const response = await networkFetch(new Request(asset, { redirect: 'follow' }));
+            if (response.ok && response.type !== 'opaqueredirect') {
+              await cache.put(asset, response);
+            }
+          }),
+        );
+      })
       .then(() => self.skipWaiting()),
   );
 });
@@ -48,7 +74,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/_next/data/')) {
+  if (shouldBypassCache(url.pathname)) {
     return;
   }
 
@@ -58,9 +84,9 @@ self.addEventListener('fetch', (event) => {
         return cached;
       }
 
-      return fetch(request)
+      return networkFetch(request)
         .then((response) => {
-          if (!response.ok || response.type === 'opaque') {
+          if (!response.ok || response.type === 'opaque' || response.type === 'opaqueredirect') {
             return response;
           }
 

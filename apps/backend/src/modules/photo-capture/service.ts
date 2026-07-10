@@ -21,19 +21,21 @@ export interface CreatePhotoCaptureSessionInput {
   target: 'borrower' | 'guarantor';
 }
 
-const memorySessions = new Map<string, PhotoCaptureSession>();
+const DEFAULT_APP_URL = 'https://wilms.vercel.app';
 
-function buildSessionKey(input: CreatePhotoCaptureSessionInput): string {
-  return `${input.registrationSessionId}:${input.target}`;
+function requireDatabase(): void {
+  if (!isDatabaseEnabled()) {
+    throw new Error('DATABASE_REQUIRED');
+  }
+}
+
+function resolveCaptureUrl(sessionToken: string): string {
+  const base = (env.appUrl ?? DEFAULT_APP_URL).replace(/\/$/, '');
+  return `${base}/capture/${sessionToken}`;
 }
 
 function createToken(): string {
   return `pcs_${randomUUID().replace(/-/g, '').slice(0, 16)}`;
-}
-
-function resolveCaptureUrl(sessionToken: string): string {
-  const base = env.appUrl?.replace(/\/$/, '') ?? '';
-  return base ? `${base}/capture/${sessionToken}` : `/capture/${sessionToken}`;
 }
 
 function toApiSession(record: photoCaptureRepository.PhotoCaptureSessionRecord): PhotoCaptureSession {
@@ -48,7 +50,7 @@ function toApiSession(record: photoCaptureRepository.PhotoCaptureSessionRecord):
 }
 
 function expireIfNeeded(session: PhotoCaptureSession): PhotoCaptureSession {
-  if (session.status === 'PENDING' && new Date(session.expiresAt) < new Date()) {
+  if (session.status === 'PENDING' && new Date(session.expiresAt).getTime() <= Date.now()) {
     return { ...session, status: 'EXPIRED' };
   }
 
@@ -58,61 +60,41 @@ function expireIfNeeded(session: PhotoCaptureSession): PhotoCaptureSession {
 export async function createSession(
   input: CreatePhotoCaptureSessionInput,
 ): Promise<PhotoCaptureSession> {
+  requireDatabase();
+
   const sessionToken = createToken();
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-  if (isDatabaseEnabled()) {
-    const record = await photoCaptureRepository.insertPhotoCaptureSession({
-      sessionToken,
-      registrationSessionId: input.registrationSessionId,
-      officerId: input.officerId,
-      target: input.target,
-      expiresAt,
-    });
-
-    return toApiSession(record);
-  }
-
-  const session: PhotoCaptureSession = {
+  const record = await photoCaptureRepository.insertPhotoCaptureSession({
     sessionToken,
-    captureUrl: resolveCaptureUrl(sessionToken),
-    expiresAt: expiresAt.toISOString(),
-    status: 'PENDING',
-  };
+    registrationSessionId: input.registrationSessionId,
+    officerId: input.officerId,
+    target: input.target,
+    expiresAt,
+  });
 
-  memorySessions.set(buildSessionKey(input), session);
-  memorySessions.set(sessionToken, session);
-  return { ...session };
+  return toApiSession(record);
 }
 
 export async function getSession(sessionToken: string): Promise<PhotoCaptureSession | null> {
-  if (isDatabaseEnabled()) {
-    const record = await photoCaptureRepository.getPhotoCaptureSession(sessionToken);
+  requireDatabase();
 
-    if (!record) {
-      return null;
-    }
+  const record = await photoCaptureRepository.getPhotoCaptureSession(sessionToken);
 
-    let session = toApiSession(record);
-
-    if (session.status === 'PENDING' && new Date(session.expiresAt) < new Date()) {
-      const expired = await photoCaptureRepository.updatePhotoCaptureSession(sessionToken, {
-        status: 'EXPIRED',
-      });
-      session = expired ? toApiSession(expired) : { ...session, status: 'EXPIRED' };
-    }
-
-    return session;
-  }
-
-  const session = memorySessions.get(sessionToken);
-  if (!session) {
+  if (!record) {
     return null;
   }
 
-  const next = expireIfNeeded(session);
-  memorySessions.set(sessionToken, next);
-  return { ...next };
+  let session = expireIfNeeded(toApiSession(record));
+
+  if (session.status === 'EXPIRED' && record.status === 'PENDING') {
+    const expired = await photoCaptureRepository.updatePhotoCaptureSession(sessionToken, {
+      status: 'EXPIRED',
+    });
+    session = expired ? expireIfNeeded(toApiSession(expired)) : session;
+  }
+
+  return session;
 }
 
 export async function completeSession(input: {
@@ -122,30 +104,13 @@ export async function completeSession(input: {
   fileName?: string;
   mimeType?: string;
 }): Promise<PhotoCaptureSession | null> {
-  if (isDatabaseEnabled()) {
-    const updated = await photoCaptureRepository.updatePhotoCaptureSession(input.sessionToken, {
-      status: 'CAPTURED',
-      uploadId: input.uploadId,
-      previewUrl: input.previewUrl,
-    });
+  requireDatabase();
 
-    return updated ? toApiSession(updated) : null;
-  }
-
-  const session = memorySessions.get(input.sessionToken);
-  if (!session) {
-    return null;
-  }
-
-  const updated: PhotoCaptureSession = {
-    ...session,
+  const updated = await photoCaptureRepository.updatePhotoCaptureSession(input.sessionToken, {
     status: 'CAPTURED',
     uploadId: input.uploadId,
     previewUrl: input.previewUrl,
-    capturedFileName: input.fileName,
-    capturedMimeType: input.mimeType,
-  };
+  });
 
-  memorySessions.set(input.sessionToken, updated);
-  return { ...updated };
+  return updated ? toApiSession(updated) : null;
 }

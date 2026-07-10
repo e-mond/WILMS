@@ -98,6 +98,7 @@ export function createApp() {
   app.use(optionalAuth);
 
   app.use(healthRouter);
+  app.use('/api/v1', healthRouter);
   app.use(trackingRouter);
   app.use(webhooksRouter);
   app.use(authRouter);
