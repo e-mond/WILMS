@@ -5,8 +5,9 @@ import { KpiCard } from '@/components/data-display';
 import { useOfflineStatus } from '@/hooks/useOfflineStatus';
 import { listPendingUploads } from '@/lib/offline-queue/upload-queue';
 import {
-  selectPendingQueueCount,
-  selectQueuedForReviewCount,
+  selectPendingExpenseCount,
+  selectPendingPaymentCount,
+  selectQueuedForReviewPaymentCount,
   useOfflineQueueStore,
 } from '@/state/offlineQueueStore';
 
@@ -16,8 +17,10 @@ export function CollectorSyncStatusCard() {
   const items = useOfflineQueueStore((state) => state.items);
   const [pendingUploadCount, setPendingUploadCount] = useState(0);
 
-  const pendingPayments = selectPendingQueueCount(items);
-  const reviewPayments = selectQueuedForReviewCount(items);
+  const pendingPayments = selectPendingPaymentCount(items);
+  const pendingExpenses = selectPendingExpenseCount(items);
+  const queuedItems = pendingPayments + pendingExpenses;
+  const reviewPayments = selectQueuedForReviewPaymentCount(items);
 
   useEffect(() => {
     let cancelled = false;
@@ -43,7 +46,7 @@ export function CollectorSyncStatusCard() {
   const syncLabel =
     syncState === 'syncing'
       ? 'Syncing'
-      : pendingPayments > 0
+      : queuedItems > 0
         ? 'Pending'
         : reviewPayments > 0
           ? 'Awaiting review'
@@ -56,13 +59,13 @@ export function CollectorSyncStatusCard() {
         variant="executive"
         label="Sync status"
         value={syncLabel}
-        valueClassName={pendingPayments > 0 ? 'text-warning' : undefined}
+        valueClassName={queuedItems > 0 ? 'text-warning' : undefined}
       />
       <KpiCard
         variant="executive"
-        label="Queued payments"
-        value={pendingPayments}
-        valueClassName={pendingPayments > 0 ? 'text-warning' : undefined}
+        label="Queued items"
+        value={queuedItems}
+        valueClassName={queuedItems > 0 ? 'text-warning' : undefined}
       />
       <KpiCard
         variant="executive"
