@@ -14,7 +14,7 @@ export function OfflineInitOverlay() {
 
   return (
     <div className="fixed inset-0 z-[90] bg-background/95 backdrop-blur-sm">
-      <WilmsSplashScreen message={`Syncing ${pendingCount} queued payment${pendingCount === 1 ? '' : 's'}...`} />
+      <WilmsSplashScreen message={`Syncing ${pendingCount} queued item${pendingCount === 1 ? '' : 's'}...`} />
     </div>
   );
 }

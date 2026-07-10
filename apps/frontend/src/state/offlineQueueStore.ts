@@ -172,9 +172,28 @@ export function selectPendingQueueCount(items: OfflineQueueItem[]): number {
   return selectPendingQueueItems(items).length;
 }
 
+export function selectPendingPaymentCount(items: OfflineQueueItem[]): number {
+  return selectPendingQueueItems(items).filter(
+    (item) => item.type === OFFLINE_QUEUE_ITEM_TYPE.RECORD_PAYMENT,
+  ).length;
+}
+
+export function selectPendingExpenseCount(items: OfflineQueueItem[]): number {
+  return selectPendingQueueItems(items).filter(
+    (item) => item.type === OFFLINE_QUEUE_ITEM_TYPE.RECORD_EXPENSE,
+  ).length;
+}
+
+export function selectQueuedForReviewPaymentCount(items: OfflineQueueItem[]): number {
+  return items.filter(
+    (item) =>
+      item.type === OFFLINE_QUEUE_ITEM_TYPE.RECORD_PAYMENT &&
+      item.status === OFFLINE_QUEUE_ITEM_STATUS.QUEUED_FOR_REVIEW,
+  ).length;
+}
+
 export function selectQueuedForReviewCount(items: OfflineQueueItem[]): number {
-  return items.filter((item) => item.status === OFFLINE_QUEUE_ITEM_STATUS.QUEUED_FOR_REVIEW)
-    .length;
+  return selectQueuedForReviewPaymentCount(items);
 }
 
 export function selectHasQueueWarning(items: OfflineQueueItem[]): boolean {

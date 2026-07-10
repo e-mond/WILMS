@@ -7,30 +7,36 @@ import { PWA_SW_MESSAGE_TYPE } from '@/constants/pwa';
 import { useOfflineQueueSync } from '@/hooks/useOfflineQueueSync';
 import { useOfflineQueueToasts } from '@/hooks/useOfflineQueueToasts';
 import { useOfflineStatus } from '@/hooks/useOfflineStatus';
+import { replayQueuedExpense } from '@/lib/offline-queue/expenseSyncHandler';
 import { replayQueuedPayment } from '@/lib/offline-queue/paymentSyncHandler';
 import {
   selectHasQueueWarning,
-  selectPendingQueueCount,
-  selectQueuedForReviewCount,
+  selectPendingExpenseCount,
+  selectPendingPaymentCount,
+  selectQueuedForReviewPaymentCount,
   useOfflineQueueStore,
 } from '@/state/offlineQueueStore';
-import type { OfflinePaymentSyncHandler } from '@/types/offline-queue';
+import type {
+  OfflineExpenseSyncHandler,
+  OfflinePaymentSyncHandler,
+} from '@/types/offline-queue';
 
 interface CollectorOfflineShellProps {
   children: ReactNode;
-  /** Override for tests; defaults to paymentService replay. */
-  syncHandler?: OfflinePaymentSyncHandler;
+  paymentSyncHandler?: OfflinePaymentSyncHandler;
+  expenseSyncHandler?: OfflineExpenseSyncHandler;
 }
 
 export function CollectorOfflineShell({
   children,
-  syncHandler = replayQueuedPayment,
+  paymentSyncHandler = replayQueuedPayment,
+  expenseSyncHandler = replayQueuedExpense,
 }: CollectorOfflineShellProps) {
   const { isOffline } = useOfflineStatus();
   const items = useOfflineQueueStore((state) => state.items);
   const syncState = useOfflineQueueStore((state) => state.syncState);
 
-  const { runSync } = useOfflineQueueSync({ syncHandler });
+  const { runSync } = useOfflineQueueSync({ paymentSyncHandler, expenseSyncHandler });
   useOfflineQueueToasts();
 
   useEffect(() => {
@@ -51,10 +57,16 @@ export function CollectorOfflineShell({
     };
   }, [runSync]);
 
-  const pendingCount = selectPendingQueueCount(items);
-  const reviewCount = selectQueuedForReviewCount(items);
+  const pendingPayments = selectPendingPaymentCount(items);
+  const pendingExpenses = selectPendingExpenseCount(items);
+  const reviewPayments = selectQueuedForReviewPaymentCount(items);
   const hasQueueWarning = selectHasQueueWarning(items);
-  const showBanner = isOffline || pendingCount > 0 || reviewCount > 0 || hasQueueWarning;
+  const showBanner =
+    isOffline ||
+    pendingPayments > 0 ||
+    pendingExpenses > 0 ||
+    reviewPayments > 0 ||
+    hasQueueWarning;
 
   return (
     <div className="min-h-screen bg-background text-text-primary">
@@ -62,8 +74,9 @@ export function CollectorOfflineShell({
       {showBanner ? (
         <OfflineBanner
           isOffline={isOffline}
-          pendingCount={pendingCount}
-          reviewCount={reviewCount}
+          pendingPayments={pendingPayments}
+          pendingExpenses={pendingExpenses}
+          reviewPayments={reviewPayments}
           isSyncing={syncState === 'syncing'}
           hasQueueWarning={hasQueueWarning}
         />
