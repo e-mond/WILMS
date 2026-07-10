@@ -260,6 +260,14 @@ Super-admin Communication Center → `/communications/*` APIs; invitation and pa
 | R2-G07 | Frontend `ROLE_DEFINITIONS` collector permissions synced |
 | R2-G09, R2-G10 | Permission checks on borrower validation and admin-fee list routes |
 
+### Stage 3 flow highlights
+
+| Item | Fix |
+|------|-----|
+| F3-01 | Auditor in `e2e/helpers/auth.ts` + `role-journeys.spec.ts` |
+| F3-02 | `rc1-functional-audit.spec.ts` paths aligned with App Router |
+| F3-03 | Offline expense sync wired end-to-end |
+
 ---
 
 ## 9. Stage boundary
