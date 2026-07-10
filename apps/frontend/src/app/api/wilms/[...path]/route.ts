@@ -28,7 +28,11 @@ async function proxyRequest(request: Request, pathSegments: string[]): Promise<R
   }
 
   const apiUpstream = resolveApiUpstream();
-  const upstreamPath = `/api/v1/${pathSegments.join('/')}${new URL(request.url).search}`;
+  const path = pathSegments.join('/');
+  const isRootHealth = path === 'health';
+  const upstreamPath = isRootHealth
+    ? `/health${new URL(request.url).search}`
+    : `/api/v1/${path}${new URL(request.url).search}`;
   const upstreamUrl = `${apiUpstream}${upstreamPath}`;
   const sessionCookie = cookies().get(SESSION_COOKIE_NAME)?.value;
   const headers = sanitizeProxyRequestHeaders(request.headers);

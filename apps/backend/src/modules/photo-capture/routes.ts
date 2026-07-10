@@ -32,6 +32,17 @@ function decodeDataUrl(dataUrl: string): Buffer {
   return Buffer.from(match[2]!, 'base64');
 }
 
+function mapPhotoCaptureError(error: unknown): never {
+  if (error instanceof Error && error.message === 'DATABASE_REQUIRED') {
+    throw new AppError(
+      'Photo capture requires database persistence. Configure DATABASE_URL on the API service.',
+      ERROR_CODE.VALIDATION,
+      503,
+    );
+  }
+  throw error;
+}
+
 export const photoCaptureRouter = Router();
 
 photoCaptureRouter.post(
@@ -39,7 +50,11 @@ photoCaptureRouter.post(
   requireAuth,
   requirePermission(PERMISSION.CAPTURE_DOCUMENTS),
   asyncHandler(async (req, res) => {
-    sendData(res, await photoCaptureService.createSession(req.body), 201);
+    try {
+      sendData(res, await photoCaptureService.createSession(req.body), 201);
+    } catch (error) {
+      mapPhotoCaptureError(error);
+    }
   }),
 );
 
@@ -48,22 +63,30 @@ photoCaptureRouter.get(
   requireAuth,
   requirePermission(PERMISSION.CAPTURE_DOCUMENTS),
   asyncHandler(async (req, res) => {
-    const session = await photoCaptureService.getSession(req.params.token!);
-    if (!session) {
-      throw new AppError('Capture session not found.', ERROR_CODE.NOT_FOUND, 404);
+    try {
+      const session = await photoCaptureService.getSession(req.params.token!);
+      if (!session) {
+        throw new AppError('Capture session not found.', ERROR_CODE.NOT_FOUND, 404);
+      }
+      sendData(res, session);
+    } catch (error) {
+      mapPhotoCaptureError(error);
     }
-    sendData(res, session);
   }),
 );
 
 photoCaptureRouter.get(
   '/photo-capture/sessions/:token',
   asyncHandler(async (req, res) => {
-    const session = await photoCaptureService.getSession(req.params.token!);
-    if (!session) {
-      throw new AppError('Capture session not found.', ERROR_CODE.NOT_FOUND, 404);
+    try {
+      const session = await photoCaptureService.getSession(req.params.token!);
+      if (!session) {
+        throw new AppError('Capture session not found.', ERROR_CODE.NOT_FOUND, 404);
+      }
+      sendData(res, session);
+    } catch (error) {
+      mapPhotoCaptureError(error);
     }
-    sendData(res, session);
   }),
 );
 
@@ -71,43 +94,47 @@ photoCaptureRouter.post(
   '/photo-capture/sessions/:token/upload',
   validateBody(uploadSchema),
   asyncHandler(async (req, res) => {
-    const session = await photoCaptureService.getSession(req.params.token!);
+    try {
+      const session = await photoCaptureService.getSession(req.params.token!);
 
-    if (!session) {
-      throw new AppError('Capture session not found.', ERROR_CODE.NOT_FOUND, 404);
+      if (!session) {
+        throw new AppError('Capture session not found.', ERROR_CODE.NOT_FOUND, 404);
+      }
+
+      if (session.status === 'EXPIRED') {
+        throw new AppError('Capture session has expired.', ERROR_CODE.VALIDATION, 422);
+      }
+
+      if (session.status === 'CAPTURED') {
+        sendData(res, session);
+        return;
+      }
+
+      const body = req.body as z.infer<typeof uploadSchema>;
+      validateUploadInput(body);
+      const buffer = decodeDataUrl(body.dataUrl);
+      const stored = await saveUpload({
+        purpose: body.purpose,
+        fileName: body.fileName,
+        mimeType: body.mimeType,
+        sizeBytes: body.sizeBytes,
+        buffer,
+        ownerUserId: undefined,
+      });
+      const record = toUploadRecord(stored);
+      const previewUrl = `/uploads/${record.id}/content`;
+
+      const completed = await photoCaptureService.completeSession({
+        sessionToken: req.params.token!,
+        uploadId: record.id,
+        previewUrl,
+        fileName: body.fileName,
+        mimeType: body.mimeType,
+      });
+
+      sendData(res, completed, 201);
+    } catch (error) {
+      mapPhotoCaptureError(error);
     }
-
-    if (session.status === 'EXPIRED') {
-      throw new AppError('Capture session has expired.', ERROR_CODE.VALIDATION, 422);
-    }
-
-    if (session.status === 'CAPTURED') {
-      sendData(res, session);
-      return;
-    }
-
-    const body = req.body as z.infer<typeof uploadSchema>;
-    validateUploadInput(body);
-    const buffer = decodeDataUrl(body.dataUrl);
-    const stored = await saveUpload({
-      purpose: body.purpose,
-      fileName: body.fileName,
-      mimeType: body.mimeType,
-      sizeBytes: body.sizeBytes,
-      buffer,
-      ownerUserId: undefined,
-    });
-    const record = toUploadRecord(stored);
-    const previewUrl = `/uploads/${record.id}/content`;
-
-    const completed = await photoCaptureService.completeSession({
-      sessionToken: req.params.token!,
-      uploadId: record.id,
-      previewUrl,
-      fileName: body.fileName,
-      mimeType: body.mimeType,
-    });
-
-    sendData(res, completed, 201);
   }),
 );
