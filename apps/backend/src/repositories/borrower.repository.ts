@@ -1,9 +1,16 @@
-import { and, eq, inArray, isNull } from 'drizzle-orm';
+import { and, count, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
 import type { WilmsDb } from '../db/client.js';
 import { getDb } from '../db/client.js';
 import { borrowers } from '../db/schema/borrowers.js';
 import type { BorrowerRecord, BorrowerStatus } from '../db/store.js';
+import { MAX_LIST_PAGE_SIZE, MAX_UNPAGINATED_LIST_ROWS } from '../http/list-pagination.js';
+
+export interface BorrowerListOptions {
+  limit?: number;
+  offset?: number;
+  status?: BorrowerStatus;
+}
 
 type BorrowerProfile = BorrowerRecord['profile'];
 
@@ -53,14 +60,56 @@ function recordToInsert(record: BorrowerRecord) {
   };
 }
 
-export async function listBorrowers(): Promise<BorrowerRecord[]> {
+function borrowerListWhere(status?: BorrowerStatus) {
+  const clauses = [isNull(borrowers.deletedAt)];
+  if (status) {
+    clauses.push(eq(borrowers.status, status as typeof borrowers.$inferSelect.status));
+  }
+  return clauses.length === 1 ? clauses[0]! : and(...clauses);
+}
+
+export async function countBorrowers(status?: BorrowerStatus): Promise<number> {
   const db = getDb();
+  const [row] = await db
+    .select({ total: count() })
+    .from(borrowers)
+    .where(borrowerListWhere(status));
+  return Number(row?.total ?? 0);
+}
+
+export async function listBorrowers(options: BorrowerListOptions = {}): Promise<BorrowerRecord[]> {
+  const db = getDb();
+  const limit =
+    options.limit !== undefined
+      ? Math.min(options.limit, MAX_LIST_PAGE_SIZE)
+      : MAX_UNPAGINATED_LIST_ROWS;
+  const offset = options.offset ?? 0;
   const rows = await db
     .select()
     .from(borrowers)
-    .where(isNull(borrowers.deletedAt));
+    .where(borrowerListWhere(options.status))
+    .limit(limit)
+    .offset(offset);
 
   return rows.map(rowToRecord);
+}
+
+export async function listApprovedBorrowersWithoutAdminFee(
+  limit = MAX_UNPAGINATED_LIST_ROWS,
+): Promise<BorrowerRecord[]> {
+  const db = getDb();
+  const rows = await db.execute(sql`
+    SELECT b.*
+    FROM borrowers b
+    LEFT JOIN borrower_admin_fees f ON f.borrower_id = b.id
+    WHERE b.deleted_at IS NULL
+      AND b.status = 'APPROVED'
+      AND f.borrower_id IS NULL
+    ORDER BY b.full_name ASC
+    LIMIT ${limit}
+  `);
+
+  return (rows.rows as (typeof borrowers.$inferSelect)[]).map(rowToRecord);
 }
 
 export async function getBorrower(id: string): Promise<BorrowerRecord | undefined> {
