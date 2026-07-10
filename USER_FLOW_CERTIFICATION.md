@@ -14,9 +14,9 @@
 
 WILMS implements **five staff portals** with a consistent pattern: Next.js App Router pages → BFF (`/api/auth/*`, `/api/wilms/*`) → Express API. Auth flows (login, OTP, onboarding, invitation, password reset, session expiry) are wired end-to-end in code. Cross-cutting flows (registration → approval → loan → disbursement → collection → reconciliation) are present with offline payment queueing for collectors.
 
-**Certified from code + local tests:** Auth middleware and session expiry unit tests; collector/officer landing E2E specs exist; backend RBAC tests (90/90 after gap fixes); role journey Playwright coverage for officer, approver, super-admin.
+**Certified from code + local tests:** Auth middleware and session expiry unit tests; collector/officer/auditor landing E2E specs; backend RBAC tests (90/90); role journey Playwright coverage for all five staff roles; offline expense sync wired with unit tests.
 
-**Not verified dynamically:** Full Playwright suite against live stack; auditor E2E; production/staging smoke with admin credentials; end-to-end loan disbursement on deployed API.
+**Not verified dynamically:** Full Playwright suite against live stack; production/staging smoke with admin credentials; end-to-end loan disbursement on deployed API.
 
 ---
 
@@ -97,7 +97,7 @@ Browser → Next.js pages (role layouts + PermissionRouteGuard)
 | 7. Expenses | `/collector/expenses` → `POST /expenses` | Code ✓ |
 | 8. Collection sheet | `/collector/groups/[id]/collection-sheet` | Code ✓ |
 
-**E2E:** `collector-shell.spec.ts`, `login-ux.spec.ts`, `p13-workflows.spec.ts`.
+**E2E:** `collector-shell.spec.ts`, `login-ux.spec.ts`, `p13-workflows.spec.ts`; offline expense sync unit-tested.
 
 **Blocked paths (verified):** Admin dashboard 403 (prod smoke); `GET /borrowers` 403 after RBAC fix (`borrower-list-rbac.test.ts`).
 
@@ -143,7 +143,7 @@ Browser → Next.js pages (role layouts + PermissionRouteGuard)
 | 4. Read borrower summaries | `GET /borrowers` | Code ✓; `borrower-list-rbac.test.ts` 200 |
 | 5. Risk flags (read) | Via reports / risk APIs if linked | Code ✓ (`REVIEW_RISK_FLAGS`) |
 
-**E2E:** **None** — `auditor@wilms.demo` in `demo-accounts.ts` but not in `e2e/helpers/auth.ts`.
+**E2E:** `role-journeys.spec.ts` (auditor reports landing); `rc1-functional-audit.spec.ts` (`/auditor/reports`, `/auditor/audit-log`).
 
 ---
 
@@ -180,10 +180,11 @@ APPROVED borrower → POST /loans → PATCH approve → POST disburse
 | Component | Path | Verified |
 |-----------|------|----------|
 | Queue store | `offlineQueueStore.ts` | Unit tests |
-| Payment replay | `paymentSyncHandler.ts`, `useOfflineQueueSync.ts` | Code ✓ |
-| Batch API | `POST /sync/offline/batch` | Code ✓ |
+| Payment replay | `paymentSyncHandler.ts`, `useOfflineQueueSync.ts` | Code ✓; unit tests |
+| Expense replay | `expenseSyncHandler.ts`, `useRecordExpenseOrQueue.ts` | Code ✓; `expenseSyncHandler.test.ts` |
+| Batch API | `POST /sync/offline/batch` (payments) | Code ✓ |
+| Expense online sync | `expenseService.createExpense` on reconnect | Code ✓ |
 | Approver conflicts | `/approver/sync-conflicts` | Code ✓ |
-| Expense offline | Queue type in store | **Not wired** to sync handler |
 
 ### 4.4 Communications
 
@@ -197,7 +198,8 @@ Super-admin Communication Center → `/communications/*` APIs; invitation and pa
 
 | Harness | Result | Notes |
 |---------|--------|-------|
-| Backend Vitest (full) | **90/90 PASS** | Includes new `borrower-list-rbac.test.ts`, collector RBAC |
+| Backend Vitest (full) | **90/90 PASS** | Includes RBAC + borrower list tests |
+| Frontend offline/expense tests | **PASS** | `expenseSyncHandler.test.ts`, `OfflineBanner.test.tsx` |
 | Frontend auth Vitest | **Not verified** | IPC/worker crash in constrained environment |
 | Playwright e2e | **Not executed** | Requires running app + `npx playwright install` |
 | `smoke:rbac` (prod BFF) | **7/8** | Admin login failed; collector/officer checks pass |
@@ -210,21 +212,21 @@ Super-admin Communication Center → `/communications/*` APIs; invitation and pa
 | `login-ux.spec.ts` | Login UX |
 | `logout.spec.ts` | Logout |
 | `session-expired.spec.ts` | Session expiry page |
-| `role-journeys.spec.ts` | Officer, approver, super-admin landings |
+| `role-journeys.spec.ts` | Officer, approver, super-admin, **auditor** landings |
 | `collector-shell.spec.ts` | Collector nav/dashboard |
 | `p13-workflows.spec.ts` | Multi-role workflows |
 | `shell-navbar.spec.ts` | Admin navigation |
-| `rc1-functional-audit.spec.ts` | **Stale paths** — `/registration/register`, `/collector/collections` do not exist |
+| `rc1-functional-audit.spec.ts` | All five roles — **current route map** |
 
 ---
 
 ## 6. Flow gaps & risks
 
-| ID | Flow area | Severity | Finding |
-|----|-----------|----------|---------|
-| F3-01 | Auditor E2E | Low | No Playwright helper for auditor role |
-| F3-02 | E2E drift | Medium | `rc1-functional-audit.spec.ts` references removed routes |
-| F3-03 | Offline expenses | Medium | Queue enqueued in UI; sync handler payments-only |
+| ID | Flow area | Severity | Finding | Status |
+|----|-----------|----------|---------|--------|
+| F3-01 | Auditor E2E | Low | No Playwright helper for auditor role | **Fixed** — `e2e/helpers/auth.ts` + `role-journeys.spec.ts` |
+| F3-02 | E2E drift | Medium | `rc1-functional-audit.spec.ts` references removed routes | **Fixed** — paths updated to `/officer/*`, `/collector/*`, `/auditor/*` |
+| F3-03 | Offline expenses | Medium | Queue enqueued in UI; sync handler payments-only | **Fixed** — `expenseSyncHandler.ts` + `useRecordExpenseOrQueue` |
 | F3-04 | Invitation | Medium | Email-only accept; static temp password pattern |
 | F3-05 | Password reset | High | Sessions survive reset (Stage 1 S1-H04) |
 | F3-06 | Production drift | Medium | Deployed API v1.2.1 vs repo v1.3.1 (`BASELINE.md`) |

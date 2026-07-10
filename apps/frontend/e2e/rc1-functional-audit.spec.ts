@@ -10,17 +10,22 @@ const ROLE_JOURNEYS = [
   {
     role: 'approver',
     user: DEMO_USERS.approver,
-    paths: ['/approver/pending', '/approver/disbursement'],
+    paths: ['/approver/pending', '/approver/reviewed'],
   },
   {
     role: 'registration-officer',
     user: DEMO_USERS.officer,
-    paths: ['/registration/register', '/registration/borrowers'],
+    paths: ['/officer/register', '/officer/my-registrations'],
   },
   {
     role: 'collector',
     user: DEMO_USERS.collector,
-    paths: ['/collector/dashboard', '/collector/collections'],
+    paths: ['/collector/dashboard', '/collector/my-borrowers', '/collector/expenses'],
+  },
+  {
+    role: 'auditor',
+    user: DEMO_USERS.auditor,
+    paths: ['/auditor/reports', '/auditor/audit-log'],
   },
 ] as const;
 
