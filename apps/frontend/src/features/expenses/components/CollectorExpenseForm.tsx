@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FormField } from '@/components/forms';
 import { DocumentUpload } from '@/components/forms/DocumentUpload';
@@ -14,11 +13,8 @@ import { EXPENSE_CATEGORY, type ExpenseCategory } from '@/types/expense';
 import { EXPENSE_CATEGORY_LABELS } from '@/constants/expenses';
 import { UPLOAD_PURPOSE } from '@/types/upload';
 import { useAuth } from '@/hooks/useAuth';
-import { expenseService } from '@/services';
-import {
-  notifyMutationError,
-  notifyMutationSuccess,
-} from '@/utils/mutation-feedback';
+import { useOfflineStatus } from '@/hooks/useOfflineStatus';
+import { useRecordExpenseOrQueue } from '@/features/expenses/hooks/useRecordExpenseOrQueue';
 
 interface ExpenseFormValues {
   category: ExpenseCategory | '';
@@ -32,7 +28,8 @@ interface ExpenseFormValues {
 
 export function CollectorExpenseForm() {
   const { user } = useAuth();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isOffline } = useOfflineStatus();
+  const recordExpense = useRecordExpenseOrQueue();
   const {
     register,
     handleSubmit,
@@ -57,30 +54,22 @@ export function CollectorExpenseForm() {
       return;
     }
 
-    setIsSubmitting(true);
+    const amountPesewas = Math.round(Number(values.amount) * 100);
 
-    try {
-      const amountPesewas = Math.round(Number(values.amount) * 100);
+    await recordExpense.mutateAsync({
+      category: values.category as ExpenseCategory,
+      amountPesewas,
+      expenseDate: values.expenseDate,
+      reason: values.reason,
+      notes: values.notes || undefined,
+      receiptFileName: values.receiptFile?.name ?? undefined,
+      receiptUploadId: values.receiptUploadId,
+      recordedById: user.id,
+      recordedByName: user.displayName ?? user.id,
+      isOffline,
+    });
 
-      await expenseService.createExpense({
-        category: values.category as ExpenseCategory,
-        amountPesewas,
-        expenseDate: values.expenseDate,
-        reason: values.reason,
-        notes: values.notes || undefined,
-        receiptFileName: values.receiptFile?.name ?? undefined,
-        receiptUploadId: values.receiptUploadId,
-        recordedById: user.id,
-        recordedByName: user.displayName ?? user.id,
-      });
-
-      notifyMutationSuccess('Expense submitted', 'Your expense is pending admin approval.');
-      reset();
-    } catch (error) {
-      notifyMutationError('Expense submission failed', error, 'Unable to record expense.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    reset();
   });
 
   return (
@@ -148,7 +137,7 @@ export function CollectorExpenseForm() {
         </FormField>
       </div>
       <PermissionGate permission={PERMISSION.RECORD_EXPENSES}>
-        <Button type="submit" variant="primary" disabled={isSubmitting}>
+        <Button type="submit" variant="primary" disabled={recordExpense.isPending}>
           Submit expense
         </Button>
       </PermissionGate>

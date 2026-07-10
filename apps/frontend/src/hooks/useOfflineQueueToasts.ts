@@ -4,10 +4,26 @@ import { useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/useToast';
 import { useOfflineStatus } from '@/hooks/useOfflineStatus';
 import {
+  selectPendingExpenseCount,
+  selectPendingPaymentCount,
   selectPendingQueueCount,
-  selectQueuedForReviewCount,
+  selectQueuedForReviewPaymentCount,
   useOfflineQueueStore,
 } from '@/state/offlineQueueStore';
+
+function formatPendingLabel(pendingPayments: number, pendingExpenses: number): string {
+  const parts: string[] = [];
+
+  if (pendingPayments > 0) {
+    parts.push(`${pendingPayments} payment${pendingPayments === 1 ? '' : 's'}`);
+  }
+
+  if (pendingExpenses > 0) {
+    parts.push(`${pendingExpenses} expense${pendingExpenses === 1 ? '' : 's'}`);
+  }
+
+  return parts.join(' and ');
+}
 
 export function useOfflineQueueToasts() {
   const toast = useToast();
@@ -22,7 +38,7 @@ export function useOfflineQueueToasts() {
   useEffect(() => {
     if (!wasOfflineRef.current && isOffline) {
       offlineToastIdRef.current = toast.offline('You are offline', {
-        message: 'Payments will be saved locally and synced when connection returns.',
+        message: 'Payments and expenses will be saved locally and synced when connection returns.',
       });
     }
 
@@ -42,27 +58,33 @@ export function useOfflineQueueToasts() {
     const isIdle = syncState === 'idle';
 
     if (wasSyncing && isIdle) {
+      const pendingPayments = selectPendingPaymentCount(items);
+      const pendingExpenses = selectPendingExpenseCount(items);
       const pendingCount = selectPendingQueueCount(items);
-      const reviewCount = selectQueuedForReviewCount(items);
+      const reviewCount = selectQueuedForReviewPaymentCount(items);
+      const pendingLabel = formatPendingLabel(pendingPayments, pendingExpenses);
 
       if (pendingCount === 0 && reviewCount > 0) {
         toast.info('Submitted for review', {
           message: `${reviewCount} payment${reviewCount === 1 ? '' : 's'} sent to approver queue.`,
         });
       } else if (pendingCount === 0 && reviewCount === 0) {
-        toast.sync('Sync complete', { message: 'All offline payments uploaded.' });
+        toast.sync('Sync complete', { message: 'All offline items uploaded.' });
       } else {
         toast.warning('Sync incomplete', {
-          message: `${pendingCount} payment${pendingCount === 1 ? '' : 's'} still pending.`,
+          message: `${pendingLabel} still pending.`,
         });
       }
     }
 
     if (!wasSyncing && syncState === 'syncing') {
+      const pendingPayments = selectPendingPaymentCount(items);
+      const pendingExpenses = selectPendingExpenseCount(items);
       const pendingCount = selectPendingQueueCount(items);
+
       if (pendingCount > 0) {
-        toast.sync('Syncing payments', {
-          message: `Uploading ${pendingCount} saved payment${pendingCount === 1 ? '' : 's'}...`,
+        toast.sync('Syncing saved items', {
+          message: `Uploading ${formatPendingLabel(pendingPayments, pendingExpenses)}...`,
           durationMs: 3_000,
         });
       }
