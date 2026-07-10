@@ -215,8 +215,8 @@ function assertPending(record: BorrowerRecord | undefined): BorrowerRecord {
   return record;
 }
 
-export async function listBorrowerSummaries() {
-  const records = await listBorrowers();
+export async function listBorrowerSummaries(options?: { limit?: number; offset?: number }) {
+  const records = await listBorrowers(options);
   const sorted = [...records].sort((left, right) => left.registeredAt.localeCompare(right.registeredAt));
   const sequenceById = new Map(sorted.map((record, index) => [record.id, index + 1]));
 

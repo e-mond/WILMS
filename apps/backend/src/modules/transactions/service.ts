@@ -1,9 +1,15 @@
 import { eq } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
 import { BORROWER_STATUS } from '@wilms/shared-contracts';
-import { getBorrower, listBorrowers } from '../../db/persistence.js';
-import { getDb, isDatabaseEnabled } from '../../db/client.js';
-import { borrowerAdminFees } from '../../db/schema/borrower-admin-fees.js';
+import {
+  getAdminFee,
+  getBorrower,
+  hasAdminFee,
+  listApprovedBorrowersWithoutAdminFee,
+  saveAdminFee,
+} from '../../db/persistence.js';
+import * as memory from '../../db/store.js';
+import { isDatabaseEnabled } from '../../db/client.js';
 import { getSettings } from '../settings/service.js';
 import * as userRepo from '../../repositories/user.repository.js';
 
@@ -37,29 +43,6 @@ export interface AwaitingAdminFeeBorrower {
   requiredAmountPesewas: number;
 }
 
-const adminFeeTransactions = new Map<string, FinancialTransaction>();
-
-async function loadPersistedAdminFee(
-  borrowerId: string,
-): Promise<typeof borrowerAdminFees.$inferSelect | undefined> {
-  if (!isDatabaseEnabled()) {
-    return undefined;
-  }
-
-  const db = getDb();
-  const [row] = await db
-    .select()
-    .from(borrowerAdminFees)
-    .where(eq(borrowerAdminFees.borrowerId, borrowerId))
-    .limit(1);
-  return row;
-}
-
-async function hasPersistedAdminFee(borrowerId: string): Promise<boolean> {
-  const row = await loadPersistedAdminFee(borrowerId);
-  return Boolean(row);
-}
-
 function assertApprovedBorrower(borrowerId: string) {
   return getBorrower(borrowerId).then((borrower) => {
     if (!borrower) {
@@ -78,12 +61,7 @@ export async function recordAdminFee(input: {
 }): Promise<FinancialTransaction> {
   const borrower = await assertApprovedBorrower(input.borrowerId);
 
-  if (isDatabaseEnabled()) {
-    const existing = await loadPersistedAdminFee(input.borrowerId);
-    if (existing) {
-      throw new Error('DUPLICATE');
-    }
-  } else if (adminFeeTransactions.has(input.borrowerId)) {
+  if (await hasAdminFee(input.borrowerId)) {
     throw new Error('DUPLICATE');
   }
 
@@ -97,18 +75,13 @@ export async function recordAdminFee(input: {
     recordedAt: new Date().toISOString(),
   };
 
-  if (isDatabaseEnabled()) {
-    const db = getDb();
-    await db.insert(borrowerAdminFees).values({
-      borrowerId: input.borrowerId,
-      collectorUserId: input.collectorId,
-      amountPesewas: settings.adminFeePesewas,
-      transactionId: transaction.id,
-      recordedAt: new Date(transaction.recordedAt),
-    });
-  } else {
-    adminFeeTransactions.set(input.borrowerId, transaction);
-  }
+  await saveAdminFee({
+    borrowerId: input.borrowerId,
+    collectorId: input.collectorId,
+    amountPesewas: settings.adminFeePesewas,
+    transactionId: transaction.id,
+    recordedAt: transaction.recordedAt,
+  });
 
   void borrower;
   return { ...transaction };
@@ -117,22 +90,7 @@ export async function recordAdminFee(input: {
 export async function getAdminFeeStatus(borrowerId: string): Promise<AdminFeeStatus> {
   const borrower = await assertApprovedBorrower(borrowerId);
   const settings = await getSettings();
-
-  const persisted = await loadPersistedAdminFee(borrowerId);
-  const memoryFee = adminFeeTransactions.get(borrowerId);
-  const existingFee = persisted
-    ? {
-        collectorId: persisted.collectorUserId,
-        recordedAt: persisted.recordedAt.toISOString(),
-        id: persisted.transactionId,
-      }
-    : memoryFee
-      ? {
-          collectorId: memoryFee.collectorId,
-          recordedAt: memoryFee.recordedAt,
-          id: memoryFee.id,
-        }
-      : undefined;
+  const existingFee = await getAdminFee(borrowerId);
 
   let collectorName: string | undefined;
   if (existingFee && isDatabaseEnabled()) {
@@ -148,41 +106,27 @@ export async function getAdminFeeStatus(borrowerId: string): Promise<AdminFeeSta
     paidAt: existingFee?.recordedAt,
     recordedByCollectorId: existingFee?.collectorId,
     recordedByCollectorName: collectorName ?? (existingFee ? 'Collector' : undefined),
-    transactionId: existingFee?.id,
+    transactionId: existingFee?.transactionId,
   };
 }
 
 export async function listBorrowersAwaitingAdminFee(): Promise<AwaitingAdminFeeBorrower[]> {
-  const borrowers = await listBorrowers();
   const settings = await getSettings();
   const requiredAmountPesewas = settings.adminFeePesewas;
 
-  const awaiting: AwaitingAdminFeeBorrower[] = [];
-
-  for (const borrower of borrowers) {
-    if (borrower.status !== BORROWER_STATUS.APPROVED) {
-      continue;
-    }
-
-    const paid = isDatabaseEnabled()
-      ? await hasPersistedAdminFee(borrower.id)
-      : adminFeeTransactions.has(borrower.id);
-
-    if (paid) {
-      continue;
-    }
-
-    awaiting.push({
+  if (isDatabaseEnabled()) {
+    const borrowers = await listApprovedBorrowersWithoutAdminFee();
+    return borrowers.map((borrower) => ({
       id: borrower.id,
       fullName: borrower.fullName,
       phone: borrower.phone,
       community: borrower.community,
       groupName: borrower.groupName || '—',
       requiredAmountPesewas,
-    });
+    }));
   }
 
-  return awaiting.sort((left, right) => left.fullName.localeCompare(right.fullName));
+  return memory.listBorrowersAwaitingAdminFeeInMemory(requiredAmountPesewas);
 }
 
 /** Borrower admin fees are per borrower before first loan — never required on collector login. */

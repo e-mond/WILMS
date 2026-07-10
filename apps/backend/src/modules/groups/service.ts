@@ -190,7 +190,29 @@ async function getGroupRow(groupId: string) {
   return rows.find((row) => row.id === groupId);
 }
 
-function computeGroupFinancials(memberIds: string[], borrowers: BorrowerRecord[], payments: Awaited<ReturnType<typeof listPayments>>) {
+function computeGroupFinancials(
+  memberIds: string[],
+  borrowers: BorrowerRecord[],
+  payments: Awaited<ReturnType<typeof listPayments>>,
+  stats?: { collectedPesewas: number; activeMembers: number },
+) {
+  if (stats) {
+    const disbursedPesewas = stats.collectedPesewas;
+    const collectionRatePercent =
+      disbursedPesewas === 0
+        ? stats.collectedPesewas > 0
+          ? 100
+          : 0
+        : Math.round((stats.collectedPesewas / disbursedPesewas) * 100);
+
+    return {
+      collectedPesewas: stats.collectedPesewas,
+      disbursedPesewas,
+      collectionRatePercent,
+      activeMembers: stats.activeMembers,
+    };
+  }
+
   const collectedPesewas = payments
     .filter((payment) => memberIds.includes(payment.borrowerId))
     .reduce((sum, payment) => sum + payment.amountPesewas, 0);
@@ -256,9 +278,10 @@ async function buildGroupSummary(
   borrowers: BorrowerRecord[],
   payments: Awaited<ReturnType<typeof listPayments>>,
   officerName: string,
+  stats?: { collectedPesewas: number; activeMembers: number },
 ): Promise<GroupSummaryItem> {
   const memberIds = row.memberIds;
-  const financials = computeGroupFinancials(memberIds, borrowers, payments);
+  const financials = computeGroupFinancials(memberIds, borrowers, payments, stats);
   const leaderBorrower = borrowers.find((entry) => entry.id === row.leaderBorrowerId);
 
   return {
@@ -279,16 +302,30 @@ async function buildGroupSummary(
 }
 
 export async function listGroupsResponse(): Promise<GroupListResponse> {
-  const [rows, borrowers, payments, officerName] = await Promise.all([
-    loadGroupRows(),
-    listBorrowers(),
-    listPayments(),
-    resolveOfficerName(),
-  ]);
+  const rows = await loadGroupRows();
+  const officerName = await resolveOfficerName();
 
-  const groupSummaries = await Promise.all(
-    rows.map((row) => buildGroupSummary(row, borrowers, payments, officerName)),
-  );
+  let groupSummaries: GroupSummaryItem[];
+
+  if (isDatabaseEnabled()) {
+    const statsByGroup = await groupRepository.getGroupListStats();
+    groupSummaries = await Promise.all(
+      rows.map((row) =>
+        buildGroupSummary(
+          row,
+          [],
+          [],
+          officerName,
+          statsByGroup.get(row.id) ?? { collectedPesewas: 0, activeMembers: 0 },
+        ),
+      ),
+    );
+  } else {
+    const [borrowers, payments] = await Promise.all([listBorrowers(), listPayments()]);
+    groupSummaries = await Promise.all(
+      rows.map((row) => buildGroupSummary(row, borrowers, payments, officerName)),
+    );
+  }
 
   const riskDistribution = {
     lowRisk: groupSummaries.filter((group) => group.riskLevel === 'LOW_RISK').length,

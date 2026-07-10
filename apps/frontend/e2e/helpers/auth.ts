@@ -21,6 +21,11 @@ export const DEMO_USERS = {
     password: 'DemoApprove1!',
     landingPath: /\/approver\/pending/,
   },
+  auditor: {
+    email: 'auditor@wilms.demo',
+    password: 'DemoAudit1!',
+    landingPath: /\/auditor\/reports/,
+  },
 } as const;
 
 export async function waitForLoginForm(

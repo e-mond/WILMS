@@ -17,6 +17,7 @@ vi.mock('../../db/client.js', () => ({
   isDatabaseEnabled: () => true,
   getDb: () => ({
     select: dbMocks.select,
+    execute: vi.fn(async () => ({ rows: [] })),
   }),
 }));
 
