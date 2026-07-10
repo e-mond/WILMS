@@ -67,7 +67,7 @@ function TodayGroupCard({ group }: { group: CollectorTodayGroup }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <article className="flex h-full flex-col rounded-sm border border-border bg-card p-wilms-4">
+    <article className="flex h-full min-w-0 flex-col rounded-sm border border-border/70 bg-card/60 p-wilms-4">
       <div className="flex items-start gap-wilms-3">
         <Avatar label={group.groupName} photoUrl={group.groupPhotoUrl} size="md" />
         <div className="min-w-0 flex-1">
@@ -291,12 +291,12 @@ export function CollectorDashboardPanel() {
           </DetailSidebarCard>
         }
       >
-        <section className="space-y-wilms-3">
+        <section className="w-full min-w-0 rounded-sm border border-border bg-card p-wilms-4 space-y-wilms-3">
           <div className="flex flex-wrap items-center justify-between gap-wilms-2">
             <h2 className="text-heading-3 font-semibold text-text-primary">Today&apos;s Groups</h2>
             <p className="text-small text-text-muted">{summary.paymentDayLabel}</p>
           </div>
-          <div className="grid gap-wilms-3 md:grid-cols-2 2xl:grid-cols-3">
+          <div className="grid w-full min-w-0 gap-wilms-3 sm:grid-cols-2 2xl:grid-cols-3">
             {todayGroups.map((group) => (
               <TodayGroupCard key={group.groupId} group={group} />
             ))}
