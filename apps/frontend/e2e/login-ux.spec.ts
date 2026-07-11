@@ -8,31 +8,29 @@ test.describe('login UX', () => {
     const password = page.locator('#login-password');
     await expect(password).toHaveAttribute('type', 'password');
 
-    await page.getByRole('button', { name: 'Toggle password visibility' }).click();
+    await page.getByRole('button', { name: 'Show password' }).click();
     await expect(password).toHaveAttribute('type', 'text');
 
-    await page.getByRole('button', { name: 'Toggle password visibility' }).click();
+    await page.getByRole('button', { name: 'Hide password' }).click();
     await expect(password).toHaveAttribute('type', 'password');
   });
 
   test('remember email preference persists after reload', async ({ page }) => {
     await waitForLoginForm(page);
     await page.locator('#login-email').fill(DEMO_USERS.collector.email);
-    await page.getByLabel('Remember my email on this device').check();
+    await page.getByLabel('Remember email').check();
     await page.reload();
     await waitForLoginForm(page, { navigate: false });
 
     await expect(page.locator('#login-email')).toHaveValue(DEMO_USERS.collector.email);
-    await expect(page.getByLabel('Remember my email on this device')).toBeChecked();
+    await expect(page.getByLabel('Remember email')).toBeChecked();
   });
 
   test('branded login header and theme toggle are visible', async ({ page }) => {
     await waitForLoginForm(page);
 
     await expect(page.getByText('WILMS').first()).toBeVisible();
-    await expect(
-      page.getByText("Women's Interest-Free Loan Management"),
-    ).toBeVisible();
+    await expect(page.getByText('Women\'s Interest-Free Loan Management')).toBeVisible();
     await expect(page.getByRole('button', { name: /Switch to (dark|light) mode/ })).toBeVisible();
   });
 
