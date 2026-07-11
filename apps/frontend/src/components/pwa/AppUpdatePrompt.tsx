@@ -6,10 +6,12 @@ import { Button } from '@/components/ui/Button';
 import { CURRENT_RELEASE_NOTES } from '@/constants/release-notes';
 import { getAppVersionLabel } from '@/lib/app-version';
 import { usePwaUpdateStore } from '@/state/pwaUpdateStore';
+import { useIsAuthRoute } from '@/hooks/useIsAuthRoute';
 
 const UPDATE_DISMISS_KEY = 'wilms-pwa-update-dismissed';
 
 export function AppUpdatePrompt() {
+  const isAuthRoute = useIsAuthRoute();
   const updateAvailable = usePwaUpdateStore((state) => state.updateAvailable);
   const waitingWorker = usePwaUpdateStore((state) => state.waitingWorker);
   const clearUpdate = usePwaUpdateStore((state) => state.clearUpdate);
@@ -46,7 +48,7 @@ export function AppUpdatePrompt() {
     waitingWorker.postMessage({ type: 'SKIP_WAITING' });
   }, [isUpdating, waitingWorker]);
 
-  if (!updateAvailable || isDismissed) {
+  if (isAuthRoute || !updateAvailable || isDismissed) {
     return null;
   }
 
