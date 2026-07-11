@@ -12,6 +12,7 @@ import {
 } from '@/utils/upload-file';
 import { validateBorrowerPhoto } from '@/utils/photo-validation';
 import { cn } from '@/utils/cn';
+import { resolveMediaPreviewUrl } from '@/utils/media-preview';
 
 export interface PhotoUploadProps {
   id: string;
@@ -76,11 +77,16 @@ export function PhotoUpload({
       return;
     }
 
-    const objectUrl = URL.createObjectURL(value);
+    const objectUrl = resolveMediaPreviewUrl(value);
+    if (!objectUrl) {
+      setPreviewUrl(null);
+      return;
+    }
+
     if (blobUrlRef.current) {
       URL.revokeObjectURL(blobUrlRef.current);
     }
-    blobUrlRef.current = objectUrl;
+    blobUrlRef.current = objectUrl.startsWith('blob:') ? objectUrl : null;
     setPreviewUrl(objectUrl);
 
     return () => {

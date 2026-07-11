@@ -9,6 +9,7 @@ import {
   uploadFileWithOfflineQueue,
 } from '@/utils/upload-file';
 import { cn } from '@/utils/cn';
+import { resolveMediaPreviewUrl } from '@/utils/media-preview';
 
 const DEFAULT_ACCEPT = 'image/*,application/pdf';
 
@@ -66,11 +67,16 @@ export function DocumentUpload({
     }
 
     if (isPreviewableImage(value.type)) {
-      const objectUrl = URL.createObjectURL(value);
+      const objectUrl = resolveMediaPreviewUrl(value);
+      if (!objectUrl) {
+        setPreviewUrl(uploadRecord?.url ?? null);
+        return;
+      }
+
       if (blobUrlRef.current) {
         URL.revokeObjectURL(blobUrlRef.current);
       }
-      blobUrlRef.current = objectUrl;
+      blobUrlRef.current = objectUrl.startsWith('blob:') ? objectUrl : null;
       setPreviewUrl(objectUrl);
       return () => {
         if (blobUrlRef.current === objectUrl) {
