@@ -42,6 +42,6 @@ describe('OfflineInitOverlay', () => {
 
     render(<OfflineInitOverlay />);
 
-    expect(screen.getByLabelText('Syncing 1 queued payment...')).toBeInTheDocument();
+    expect(screen.getByLabelText('Syncing 1 queued item...')).toBeInTheDocument();
   });
 });

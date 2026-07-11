@@ -29,8 +29,12 @@ test.describe('login UX', () => {
   test('branded login header and theme toggle are visible', async ({ page }) => {
     await waitForLoginForm(page);
 
-    await expect(page.getByText('WILMS').first()).toBeVisible();
+    await expect(page.getByRole('img', { name: 'WILMS' })).toBeVisible();
     await expect(page.getByText('Women\'s Interest-Free Loan Management')).toBeVisible();
+    await expect(
+      page.getByText('Helping women grow through interest-free financing.'),
+    ).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible();
     await expect(page.getByRole('button', { name: /Switch to (dark|light) mode/ })).toBeVisible();
   });
 
