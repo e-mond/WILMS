@@ -82,6 +82,32 @@ WILMS_APP_URL=https://wilms.vercel.app \
 npm run smoke:rbac
 ```
 
+### Mobile photo capture (v1.3.4+)
+
+Verify public capture routes are reachable without authentication:
+
+```bash
+# Must return 404 or 503 — never 401
+curl -sS -o /dev/null -w "lookup:%{http_code}\n" \
+  "${WILMS_APP_URL}/api/wilms/photo-capture/sessions/pcs_invalid00000001"
+
+# Must not return 401 or 403 (CSRF) — expect 404, 422, or 503
+curl -sS -o /dev/null -w "upload:%{http_code}\n" -X POST \
+  "${WILMS_APP_URL}/api/wilms/photo-capture/sessions/pcs_invalid00000001/upload" \
+  -H "content-type: application/json" \
+  -d '{"purpose":"borrower-photo","fileName":"t.jpg","mimeType":"image/jpeg","sizeBytes":16,"dataUrl":"data:image/jpeg;base64,/9j/4AAQ"}'
+```
+
+Then perform a manual end-to-end test: officer generates QR on desktop → mobile scans → capture → desktop form updates.
+
+Required env for capture:
+
+| Variable | Service | Purpose |
+|----------|---------|---------|
+| `DATABASE_URL` | Railway | Session persistence |
+| `WILMS_APP_URL` | Railway | QR link domain |
+| `WILMS_API_UPSTREAM` | Vercel | BFF → API proxy |
+
 ### v1.3.0 field checks
 
 1. Collector Settings → Device — confirm battery and storage panel loads

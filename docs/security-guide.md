@@ -1,13 +1,13 @@
 # WILMS Security Guide
 
-**Last updated:** 2026-07-08 (v1.3.0)
+**Last updated:** 2026-07-11 (v1.3.4)
 
 ## Current controls
 
 | Area | Control |
 |------|---------|
 | Authentication | HMAC-signed session flow with bcrypt password verification |
-| Session invalidation | `users.session_version` bumped on suspend, delete, or role change |
+| Session invalidation | `users.session_version` bumped on suspend, delete, role change, or password reset |
 | Browser session | HttpOnly cookies and CSRF protection through the BFF flow |
 | RBAC | Shared role/permission constants and backend permission middleware |
 | Headers | Helmet on the API |
@@ -17,6 +17,7 @@
 | User deletion | Invited users hard-deleted; active users anonymized with credentials removed |
 | Offline sync | Financial offline mutations require approver review before posting |
 | Field device | App lock PIN stored locally; upload queue in IndexedDB on device |
+| Mobile photo capture | Token-gated public API routes; no session auth required on mobile |
 
 ## Offline & field security (v1.3.0)
 
@@ -38,8 +39,18 @@
 | Login | Issues signed token with `sessionVersion` |
 | Protected API | `requireAuth` validates signature, expiry, status, and session version |
 | Logout | Client clears cookie; server stateless |
-| Password reset | Token table; tokens purged on user deletion |
+| Password reset | Token table; sessions invalidated on successful reset; tokens purged on user deletion |
 | 2FA OTP | Optional; OTP challenges purged on user deletion |
+
+## CSRF and public routes
+
+The BFF applies double-submit CSRF on mutating `/api/wilms/*` requests. Exceptions:
+
+| Path | Reason |
+|------|--------|
+| `photo-capture/sessions/*` | Mobile capture clients have no session cookie; upload is token-gated on the API |
+
+Direct Express API calls do not use CSRF; they rely on CORS and Bearer tokens. Production deployments should route browser traffic through the Vercel BFF.
 
 ## Required checks
 
