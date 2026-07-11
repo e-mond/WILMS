@@ -3,12 +3,34 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/feedback/Alert';
+import { extractApiErrorMessage } from '@/lib/api/error-body';
 
 interface CaptureSession {
   sessionToken: string;
   status: 'PENDING' | 'CAPTURED' | 'EXPIRED';
   expiresAt: string;
   previewUrl?: string;
+}
+
+function resolveCaptureLoadError(status: number, payload: unknown): string {
+  const message = extractApiErrorMessage(payload);
+
+  if (status === 503) {
+    return (
+      message ??
+      'Photo capture is temporarily unavailable. The server database is not configured.'
+    );
+  }
+
+  if (status === 404) {
+    return 'Capture session not found. Request a new QR code from the registration officer.';
+  }
+
+  if (status === 401 || status === 403) {
+    return 'Capture session could not be verified. Request a new QR code and try again.';
+  }
+
+  return message ?? 'Capture session not found or expired.';
 }
 
 export default function MobileCapturePage({ params }: { params: { token: string } }) {
@@ -24,14 +46,13 @@ export default function MobileCapturePage({ params }: { params: { token: string 
 
     void fetch(`/api/wilms/photo-capture/sessions/${params.token}`, { cache: 'no-store' })
       .then(async (response) => {
+        const payload = (await response.json().catch(() => null)) as unknown;
+
         if (!response.ok) {
-          if (response.status === 503) {
-            throw new Error('Photo capture is temporarily unavailable. The server database is not configured.');
-          }
-          throw new Error('Capture session not found or expired.');
+          throw new Error(resolveCaptureLoadError(response.status, payload));
         }
 
-        const body = (await response.json()) as { data?: CaptureSession };
+        const body = payload as { data?: CaptureSession };
         if (!cancelled) {
           setSession(body.data ?? null);
         }
@@ -106,7 +127,8 @@ export default function MobileCapturePage({ params }: { params: { token: string 
       });
 
       if (!response.ok) {
-        throw new Error('Upload failed. Please try again.');
+        const payload = (await response.json().catch(() => null)) as unknown;
+        throw new Error(extractApiErrorMessage(payload) ?? 'Upload failed. Please try again.');
       }
 
       setCompleted(true);

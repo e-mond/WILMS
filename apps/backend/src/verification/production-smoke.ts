@@ -267,6 +267,37 @@ async function main(): Promise<void> {
     'demo banner absent',
   );
 
+  // Photo capture — public mobile routes must not require session auth (RC1.4)
+  const captureLookupRes = await fetch(
+    `${appUrl}/api/wilms/photo-capture/sessions/pcs_smoke_invalid0001`,
+    { cache: 'no-store' },
+  );
+  record(
+    'bff-photo-capture-public-lookup',
+    captureLookupRes.status !== 401 && captureLookupRes.status !== 403,
+    `status=${captureLookupRes.status} (expect 404 or 503, not auth failure)`,
+  );
+
+  const captureUploadRes = await fetch(
+    `${appUrl}/api/wilms/photo-capture/sessions/pcs_smoke_invalid0001/upload`,
+    {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        purpose: 'borrower-photo',
+        fileName: 'smoke.jpg',
+        mimeType: 'image/jpeg',
+        sizeBytes: 16,
+        dataUrl: 'data:image/jpeg;base64,/9j/4AAQ',
+      }),
+    },
+  );
+  record(
+    'bff-photo-capture-public-upload-no-csrf',
+    captureUploadRes.status !== 401 && captureUploadRes.status !== 403,
+    `status=${captureUploadRes.status} (expect 404/422/503, not auth/csrf failure)`,
+  );
+
   const passed = checks.filter((c) => c.pass).length;
   const total = checks.length;
   console.log(`\nPassed: ${passed}/${total}`);

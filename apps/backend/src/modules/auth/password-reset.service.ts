@@ -8,6 +8,7 @@ import { hashPassword } from '../../lib/password.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import { notifyPasswordReset } from '../../infrastructure/notifications/event-dispatch.js';
 import * as userRepo from '../../repositories/user.repository.js';
+import { invalidateUserSessions } from './session.service.js';
 
 const TOKEN_EXPIRY_MS = 60 * 60 * 1000;
 const MAX_REQUESTS_PER_HOUR = 5;
@@ -136,6 +137,7 @@ export async function resetPasswordWithToken(input: {
 
   const passwordHash = await hashPassword(input.newPassword);
   await userRepo.updateUserPassword(row.userId, passwordHash);
+  await invalidateUserSessions(row.userId);
 
   await db
     .update(passwordResetTokens)
