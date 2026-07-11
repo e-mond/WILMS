@@ -15,6 +15,10 @@ All notable changes to WILMS are documented in this file.
 - Structured logging for capture session create, lookup miss, and completion.
 - Production smoke checks for public capture lookup and upload.
 - Engineering stabilization audit reports (nine deliverables).
+- Deployment and security guide updates for capture troubleshooting.
+
+### Changed
+- Application version bumped to `1.3.4`.
 
 ## [1.3.3] — Stability & UX
 
