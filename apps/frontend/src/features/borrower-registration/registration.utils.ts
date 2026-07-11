@@ -63,10 +63,47 @@ export function reviewDetailToFormValues(detail: BorrowerReviewDetail): Borrower
     guarantorName: detail.guarantorName ?? '',
     guarantorPhone: detail.guarantorPhone ?? '',
     guarantorRelationship: detail.guarantorRelationship ?? '',
-    photoUploadId: undefined,
-    guarantorPhotoUploadId: undefined,
-    photo: detail.photoUrl ? new File([], detail.photoFileName || 'photo.jpg') : null,
-    guarantorPhoto: detail.guarantorPhotoUrl ? new File([], 'guarantor-photo.jpg') : null,
+    photo: null,
+    guarantorPhoto: null,
+    photoPreviewUrl: detail.photoUrl ?? null,
+    guarantorPreviewUrl: detail.guarantorPhotoUrl ?? null,
+  };
+}
+
+function reviveFileField(value: unknown): File | null {
+  if (!value) {
+    return null;
+  }
+
+  if (typeof Blob !== 'undefined' && value instanceof File && value.size > 0) {
+    return value;
+  }
+
+  return null;
+}
+
+/** Normalize draft JSON payloads restored from the API (photos are never real File instances). */
+export function normalizeDraftFormValues(
+  payload: Record<string, unknown>,
+): BorrowerRegistrationFormValues {
+  const merged = {
+    ...DEFAULT_REGISTRATION_VALUES,
+    ...(payload as Partial<BorrowerRegistrationFormValues>),
+  };
+
+  return {
+    ...merged,
+    photo: reviveFileField(payload.photo),
+    guarantorPhoto: reviveFileField(payload.guarantorPhoto),
+    idDocument: reviveFileField(payload.idDocument),
+    photoPreviewUrl:
+      typeof payload.photoPreviewUrl === 'string'
+        ? payload.photoPreviewUrl
+        : merged.photoPreviewUrl ?? null,
+    guarantorPreviewUrl:
+      typeof payload.guarantorPreviewUrl === 'string'
+        ? payload.guarantorPreviewUrl
+        : merged.guarantorPreviewUrl ?? null,
   };
 }
 

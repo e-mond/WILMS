@@ -11,7 +11,6 @@ import type { BorrowerRegistrationFormValues } from '@/types/borrower-registrati
 import type { GuarantorEligibilityResult } from '@/types/guarantor-eligibility';
 import type { RegistrationLegalConfig } from '@/types/registration-legal';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
-import { useObjectUrl } from '@/hooks/useObjectUrl';
 import {
   buildRegistrationAgreementContent,
   type RegistrationAgreementMedia,
@@ -34,9 +33,6 @@ export function RegistrationReviewPanel({
   const [resolvedMedia, setResolvedMedia] = useState<RegistrationAgreementMedia | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const borrowerPhotoUrl = useObjectUrl(values.photo);
-  const guarantorPhotoUrl = useObjectUrl(values.guarantorPhoto);
-
   useEffect(() => {
     let cancelled = false;
 
@@ -53,11 +49,9 @@ export function RegistrationReviewPanel({
 
   useEffect(() => {
     let cancelled = false;
+    setIsLoading(true);
 
-    void resolveRegistrationAgreementMedia(values, {
-      borrowerPhotoUrl,
-      guarantorPhotoUrl,
-    }).then((media) => {
+    void resolveRegistrationAgreementMedia(values).then((media) => {
       if (!cancelled) {
         setResolvedMedia(media);
         setIsLoading(false);
@@ -67,7 +61,7 @@ export function RegistrationReviewPanel({
     return () => {
       cancelled = true;
     };
-  }, [borrowerPhotoUrl, guarantorPhotoUrl, values]);
+  }, [values]);
 
   const agreementContent = useMemo(() => {
     if (!legalConfig || !resolvedMedia) {

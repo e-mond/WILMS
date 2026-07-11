@@ -150,6 +150,58 @@ export async function downloadWilmsExcel(
   workbook.subject = document.metadata.reportTitle;
   workbook.keywords = `${document.metadata.reportId};${document.metadata.reportType}`;
 
+  if (document.registrationAgreement) {
+    const content = document.registrationAgreement;
+    const sections: Array<{ title: string; rows: { label: string; value: string }[] }> = [
+      { title: 'Applicant Information', rows: content.applicantRows },
+      { title: 'Work / Business Information', rows: content.workRows },
+      { title: 'Guarantor Information', rows: content.guarantorRows },
+      {
+        title: 'Guarantor Declaration',
+        rows: [{ label: 'Declaration', value: content.legal.guarantorDeclaration }],
+      },
+      {
+        title: 'Borrower Declaration',
+        rows: [{ label: 'Declaration', value: content.legal.borrowerDeclaration }],
+      },
+      {
+        title: 'Key Terms & Enforcement',
+        rows: [{ label: 'Terms', value: content.legal.keyTerms }],
+      },
+      {
+        title: 'Legal Notice',
+        rows: [{ label: 'Notice', value: content.legal.legalNotice }],
+      },
+    ];
+
+    const summarySheet = workbook.addWorksheet('Registration Agreement');
+    populateMetadataSheet(summarySheet, document);
+
+    sections.forEach((section) => {
+      const sheet = workbook.addWorksheet(section.title.slice(0, 31));
+      addSummarySection(sheet, { title: section.title, type: 'summary', summaryItems: section.rows }, 1);
+      sheet.getColumn(1).width = 32;
+      sheet.getColumn(2).width = 56;
+    });
+
+    populateAuditSheet(workbook.addWorksheet('Audit Information'), document);
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    const url = URL.createObjectURL(blob);
+    const link = window.document.createElement('a');
+    link.href = url;
+    link.download = filename.endsWith('.xlsx') ? filename : `${filename}.xlsx`;
+    link.style.display = 'none';
+    window.document.body.appendChild(link);
+    link.click();
+    window.document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    return;
+  }
+
   const summarySheet = workbook.addWorksheet('Executive Summary');
   populateMetadataSheet(summarySheet, document);
 

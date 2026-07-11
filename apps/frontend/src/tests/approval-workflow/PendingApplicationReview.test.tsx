@@ -27,6 +27,31 @@ vi.mock('@/services', () => ({
     blacklistBorrower: mockBlacklistBorrower,
     listPendingApplications: mockListPendingApplications,
     listReviewedApplications: vi.fn().mockResolvedValue([]),
+    checkGuarantorEligibility: vi.fn().mockResolvedValue({
+      isEligible: true,
+      activeGuaranteeCount: 0,
+      maxGuarantees: 3,
+      validationStatus: 'ELIGIBLE',
+    }),
+  },
+  settingsService: {
+    getRegistrationLegalConfig: vi.fn().mockResolvedValue({
+      programName: "Women's Interest-Free Loan Programme",
+      formTitle: 'Borrower Registration Agreement',
+      instructionText: 'Complete all sections accurately.',
+      programDeclaration: 'Program declaration text.',
+      guarantorDeclaration: 'Guarantor declaration text.',
+      borrowerDeclaration: 'Borrower declaration text.',
+      keyTerms: 'Key terms text.',
+      legalNotice: 'Legal notice text.',
+    }),
+  },
+  groupService: {
+    listGroups: vi.fn().mockResolvedValue({ groups: [] }),
+    createGroup: vi.fn(),
+  },
+  collectorManagementService: {
+    listCollectors: vi.fn().mockResolvedValue({ collectors: [] }),
   },
   auditService: {
     createEntry: vi.fn(),
