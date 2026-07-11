@@ -1,4 +1,5 @@
 import { env } from '../../config/env.js';
+import { shouldSendChannel } from '../../modules/notifications/preferences.service.js';
 import { getSettings } from '../../modules/settings/service.js';
 import { dispatchMail } from '../mail/dispatch.js';
 import { getSmsProvider } from '../sms/index.js';
@@ -28,6 +29,9 @@ import {
   buildLoanReminderSmsBody,
   buildMissedPaymentSmsBody,
   buildPasswordResetEmail,
+  buildPasswordChangedEmail,
+  buildLoginAlertEmail,
+  buildInvitationAcceptedEmail,
   buildPaymentConfirmationEmail,
   buildPaymentConfirmationSmsBody,
   buildPaymentReversalEmail,
@@ -142,8 +146,14 @@ async function dispatchEmailWhenEnabled(input: {
   loanId?: string;
   userId?: string;
   force?: boolean;
+  category?: 'marketing' | 'announcement' | 'reminder' | 'loan' | 'payment' | 'approval' | 'registration';
 }): Promise<void> {
   if (!input.to?.trim()) return;
+
+  if (input.userId && !input.force) {
+    const allowed = await shouldSendChannel(input.userId, 'EMAIL', input.category);
+    if (!allowed) return;
+  }
 
   const settings = await getSettings();
   if (!input.force && !settings.emailNotificationsEnabled) return;
@@ -304,6 +314,106 @@ export async function notifyPasswordReset(input: {
       userId: input.userId,
     });
   }
+}
+
+export async function notifyPasswordChanged(input: {
+  email: string;
+  displayName: string;
+  userId: string;
+  changedAt?: string;
+}): Promise<void> {
+  const loginUrl = `${(env.appUrl ?? 'https://wilms.vercel.app').replace(/\/$/, '')}/login`;
+  const template = buildPasswordChangedEmail({
+    displayName: input.displayName,
+    changedAt: input.changedAt ?? new Date().toISOString(),
+    loginUrl,
+  });
+  await dispatchEmailWhenEnabled({
+    event: 'PASSWORD_CHANGED',
+    to: input.email,
+    subject: template.subject,
+    text: template.text,
+    html: template.html,
+    userId: input.userId,
+    category: 'registration',
+  });
+  void createInAppNotification({
+    userId: input.userId,
+    event: 'PASSWORD_CHANGED',
+    title: 'Password changed',
+    body: 'Your account password was updated successfully.',
+    href: '/settings',
+  });
+}
+
+export async function notifyLoginAlert(input: {
+  email: string;
+  displayName: string;
+  userId: string;
+  loginAt?: string;
+  deviceLabel?: string;
+  locationLabel?: string;
+}): Promise<void> {
+  const loginUrl = `${(env.appUrl ?? 'https://wilms.vercel.app').replace(/\/$/, '')}/login`;
+  const loginAt = input.loginAt ?? new Date().toISOString();
+  const template = buildLoginAlertEmail({
+    displayName: input.displayName,
+    loginAt,
+    deviceLabel: input.deviceLabel,
+    locationLabel: input.locationLabel,
+    loginUrl,
+  });
+
+  await dispatchEmailWhenEnabled({
+    event: 'LOGIN_ALERT',
+    to: input.email,
+    subject: template.subject,
+    text: template.text,
+    html: template.html,
+    userId: input.userId,
+  });
+
+  const inAppAllowed = await shouldSendChannel(input.userId, 'IN_APP');
+  if (inAppAllowed) {
+    void createInAppNotification({
+      userId: input.userId,
+      event: 'LOGIN_ALERT',
+      title: 'New sign-in detected',
+      body: `A sign-in occurred on ${loginAt}.`,
+      href: '/settings',
+    });
+  }
+}
+
+export async function notifyInvitationAccepted(input: {
+  email: string;
+  displayName: string;
+  role: string;
+  userId: string;
+}): Promise<void> {
+  const loginUrl = `${(env.appUrl ?? 'https://wilms.vercel.app').replace(/\/$/, '')}/login`;
+  const template = buildInvitationAcceptedEmail({
+    displayName: input.displayName,
+    acceptedAt: new Date().toISOString(),
+    role: input.role,
+    loginUrl,
+  });
+  await dispatchEmailWhenEnabled({
+    event: 'INVITATION_ACCEPTED',
+    to: input.email,
+    subject: template.subject,
+    text: template.text,
+    html: template.html,
+    userId: input.userId,
+    category: 'registration',
+  });
+  void createInAppNotification({
+    userId: input.userId,
+    event: 'INVITATION_ACCEPTED',
+    title: 'Invitation accepted',
+    body: `Your ${input.role} account is now active.`,
+    href: loginUrl,
+  });
 }
 
 export async function notifyLoginOtp(input: {

@@ -6,13 +6,13 @@ export interface ReleaseNotes {
 }
 
 export const CURRENT_RELEASE_NOTES: ReleaseNotes = {
-  version: '1.3.3',
-  summary: 'Stability fixes for navigation, caching, and user management.',
+  version: '1.3.5',
+  summary: 'Premium splash, unified email design system, and notification center refresh.',
   highlights: [
-    'Service worker no longer breaks page navigation or serves stale app chunks.',
-    'In-app update prompt lets you choose when to reload after a deployment.',
-    'Invited users now show the correct status after signing in.',
-    'Audit log loading and table layout improvements.',
-    'Sign-in page redesigned with trust strip, caps lock warning, and user-controlled update flow.',
+    'Animated startup splash with reduced-motion support.',
+    'Login page simplified — mission tagline moved to email communications only.',
+    'Expanded email catalogue with status banners, privacy footer, and new security templates.',
+    'Notification center search, categories, pagination, and archive actions.',
+    'User notification preferences respected by transactional email dispatch.',
   ],
 };

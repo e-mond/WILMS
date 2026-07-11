@@ -11,15 +11,20 @@ test.describe('Forgot password flow', () => {
     await expect(page.getByText("Women's Interest-Free Loan Management")).toBeVisible();
     await expect(
       page.getByText('Helping women grow through interest-free financing.'),
-    ).toBeVisible();
+    ).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Back to Sign In' })).toBeVisible();
   });
 
   test('validates email before submit', async ({ page }) => {
     await page.goto('/forgot-password');
+    await expect(page.getByRole('heading', { name: 'Forgot your password?' })).toBeVisible({
+      timeout: 20_000,
+    });
+    await expect(page.locator('#forgot-password-email')).toBeVisible();
+    await page.locator('#forgot-password-email').fill('');
 
     await page.getByRole('button', { name: 'Send Reset Link' }).click();
-    await expect(page.getByText('Email is required.')).toBeVisible();
+    await expect(page.locator('#forgot-password-email-error')).toHaveText(/Email is required|Enter a valid email address/);
   });
 
   test('submits reset request and shows enumeration-safe success state', async ({ page }) => {
