@@ -1,7 +1,6 @@
 import { cn } from '@/utils/cn';
 
 export const AUTH_APPLICATION_NAME = "Women's Interest-Free Loan Management";
-export const AUTH_MISSION_TAGLINE = 'Helping women grow through interest-free financing.';
 
 export interface AuthBrandHeaderProps {
   className?: string;
@@ -26,14 +25,9 @@ export function AuthBrandHeader({ className }: AuthBrandHeaderProps) {
         />
       </div>
 
-      <div className="mt-wilms-4 flex max-w-[420px] flex-col items-center gap-wilms-2">
-        <p className="text-[17px] font-medium leading-snug text-text-secondary sm:text-[18px]">
-          {AUTH_APPLICATION_NAME}
-        </p>
-        <p className="text-[14px] font-normal leading-relaxed text-text-muted sm:text-[15px]">
-          {AUTH_MISSION_TAGLINE}
-        </p>
-      </div>
+      <p className="mt-wilms-4 max-w-[420px] text-[17px] font-medium leading-snug text-text-secondary sm:text-[18px]">
+        {AUTH_APPLICATION_NAME}
+      </p>
     </header>
   );
 }

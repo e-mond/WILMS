@@ -1,9 +1,13 @@
 import { render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppBootstrap } from '@/components/providers/AppBootstrap';
 import { useAppLockStore } from '@/state/appLockStore';
 import { useAuthStore } from '@/state/authStore';
 import { useThemeStore } from '@/state/themeStore';
+
+vi.mock('framer-motion', () => ({
+  useReducedMotion: () => true,
+}));
 
 describe('AppBootstrap', () => {
   beforeEach(() => {
@@ -27,7 +31,7 @@ describe('AppBootstrap', () => {
       </AppBootstrap>,
     );
 
-    expect(screen.getByLabelText('Restoring your session...')).toBeInTheDocument();
+    expect(screen.getByLabelText('Restoring your session…')).toBeInTheDocument();
     expect(screen.queryByText('Application ready')).not.toBeInTheDocument();
   });
 

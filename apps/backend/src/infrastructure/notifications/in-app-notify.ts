@@ -24,7 +24,10 @@ export type InAppEvent =
   | 'ROLE_CHANGED'
   | 'GROUP_CREATED'
   | 'COLLECTOR_ASSIGNED'
-  | 'COMMUNICATION';
+  | 'COMMUNICATION'
+  | 'PASSWORD_CHANGED'
+  | 'INVITATION_ACCEPTED'
+  | 'LOGIN_ALERT';
 
 function resolveSeverity(event: InAppEvent): 'INFO' | 'WARNING' | 'CRITICAL' {
   if (

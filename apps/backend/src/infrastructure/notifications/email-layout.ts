@@ -9,7 +9,9 @@ export type EmailButtonVariant = 'primary' | 'success' | 'info' | 'warning' | 'c
 const BRAND = {
   name: 'WILMS',
   tagline: "Women's Interest-Free Loan Management System",
+  missionTagline: 'Helping women grow through interest-free financing.',
   website: 'https://wilms.vercel.app',
+  privacyUrl: 'https://wilms.vercel.app/privacy',
   supportEmail: 'support@wilms.org',
   phone: '+233 XX XXX XXXX',
   year: new Date().getFullYear(),
@@ -47,6 +49,7 @@ export function emailHeader(theme: EmailTheme = 'default'): string {
     <td style="background:${accent};border-radius:12px 12px 0 0;padding:28px 32px;text-align:center;">
       <div style="font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:700;color:#ffffff;letter-spacing:2px;">WILMS</div>
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;color:rgba(255,255,255,0.85);margin-top:4px;">${escapeHtml(BRAND.tagline)}</div>
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:11px;color:rgba(255,255,255,0.7);margin-top:6px;font-style:italic;">${escapeHtml(BRAND.missionTagline)}</div>
     </td>
   </tr>
 </table>`.trim();
@@ -58,9 +61,11 @@ export function emailFooter(): string {
   <tr>
     <td style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;color:#64748B;text-align:center;line-height:1.6;">
       <p style="margin:0 0 8px;"><strong>${escapeHtml(BRAND.name)}</strong> &mdash; ${escapeHtml(BRAND.tagline)}</p>
+      <p style="margin:0 0 8px;font-style:italic;color:#94A3B8;">${escapeHtml(BRAND.missionTagline)}</p>
       <p style="margin:0 0 8px;">
         <a href="${BRAND.website}" style="color:#1B5E4B;text-decoration:none;">${BRAND.website.replace('https://', '')}</a>
         &nbsp;&bull;&nbsp; ${escapeHtml(BRAND.supportEmail)}
+        &nbsp;&bull;&nbsp; <a href="${BRAND.privacyUrl}" style="color:#1B5E4B;text-decoration:none;">Privacy</a>
       </p>
       <p style="margin:0;color:#94A3B8;">&copy; ${BRAND.year} WILMS. All rights reserved.</p>
     </td>
@@ -119,6 +124,31 @@ export function emailAlert(message: string, variant: EmailTheme = 'info'): strin
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;">
   <tr>
     <td style="background:${bg};border-left:4px solid ${accent};border-radius:0 8px 8px 0;padding:14px 18px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px;color:#334155;line-height:1.5;">${message}</td>
+  </tr>
+</table>`.trim();
+}
+
+/** Status banner for email subject context (success, warning, etc.). */
+export function emailStatusBanner(title: string, message: string, variant: EmailTheme = 'info'): string {
+  const { accent, bg } = COLORS[variant];
+  return `
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
+  <tr>
+    <td style="background:${bg};border-radius:8px;padding:16px 20px;border:1px solid ${accent}22;">
+      <p style="margin:0 0 4px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:13px;font-weight:700;color:${accent};text-transform:uppercase;letter-spacing:0.05em;">${escapeHtml(title)}</p>
+      <p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px;color:#334155;line-height:1.5;">${message}</p>
+    </td>
+  </tr>
+</table>`.trim();
+}
+
+export function emailSecondaryButton(label: string, url: string): string {
+  return `
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 24px;">
+  <tr>
+    <td style="border-radius:8px;border:1px solid #CBD5E1;">
+      <a href="${escapeHtml(url)}" target="_blank" style="display:inline-block;padding:12px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px;font-weight:600;color:#1B5E4B;text-decoration:none;border-radius:8px;">${escapeHtml(label)}</a>
+    </td>
   </tr>
 </table>`.trim();
 }

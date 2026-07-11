@@ -33,8 +33,8 @@ test.describe('login UX', () => {
     await expect(page.getByText('Women\'s Interest-Free Loan Management')).toBeVisible();
     await expect(
       page.getByText('Helping women grow through interest-free financing.'),
-    ).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible();
+    ).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Welcome Back' })).toBeVisible();
     await expect(page.getByRole('button', { name: /Switch to (dark|light) mode/ })).toBeVisible();
   });
 
