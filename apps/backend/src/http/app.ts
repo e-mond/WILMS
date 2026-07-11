@@ -40,6 +40,13 @@ import { organizationHolidaysRouter } from '../modules/organization-holidays/rou
 
 function mountBusinessRoutes(app: express.Application, basePath = '') {
   const prefix = basePath.replace(/\/$/, '');
+
+  // Public routes must mount before routers that apply blanket requireAuth middleware.
+  // Otherwise Express invokes the first mounted router for every /api/v1 request and
+  // unauthenticated mobile capture / location lookups receive 401 before matching.
+  app.use(`${prefix}`, photoCaptureRouter);
+  app.use(`${prefix}`, locationsRouter);
+
   app.use(`${prefix}`, loansRouter);
   app.use(`${prefix}`, loanPoolsRouter);
   app.use(`${prefix}`, adjustmentsRouter);
@@ -58,10 +65,8 @@ function mountBusinessRoutes(app: express.Application, basePath = '') {
   app.use(`${prefix}`, expensesRouter);
   app.use(`${prefix}`, riskFlagsRouter);
   app.use(`${prefix}`, searchRouter);
-  app.use(`${prefix}`, locationsRouter);
   app.use(`${prefix}`, overpaymentReviewsRouter);
   app.use(`${prefix}`, analyticsRouter);
-  app.use(`${prefix}`, photoCaptureRouter);
   app.use(`${prefix}`, transactionsRouter);
   app.use(`${prefix}`, messagesRouter);
   app.use(`${prefix}`, communicationsRouter);
