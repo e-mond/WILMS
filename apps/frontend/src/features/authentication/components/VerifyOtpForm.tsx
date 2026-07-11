@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Alert } from '@/components/feedback/Alert';
-import { Button } from '@/components/ui/Button';
+import { LoadingButton } from '@/components/ui/LoadingButton';
 import { Input } from '@/components/ui/Input';
 import { resolveSafeRedirect } from '@/lib/auth/redirect';
 import { authService } from '@/services';
@@ -58,38 +58,57 @@ export function VerifyOtpForm({ challengeId, message, onBack }: VerifyOtpFormPro
   }
 
   return (
-    <form className="space-y-wilms-4" onSubmit={(event) => void handleVerify(event)}>
-      <Alert title="Verification required" variant="info">
-        {message ?? 'Enter the code sent to your email and phone.'}
+    <div className="space-y-wilms-4">
+      <p className="text-center text-small font-semibold uppercase tracking-wide text-executive-gold">
+        Step 2 of 2
+      </p>
+
+      <Alert title="Verify it's you" variant="info">
+        {message ?? 'Enter the 6-digit code we sent to your email.'}
       </Alert>
 
-      {submitError ? (
-        <Alert title="Verification failed" variant="error">
-          {submitError}
-        </Alert>
-      ) : null}
+      <form
+        className="space-y-wilms-4"
+        aria-describedby={submitError ? 'otp-submit-error' : undefined}
+        onSubmit={(event) => void handleVerify(event)}
+      >
+        {submitError ? (
+          <Alert id="otp-submit-error" title="Verification failed" variant="error">
+            {submitError}
+          </Alert>
+        ) : null}
 
-      <div className="space-y-wilms-2">
-        <label htmlFor="login-otp" className="text-small font-semibold text-text-primary">
-          Verification code
-        </label>
-        <Input
-          id="login-otp"
-          inputMode="numeric"
-          autoComplete="one-time-code"
-          value={code}
-          onChange={(event) => setCode(event.target.value)}
-          placeholder="6-digit code"
-        />
-      </div>
+        <div className="space-y-wilms-2">
+          <label htmlFor="login-otp" className="text-small font-semibold text-text-primary">
+            Verification code
+          </label>
+          <Input
+            id="login-otp"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={6}
+            pattern="[0-9]*"
+            value={code}
+            onChange={(event) => setCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+            placeholder="6-digit code"
+          />
+        </div>
 
-      <Button type="submit" className="w-full" disabled={isSubmitting || !code.trim()}>
-        {isSubmitting ? 'Verifying...' : 'Verify and continue'}
-      </Button>
+        <LoadingButton
+          type="submit"
+          size="lg"
+          className="w-full"
+          loading={isSubmitting}
+          loadingLabel="Verifying…"
+          disabled={!code.trim()}
+        >
+          Verify and continue
+        </LoadingButton>
 
-      <Button type="button" variant="secondary" className="w-full" onClick={onBack}>
-        Back to sign in
-      </Button>
-    </form>
+        <LoadingButton type="button" variant="secondary" size="lg" className="w-full" onClick={onBack}>
+          Back to sign in
+        </LoadingButton>
+      </form>
+    </div>
   );
 }

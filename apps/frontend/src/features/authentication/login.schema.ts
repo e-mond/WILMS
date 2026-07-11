@@ -6,10 +6,7 @@ export const loginSchema = z.object({
     .trim()
     .min(1, 'Email is required.')
     .email('Enter a valid email address.'),
-  password: z
-    .string()
-    .min(1, 'Password is required.')
-    .refine((value) => value.length >= 8, 'Password must be at least 8 characters.'),
+  password: z.string().min(1, 'Password is required.'),
 });
 
 export type LoginFormInput = z.infer<typeof loginSchema>;

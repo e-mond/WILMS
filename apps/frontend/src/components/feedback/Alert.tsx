@@ -15,6 +15,7 @@ export interface AlertProps {
   children?: ReactNode;
   variant?: AlertVariant;
   className?: string;
+  id?: string;
 }
 
 export function Alert({
@@ -22,9 +23,11 @@ export function Alert({
   children,
   variant = 'info',
   className,
+  id,
 }: AlertProps) {
   return (
     <div
+      id={id}
       role="alert"
       className={cn(
         'rounded-sm border p-wilms-4',

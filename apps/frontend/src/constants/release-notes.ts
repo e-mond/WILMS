@@ -13,6 +13,6 @@ export const CURRENT_RELEASE_NOTES: ReleaseNotes = {
     'In-app update prompt lets you choose when to reload after a deployment.',
     'Invited users now show the correct status after signing in.',
     'Audit log loading and table layout improvements.',
-    'Settings and sign-in UI polish with consistent icons and branding.',
+    'Sign-in page redesigned with trust strip, caps lock warning, and user-controlled update flow.',
   ],
 };
