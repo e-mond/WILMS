@@ -17,6 +17,7 @@ All notable changes to WILMS are documented in this file.
 ### Changed
 - Settings section headers use Lucide icons instead of emoji.
 - Sign-in page redesigned to enterprise FinTech standards: single brand header, simplified copy, trust strip, caps lock warning, icon password toggle, loading button, and skeleton hydration state.
+- Forgot password page redesigned with branding, trust indicators, email icon input, success confirmation, resend cooldown, and enumeration-safe messaging.
 - Application version bumped to `1.3.3`.
 
 ## [1.3.2] — Field Ops Continuation

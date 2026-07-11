@@ -7,9 +7,15 @@ import { cn } from '@/utils/cn';
 
 export interface AuthPageFooterProps {
   className?: string;
+  helpHref?: string;
+  helpLabel?: string;
 }
 
-export function AuthPageFooter({ className }: AuthPageFooterProps) {
+export function AuthPageFooter({
+  className,
+  helpHref = '/forgot-password',
+  helpLabel = 'Help',
+}: AuthPageFooterProps) {
   const versionLabel = getAppVersionLabel();
 
   return (
@@ -22,8 +28,8 @@ export function AuthPageFooter({ className }: AuthPageFooterProps) {
       <ThemeToggle />
 
       <nav aria-label="Support links" className="flex flex-wrap items-center gap-x-wilms-3 gap-y-wilms-1">
-        <Link href="/forgot-password" className="font-semibold text-text-secondary hover:text-brand-primary">
-          Help
+        <Link href={helpHref} className="font-semibold text-text-secondary hover:text-brand-primary">
+          {helpLabel}
         </Link>
         <span aria-hidden="true" className="text-border">
           ·
