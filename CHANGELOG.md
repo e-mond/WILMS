@@ -9,6 +9,8 @@ All notable changes to WILMS are documented in this file.
 - Service worker stops caching runtime scripts/documents; only explicit shell assets are cached.
 - OTP verification now records invitation acceptance and first-login milestones.
 - Settings user list refreshes after account activation.
+- Forgot password API routing: BFF proxied auth to `/api/v1/auth/*` instead of `/auth/*`; added `/api/auth/forgot-password` and `/api/auth/reset-password` Next routes matching login.
+- Password reset no longer crashes when `DATABASE_URL` is unset (enumeration-safe success).
 
 ### Added
 - In-app update prompt with release summary when a new service worker is waiting.
