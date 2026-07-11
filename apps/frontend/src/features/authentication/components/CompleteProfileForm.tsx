@@ -6,7 +6,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { Alert } from '@/components/feedback/Alert';
 import { PasswordField } from '@/components/forms/PasswordField';
-import { Button } from '@/components/ui/Button';
+import { LoadingButton } from '@/components/ui/LoadingButton';
+import { AuthCard } from '@/features/authentication/components/AuthCard';
+import { AuthTrustStrip } from '@/features/authentication/components/AuthTrustStrip';
 import { Input } from '@/components/ui/Input';
 import { resolveSafeRedirect } from '@/lib/auth/redirect';
 import { authService } from '@/services';
@@ -81,19 +83,13 @@ export function CompleteProfileForm() {
   });
 
   return (
-    <div className="w-full max-w-lg overflow-hidden rounded-sm border border-border bg-card shadow-none">
-      <div className="border-b border-border bg-brand-primary-light px-wilms-6 py-wilms-6 text-center">
-        <p className="text-display font-bold tracking-wide text-brand-primary">WILMS</p>
-        <p className="mt-wilms-1 text-small font-semibold uppercase tracking-widest text-text-muted">
-          Complete your account
-        </p>
-      </div>
-
-      <div className="p-wilms-6">
-        <div className="mb-wilms-6 text-center">
+    <AuthCard className="rounded-xl">
+      <div className="space-y-wilms-8">
+        <div className="space-y-wilms-3 text-center">
           <h1 className="text-heading-1 font-semibold text-text-primary">Set up your profile</h1>
-          <p className="mt-wilms-2 text-body text-text-muted">
-            Choose a new password and add your contact details. Profile photo is optional and can be added later in settings.
+          <p className="text-body text-text-secondary">
+            Choose a new password and add your contact details. You can add a profile photo later in
+            settings.
           </p>
         </div>
 
@@ -170,11 +166,19 @@ export function CompleteProfileForm() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : 'Activate account'}
-          </Button>
+          <LoadingButton
+            type="submit"
+            size="lg"
+            className="w-full"
+            loading={isSubmitting}
+            loadingLabel="Saving…"
+          >
+            Activate account
+          </LoadingButton>
         </form>
+
+        <AuthTrustStrip />
       </div>
-    </div>
+    </AuthCard>
   );
 }
