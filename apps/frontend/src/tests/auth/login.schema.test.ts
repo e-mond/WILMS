@@ -21,13 +21,22 @@ describe('loginSchema', () => {
     expect(result.error?.issues[0]?.message).toBe('Enter a valid email address.');
   });
 
-  it('requires a password with at least 8 characters', () => {
+  it('requires a non-empty password', () => {
     const result = loginSchema.safeParse({
       email: 'admin@wilms.demo',
-      password: 'short',
+      password: '',
     });
 
     expect(result.success).toBe(false);
-    expect(result.error?.issues[0]?.message).toBe('Password must be at least 8 characters.');
+    expect(result.error?.issues[0]?.message).toBe('Password is required.');
+  });
+
+  it('accepts short invite passwords for server-side validation', () => {
+    const result = loginSchema.safeParse({
+      email: 'invited@wilms.demo',
+      password: 'short',
+    });
+
+    expect(result.success).toBe(true);
   });
 });

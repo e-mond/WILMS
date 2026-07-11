@@ -7,7 +7,7 @@ export function AppVersionBadge() {
   }
 
   return (
-    <p className="mt-wilms-6 text-center text-xs text-muted-foreground" aria-label={`Version ${label}`}>
+    <p className="text-center text-xs text-text-muted" aria-label={`Version ${label}`}>
       {label}
     </p>
   );
