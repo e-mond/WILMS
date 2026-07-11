@@ -6,9 +6,13 @@ import { cn } from '@/utils/cn';
 
 export interface AuthTrustStripProps {
   className?: string;
+  message?: string;
 }
 
-export function AuthTrustStrip({ className }: AuthTrustStripProps) {
+export function AuthTrustStrip({
+  className,
+  message = 'Secure connection. Your data is encrypted in transit.',
+}: AuthTrustStripProps) {
   const [isSecure, setIsSecure] = useState(true);
 
   useEffect(() => {
@@ -25,8 +29,8 @@ export function AuthTrustStrip({ className }: AuthTrustStripProps) {
       <ShieldCheck className="h-4 w-4 shrink-0 text-executive-gold" aria-hidden="true" />
       <span>
         {isSecure
-          ? 'Secure connection. Your data is encrypted in transit.'
-          : 'Use a secure connection (HTTPS) to protect your sign-in.'}
+          ? message
+          : 'Use a secure connection (HTTPS) to protect your account recovery.'}
       </span>
     </p>
   );

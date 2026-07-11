@@ -7,6 +7,7 @@ import type {
   VerifyOtpInput,
 } from '@/types/auth';
 import type { IAuthService } from '@/types/services';
+import { extractApiErrorMessage } from '@/lib/api/error-body';
 import { csrfHeaders, readCsrfFromDocumentCookie } from '@/lib/auth/csrf';
 import { isLoginOtpChallenge } from '@/types/auth';
 
@@ -23,22 +24,33 @@ export { ensureCsrfToken };
 async function postAuthJson<T>(path: string, body: unknown): Promise<T> {
   await ensureCsrfToken();
 
-  const response = await fetch(path, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...csrfHeaders(),
-    },
-    credentials: 'include',
-    body: JSON.stringify(body),
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(path, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...csrfHeaders(),
+      },
+      credentials: 'include',
+      body: JSON.stringify(body),
+    });
+  } catch {
+    throw new ApiError(
+      'Unable to reach the server. Check your connection and try again.',
+      API_ERROR_CODE.NETWORK,
+    );
+  }
+
+  const payload = await response.json().catch(() => null);
 
   if (!response.ok) {
-    const payload = (await response.json().catch(() => null)) as { message?: string } | null;
+    const message = extractApiErrorMessage(payload);
 
     if (response.status === 401) {
       throw new ApiError(
-        payload?.message ?? 'Authentication failed.',
+        message ?? 'Authentication failed.',
         API_ERROR_CODE.UNAUTHORIZED,
         401,
       );
@@ -46,20 +58,36 @@ async function postAuthJson<T>(path: string, body: unknown): Promise<T> {
 
     if (response.status === 422) {
       throw new ApiError(
-        payload?.message ?? 'Please check your details.',
+        message ?? 'Please check your details.',
         API_ERROR_CODE.VALIDATION,
         422,
       );
     }
 
+    if (response.status === 429) {
+      throw new ApiError(
+        message ?? 'Too many attempts. Please try again later.',
+        API_ERROR_CODE.VALIDATION,
+        429,
+      );
+    }
+
+    if (response.status >= 500) {
+      throw new ApiError(
+        message ?? 'Service is temporarily unavailable.',
+        API_ERROR_CODE.SERVER,
+        response.status,
+      );
+    }
+
     throw new ApiError(
-      payload?.message ?? 'Unable to complete the request.',
+      message ?? 'Unable to complete the request.',
       API_ERROR_CODE.SERVER,
       response.status,
     );
   }
 
-  return response.json() as Promise<T>;
+  return payload as T;
 }
 
 const authService: IAuthService = {
@@ -80,53 +108,11 @@ const authService: IAuthService = {
   },
 
   async requestPasswordReset(email: string): Promise<{ ok: true }> {
-    await ensureCsrfToken();
-
-    const response = await fetch('/api/wilms/auth/forgot-password', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...csrfHeaders(),
-      },
-      credentials: 'include',
-      body: JSON.stringify({ email }),
-    });
-
-    if (!response.ok) {
-      const body = (await response.json().catch(() => null)) as { message?: string } | null;
-      throw new ApiError(
-        body?.message ?? 'Unable to process reset request.',
-        API_ERROR_CODE.VALIDATION,
-        response.status,
-      );
-    }
-
-    return { ok: true };
+    return postAuthJson<{ ok: true }>('/api/auth/forgot-password', { email });
   },
 
   async resetPassword(token: string, newPassword: string): Promise<{ ok: true }> {
-    await ensureCsrfToken();
-
-    const response = await fetch('/api/wilms/auth/reset-password', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...csrfHeaders(),
-      },
-      credentials: 'include',
-      body: JSON.stringify({ token, newPassword }),
-    });
-
-    if (!response.ok) {
-      const body = (await response.json().catch(() => null)) as { message?: string } | null;
-      throw new ApiError(
-        body?.message ?? 'Unable to reset password.',
-        API_ERROR_CODE.VALIDATION,
-        response.status,
-      );
-    }
-
-    return { ok: true };
+    return postAuthJson<{ ok: true }>('/api/auth/reset-password', { token, newPassword });
   },
 };
 

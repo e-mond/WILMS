@@ -4,6 +4,7 @@ import {
   sanitizeProxyRequestHeaders,
   sanitizeProxyResponseHeaders,
 } from '@/lib/api/proxy-headers';
+import { resolveWilmsProxyUpstreamPath } from '@/lib/api/upstream-path';
 import { rejectInvalidCsrf } from '@/lib/auth/csrf-server';
 import { SESSION_COOKIE_NAME } from '@/lib/auth/session';
 
@@ -29,10 +30,8 @@ async function proxyRequest(request: Request, pathSegments: string[]): Promise<R
 
   const apiUpstream = resolveApiUpstream();
   const path = pathSegments.join('/');
-  const isRootHealth = path === 'health';
-  const upstreamPath = isRootHealth
-    ? `/health${new URL(request.url).search}`
-    : `/api/v1/${path}${new URL(request.url).search}`;
+  const search = new URL(request.url).search;
+  const upstreamPath = resolveWilmsProxyUpstreamPath(path, search);
   const upstreamUrl = `${apiUpstream}${upstreamPath}`;
   const sessionCookie = cookies().get(SESSION_COOKIE_NAME)?.value;
   const headers = sanitizeProxyRequestHeaders(request.headers);
@@ -51,13 +50,22 @@ async function proxyRequest(request: Request, pathSegments: string[]): Promise<R
     init.body = await request.text();
   }
 
-  const upstreamResponse = await fetch(upstreamUrl, init);
-  const body = await upstreamResponse.arrayBuffer();
+  try {
+    const upstreamResponse = await fetch(upstreamUrl, init);
+    const body = await upstreamResponse.arrayBuffer();
 
-  return new NextResponse(body, {
-    status: upstreamResponse.status,
-    headers: sanitizeProxyResponseHeaders(upstreamResponse.headers),
-  });
+    return new NextResponse(body, {
+      status: upstreamResponse.status,
+      headers: sanitizeProxyResponseHeaders(upstreamResponse.headers),
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Upstream API request failed.';
+    return NextResponse.json(
+      { error: { message, code: 'UPSTREAM_UNAVAILABLE' } },
+      { status: 503 },
+    );
+  }
 }
 
 export async function GET(
