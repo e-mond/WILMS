@@ -68,7 +68,7 @@ describe('LoginForm', () => {
 
     expect(screen.getByRole('button', { name: 'Show password' })).toBeInTheDocument();
     expect(screen.getByLabelText('Remember email')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Welcome back' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Welcome Back' })).toBeInTheDocument();
   });
 
   it('submits valid credentials and redirects safely', async () => {

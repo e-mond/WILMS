@@ -1,6 +1,6 @@
 # WILMS Security Guide
 
-**Last updated:** 2026-07-11 (v1.3.4)
+**Last updated:** 2026-07-11 (v1.3.5)
 
 ## Current controls
 

@@ -43,7 +43,7 @@ export async function waitForLoginForm(
     { timeout: 30_000 },
   );
 
-  await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole('heading', { name: 'Welcome Back' })).toBeVisible({ timeout: 20_000 });
   await expect(page.locator('form[data-login-ready="true"]')).toBeVisible({ timeout: 15_000 });
 }
 

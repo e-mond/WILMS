@@ -21,6 +21,37 @@ import {
   requestPasswordReset,
   resetPasswordWithToken,
 } from './password-reset.service.js';
+import { notifyInvitationAccepted, notifyLoginAlert } from '../../infrastructure/notifications/event-dispatch.js';
+
+function summarizeUserAgent(userAgent?: string): string | undefined {
+  if (!userAgent?.trim()) {
+    return undefined;
+  }
+
+  if (/mobile|android|iphone/i.test(userAgent)) {
+    return 'Mobile device';
+  }
+
+  if (/tablet|ipad/i.test(userAgent)) {
+    return 'Tablet';
+  }
+
+  return 'Desktop browser';
+}
+
+async function sendLoginAlert(user: AuthUser, ip?: string, userAgent?: string): Promise<void> {
+  try {
+    await notifyLoginAlert({
+      email: user.email,
+      displayName: user.displayName,
+      userId: user.id,
+      deviceLabel: summarizeUserAgent(userAgent),
+      locationLabel: ip ? `IP ${ip}` : undefined,
+    });
+  } catch (error) {
+    console.error('[auth] login-alert notification failed:', error);
+  }
+}
 
 async function recordSuccessfulLogin(user: AuthUser): Promise<void> {
   if (!isDatabaseEnabled()) {
@@ -230,6 +261,17 @@ authRouter.post(
       reason: 'accept-invitation-link',
     });
 
+    try {
+      await notifyInvitationAccepted({
+        email: user.email,
+        displayName: user.displayName,
+        role: user.role,
+        userId: user.id,
+      });
+    } catch (error) {
+      console.error('[auth] invitation-accepted notification failed:', error);
+    }
+
     sendData(res, { accepted: true });
   }),
 );
@@ -291,6 +333,8 @@ authRouter.post(
       ip: clientIp,
     });
 
+    void sendLoginAlert(user, clientIp, req.get('user-agent'));
+
     sendData(res, buildLoginResponse(user));
   }),
 );
@@ -330,6 +374,8 @@ authRouter.post(
       displayName: user.displayName,
       ip: req.ip,
     });
+
+    void sendLoginAlert(user, req.ip, req.get('user-agent'));
 
     sendData(res, buildLoginResponse(user));
   }),

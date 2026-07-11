@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { buildEmailHtml, emailButton, emailCard } from '../../infrastructure/notifications/email-layout.js';
-import { buildPasswordResetEmail, buildWelcomeEmail } from '../../infrastructure/notifications/templates.js';
+import {
+  buildPasswordResetEmail,
+  buildPasswordChangedEmail,
+  buildVerifyEmailEmail,
+  buildWelcomeEmail,
+} from '../../infrastructure/notifications/templates.js';
 
 describe('email layout engine', () => {
   it('renders branded HTML with WILMS header', () => {
@@ -40,5 +45,27 @@ describe('email layout engine', () => {
 
     expect(email.subject).toContain('Welcome');
     expect(email.html).toContain('Registration Officer');
+  });
+
+  it('includes mission tagline in email header', () => {
+    const html = buildEmailHtml({
+      greeting: 'Test',
+      body: '<p>Body</p>',
+    });
+    expect(html).toContain('Helping women grow through interest-free financing.');
+  });
+
+  it('builds v1.3.5 security email templates', () => {
+    const changed = buildPasswordChangedEmail({
+      displayName: 'User',
+      changedAt: '2026-07-11',
+      loginUrl: 'https://wilms.vercel.app/login',
+    });
+    const verify = buildVerifyEmailEmail({
+      displayName: 'User',
+      verifyUrl: 'https://wilms.vercel.app/verify',
+    });
+    expect(changed.subject).toContain('password');
+    expect(verify.html).toContain('Verify Email');
   });
 });

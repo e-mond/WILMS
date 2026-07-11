@@ -143,10 +143,24 @@
       "breakpoints": true
     },
     {
+      "idx": 20,
+      "version": "7",
+      "when": 1783524800000,
+      "tag": "0020_v130_field_operations",
+      "breakpoints": true
+    },
+    {
       "idx": 21,
       "version": "7",
       "when": 1783611200000,
       "tag": "0021_list_query_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1783697600000,
+      "tag": "0022_v135_notification_events",
       "breakpoints": true
     }
   ]
