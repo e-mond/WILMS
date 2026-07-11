@@ -51,6 +51,38 @@ function buildTableCsv(headers: string[], rows: string[][], totalsRow?: string[]
 export function buildWilmsCsvContent(document: WilmsExportDocument): string {
   const blocks: string[] = [...buildMetadataLines(document)];
 
+  if (document.registrationAgreement) {
+    const content = document.registrationAgreement;
+    const sections = [
+      { title: 'Applicant Information', rows: content.applicantRows },
+      { title: 'Work / Business Information', rows: content.workRows },
+      { title: 'Guarantor Information', rows: content.guarantorRows },
+    ];
+
+    for (const section of sections) {
+      blocks.push(`Section,${escapeCsvCell(section.title)}`);
+      blocks.push(
+        buildTableCsv(
+          ['Field', 'Value'],
+          section.rows.map((row) => [row.label, row.value]),
+        ),
+      );
+      blocks.push('');
+    }
+
+    blocks.push(`Section,${escapeCsvCell('Guarantor Declaration')}`);
+    blocks.push(`Declaration,${escapeCsvCell(content.legal.guarantorDeclaration)}`, '');
+    blocks.push(`Section,${escapeCsvCell('Borrower Declaration')}`);
+    blocks.push(`Declaration,${escapeCsvCell(content.legal.borrowerDeclaration)}`, '');
+    blocks.push(`Section,${escapeCsvCell('Key Terms')}`);
+    blocks.push(`Terms,${escapeCsvCell(content.legal.keyTerms)}`, '');
+    blocks.push(`Section,${escapeCsvCell('Legal Notice')}`);
+    blocks.push(`Notice,${escapeCsvCell(content.legal.legalNotice)}`, '');
+    blocks.push(`Officer,${escapeCsvCell(content.officerName)}`);
+    blocks.push(`Signed Date,${escapeCsvCell(content.signedDate)}`);
+    return blocks.join('\n');
+  }
+
   if (document.executiveSummary) {
     blocks.push(`Executive Summary,${escapeCsvCell(document.executiveSummary)}`, '');
   }

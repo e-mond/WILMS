@@ -1,10 +1,16 @@
 import type { WilmsExportDocument } from '@/features/export/types';
 import { formatExportDate, formatExportTimestamp } from '@/features/export/utils/formatters';
+import { downloadRegistrationAgreementDocx } from '@/features/export/engines/registration-agreement-docx';
 
 export async function downloadWilmsDocx(
   document: WilmsExportDocument,
   filename: string,
 ): Promise<void> {
+  if (document.registrationAgreement) {
+    await downloadRegistrationAgreementDocx(document.registrationAgreement, filename);
+    return;
+  }
+
   const { Document, Packer, Paragraph, Table, TableCell, TableRow, TextRun, WidthType } = await import('docx');
 
   const children: Array<InstanceType<typeof Paragraph> | InstanceType<typeof Table>> = [
