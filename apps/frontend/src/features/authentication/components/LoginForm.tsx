@@ -1,17 +1,22 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { Alert } from '@/components/feedback/Alert';
 import { PasswordField } from '@/components/forms/PasswordField';
-import { Button } from '@/components/ui/Button';
+import { LoadingButton } from '@/components/ui/LoadingButton';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
+import { Skeleton } from '@/components/feedback/Skeleton';
 import { DEMO_ACCOUNTS } from '@/constants/demo-accounts';
 import { isDemoMode } from '@/config/demo';
 import { loginSchema, type LoginFormInput } from '@/features/authentication/login.schema';
+import { AuthCard } from '@/features/authentication/components/AuthCard';
+import { AuthTrustStrip } from '@/features/authentication/components/AuthTrustStrip';
 import { resolveSafeRedirect } from '@/lib/auth/redirect';
+import { useCapsLockWarning } from '@/hooks/useCapsLockWarning';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
 import { authService } from '@/services';
 import { useAuthStore } from '@/state/authStore';
@@ -20,7 +25,6 @@ import { useLoginPreferencesStore } from '@/state/loginPreferencesStore';
 import { ApiError } from '@/types/api';
 import { isLoginOtpChallenge } from '@/types/auth';
 import { VerifyOtpForm } from '@/features/authentication/components/VerifyOtpForm';
-import { WilmsBrandMark } from '@/components/icons/WilmsBrandMark';
 
 export function LoginForm() {
   const router = useRouter();
@@ -36,8 +40,10 @@ export function LoginForm() {
     null,
   );
   const { playLogin } = useNotificationSound();
+  const { capsLockOn, handleKeyEvent, handleBlur } = useCapsLockWarning();
   const [hasMounted, setHasMounted] = useState(false);
   const isFormReady = hasMounted && isPreferencesHydrated;
+  const invitedEmail = searchParams.get('email')?.trim() ?? '';
 
   useEffect(() => {
     setHasMounted(true);
@@ -55,7 +61,7 @@ export function LoginForm() {
       email: '',
       password: '',
     },
-    mode: 'onBlur',
+    mode: 'onTouched',
   });
 
   const emailValue = watch('email');
@@ -65,13 +71,11 @@ export function LoginForm() {
       return;
     }
 
-    const invitedEmail = searchParams.get('email')?.trim();
-
     reset({
       email: invitedEmail || (rememberEmail ? rememberedEmail : ''),
       password: '',
     });
-  }, [isPreferencesHydrated, rememberEmail, rememberedEmail, reset, searchParams]);
+  }, [isPreferencesHydrated, invitedEmail, rememberEmail, rememberedEmail, reset]);
 
   useEffect(() => {
     if (!rememberEmail) {
@@ -139,24 +143,33 @@ export function LoginForm() {
     }
   });
 
-  return (
-    <div className="w-full overflow-hidden rounded-sm border border-border bg-card/95 shadow-lg backdrop-blur-sm">
-      <div className="border-b border-border bg-gradient-to-r from-brand-primary/10 via-brand-primary-light to-executive-gold/10 px-wilms-6 py-wilms-6">
-        <div className="flex flex-col items-center gap-wilms-3 text-center">
-          <WilmsBrandMark roleLabel="Women&apos;s Interest-Free Loan Management" />
-          <p className="text-small text-text-muted">
-            Secure access to your role-based workspace
-          </p>
+  if (!isFormReady) {
+    return (
+      <AuthCard aria-busy="true" aria-label="Loading sign in form">
+        <div className="space-y-wilms-4">
+          <Skeleton className="mx-auto h-7 w-40" />
+          <Skeleton className="mx-auto h-4 w-56" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-11 w-full" />
         </div>
-      </div>
+      </AuthCard>
+    );
+  }
 
-      <div className="p-wilms-6">
-        <div className="mb-wilms-6 text-center">
-          <h1 className="text-heading-1 font-semibold text-text-primary">Sign in</h1>
-          <p className="mt-wilms-2 text-body text-text-muted">
-            Enter your credentials to continue to WILMS.
-          </p>
+  return (
+    <AuthCard>
+      <div className="space-y-wilms-6">
+        <div className="space-y-wilms-2 text-center">
+          <h1 className="text-heading-1 font-semibold text-text-primary">Welcome back</h1>
+          <p className="text-body text-text-secondary">Sign in to continue.</p>
         </div>
+
+        {invitedEmail ? (
+          <Alert title="Invitation ready" variant="info">
+            You&apos;ve been invited. Sign in to activate your account.
+          </Alert>
+        ) : null}
 
         {otpChallenge ? (
           <VerifyOtpForm
@@ -165,71 +178,92 @@ export function LoginForm() {
             onBack={() => setOtpChallenge(null)}
           />
         ) : (
-        <form
-          className="space-y-wilms-4"
-          data-login-ready={isFormReady ? 'true' : undefined}
-          noValidate
-          onSubmit={(event) => {
-            event.preventDefault();
-            void onSubmit(event);
-          }}
-        >
-          {submitError ? (
-            <Alert title="Sign in failed" variant="error">
-              {submitError}
-            </Alert>
-          ) : null}
-
-          <div className="space-y-wilms-2">
-            <label htmlFor="login-email" className="text-small font-semibold text-text-primary">
-              Email address
-            </label>
-            <Input
-              id="login-email"
-              type="email"
-              autoComplete="email"
-              hasError={Boolean(errors.email)}
-              aria-describedby={errors.email ? 'login-email-error' : undefined}
-              {...register('email')}
-            />
-            {errors.email ? (
-              <p id="login-email-error" className="text-small text-danger">
-                {errors.email.message}
-              </p>
+          <form
+            className="space-y-wilms-4"
+            data-login-ready="true"
+            noValidate
+            aria-describedby={submitError ? 'login-submit-error' : undefined}
+            onSubmit={(event) => {
+              event.preventDefault();
+              void onSubmit(event);
+            }}
+          >
+            {submitError ? (
+              <Alert id="login-submit-error" title="Unable to sign in" variant="error">
+                {submitError}
+              </Alert>
             ) : null}
-          </div>
 
-          <PasswordField
-            id="login-password"
-            label="Password"
-            autoComplete="current-password"
-            hasError={Boolean(errors.password)}
-            errorId="login-password-error"
-            errorMessage={errors.password?.message}
-            {...register('password')}
-          />
+            <div className="space-y-wilms-2">
+              <label htmlFor="login-email" className="text-small font-semibold text-text-primary">
+                Email
+              </label>
+              <Input
+                id="login-email"
+                type="email"
+                autoComplete="username"
+                inputMode="email"
+                hasError={Boolean(errors.email)}
+                aria-describedby={errors.email ? 'login-email-error' : undefined}
+                {...register('email')}
+              />
+              {errors.email ? (
+                <p id="login-email-error" role="alert" className="text-small text-danger">
+                  {errors.email.message}
+                </p>
+              ) : null}
+            </div>
 
-          <p className="text-right text-small">
-            <a href="/forgot-password" className="font-semibold text-brand-primary">
-              Forgot password?
-            </a>
-          </p>
+            <PasswordField
+              id="login-password"
+              label="Password"
+              autoComplete="current-password"
+              hasError={Boolean(errors.password)}
+              errorId="login-password-error"
+              errorMessage={errors.password?.message}
+              capsLockWarning={capsLockOn}
+              onCapsLockKeyEvent={handleKeyEvent}
+              onCapsLockBlur={handleBlur}
+              labelAction={
+                <Link
+                  href="/forgot-password"
+                  className="text-small font-semibold text-brand-primary hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              }
+              {...register('password')}
+            />
 
-          <Checkbox
-            id="login-remember-email"
-            label="Remember my email on this device"
-            checked={rememberEmail}
-            onChange={(event) => setRememberEmail(event.target.checked)}
-          />
+            <Checkbox
+              id="login-remember-email"
+              label="Remember email"
+              checked={rememberEmail}
+              onChange={(event) => setRememberEmail(event.target.checked)}
+              className="min-h-11"
+            />
+            <p className="text-small text-text-muted">
+              We only store your email on this device, never your password.
+            </p>
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Signing in...' : 'Sign in'}
-          </Button>
-        </form>
+            <LoadingButton
+              type="submit"
+              size="lg"
+              className="w-full"
+              loading={isSubmitting}
+              loadingLabel="Signing in…"
+            >
+              Sign in
+            </LoadingButton>
+
+            <p className="text-center text-small text-text-muted">Press Enter to sign in.</p>
+          </form>
         )}
 
+        {!otpChallenge ? <AuthTrustStrip /> : null}
+
         {isDemoMode() ? (
-          <div className="mt-wilms-6 rounded-sm border border-warning bg-warning-light p-wilms-4">
+          <div className="rounded-md border border-warning bg-warning-light p-wilms-4">
             <p className="text-small font-semibold text-text-primary">Demo accounts</p>
             <ul className="mt-wilms-2 space-y-wilms-1 text-small text-text-primary">
               {DEMO_ACCOUNTS.map((user) => (
@@ -241,6 +275,6 @@ export function LoginForm() {
           </div>
         ) : null}
       </div>
-    </div>
+    </AuthCard>
   );
 }

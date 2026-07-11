@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { PWA_INSTALL_DISMISS_KEY } from '@/constants/pwa';
+import { useIsAuthRoute } from '@/hooks/useIsAuthRoute';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -10,6 +11,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export function PwaInstallBanner() {
+  const isAuthRoute = useIsAuthRoute();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isDismissed, setIsDismissed] = useState(true);
 
@@ -54,7 +56,7 @@ export function PwaInstallBanner() {
     dismiss();
   }, [deferredPrompt, dismiss]);
 
-  if (isDismissed || !deferredPrompt) {
+  if (isAuthRoute || isDismissed || !deferredPrompt) {
     return null;
   }
 
