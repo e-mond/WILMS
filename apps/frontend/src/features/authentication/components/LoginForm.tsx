@@ -159,8 +159,8 @@ export function LoginForm() {
 
   return (
     <AuthCard>
-      <div className="space-y-wilms-6">
-        <div className="space-y-wilms-2 text-center">
+      <div className="space-y-wilms-8">
+        <div className="space-y-wilms-3 text-center">
           <h1 className="text-heading-1 font-semibold text-text-primary">Welcome back</h1>
           <p className="text-body text-text-secondary">Sign in to continue.</p>
         </div>

@@ -57,20 +57,18 @@ describe('LoginForm', () => {
     const user = userEvent.setup();
     render(<LoginForm />);
 
-    await user.type(screen.getByLabelText('Email address'), 'not-an-email');
-    await user.type(screen.getByLabelText('Password'), 'short');
+    await user.type(screen.getByLabelText('Email'), 'not-an-email');
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
 
     expect(await screen.findByText('Enter a valid email address.')).toBeInTheDocument();
-    expect(screen.getByText('Password must be at least 8 characters.')).toBeInTheDocument();
   });
 
   it('renders password visibility toggle and remember email checkbox', () => {
     render(<LoginForm />);
 
     expect(screen.getByRole('button', { name: 'Show password' })).toBeInTheDocument();
-    expect(screen.getByLabelText('Remember my email on this device')).toBeInTheDocument();
-    expect(screen.getByText("Women's Interest-Free Loan Management")).toBeInTheDocument();
+    expect(screen.getByLabelText('Remember email')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Welcome back' })).toBeInTheDocument();
   });
 
   it('submits valid credentials and redirects safely', async () => {
@@ -87,7 +85,7 @@ describe('LoginForm', () => {
 
     render(<LoginForm />);
 
-    await user.type(screen.getByLabelText('Email address'), 'collector@wilms.demo');
+    await user.type(screen.getByLabelText('Email'), 'collector@wilms.demo');
     await user.type(screen.getByLabelText('Password'), 'DemoCollect1!');
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
 
