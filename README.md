@@ -73,6 +73,13 @@ npm run smoke:rbac
 
 Production smoke requires `WILMS_APP_URL` and `WILMS_API_URL` environment variables.
 
+After deploy, verify mobile capture public routes (must not return 401):
+
+```bash
+curl -sS -o /dev/null -w "%{http_code}\n" \
+  "${WILMS_APP_URL}/api/wilms/photo-capture/sessions/pcs_invalid00000001"
+```
+
 ## Field Operations (v1.3.0)
 
 Collectors work in low-connectivity environments with:

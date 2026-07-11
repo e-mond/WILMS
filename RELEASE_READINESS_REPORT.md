@@ -40,11 +40,12 @@ Fix mobile capture session failure, harden security (password reset session inva
 | API integrity | `npm run verify:api-integrity` | **PASS** |
 | API coverage | `npm run verify:api-coverage` | **PASS** (54 pages, 0 placeholders) |
 | Mock import guard | `npm run verify:mock-guard` | **PASS** |
-| Bundle budget | `npm run bundle:budget-check` | **Not run** in this audit |
-| Perf budget | `npm run perf:budget-check` | **Not run** in this audit |
-| `smoke:production` | Requires `WILMS_APP_URL` + `WILMS_API_URL` | **Not verified—requires runtime** |
-| `smoke:rbac` | Requires live deployment | **Not verified—requires runtime** |
+| Bundle budget | `npm run bundle:budget-check` | **PASS** — JS 168.6 KB / 350 KB, CSS 9.0 KB / 100 KB |
+| Perf budget | `npm run perf:budget-check` | **PASS** |
+| `smoke:production` | `WILMS_APP_URL` + `WILMS_API_URL` | **15/33** — capture checks PASS; authenticated probes 401 (smoke credentials) |
+| `smoke:rbac` | Requires live deployment | **Not verified** — smoke credentials |
 | Mobile capture E2E | Physical device | **Not verified—requires runtime** |
+| Production capture curl (post-merge) | 2026-07-11 | **PASS** — lookup/upload return 404, not 401 |
 
 ---
 
@@ -123,8 +124,10 @@ npm run smoke:rbac -w @wilms/api
 
 | Decision | Rationale |
 |----------|-----------|
-| **APPROVE for merge** | P0 root cause fixed with test coverage; all CI gates pass |
-| **CONDITIONAL production cert** | Requires deploy + smoke + manual mobile capture test |
+| **MERGED** | PR #88 merged 2026-07-11 |
+| **Capture fix verified in production** | Public lookup/upload return 404 (not 401) |
+| **CONDITIONAL full smoke cert** | `smoke:production` 15/33 — configure `WILMS_SMOKE_EMAIL` / `WILMS_SMOKE_PASSWORD` for authenticated probes |
+| **CONDITIONAL production cert** | Manual mobile QR → capture → desktop sync still required |
 
 ---
 

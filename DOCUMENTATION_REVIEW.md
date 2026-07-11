@@ -106,7 +106,7 @@ Existing repo docs: some historical commits contain co-authored-by trailers — 
 | Env var documentation | PASS |
 | API flow documentation | PARTIAL — capture routing gap |
 | Architecture documentation | PARTIAL — router order not documented |
-| Troubleshooting guides | FAIL — capture 401 not documented |
+| Troubleshooting guides | PASS | Capture 401 troubleshooting added to deployment guide |
 | Duplicate doc cleanup | NOT DONE — recommended ARCHIVE |
 
-**Overall documentation status:** **PARTIAL** — requires capture fix documentation before production certification.
+**Overall documentation status:** **PASS** for capture fix documentation (v1.3.4). Prior duplicate archive tree cleanup remains recommended.
