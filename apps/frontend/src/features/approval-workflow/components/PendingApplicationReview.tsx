@@ -33,14 +33,10 @@ import { useApprovalActions } from '@/features/approval-workflow/hooks/useApprov
 import { useBorrowerReview } from '@/features/approval-workflow/hooks/useBorrowerReview';
 
 import {
-
-  buildTabularExportDocument,
-
   useWilmsExportActor,
-
   WilmsExportActions,
-  WILMS_REPORT_TYPE,
 } from '@/features/export';
+import { useRegistrationAgreementExportDocument } from '@/features/export/hooks/useRegistrationAgreementExportDocument';
 
 import { borrowerService, collectorManagementService, groupService } from '@/services';
 
@@ -49,8 +45,6 @@ import { BORROWER_STATUS } from '@/types/borrower';
 import type { ApprovalDecisionAction } from '@/types/approval';
 
 import { ApiError } from '@/types/api';
-import { formatDisplayDate } from '@/utils/format-date';
-import { resolveBorrowerDisplayId } from '@/utils/format-borrower-display-id';
 
 
 
@@ -141,52 +135,10 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
 
 
 
-  const exportDocument = useMemo(() => {
-
-    if (!data) {
-
-      return null;
-
-    }
-
-
-
-    return buildTabularExportDocument({
-      reportType: WILMS_REPORT_TYPE.GENERIC_REPORT,
-      reportTitle: `Approval Review — ${data.fullName}`,
-      generatedBy,
-      headers: ['Field', 'Value'],
-      rows: [
-        ['Registration ID', resolveBorrowerDisplayId(data)],
-        ['Applicant', data.fullName ?? ''],
-        ['Phone', data.phone ?? ''],
-        ['Email', data.email ?? 'Not provided'],
-        ['Date of birth', data.dateOfBirth ?? 'Not provided'],
-        ['Gender', data.gender ?? 'Not provided'],
-        ['Nationality', data.nationality ?? 'Not provided'],
-        ['ID type', data.idType ?? 'Not provided'],
-        ['ID number', data.idNumber ?? 'Not provided'],
-        ['House address', data.houseAddress ?? 'Not provided'],
-        ['GPS address', data.gpsAddress ?? 'Not provided'],
-        ['City', data.city ?? 'Not provided'],
-        ['Region', data.region ?? 'Not provided'],
-        ['District', data.district ?? 'Not provided'],
-        ['Community', data.community ?? 'Not provided'],
-        ['Business name', data.businessName ?? 'Not provided'],
-        ['Business address', data.businessAddress ?? 'Not provided'],
-        ['Type of work', data.typeOfWork ?? 'Not provided'],
-        ['Guarantor', data.guarantorName ?? 'Not provided'],
-        ['Guarantor phone', data.guarantorPhone ?? 'Not provided'],
-        ['Guarantor relationship', data.guarantorRelationship ?? 'Not provided'],
-        ['Registered by', data.registeredByOfficerName ?? 'Not provided'],
-        ['Submitted', formatDisplayDate(data.registeredAt)],
-        ['Status', data.status ?? ''],
-        ['Photo on file', data.photoUrl ? 'Yes' : 'No'],
-      ],
-
-    });
-
-  }, [data, generatedBy]);
+  const exportDocument = useRegistrationAgreementExportDocument(
+    data,
+    data?.registeredByOfficerName ?? generatedBy,
+  );
 
 
 
@@ -317,7 +269,7 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
 
           <WilmsExportActions
             document={exportDocument}
-            filenameBase={`approval-${borrowerId}`}
+            filenameBase={`registration-${data?.fullName.replace(/\s+/g, '-').toLowerCase() ?? borrowerId}`}
             showIcons
             permissions={[]}
           />

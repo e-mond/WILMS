@@ -28,6 +28,9 @@ export interface BorrowerRegistrationFormValues {
   guarantorIdNumber: string;
   guarantorPhoto: File | null;
   photo: File | null;
+  /** Remote preview when editing an existing registration (not a File). */
+  photoPreviewUrl?: string | null;
+  guarantorPreviewUrl?: string | null;
   photoUploadId?: string;
   guarantorPhotoUploadId?: string;
   idDocument: File | null;

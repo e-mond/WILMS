@@ -1,21 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { isRevocableObjectUrl, resolveMediaPreviewUrl } from '@/utils/media-preview';
 
-export function useObjectUrl(file: File | null): string | null {
+export function useObjectUrl(file: File | string | null | undefined): string | null {
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!file) {
-      setObjectUrl(null);
+    const preview = resolveMediaPreviewUrl(file);
+    setObjectUrl(preview);
+
+    if (!preview || !isRevocableObjectUrl(preview)) {
       return;
     }
 
-    const url = URL.createObjectURL(file);
-    setObjectUrl(url);
-
     return () => {
-      URL.revokeObjectURL(url);
+      URL.revokeObjectURL(preview);
     };
   }, [file]);
 
