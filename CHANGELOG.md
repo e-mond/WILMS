@@ -9,6 +9,8 @@ All notable changes to WILMS are documented in this file.
 - Service worker stops caching runtime scripts/documents; only explicit shell assets are cached.
 - OTP verification now records invitation acceptance and first-login milestones.
 - Settings user list refreshes after account activation.
+- Forgot password API routing: BFF proxied auth to `/api/v1/auth/*` instead of `/auth/*`; added `/api/auth/forgot-password` and `/api/auth/reset-password` Next routes matching login.
+- Password reset no longer crashes when `DATABASE_URL` is unset (enumeration-safe success).
 
 ### Added
 - In-app update prompt with release summary when a new service worker is waiting.
@@ -17,6 +19,7 @@ All notable changes to WILMS are documented in this file.
 ### Changed
 - Settings section headers use Lucide icons instead of emoji.
 - Sign-in page redesigned to enterprise FinTech standards: single brand header, simplified copy, trust strip, caps lock warning, icon password toggle, loading button, and skeleton hydration state.
+- Forgot password page redesigned with branding, trust indicators, email icon input, success confirmation, resend cooldown, and enumeration-safe messaging.
 - Application version bumped to `1.3.3`.
 
 ## [1.3.2] — Field Ops Continuation

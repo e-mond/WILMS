@@ -83,7 +83,7 @@ const config: Config = {
         'wilms-8': '2rem',
         'wilms-12': '3rem',
       },
-      borderRadius: { none: '0', sm: '2px', md: '6px', lg: '8px' },
+      borderRadius: { none: '0', sm: '2px', md: '6px', lg: '8px', xl: '12px', '2xl': '16px' },
       boxShadow: {
         none: 'none',
         'auth-card': '0 4px 24px rgba(0, 0, 0, 0.22)',
