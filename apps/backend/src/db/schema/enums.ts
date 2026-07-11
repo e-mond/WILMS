@@ -71,6 +71,9 @@ export const notificationEventEnum = pgEnum('notification_event', [
   'GROUP_CREATED',
   'COLLECTOR_ASSIGNED',
   'COMMUNICATION',
+  'PASSWORD_CHANGED',
+  'INVITATION_ACCEPTED',
+  'LOGIN_ALERT',
 ]);
 
 export const notificationSeverityEnum = pgEnum('notification_severity', [

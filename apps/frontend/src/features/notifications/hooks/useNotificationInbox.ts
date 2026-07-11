@@ -46,3 +46,31 @@ export function useMarkNotificationRead() {
     },
   });
 }
+
+export function useDeleteNotification() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (notificationId: string) => notificationService.deleteNotification(notificationId),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: notificationInboxQueryKey }),
+        queryClient.invalidateQueries({ queryKey: notificationUnreadCountQueryKey }),
+      ]);
+    },
+  });
+}
+
+export function useMarkAllNotificationsRead() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => notificationService.markAllAsRead(),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: notificationInboxQueryKey }),
+        queryClient.invalidateQueries({ queryKey: notificationUnreadCountQueryKey }),
+      ]);
+    },
+  });
+}

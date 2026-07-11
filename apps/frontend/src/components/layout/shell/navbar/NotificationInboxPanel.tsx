@@ -1,10 +1,15 @@
 'use client';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Bell, CreditCard, Shield, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Drawer } from '@/components/ui/Drawer';
+import { Input } from '@/components/ui/Input';
+import { CardSkeleton } from '@/components/feedback/CardSkeleton';
 import { Avatar } from '@/components/data-display/Avatar';
 import {
+  useDeleteNotification,
+  useMarkAllNotificationsRead,
   useMarkNotificationRead,
   useNotificationInbox,
   useNotificationUnreadCount,
@@ -15,7 +20,22 @@ import { NOTIFICATION_INBOX_SEVERITY } from '@/types/notification';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
 import { cn } from '@/utils/cn';
 
-type NotificationFilter = 'all' | 'unread' | 'critical';
+type NotificationFilter = 'all' | 'unread' | 'critical' | 'payments' | 'loans' | 'security';
+
+const PAGE_SIZE = 20;
+
+function matchesCategory(event: string, filter: NotificationFilter): boolean {
+  if (filter === 'payments') {
+    return /PAYMENT|COLLECTION/i.test(event);
+  }
+  if (filter === 'loans') {
+    return /LOAN|DISBURSE|DEFAULT/i.test(event);
+  }
+  if (filter === 'security') {
+    return /PASSWORD|LOGIN|INVITATION|ACCOUNT|ROLE/i.test(event);
+  }
+  return true;
+}
 
 function severityConfig(severity: string): { className: string; label: string; dot: string } {
   switch (severity) {
@@ -64,19 +84,29 @@ export function NotificationInboxPanel() {
   const closeNotificationPanel = useUiStore((state) => state.closeNotificationPanel);
   const { data: items = [], isLoading } = useNotificationInbox(isOpen);
   const markAsRead = useMarkNotificationRead();
+  const markAllRead = useMarkAllNotificationsRead();
+  const deleteNotification = useDeleteNotification();
   const [filter, setFilter] = useState<NotificationFilter>('all');
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(0);
 
   const filteredItems = useMemo(() => {
-    if (filter === 'unread') {
-      return items.filter((item) => !item.isRead);
-    }
+    const query = search.trim().toLowerCase();
+    return items.filter((item) => {
+      if (filter === 'unread' && item.isRead) return false;
+      if (filter === 'critical' && item.severity !== NOTIFICATION_INBOX_SEVERITY.CRITICAL) return false;
+      if (!matchesCategory(item.event, filter) && !['all', 'unread', 'critical'].includes(filter)) return false;
+      if (!query) return true;
+      return (
+        item.title.toLowerCase().includes(query) ||
+        item.body.toLowerCase().includes(query) ||
+        item.event.toLowerCase().includes(query)
+      );
+    });
+  }, [filter, items, search]);
 
-    if (filter === 'critical') {
-      return items.filter((item) => item.severity === NOTIFICATION_INBOX_SEVERITY.CRITICAL);
-    }
-
-    return items;
-  }, [filter, items]);
+  const pageCount = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE));
+  const pagedItems = filteredItems.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
 
   const unreadItems = items.filter((i) => !i.isRead);
   const hasUnread = unreadItems.length > 0;
@@ -94,25 +124,42 @@ export function NotificationInboxPanel() {
         {/* Header meta row */}
         {!isLoading && items.length > 0 && (
           <div className="mb-wilms-4 space-y-wilms-3">
+            <Input
+              type="search"
+              placeholder="Search notifications"
+              value={search}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setPage(0);
+              }}
+              aria-label="Search notifications"
+            />
             <div className="flex flex-wrap gap-wilms-2" role="tablist" aria-label="Notification filters">
               {([
-                ['all', 'All'],
-                ['unread', 'Unread'],
-                ['critical', 'Critical'],
-              ] as const).map(([value, label]) => (
+                ['all', 'All', Bell],
+                ['unread', 'Unread', Bell],
+                ['critical', 'Critical', Shield],
+                ['payments', 'Payments', CreditCard],
+                ['loans', 'Loans', CreditCard],
+                ['security', 'Security', Shield],
+              ] as const).map(([value, label, Icon]) => (
                 <button
                   key={value}
                   type="button"
                   role="tab"
                   aria-selected={filter === value}
                   className={cn(
-                    'rounded-full border px-wilms-3 py-wilms-1 text-small font-medium transition-colors',
+                    'inline-flex items-center gap-1 rounded-full border px-wilms-3 py-wilms-1 text-small font-medium transition-colors',
                     filter === value
                       ? 'border-brand-primary bg-brand-primary-light text-brand-primary'
                       : 'border-border bg-card text-text-muted hover:text-text-primary',
                   )}
-                  onClick={() => setFilter(value)}
+                  onClick={() => {
+                    setFilter(value);
+                    setPage(0);
+                  }}
                 >
+                  <Icon className="h-3.5 w-3.5" aria-hidden />
                   {label}
                 </button>
               ))}
@@ -125,9 +172,7 @@ export function NotificationInboxPanel() {
               <button
                 type="button"
                 className="text-small font-medium text-brand-primary hover:text-brand-primary/80 transition-colors"
-                onClick={() => {
-                  unreadItems.forEach((item) => void markAsRead.mutateAsync(item.id));
-                }}
+                onClick={() => void markAllRead.mutateAsync()}
               >
                 Mark all read
               </button>
@@ -142,14 +187,7 @@ export function NotificationInboxPanel() {
           {isLoading ? (
             <div className="flex flex-col gap-wilms-3">
               {[...Array(3)].map((_, i) => (
-                <div
-                  key={i}
-                  className="animate-pulse rounded-lg border border-border bg-card p-wilms-4"
-                >
-                  <div className="mb-wilms-2 h-4 w-2/3 rounded bg-border" />
-                  <div className="h-3 w-full rounded bg-border" />
-                  <div className="mt-wilms-1 h-3 w-4/5 rounded bg-border" />
-                </div>
+                <CardSkeleton key={i} />
               ))}
             </div>
           ) : items.length === 0 ? (
@@ -178,7 +216,7 @@ export function NotificationInboxPanel() {
             </div>
           ) : (
             <ul className="flex flex-col gap-wilms-2">
-              {filteredItems.map((item) => {
+              {pagedItems.map((item) => {
                 const severity = severityConfig(item.severity);
                 return (
                   <li
@@ -259,6 +297,17 @@ export function NotificationInboxPanel() {
                               Mark read
                             </Button>
                           )}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            disabled={deleteNotification.isPending}
+                            onClick={() => void deleteNotification.mutateAsync(item.id)}
+                            className="text-small text-text-muted hover:text-danger"
+                            aria-label={`Delete notification ${item.title}`}
+                          >
+                            <Trash2 className="h-4 w-4" aria-hidden />
+                          </Button>
                           {item.href && (
                             <Button
                               type="button"
@@ -283,6 +332,31 @@ export function NotificationInboxPanel() {
               })}
             </ul>
           )}
+          {filteredItems.length > PAGE_SIZE ? (
+            <div className="mt-wilms-4 flex items-center justify-between border-t border-border pt-wilms-3">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={page === 0}
+                onClick={() => setPage((current) => Math.max(0, current - 1))}
+              >
+                Previous
+              </Button>
+              <span className="text-small text-text-muted">
+                Page {page + 1} of {pageCount}
+              </span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={page >= pageCount - 1}
+                onClick={() => setPage((current) => Math.min(pageCount - 1, current + 1))}
+              >
+                Next
+              </Button>
+            </div>
+          ) : null}
         </div>
       </div>
     </Drawer>

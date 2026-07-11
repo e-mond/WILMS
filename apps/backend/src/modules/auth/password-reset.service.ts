@@ -6,7 +6,7 @@ import { getDb, isDatabaseEnabled } from '../../db/client.js';
 import { passwordResetTokens } from '../../db/schema/communication-platform.js';
 import { hashPassword } from '../../lib/password.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
-import { notifyPasswordReset } from '../../infrastructure/notifications/event-dispatch.js';
+import { notifyPasswordReset, notifyPasswordChanged } from '../../infrastructure/notifications/event-dispatch.js';
 import * as userRepo from '../../repositories/user.repository.js';
 import { invalidateUserSessions } from './session.service.js';
 
@@ -151,6 +151,19 @@ export async function resetPasswordWithToken(input: {
     targetEntityType: 'user',
     reason: input.ipAddress ? `ip=${input.ipAddress}` : undefined,
   });
+
+  const user = await userRepo.getUserById(row.userId);
+  if (user?.email) {
+    try {
+      await notifyPasswordChanged({
+        email: user.email,
+        displayName: user.displayName,
+        userId: row.userId,
+      });
+    } catch (error) {
+      console.error('[password-reset] password-changed notification failed:', error);
+    }
+  }
 
   return { ok: true };
 }

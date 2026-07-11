@@ -6,6 +6,8 @@ import {
   emailDivider,
   emailParagraph,
   emailReceipt,
+  emailSecondaryButton,
+  emailStatusBanner,
   emailSummary,
   type EmailTemplate,
 } from './email-layout.js';
@@ -794,6 +796,200 @@ export function buildLoanDisbursedEmail(input: {
         { label: 'Date', value: input.disbursedDate },
       ]),
       emailButton('View Loan', 'https://wilms.vercel.app/loans', 'success'),
+    ].join(''),
+  });
+}
+
+// ─── Authentication & security (v1.3.5 catalogue) ─────────────────────────────
+
+export function buildVerifyEmailEmail(input: {
+  displayName: string;
+  verifyUrl: string;
+}): EmailTemplate {
+  return buildEmailTemplate({
+    subject: 'Verify your WILMS email address',
+    greeting: input.displayName,
+    preheader: 'Confirm your email to secure your WILMS account',
+    theme: 'info',
+    textLines: [
+      `Dear ${input.displayName},`,
+      '',
+      'Please verify your email address to complete your WILMS account setup.',
+      input.verifyUrl,
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailStatusBanner('Action required', 'Verify your email to activate secure account features.', 'info'),
+      emailParagraph('Click the button below to confirm your email address.'),
+      emailButton('Verify Email', input.verifyUrl, 'info'),
+      emailSecondaryButton('Copy link', input.verifyUrl),
+    ].join(''),
+  });
+}
+
+export function buildPasswordChangedEmail(input: {
+  displayName: string;
+  changedAt: string;
+  loginUrl: string;
+}): EmailTemplate {
+  return buildEmailTemplate({
+    subject: 'Your WILMS password was changed',
+    greeting: input.displayName,
+    preheader: 'Your password was updated successfully',
+    theme: 'success',
+    textLines: [
+      `Dear ${input.displayName},`,
+      '',
+      `Your password was changed on ${input.changedAt}.`,
+      'If you did not make this change, contact support immediately.',
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailStatusBanner('Password updated', `Changed on ${input.changedAt}.`, 'success'),
+      emailAlert('If you did not request this change, contact support immediately.', 'warning'),
+      emailButton('Sign in', input.loginUrl, 'primary'),
+    ].join(''),
+  });
+}
+
+export function buildLoginAlertEmail(input: {
+  displayName: string;
+  loginAt: string;
+  deviceLabel?: string;
+  locationLabel?: string;
+  loginUrl: string;
+}): EmailTemplate {
+  const rows = [
+    { label: 'Time', value: input.loginAt },
+    ...(input.deviceLabel ? [{ label: 'Device', value: input.deviceLabel }] : []),
+    ...(input.locationLabel ? [{ label: 'Location', value: input.locationLabel }] : []),
+  ];
+
+  return buildEmailTemplate({
+    subject: 'New sign-in to your WILMS account',
+    greeting: input.displayName,
+    preheader: 'A new sign-in was detected on your account',
+    theme: 'info',
+    textLines: [
+      `Dear ${input.displayName},`,
+      '',
+      `A new sign-in occurred on ${input.loginAt}.`,
+      'If this was not you, reset your password immediately.',
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailStatusBanner('Security notice', 'A new sign-in was detected on your account.', 'info'),
+      emailCard('Sign-in details', rows),
+      emailButton('Review account', input.loginUrl, 'primary'),
+    ].join(''),
+  });
+}
+
+export function buildInvitationAcceptedEmail(input: {
+  displayName: string;
+  acceptedAt: string;
+  role: string;
+  loginUrl: string;
+}): EmailTemplate {
+  return buildEmailTemplate({
+    subject: 'Your WILMS invitation was accepted',
+    greeting: input.displayName,
+    preheader: `Welcome — your ${input.role} account is active`,
+    theme: 'success',
+    textLines: [
+      `Dear ${input.displayName},`,
+      '',
+      `Your invitation was accepted on ${input.acceptedAt}. Role: ${input.role}.`,
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailStatusBanner('Invitation accepted', `Your ${input.role} account is now active.`, 'success'),
+      emailButton('Open WILMS', input.loginUrl, 'success'),
+    ].join(''),
+  });
+}
+
+export function buildInvitationExpiredEmail(input: {
+  displayName: string;
+  expiredAt: string;
+  supportEmail: string;
+}): EmailTemplate {
+  return buildEmailTemplate({
+    subject: 'Your WILMS invitation has expired',
+    greeting: input.displayName,
+    preheader: 'Request a new invitation from your administrator',
+    theme: 'warning',
+    textLines: [
+      `Dear ${input.displayName},`,
+      '',
+      `Your invitation expired on ${input.expiredAt}. Contact ${input.supportEmail} for a new invite.`,
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailStatusBanner('Invitation expired', `Expired on ${input.expiredAt}.`, 'warning'),
+      emailParagraph(`Contact <a href="mailto:${input.supportEmail}">${input.supportEmail}</a> to request a new invitation.`),
+    ].join(''),
+  });
+}
+
+export function buildMaintenanceNoticeEmail(input: {
+  displayName: string;
+  windowStart: string;
+  windowEnd: string;
+  summary: string;
+}): EmailTemplate {
+  return buildEmailTemplate({
+    subject: 'Scheduled WILMS maintenance',
+    greeting: input.displayName,
+    preheader: input.summary,
+    theme: 'warning',
+    textLines: [
+      `Dear ${input.displayName},`,
+      '',
+      input.summary,
+      `Window: ${input.windowStart} — ${input.windowEnd}`,
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailStatusBanner('Maintenance', input.summary, 'warning'),
+      emailCard('Schedule', [
+        { label: 'Starts', value: input.windowStart },
+        { label: 'Ends', value: input.windowEnd },
+      ]),
+    ].join(''),
+  });
+}
+
+export function buildAnnouncementEmail(input: {
+  displayName: string;
+  headline: string;
+  body: string;
+  ctaLabel?: string;
+  ctaUrl?: string;
+}): EmailTemplate {
+  return buildEmailTemplate({
+    subject: `WILMS announcement — ${input.headline}`,
+    greeting: input.displayName,
+    preheader: input.headline,
+    theme: 'info',
+    textLines: [
+      `Dear ${input.displayName},`,
+      '',
+      input.headline,
+      input.body,
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailStatusBanner('Announcement', input.headline, 'info'),
+      emailParagraph(input.body),
+      ...(input.ctaLabel && input.ctaUrl ? [emailButton(input.ctaLabel, input.ctaUrl, 'info')] : []),
     ].join(''),
   });
 }

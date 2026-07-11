@@ -2,6 +2,32 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.3.5] — UI/UX & Communication Platform
+
+### Added
+- Premium animated startup splash (Framer Motion) with reduced-motion fallback.
+- Email design system enhancements: status banners, secondary CTAs, mission tagline in emails, privacy footer.
+- Email catalogue (`email-catalogue.ts`) documenting all transactional templates and channels.
+- New email templates: verify email, password changed, login alert, invitation accepted/expired, maintenance, announcement.
+- Notification center search, category filters (payments, loans, security), pagination, and delete/archive actions.
+- `useDeleteNotification` and `useMarkAllNotificationsRead` hooks.
+
+### Changed
+- Login header: logo + application name only; tagline removed from login UI.
+- Login form copy: "Welcome Back" / "Sign in to continue".
+- Route transition loader uses top progress bar instead of spinner pill.
+- Transactional email dispatch respects user notification preferences when `userId` is provided.
+- Password reset sends password-changed email and in-app notification.
+- Invitation acceptance sends confirmation email and in-app notification.
+- Successful login sends login-alert email and in-app notification (when channels enabled).
+- Application version bumped to `1.3.5`.
+
+### Database
+- Migration `0022_v135_notification_events.sql` adds `PASSWORD_CHANGED`, `INVITATION_ACCEPTED`, and `LOGIN_ALERT` notification events.
+
+### Dependencies
+- `framer-motion` added to frontend for GPU-accelerated splash animation.
+
 ## [1.3.4] — Production Stabilization
 
 ### Fixed
