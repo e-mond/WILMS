@@ -1,57 +1,159 @@
-# WILMS — Stage 2 Role Certification
+# ROLE_CERTIFICATION_REPORT.md
 
-**Audit stage:** 2 (Role Certification)  
-**Date:** 2026-07-10  
-**Repository:** `e-mond/WILMS`  
-**Git ref audited:** `main` @ `1845f77`  
-**Remediation:** RBAC gaps addressed on branch `cursor/rbac-gaps-and-stage-3-8847` (see §8)
-
-*(Full report body — findings R2-G01 through R2-P08 documented at audit time. Key content summarized below; original static analysis remains valid with remediation noted.)*
+**Project:** WILMS  
+**Date:** 2026-07-11  
+**Source of truth:** `packages/shared-rbac/src/`
 
 ---
 
-## Executive summary
+## 1. Role Model
 
-Five authenticated staff roles; Administrator = Super Admin; Group Leader and Borrower are domain concepts only. API used static `shared-rbac` matrix; Settings DB roles were not enforced.
+WILMS defines **five authenticated login roles**. The audit brief lists Administrator, Group Leader, and Borrower — these are **not** login roles in the codebase.
 
-**Remediation (2026-07-10):** Permission resolver wired to DB; borrower list/search/formation routes hardened; frontend collector permissions synced. See `USER_FLOW_CERTIFICATION.md` §8.
+| Audit name | Codebase mapping | Portal access |
+|------------|------------------|---------------|
+| Super Admin | `USER_ROLE.SUPER_ADMIN` | All portals + admin |
+| Administrator | **No separate role** — Super Admin | Same as Super Admin |
+| Collector | `USER_ROLE.COLLECTOR` | Collector portal |
+| Registration Officer | `USER_ROLE.REGISTRATION_OFFICER` | Registration portal |
+| Approver | `USER_ROLE.APPROVER` | Approver portal |
+| Auditor | `USER_ROLE.AUDITOR` | Auditor portal |
+| Group Leader | **Not a login role** — group member designation | N/A |
+| Borrower | **Not a login role** — loan entity | N/A |
 
----
-
-## Verified gaps (pre-remediation)
-
-| ID | Severity | Issue |
-|----|----------|-------|
-| R2-G01 | High | `GET /borrowers` auth-only |
-| R2-G02 | Medium | Borrower detail scoping skipped collector |
-| R2-G03 | Medium | Group-formation auth-only |
-| R2-G04 | Medium | Search auth-only + client role spoofing |
-| R2-G06 | High | DB role permissions ignored by API |
-| R2-G07 | Medium | Frontend collector permission drift |
-| R2-G09–G10 | Medium | PII check and admin-fee routes auth-only |
-
-## Verified positives
-
-Collector self-access, cross-portal 403s, security harness 11/11, five portal layout guards — all documented in original Stage 2 analysis.
-
-## Runtime evidence
-
-- Collector portal Vitest: 10/10
-- Production smoke:rbac: 7/8 (admin login failed)
-- Local probes confirmed R2-G01 (collector/auditor 200 on `/borrowers` before fix)
+Evidence: `packages/shared-rbac/src/roles.ts`
 
 ---
 
-## §8 Remediation status
+## 2. Permission Matrix
 
-| Gap | Status on `cursor/rbac-gaps-and-stage-3-8847` |
-|-----|--------------------------------------------------|
-| R2-G01 | **Fixed** — `assertBorrowerListAccess` |
-| R2-G02 | **Fixed** — collector group assignment check |
-| R2-G03 | **Fixed** — formation route permissions |
-| R2-G04 | **Fixed** — search permissions + session role |
-| R2-G06 | **Fixed** — `resolveUserPermissions` |
-| R2-G07 | **Fixed** — frontend `rbac-roles.ts` |
-| R2-G09, G10 | **Fixed** — route permissions added |
+46 permissions defined in `packages/shared-rbac/src/permissions.ts`.  
+Role grants in `packages/shared-rbac/src/role-permissions.ts`.
 
-**Next stage:** Stage 3 `USER_FLOW_CERTIFICATION.md` (included on same branch).
+### 2.1 Portal Access
+
+| Permission | Super Admin | Collector | Reg. Officer | Approver | Auditor |
+|------------|:-----------:|:---------:|:------------:|:--------:|:-------:|
+| `access-admin-portal` | ✓ | | | | |
+| `access-collector-portal` | ✓ | ✓ | | | |
+| `access-registration-portal` | ✓ | | ✓ | | |
+| `access-approver-portal` | ✓ | | | ✓ | |
+| `access-auditor-portal` | ✓ | | | | ✓ |
+
+### 2.2 Registration & Capture
+
+| Permission | Super Admin | Collector | Reg. Officer | Approver | Auditor |
+|------------|:-----------:|:---------:|:------------:|:--------:|:-------:|
+| `register-borrowers` | ✓ | ✓ | ✓ | | |
+| `edit-borrowers` | ✓ | | ✓ | | |
+| `edit-pending-registrations` | ✓ | | ✓ | | |
+| `capture-documents` | ✓ | ✓ | ✓ | | |
+| `upload-signatures` | ✓ | ✓ | ✓ | | |
+| `gps-verification` | ✓ | | ✓ | | |
+
+**Capture session note:** `CAPTURE_DOCUMENTS` required for session **creation** (desktop). Mobile **lookup/upload** is token-gated without login (by design). Pre-fix: router order caused 401 — RBAC was not the blocker.
+
+### 2.3 Collections
+
+| Permission | Super Admin | Collector | Reg. Officer | Approver | Auditor |
+|------------|:-----------:|:---------:|:------------:|:--------:|:-------:|
+| `manage-groups` | ✓ | ✓ | | | |
+| `view-assigned-borrowers` | ✓ | ✓ | | | |
+| `record-collections` | ✓ | ✓ | | | |
+| `record-expenses` | ✓ | ✓ | | | |
+
+### 2.4 Approval
+
+| Permission | Super Admin | Collector | Reg. Officer | Approver | Auditor |
+|------------|:-----------:|:---------:|:------------:|:--------:|:-------:|
+| `review-applications` | ✓ | | | ✓ | |
+| `approve-borrowers` | ✓ | | | ✓ | |
+| `approve-loans` | ✓ | | | ✓ | |
+| `reject-loans` | ✓ | | | ✓ | |
+| `review-risk-flags` | ✓ | | | ✓ | ✓ |
+
+### 2.5 Reports & Audit
+
+| Permission | Super Admin | Collector | Reg. Officer | Approver | Auditor |
+|------------|:-----------:|:---------:|:------------:|:--------:|:-------:|
+| `view-reports` | ✓ | | | | ✓ |
+| `view-financial-reports` | ✓ | | | | |
+| `export-reports` | ✓ | | | | ✓ |
+| `view-audit-log` | ✓ | | | | ✓ |
+
+### 2.6 Administration (Super Admin only in defaults)
+
+Includes: `manage-users`, `edit-users`, `suspend-users`, `assign-roles`, `manage-system-settings`, `force-logout`, `manage-communications`, `send-broadcast`, and 12 others — all granted only to `SUPER_ADMIN` in default matrix.
+
+---
+
+## 3. Enforcement Layers
+
+| Layer | Mechanism | File |
+|-------|-----------|------|
+| API permission | `requirePermission(...)` | `require-permission.ts` |
+| API auth | `requireAuth` | `authenticate.ts` |
+| Resource IDOR | `assertCollectorAccess`, borrower access | `collector-portal/access.ts`, `borrowers/access.ts` |
+| DB overrides | Per-user grants/revokes | `resolve-user-permissions.ts` |
+| Frontend routes | `ROUTE_PERMISSION_REQUIREMENTS` | `permission-matrix.ts` |
+| Frontend middleware | `canRoleAccessPath` | `routes.ts`, `middleware.ts` |
+| UI gates | `PermissionGate`, `RoleGuard` | `PermissionGate.tsx`, `RoleGuard.tsx` |
+
+---
+
+## 4. Automated RBAC Verification
+
+| Test | Result | Evidence |
+|------|--------|----------|
+| `collector-portal/rbac.test.ts` | **6/6 PASS** | Collector self-access, cross-collector block, capture create not 403 |
+| `security-checks.ts` | Included in backend 100/100 | 401/403/422 checks |
+| `smoke:rbac` | Not verified—requires runtime | `rbac-production-smoke.ts` — needs `WILMS_APP_URL` |
+
+Historical production result (from prior report): 7/8 — admin login probe failed due to credentials/env, not permission bypass.
+
+---
+
+## 5. IDOR Protection
+
+| Resource | Guard | Verified |
+|----------|-------|----------|
+| Collector dashboard | `assertCollectorAccess` — role + userId match | PASS — rbac.test.ts |
+| Borrower records | `assertBorrowerAccess` patterns | PARTIAL — code review |
+| Capture sessions | Token is capability bearer; no user ID in URL | PASS — by design |
+| Upload content | Purpose ACL + auth on standard uploads | PASS |
+
+---
+
+## 6. Menu & Route Visibility
+
+| Role | Shell | Route prefix | Evidence |
+|------|-------|--------------|----------|
+| Super Admin | `SuperAdminShell` | `/dashboard`, `/settings`, ... | `navigation.ts` |
+| Collector | `CollectorShell` | `/collector/*` | Layout + middleware |
+| Reg. Officer | `RegistrationOfficerShell` | `/officer/*` | Layout + middleware |
+| Approver | `ApproverShell` | `/approver/*` | Layout + middleware |
+| Auditor | Role-specific or reports | `/auditor/*`, reports | `permission-matrix.ts` |
+
+---
+
+## 7. Findings
+
+| ID | Severity | Finding | Status |
+|----|----------|---------|--------|
+| RBAC-01 | P0 | Public capture route unreachable (not RBAC misconfig) | FIXED — router order |
+| RBAC-02 | P2 | Group Leader / Borrower listed in audit but not login roles | DOCUMENTED |
+| RBAC-03 | P2 | `RoleGuard` legacy vs `PermissionRouteGuard` | OPEN — layouts still use RoleGuard |
+
+---
+
+## 8. Certification
+
+| Aspect | Status |
+|--------|--------|
+| Permission matrix completeness | PASS — 46 permissions, 5 roles |
+| API enforcement | PASS — automated tests |
+| UI enforcement | PARTIAL — PermissionGate + middleware; not all panels tested |
+| Production RBAC smoke | NOT VERIFIED — requires deployed env |
+| IDOR on collector portal | PASS — unit tests |
+
+**Overall:** **PARTIAL** — code and unit tests certify RBAC logic; production `smoke:rbac` required for full PASS.

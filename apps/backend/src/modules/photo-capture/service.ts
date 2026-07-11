@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { env } from '../../config/env.js';
 import { isDatabaseEnabled } from '../../db/client.js';
+import { logger } from '../../infrastructure/logging/logger.js';
 import * as photoCaptureRepository from '../../repositories/photo-capture.repository.js';
 
 export interface PhotoCaptureSession {
@@ -73,6 +74,13 @@ export async function createSession(
     expiresAt,
   });
 
+  logger.info('photoCapture.session.created', {
+    sessionToken,
+    registrationSessionId: input.registrationSessionId,
+    target: input.target,
+    expiresAt: expiresAt.toISOString(),
+  });
+
   return toApiSession(record);
 }
 
@@ -82,6 +90,7 @@ export async function getSession(sessionToken: string): Promise<PhotoCaptureSess
   const record = await photoCaptureRepository.getPhotoCaptureSession(sessionToken);
 
   if (!record) {
+    logger.warn('photoCapture.session.notFound', { sessionToken });
     return null;
   }
 
@@ -111,6 +120,13 @@ export async function completeSession(input: {
     uploadId: input.uploadId,
     previewUrl: input.previewUrl,
   });
+
+  if (updated) {
+    logger.info('photoCapture.session.completed', {
+      sessionToken: input.sessionToken,
+      uploadId: input.uploadId,
+    });
+  }
 
   return updated ? toApiSession(updated) : null;
 }
