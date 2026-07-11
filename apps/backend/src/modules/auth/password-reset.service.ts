@@ -32,11 +32,15 @@ export async function requestPasswordReset(input: {
     throw new Error('VALIDATION:Email is required.');
   }
 
+  if (!isDatabaseEnabled()) {
+    return { ok: true };
+  }
+
   const user = await userRepo.findUserByEmail(email);
   const userRow = await userRepo.findAnyUserByEmail(email);
 
   // Always return success to prevent email enumeration
-  if (!user || user.status === 'SUSPENDED' || !isDatabaseEnabled()) {
+  if (!user || user.status === 'SUSPENDED') {
     return { ok: true };
   }
 
@@ -104,7 +108,7 @@ export async function resetPasswordWithToken(input: {
   }
 
   if (!isDatabaseEnabled()) {
-    throw new Error('VALIDATION:Database persistence is required.');
+    throw new Error('VALIDATION:Invalid or expired reset token.');
   }
 
   const tokenHash = hashToken(input.token.trim());
