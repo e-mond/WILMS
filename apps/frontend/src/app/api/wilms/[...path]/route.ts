@@ -19,9 +19,21 @@ function resolveApiUpstream(): string {
   return 'http://127.0.0.1:4000';
 }
 
+/** Token-gated mobile capture routes; CSRF is not applicable without a browser session. */
+function isPhotoCapturePublicPath(path: string): boolean {
+  return path.startsWith('photo-capture/sessions/');
+}
+
 async function proxyRequest(request: Request, pathSegments: string[]): Promise<Response> {
   const method = request.method.toUpperCase();
-  if (method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS') {
+  const path = pathSegments.join('/');
+
+  if (
+    method !== 'GET' &&
+    method !== 'HEAD' &&
+    method !== 'OPTIONS' &&
+    !isPhotoCapturePublicPath(path)
+  ) {
     const csrfFailure = rejectInvalidCsrf(request);
     if (csrfFailure) {
       return csrfFailure;
@@ -29,7 +41,6 @@ async function proxyRequest(request: Request, pathSegments: string[]): Promise<R
   }
 
   const apiUpstream = resolveApiUpstream();
-  const path = pathSegments.join('/');
   const search = new URL(request.url).search;
   const upstreamPath = resolveWilmsProxyUpstreamPath(path, search);
   const upstreamUrl = `${apiUpstream}${upstreamPath}`;

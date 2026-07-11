@@ -2,6 +2,20 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.3.4] — Production Stabilization
+
+### Fixed
+- Mobile photo capture: public `/photo-capture/sessions/*` routes no longer return 401 — `photoCaptureRouter` and `locationsRouter` mount before routers with blanket `requireAuth`.
+- Mobile capture upload: BFF exempts token-gated `photo-capture/sessions/*` paths from CSRF (mobile clients have no session cookie).
+- Password reset now invalidates existing sessions via `session_version` bump.
+- Mobile capture page shows status-specific errors instead of collapsing all failures to "not found or expired".
+
+### Added
+- Photo capture public route regression tests (`public-routes.test.ts`).
+- Structured logging for capture session create, lookup miss, and completion.
+- Production smoke checks for public capture lookup and upload.
+- Engineering stabilization audit reports (nine deliverables).
+
 ## [1.3.3] — Stability & UX
 
 ### Fixed
