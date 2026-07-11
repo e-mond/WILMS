@@ -31,14 +31,14 @@ export default function LoginPage() {
         aria-hidden="true"
       />
 
-      <div className="relative z-10 flex w-full max-w-[440px] flex-col gap-wilms-6">
-        <AuthBrandHeader />
+      <div className="relative z-10 flex w-full max-w-[440px] flex-col">
+        <AuthBrandHeader className="mb-wilms-8 lg:mb-10" />
 
         <Suspense fallback={<LoginFormFallback />}>
           <LoginForm />
         </Suspense>
 
-        <AuthPageFooter />
+        <AuthPageFooter className="mt-wilms-6" />
       </div>
     </main>
   );

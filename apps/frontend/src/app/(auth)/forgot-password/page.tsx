@@ -14,12 +14,12 @@ export default function ForgotPasswordPage() {
         aria-hidden="true"
       />
 
-      <div className="relative z-10 flex w-full max-w-[480px] flex-col gap-wilms-6">
-        <AuthBrandHeader />
+      <div className="relative z-10 flex w-full max-w-[480px] flex-col">
+        <AuthBrandHeader className="mb-wilms-8 lg:mb-10" />
 
         <ForgotPasswordForm />
 
-        <AuthPageFooter helpHref="/login" helpLabel="Sign in" />
+        <AuthPageFooter className="mt-wilms-6" helpHref="/login" helpLabel="Sign in" />
       </div>
     </main>
   );
