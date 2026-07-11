@@ -7,7 +7,11 @@ test.describe('Forgot password flow', () => {
 
     await expect(page.getByRole('heading', { name: 'Forgot your password?' })).toBeVisible();
     await expect(page.getByText('Secure password recovery')).toBeVisible();
-    await expect(page.getByText('WILMS').first()).toBeVisible();
+    await expect(page.getByRole('img', { name: 'WILMS' })).toBeVisible();
+    await expect(page.getByText("Women's Interest-Free Loan Management")).toBeVisible();
+    await expect(
+      page.getByText('Helping women grow through interest-free financing.'),
+    ).toBeVisible();
     await expect(page.getByRole('link', { name: 'Back to Sign In' })).toBeVisible();
   });
 
