@@ -6,7 +6,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { Alert } from '@/components/feedback/Alert';
 import { PasswordField } from '@/components/forms/PasswordField';
-import { Button } from '@/components/ui/Button';
+import { LoadingButton } from '@/components/ui/LoadingButton';
+import { AuthBackLink } from '@/features/authentication/components/AuthBackLink';
+import { AuthCard } from '@/features/authentication/components/AuthCard';
+import { AuthTrustStrip } from '@/features/authentication/components/AuthTrustStrip';
 import { authService } from '@/services';
 import { ApiError } from '@/types/api';
 
@@ -53,58 +56,80 @@ export function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <div className="w-full max-w-md rounded-sm border border-border bg-card p-wilms-6">
-        <Alert variant="error" title="Invalid reset link">
-          This reset link is invalid or has expired.
-        </Alert>
-        <p className="mt-wilms-4 text-center text-small">
-          <Link href="/forgot-password" className="font-semibold text-brand-primary">
-            Request a new link
-          </Link>
-        </p>
-      </div>
+      <AuthCard className="rounded-xl">
+        <div className="space-y-wilms-4">
+          <Alert variant="error" title="Invalid reset link">
+            This reset link is invalid or has expired.
+          </Alert>
+          <p className="text-center text-small">
+            <Link href="/forgot-password" className="font-semibold text-brand-primary hover:underline">
+              Request a new link
+            </Link>
+          </p>
+          <AuthBackLink />
+        </div>
+      </AuthCard>
     );
   }
 
   return (
-    <div className="w-full max-w-md rounded-sm border border-border bg-card p-wilms-6 shadow-sm">
-      <h1 className="text-h2 font-semibold text-text-primary">Reset password</h1>
-      <p className="mt-wilms-2 text-body text-text-muted">Choose a new password for your account.</p>
+    <AuthCard className="rounded-xl">
+      <div className="space-y-wilms-8">
+        <div className="space-y-wilms-3 text-center">
+          <h1 className="text-heading-1 font-semibold text-text-primary">Reset password</h1>
+          <p className="text-body text-text-secondary">Choose a new password for your account.</p>
+        </div>
 
-      {completed ? (
-        <Alert variant="success" title="Password updated" className="mt-wilms-4">
-          Redirecting to sign in…
-        </Alert>
-      ) : (
-        <form className="mt-wilms-6 space-y-wilms-4" onSubmit={onSubmit}>
-          {submitError ? <Alert variant="error" title="Unable to reset password">{submitError}</Alert> : null}
-          <PasswordField
-            label="New password"
-            autoComplete="new-password"
-            hasError={Boolean(errors.newPassword)}
-            errorId="reset-new-password-error"
-            errorMessage={errors.newPassword?.message}
-            {...register('newPassword', {
-              required: 'Password is required.',
-              minLength: { value: 8, message: 'Password must be at least 8 characters.' },
-            })}
-          />
-          <PasswordField
-            label="Confirm password"
-            autoComplete="new-password"
-            hasError={Boolean(errors.confirmPassword)}
-            errorId="reset-confirm-password-error"
-            errorMessage={errors.confirmPassword?.message}
-            {...register('confirmPassword', {
-              required: 'Please confirm your password.',
-              validate: (value) => value === newPassword || 'Passwords do not match.',
-            })}
-          />
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Updating…' : 'Update password'}
-          </Button>
-        </form>
-      )}
-    </div>
+        {completed ? (
+          <Alert variant="success" title="Password updated">
+            Redirecting to sign in…
+          </Alert>
+        ) : (
+          <form className="space-y-wilms-4" noValidate onSubmit={(event) => void onSubmit(event)}>
+            {submitError ? (
+              <Alert title="Unable to reset password" variant="error">
+                {submitError}
+              </Alert>
+            ) : null}
+            <PasswordField
+              id="reset-new-password"
+              label="New password"
+              autoComplete="new-password"
+              hasError={Boolean(errors.newPassword)}
+              errorId="reset-new-password-error"
+              errorMessage={errors.newPassword?.message}
+              {...register('newPassword', {
+                required: 'Password is required.',
+                minLength: { value: 8, message: 'Password must be at least 8 characters.' },
+              })}
+            />
+            <PasswordField
+              id="reset-confirm-password"
+              label="Confirm password"
+              autoComplete="new-password"
+              hasError={Boolean(errors.confirmPassword)}
+              errorId="reset-confirm-password-error"
+              errorMessage={errors.confirmPassword?.message}
+              {...register('confirmPassword', {
+                required: 'Please confirm your password.',
+                validate: (value) => value === newPassword || 'Passwords do not match.',
+              })}
+            />
+            <LoadingButton
+              type="submit"
+              size="lg"
+              className="w-full"
+              loading={isSubmitting}
+              loadingLabel="Updating…"
+            >
+              Update password
+            </LoadingButton>
+          </form>
+        )}
+
+        <AuthBackLink />
+        <AuthTrustStrip message="Secure password reset. Your account information remains protected." />
+      </div>
+    </AuthCard>
   );
 }
