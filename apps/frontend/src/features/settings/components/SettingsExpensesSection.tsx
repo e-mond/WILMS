@@ -63,24 +63,58 @@ export function SettingsExpensesSection() {
         icon={<SettingsExpensesIcon />}
       >
         <DataTable<ExpenseRecord>
+          variant="executive"
+          layout="auto"
           caption="Expense records"
           data={data.expenses}
           getRowId={(row) => row.id}
           columns={[
-            { id: 'id', header: 'Expense ID', cell: (row) => row.id },
-            { id: 'category', header: 'Category', cell: (row) => row.categoryLabel },
+            {
+              id: 'id',
+              header: 'Expense ID',
+              className: 'whitespace-nowrap align-middle font-mono text-small',
+              cell: (row) => row.id,
+            },
+            {
+              id: 'category',
+              header: 'Category',
+              className: 'whitespace-nowrap align-middle min-w-[8rem]',
+              cell: (row) => row.categoryLabel,
+            },
             {
               id: 'amount',
               header: 'Amount',
+              className: 'whitespace-nowrap align-middle',
               cell: (row) => <CurrencyAmount value={row.amountPesewas} />,
             },
-            { id: 'date', header: 'Date', cell: (row) => row.expenseDate },
-            { id: 'reason', header: 'Reason', cell: (row) => row.reason },
-            { id: 'recordedBy', header: 'Recorded by', cell: (row) => row.recordedByName },
-            { id: 'status', header: 'Status', cell: (row) => row.status },
+            {
+              id: 'date',
+              header: 'Date',
+              className: 'whitespace-nowrap align-middle',
+              cell: (row) => row.expenseDate,
+            },
+            {
+              id: 'reason',
+              header: 'Reason',
+              className: 'min-w-[12rem] max-w-[20rem] align-middle',
+              cell: (row) => <span className="line-clamp-2 text-small leading-relaxed">{row.reason}</span>,
+            },
+            {
+              id: 'recordedBy',
+              header: 'Recorded by',
+              className: 'whitespace-nowrap align-middle min-w-[9rem]',
+              cell: (row) => row.recordedByName,
+            },
+            {
+              id: 'status',
+              header: 'Status',
+              className: 'whitespace-nowrap align-middle',
+              cell: (row) => row.status,
+            },
             {
               id: 'actions',
               header: 'Actions',
+              className: 'whitespace-nowrap align-middle min-w-[10rem]',
               cell: (row) =>
                 row.status === EXPENSE_STATUS.PENDING ? (
                   <div className="flex flex-wrap gap-wilms-2">

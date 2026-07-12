@@ -10,7 +10,6 @@ import {
 import { SettingsAsidePanel } from '@/features/settings/components/SettingsAsidePanel';
 import { SettingsUsersSection } from '@/features/settings/components/SettingsUsersSection';
 import { SettingsRolesSection } from '@/features/settings/components/SettingsRolesSection';
-import { SettingsExpensesSection } from '@/features/settings/components/SettingsExpensesSection';
 import {
   AuditSectionView,
   IntegrationsSectionView,
@@ -113,7 +112,6 @@ export function SettingsPanel() {
             {activeSection === SETTINGS_SECTION.MY_ACCOUNT ? <MyAccountSectionView /> : null}
             {activeSection === SETTINGS_SECTION.USERS ? <SettingsUsersSection /> : null}
             {activeSection === SETTINGS_SECTION.ROLES ? <SettingsRolesSection /> : null}
-            {activeSection === SETTINGS_SECTION.EXPENSES ? <SettingsExpensesSection /> : null}
             {activeSection === SETTINGS_SECTION.SECURITY ? <SecuritySectionView settings={data} /> : null}
             {activeSection === SETTINGS_SECTION.NOTIFICATIONS ? (
               <NotificationsSectionView settings={data} />

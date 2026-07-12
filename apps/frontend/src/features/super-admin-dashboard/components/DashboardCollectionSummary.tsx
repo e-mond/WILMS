@@ -6,6 +6,12 @@ import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { useCollectionMetrics } from '@/features/analytics/hooks/useCollectionMetrics';
 import { COLLECTION_PERIOD } from '@/types/collection-metrics';
+import {
+  CurrencyStatValue,
+  DashboardFinancialStat,
+  DashboardFinancialStatGrid,
+  formatCollectionDetail,
+} from '@/features/super-admin-dashboard/components/DashboardFinancialStat';
 
 export interface DashboardCollectionSummaryProps {
   compact?: boolean;
@@ -51,14 +57,48 @@ export function DashboardCollectionSummary({ compact = false }: DashboardCollect
     { label: 'Monthly Collections', data: monthly.data?.organisationTotal },
   ];
 
+  if (compact) {
+    return (
+      <section className="space-y-wilms-4">
+        <div>
+          <h3 className="text-heading-3 font-semibold text-text-primary">Collection Performance</h3>
+          <p className="mt-wilms-1 text-small text-text-muted">Expected vs collected totals by period</p>
+        </div>
+        <DashboardFinancialStatGrid>
+          {periods.map((period) => (
+            <DashboardFinancialStat
+              key={period.label}
+              label={period.label}
+              value={
+                period.data ? <CurrencyStatValue pesewas={period.data.collectedPesewas} /> : '—'
+              }
+              detail={
+                period.data
+                  ? formatCollectionDetail(
+                      period.data.collectedPesewas,
+                      period.data.expectedPesewas,
+                      period.data.collectionRatePercent,
+                    )
+                  : undefined
+              }
+              tone={
+                period.data && period.data.collectionRatePercent >= 95
+                  ? 'success'
+                  : period.data && period.data.collectionRatePercent < 70
+                    ? 'danger'
+                    : 'default'
+              }
+            />
+          ))}
+        </DashboardFinancialStatGrid>
+      </section>
+    );
+  }
+
   return (
     <section className="space-y-wilms-3">
       <h2 className="text-heading-2 font-semibold text-text-primary">Collection Performance</h2>
-      <ExecutiveKpiGrid
-        className={
-          compact ? 'grid-cols-1 sm:grid-cols-2' : 'sm:grid-cols-2 xl:grid-cols-3'
-        }
-      >
+      <ExecutiveKpiGrid className="sm:grid-cols-2 xl:grid-cols-3">
         {periods.map((period) => (
           <KpiCard
             key={period.label}
@@ -73,9 +113,11 @@ export function DashboardCollectionSummary({ compact = false }: DashboardCollect
             }
             trend={
               period.data
-                ? `${period.data.collectionRatePercent}% of ${(
-                    period.data.expectedPesewas / 100
-                  ).toLocaleString(undefined, { minimumFractionDigits: 2 })} expected`
+                ? formatCollectionDetail(
+                    period.data.collectedPesewas,
+                    period.data.expectedPesewas,
+                    period.data.collectionRatePercent,
+                  )
                 : undefined
             }
             trendDirection={
