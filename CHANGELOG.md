@@ -10,10 +10,15 @@ All notable changes to WILMS are documented in this file.
 - **Reviewed applications table:** Backend returns correct DTO (`borrowerId`, `borrowerName`, `reviewedBy`); table columns and layout improved.
 - **Registration validation:** User-friendly messages for gender, ID type, and date of birth (no raw Zod enum errors).
 - **Date of birth:** Maximum date enforces 20+ age; future dates blocked.
+- **Display IDs:** Collector performance, loan pool aside, and group aside now show human-readable IDs (`COL-###`, pool/group codes).
+- **Create loan:** Submit validation failures now surface errors and return to the relevant wizard step; disbursement unlock adds a Create loan action.
+- **Registration PDF:** Table-based print layout for readable field alignment in exports.
+- **E2E flakes:** Mobile context panel drawer, auditor reports breadcrumb, toast bridge, connection status chip tests.
 
 ### Changed
 - **Super Admin dashboard:** Production `/dashboard/summary` KPIs aligned to spec (`pool`, `disbursed`, `collected`, `outstanding`) with backend `financialOverview` aggregates (capital, lending, collections, admin fees, expenses, cash flow).
-- **Registration wizard:** Visual step progress bar (`Step N of M`) with accessible progress indicator.
+- **Financial overview:** Analytics view toggle with chart summaries (default remains detailed summary panels).
+- **Registration wizard:** Visual step progress bar (`Step N of M`) with accessible progress indicator; compact address fields with character counts and GPS accuracy checks.
 - **Approver navigation:** Distinct icons for Pending Queue (clock) vs Offline Sync (cloud-off).
 - **Financial RBAC audit:** Regression test suite for money-moving endpoint permissions.
 - **VERSION.md:** Canonical version reference for v1.3.7-rc1.

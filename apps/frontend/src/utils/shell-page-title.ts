@@ -12,6 +12,8 @@ const EXACT_TITLES: Record<string, string> = {
   '/adjustments': 'Adjustments',
   '/settings': 'System Settings',
   '/reports': 'Reports',
+  '/auditor/reports': 'Reports',
+  '/auditor/audit-log': 'Audit Log',
   '/reports/loan-portfolio': 'Loan Portfolio Report',
   '/reports/daily-collection': 'Daily Collection Report',
   '/reports/defaulters': 'Defaulter Report',

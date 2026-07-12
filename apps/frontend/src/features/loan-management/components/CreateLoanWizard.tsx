@@ -39,11 +39,28 @@ import {
 import { loanService } from '@/services';
 import type { CreateLoanFormValues } from '@/types/loan';
 import { ApiError } from '@/types/api';
+import { resolveLoanDisplayId } from '@/utils/entity-display-id';
 
 const LOAN_STEPS = LOAN_STEP_LABELS.map((title, index) => ({
   id: `loan-step-${index + 1}`,
   title,
 }));
+
+function stepIndexForField(field: string): number {
+  if (field === 'borrowerId') {
+    return 0;
+  }
+
+  if (field === 'amountGhs' || field === 'durationWeeks') {
+    return 1;
+  }
+
+  if (field === 'paymentDay' || field === 'cycleBatch' || field === 'startDate') {
+    return 2;
+  }
+
+  return 3;
+}
 
 function applySchemaErrors(
   issues: { path: (string | number)[]; message: string }[],
@@ -99,7 +116,8 @@ export function CreateLoanWizard() {
     },
     onSuccess: async (loan) => {
       setCreatedLoanId(loan.id);
-      notifyMutationSuccess('Loan created', `Loan ${loan.id} is ready for disbursement.`);
+      const loanLabel = resolveLoanDisplayId(loan);
+      notifyMutationSuccess('Loan created', `Loan ${loanLabel} is ready for disbursement.`);
       await queryClient.invalidateQueries({ queryKey: ['loans'] });
       await queryClient.invalidateQueries({ queryKey: ['loans', 'portfolio'] });
       await queryClient.invalidateQueries({ queryKey: ['loans', loan.id] });
@@ -140,6 +158,14 @@ export function CreateLoanWizard() {
 
     if (!parsed.success) {
       applySchemaErrors(parsed.error.issues, setError);
+      const firstIssue = parsed.error.issues[0];
+      const firstField = firstIssue?.path[0];
+
+      if (typeof firstField === 'string') {
+        setCurrentStep(stepIndexForField(firstField));
+      }
+
+      setSubmitError(firstIssue?.message ?? 'Please review all loan details before submitting.');
       return;
     }
 

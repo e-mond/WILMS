@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { CurrencyAmount, GroupRiskCard, KpiCard } from '@/components/data-display';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { ExecutiveKpiGrid } from '@/components/layout/executive';
@@ -20,6 +20,7 @@ import { DashboardCollectionSummary } from '@/features/super-admin-dashboard/com
 import { DashboardCycleSnapshot } from '@/features/super-admin-dashboard/components/DashboardCycleSnapshot';
 import { DashboardExpenseSummary } from '@/features/super-admin-dashboard/components/DashboardExpenseSummary';
 import { DashboardFinancialOverviewPanel } from '@/features/super-admin-dashboard/components/DashboardFinancialOverviewPanel';
+import { DashboardFinancialAnalyticsPanel } from '@/features/super-admin-dashboard/components/DashboardFinancialAnalyticsPanel';
 import {
   buildDashboardExportDocument,
   useWilmsExportActor,
@@ -30,6 +31,7 @@ import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { DashboardRecentActivity } from '@/features/super-admin-dashboard/components/DashboardRecentActivity';
 import { cn } from '@/utils/cn';
+import { Switch } from '@/components/ui/Switch';
 
 const KPI_ICON_NAMES: Record<string, DashboardKpiIconName> = {
   pool: 'pool',
@@ -98,6 +100,7 @@ function SuperAdminDashboardContent({
   borrowerTotal: number;
 }) {
   const generatedBy = useWilmsExportActor();
+  const [financialAnalytics, setFinancialAnalytics] = useState(false);
   const exportDocument = useMemo(
     () => buildDashboardExportDocument({ summary: data, generatedBy }),
     [data, generatedBy],
@@ -199,11 +202,24 @@ function SuperAdminDashboardContent({
               Organisation-wide financial health from backend transactional data
             </p>
           </div>
+          <Switch
+            checked={financialAnalytics}
+            onChange={setFinancialAnalytics}
+            label="Analytics view"
+            aria-describedby="dashboard-financial-overview-heading"
+          />
         </div>
 
         {data.financialOverview ? (
           <div className="mb-wilms-8">
-            <DashboardFinancialOverviewPanel overview={data.financialOverview} />
+            {financialAnalytics ? (
+              <DashboardFinancialAnalyticsPanel
+                overview={data.financialOverview}
+                collectorPerformance={data.collectorPerformance}
+              />
+            ) : (
+              <DashboardFinancialOverviewPanel overview={data.financialOverview} />
+            )}
           </div>
         ) : null}
 
