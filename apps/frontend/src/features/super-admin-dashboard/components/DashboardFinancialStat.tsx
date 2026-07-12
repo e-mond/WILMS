@@ -18,7 +18,7 @@ export function DashboardFinancialStat({
   tone = 'default',
 }: DashboardFinancialStatProps) {
   return (
-    <div className="rounded-sm border border-border bg-card p-wilms-4">
+    <div className="rounded-sm border border-border bg-card p-wilms-4 sm:p-wilms-5">
       <p className="text-small font-semibold uppercase tracking-wide text-text-muted">{label}</p>
       <div
         className={cn(
@@ -36,7 +36,7 @@ export function DashboardFinancialStat({
 }
 
 export function DashboardFinancialStatGrid({ children }: { children: ReactNode }) {
-  return <div className="grid gap-wilms-4">{children}</div>;
+  return <div className="grid gap-wilms-4 sm:gap-wilms-5">{children}</div>;
 }
 
 export function formatCollectionDetail(
