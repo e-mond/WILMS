@@ -15,6 +15,8 @@ All notable changes to WILMS are documented in this file.
 - **Super Admin dashboard:** Production `/dashboard/summary` KPIs aligned to spec (`pool`, `disbursed`, `collected`, `outstanding`) with backend `financialOverview` aggregates (capital, lending, collections, admin fees, expenses, cash flow).
 - **Registration wizard:** Visual step progress bar (`Step N of M`) with accessible progress indicator.
 - **Approver navigation:** Distinct icons for Pending Queue (clock) vs Offline Sync (cloud-off).
+- **Financial RBAC audit:** Regression test suite for money-moving endpoint permissions.
+- **VERSION.md:** Canonical version reference for v1.3.7-rc1.
 - Application version bumped to `1.3.7-rc1`.
 
 ---
