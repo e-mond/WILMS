@@ -6,6 +6,7 @@ describe('loan schedule generation', () => {
   it('aligns week 1 to the first payment day on or after the start date', () => {
     expect(getFirstDueDateIso('2026-06-10', 'Monday')).toBe('2026-06-15');
     expect(getFirstDueDateIso('2026-06-10', 'Wednesday')).toBe('2026-06-10');
+    expect(getFirstDueDateIso('2026-06-10', 'Sunday')).toBe('2026-06-14');
   });
 
   it('generates week 1 through N with fixed weekly amounts', () => {

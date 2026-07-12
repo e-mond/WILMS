@@ -1,5 +1,6 @@
 import { asc, eq } from 'drizzle-orm';
 import { getDb, isDatabaseEnabled } from '../db/client.js';
+import { isUndefinedTableError } from '../lib/db-errors.js';
 import { organizationHolidays } from '../db/schema/organization-holidays.js';
 
 export interface OrganizationHolidayRecord {
@@ -17,19 +18,31 @@ export async function listOrganizationHolidays(): Promise<OrganizationHolidayRec
   }
 
   const db = getDb();
-  const rows = await db
-    .select()
-    .from(organizationHolidays)
-    .orderBy(asc(organizationHolidays.holidayDate));
 
-  return rows.map((row) => ({
-    id: row.id,
-    name: row.name,
-    holidayDate: row.holidayDate,
-    scope: row.scope,
-    branch: row.branch,
-    createdAt: row.createdAt.toISOString(),
-  }));
+  try {
+    const rows = await db
+      .select()
+      .from(organizationHolidays)
+      .orderBy(asc(organizationHolidays.holidayDate));
+
+    return rows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      holidayDate: row.holidayDate,
+      scope: row.scope,
+      branch: row.branch,
+      createdAt: row.createdAt.toISOString(),
+    }));
+  } catch (error) {
+    if (isUndefinedTableError(error)) {
+      console.warn(
+        '[organization-holidays] table missing — loan schedules will ignore holidays until migrations are applied.',
+      );
+      return [];
+    }
+
+    throw error;
+  }
 }
 
 export async function insertOrganizationHoliday(input: {

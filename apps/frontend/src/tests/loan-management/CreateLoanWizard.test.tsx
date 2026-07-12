@@ -58,7 +58,7 @@ describe.sequential('CreateLoanWizard', () => {
     await user.click(screen.getByRole('button', { name: 'Continue' }));
 
     await user.selectOptions(screen.getByLabelText(/Payment day/), 'Monday');
-    await user.selectOptions(screen.getByLabelText(/Cycle/), 'Cycle 2 — April 2026');
+    await user.type(screen.getByLabelText(/Cycle/), 'Cycle 2 — April 2026');
     await user.type(screen.getByLabelText(/Start date/), '2026-06-10');
     await user.click(screen.getByRole('button', { name: 'Continue' }));
 
@@ -81,7 +81,7 @@ describe.sequential('CreateLoanWizard', () => {
     await user.type(screen.getByLabelText(/Loan amount/), '300');
     await user.click(screen.getByRole('button', { name: 'Continue' }));
     await user.selectOptions(screen.getByLabelText(/Payment day/), 'Monday');
-    await user.selectOptions(screen.getByLabelText(/Cycle/), 'Cycle 2 — April 2026');
+    await user.type(screen.getByLabelText(/Cycle/), 'Cycle 2 — April 2026');
     await user.type(screen.getByLabelText(/Start date/), '2026-06-10');
     await user.click(screen.getByRole('button', { name: 'Continue' }));
     await user.click(await screen.findByRole('button', { name: 'Create loan' }));
