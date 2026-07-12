@@ -4,6 +4,8 @@ import {
   BORROWER_GENDER,
   BORROWER_ID_TYPE,
   MAX_BORROWER_PHOTO_BYTES,
+  REGISTRATION_ADDRESS_MAX_LENGTH,
+  REGISTRATION_ADDRESS_MIN_LENGTH,
 } from '@/constants/borrower-registration';
 
 const MIN_BORROWER_AGE_YEARS = 20;
@@ -101,19 +103,43 @@ export const personalDetailsSchema = personalDetailsBaseSchema.superRefine((data
   refineBorrowerId(ctx, data.idType, data.idNumber, 'idNumber');
 });
 
+const ghanaGpsAddressSchema = z
+  .string()
+  .trim()
+  .min(1, 'GPS address is required.')
+  .max(REGISTRATION_ADDRESS_MAX_LENGTH, `GPS address must be ${REGISTRATION_ADDRESS_MAX_LENGTH} characters or fewer.`)
+  .refine(
+    (value) =>
+      /^[A-Z]{2}-\d{3,4}-\d{4}$/i.test(value) ||
+      /^-?\d{1,3}(\.\d+)?,\s*-?\d{1,3}(\.\d+)?$/.test(value),
+    {
+      message: 'Enter a valid Ghana Post GPS code (e.g. GA-123-4567) or coordinates.',
+    },
+  );
+
+const addressLineSchema = (label: string) =>
+  z
+    .string()
+    .trim()
+    .min(REGISTRATION_ADDRESS_MIN_LENGTH, `${label} must be at least ${REGISTRATION_ADDRESS_MIN_LENGTH} characters.`)
+    .max(
+      REGISTRATION_ADDRESS_MAX_LENGTH,
+      `${label} must be ${REGISTRATION_ADDRESS_MAX_LENGTH} characters or fewer.`,
+    );
+
 export const addressSchema = z.object({
-  houseAddress: z.string().trim().min(1, 'House address is required.'),
-  gpsAddress: z.string().trim().min(1, 'GPS address is required.'),
+  houseAddress: addressLineSchema('Home address'),
+  gpsAddress: ghanaGpsAddressSchema,
   city: z.string().trim().min(1, 'City is required.'),
   region: z.string().trim().min(1, 'Region is required.'),
   district: z.string().trim().min(1, 'District is required.'),
 });
 
 export const businessSchema = z.object({
-  businessName: z.string().trim().min(1, 'Business name is required.'),
-  businessAddress: z.string().trim().min(1, 'Business address is required.'),
+  businessName: z.string().trim().min(1, 'Business name is required.').max(120, 'Business name is too long.'),
+  businessAddress: addressLineSchema('Business address'),
   typeOfWork: z.string().trim().min(1, 'Type of work is required.'),
-  typeOfWorkOther: z.string().trim().optional(),
+  typeOfWorkOther: z.string().trim().max(80, 'Please keep this under 80 characters.').optional(),
 });
 
 const guarantorBaseSchema = z.object({

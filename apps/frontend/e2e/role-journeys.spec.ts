@@ -37,6 +37,7 @@ test.describe('role landing journeys', () => {
   test('auditor reaches reports hub', async ({ page }) => {
     await signIn(page, DEMO_USERS.auditor);
     await expect(page).toHaveURL(DEMO_USERS.auditor.landingPath);
-    await expect(page.getByRole('heading', { name: /reports/i })).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toContainText('Reports');
+    await expect(page.getByText('Read-only operational and compliance reports.')).toBeVisible();
   });
 });

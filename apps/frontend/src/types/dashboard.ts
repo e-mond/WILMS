@@ -56,6 +56,7 @@ export interface DashboardBorrowerSegment {
 
 export interface DashboardCollectorPerformanceRow {
   collectorId: string;
+  collectorDisplayId: string;
   name: string;
   expectedPesewas: number;
   actualPesewas: number;

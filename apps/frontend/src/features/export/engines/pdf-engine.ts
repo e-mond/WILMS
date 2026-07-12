@@ -196,7 +196,7 @@ async function downloadRegistrationAgreementPdf(
 
   await new Promise<void>((resolve) => {
     host.addEventListener('load', () => resolve(), { once: true });
-    window.setTimeout(resolve, 300);
+    window.setTimeout(resolve, 500);
   });
 
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
@@ -208,12 +208,12 @@ async function downloadRegistrationAgreementPdf(
         host.remove();
         resolve();
       },
-      x: 0,
-      y: 0,
-      width: 210,
+      x: 8,
+      y: 8,
+      width: 194,
       windowWidth: 794,
       autoPaging: 'text',
-      html2canvas: { scale: 0.75, useCORS: true },
+      html2canvas: { scale: 1, useCORS: true, logging: false },
     }).catch((error: unknown) => {
       host.remove();
       reject(error);

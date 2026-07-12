@@ -19,6 +19,7 @@ function readBrowserGeolocation(): Promise<CurrentLocationResult> {
         resolve({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
+          accuracyMeters: position.coords.accuracy,
         });
       },
       (error) => {

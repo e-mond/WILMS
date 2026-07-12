@@ -5,6 +5,8 @@ test.describe('toast feedback', () => {
   test('success toast renders with dismiss control', async ({ page }) => {
     await waitForLoginForm(page);
 
+    await page.waitForFunction(() => Boolean(window.__wilmsE2E?.showSuccessToast));
+
     await page.evaluate(() => {
       window.__wilmsE2E?.showSuccessToast(
         'Borrower approved',
