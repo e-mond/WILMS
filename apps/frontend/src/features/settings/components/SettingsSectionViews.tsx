@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import {
   SettingsSectionCard,
   SettingsSettingRow,
@@ -30,6 +30,7 @@ import {
   SettingsProfileIcon,
 } from '@/features/settings/components/SettingsSectionIcons';
 import { ghsInputToPesewas } from '@/utils/reconciliation.schema';
+import { cn } from '@/utils/cn';
 
 const SecurityIcon = SETTINGS_SECTION_ICONS.security;
 const LoanRulesIcon = SETTINGS_SECTION_ICONS.loanRules;
@@ -37,7 +38,7 @@ const SmsIcon = SETTINGS_SECTION_ICONS.sms;
 
 function IntegrationSetupNotice({ hint }: { hint: string }) {
   return (
-    <p className="mt-wilms-1 max-w-md text-small text-warning">
+    <p className="mt-wilms-2 text-small leading-relaxed text-warning">
       {hint}{' '}
       <a
         href="https://github.com/e-mond/WILMS#environment-variables"
@@ -48,6 +49,45 @@ function IntegrationSetupNotice({ hint }: { hint: string }) {
         README env guide →
       </a>
     </p>
+  );
+}
+
+function IntegrationStatusBadge({ configured, label }: { configured: boolean; label: string }) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-wilms-2 rounded-sm border px-wilms-2 py-wilms-1 text-small font-semibold whitespace-nowrap',
+        configured
+          ? 'border-status-active/30 bg-status-active-light text-status-active'
+          : 'border-warning/30 bg-warning/10 text-warning',
+      )}
+    >
+      <span
+        className={cn('h-2 w-2 rounded-full', configured ? 'bg-status-active' : 'bg-warning')}
+        aria-hidden="true"
+      />
+      {label}
+    </span>
+  );
+}
+
+function IntegrationServiceCard({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: ReactNode;
+}) {
+  return (
+    <article className="rounded-sm border border-border bg-background p-wilms-5">
+      <div className="space-y-wilms-1">
+        <h3 className="text-heading-3 font-semibold text-text-primary">{title}</h3>
+        <p className="text-small leading-relaxed text-text-muted">{description}</p>
+      </div>
+      <div className="mt-wilms-4 space-y-wilms-3">{children}</div>
+    </article>
   );
 }
 
@@ -816,28 +856,26 @@ export function IntegrationsSectionView({ settings }: { settings: SystemSettings
       description="External services and API connectors."
       icon={<SettingsIntegrationsIcon />}
     >
-      <SettingsSettingRow
-        title="SMS Gateway"
-        description="SMSNotifyGH outbound messaging (requires Railway env vars)."
-        control={
-          <div>
-            <Input value={smsGatewayStatus} readOnly aria-label="SMS gateway" />
-            {integrationStatus && !integrationStatus.sms.configured ? (
-              <IntegrationSetupNotice hint={integrationStatus.sms.setupHint} />
-            ) : null}
-          </div>
-        }
-      />
-      <SettingsSettingRow
-        title="SMS Balance"
-        description="Live SMSNotifyGH wallet balance."
-        control={
+      <div className="grid gap-wilms-5 lg:grid-cols-2">
+        <IntegrationServiceCard
+          title="SMS Gateway"
+          description="SMSNotifyGH outbound messaging configured on Railway."
+        >
+          <IntegrationStatusBadge
+            configured={Boolean(integrationStatus?.sms.configured)}
+            label={smsGatewayStatus}
+          />
+          <Input value={smsGatewayStatus} readOnly aria-label="SMS gateway" className="font-mono text-small" />
+          {integrationStatus && !integrationStatus.sms.configured ? (
+            <IntegrationSetupNotice hint={integrationStatus.sms.setupHint} />
+          ) : null}
           <div className="flex flex-wrap items-center gap-wilms-2">
-            <Input value={smsBalance ?? '—'} readOnly aria-label="SMS balance" />
+            <Input value={smsBalance ?? '—'} readOnly aria-label="SMS balance" className="min-w-[10rem] flex-1" />
             <Button
               type="button"
               variant="secondary"
               size="sm"
+              className="shrink-0"
               disabled={isLoadingBalance || !smsRuntimeConfigured}
               title={!smsRuntimeConfigured ? integrationStatus?.sms.setupHint : undefined}
               onClick={() => {
@@ -855,54 +893,58 @@ export function IntegrationsSectionView({ settings }: { settings: SystemSettings
                   .finally(() => setIsLoadingBalance(false));
               }}
             >
-              Refresh
+              Refresh balance
             </Button>
           </div>
-        }
-      />
-      <SettingsSettingRow
-        title="Email Provider"
-        description="Gmail SMTP or Resend via backend mail provider."
-        control={
-          <div>
-            <Input
-              value={emailProviderLabel}
-              onChange={(event) => setEmailProviderLabel(event.target.value)}
-              aria-label="Email provider label"
-            />
-            <Input
-              className="mt-wilms-2"
-              value={
-                integrationStatus
-                  ? integrationStatus.mail.configured
-                    ? `${integrationStatus.mail.provider} — configured`
-                    : `${integrationStatus.mail.provider} — not configured`
-                  : 'Checking…'
-              }
-              readOnly
-              aria-label="Backend mail provider status"
-            />
-            {integrationStatus && !integrationStatus.mail.configured ? (
-              <IntegrationSetupNotice hint={integrationStatus.mail.setupHint} />
-            ) : null}
-          </div>
-        }
-      />
-      <SettingsSettingRow
-        title="Test Email"
-        description="Send a verification email. Gmail SMTP is sent from Vercel; Resend uses the Railway API."
-        control={
-          <div className="flex flex-wrap gap-wilms-2">
+        </IntegrationServiceCard>
+
+        <IntegrationServiceCard
+          title="Email Provider"
+          description="Gmail SMTP or Resend delivery through the backend mail provider."
+        >
+          <IntegrationStatusBadge
+            configured={Boolean(integrationStatus?.mail.configured)}
+            label={
+              integrationStatus
+                ? integrationStatus.mail.configured
+                  ? `${integrationStatus.mail.provider} — configured`
+                  : `${integrationStatus.mail.provider} — not configured`
+                : 'Checking…'
+            }
+          />
+          <Input
+            value={emailProviderLabel}
+            onChange={(event) => setEmailProviderLabel(event.target.value)}
+            aria-label="Email provider label"
+          />
+          <Input
+            value={
+              integrationStatus
+                ? integrationStatus.mail.configured
+                  ? `${integrationStatus.mail.provider} — configured`
+                  : `${integrationStatus.mail.provider} — not configured`
+                : 'Checking…'
+            }
+            readOnly
+            aria-label="Backend mail provider status"
+            className="font-mono text-small"
+          />
+          {integrationStatus && !integrationStatus.mail.configured ? (
+            <IntegrationSetupNotice hint={integrationStatus.mail.setupHint} />
+          ) : null}
+          <div className="flex flex-wrap items-center gap-wilms-2">
             <Input
               value={testEmail}
               onChange={(event) => setTestEmail(event.target.value)}
               aria-label="Test email address"
               type="email"
+              className="min-w-[12rem] flex-1"
             />
             <Button
               type="button"
               variant="secondary"
               size="sm"
+              className="shrink-0"
               disabled={isSendingEmail || !testEmail.trim() || !mailRuntimeConfigured}
               title={!mailRuntimeConfigured ? integrationStatus?.mail.setupHint : undefined}
               onClick={() => {
@@ -917,19 +959,23 @@ export function IntegrationsSectionView({ settings }: { settings: SystemSettings
                   .finally(() => setIsSendingEmail(false));
               }}
             >
-              Send test
+              Send test email
             </Button>
           </div>
-        }
-      />
-      <SettingsSettingRow
-        title="GPS Verification"
-        description="Collection location verification."
-        control={
-          <Switch checked={gpsVerificationEnabled} label="GPS verification" onChange={setGpsVerificationEnabled} />
-        }
-      />
-      <div className="flex justify-end pt-wilms-2">
+        </IntegrationServiceCard>
+      </div>
+
+      <div className="mt-wilms-5">
+        <SettingsSettingRow
+          title="GPS Verification"
+          description="Collection location verification for field payments."
+          control={
+            <Switch checked={gpsVerificationEnabled} label="GPS verification" onChange={setGpsVerificationEnabled} />
+          }
+        />
+      </div>
+
+      <div className="flex justify-end pt-wilms-4">
         <PermissionGate permission={PERMISSION.MANAGE_SYSTEM_SETTINGS}>
           <Button
             type="button"
