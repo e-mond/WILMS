@@ -39,6 +39,7 @@ import {
 } from '@/features/borrower-registration/registration.utils';
 import {
   borrowerRegistrationSchema,
+  MAX_BORROWER_DATE_OF_BIRTH,
   REGISTRATION_STEP_FIELD_NAMES,
   REGISTRATION_STEP_SCHEMAS,
 } from '@/features/borrower-registration/registration.schema';
@@ -533,6 +534,7 @@ export function BorrowerRegistrationWizard() {
       onSubmit={onSubmit}
       isSubmitting={isSubmitting}
       hideFutureSteps
+      showProgressBar
       submitPermissions={[PERMISSION.REGISTER_BORROWERS]}
     >
       {submitError ? (
@@ -564,6 +566,7 @@ export function BorrowerRegistrationWizard() {
             <Input
               id="dateOfBirth"
               type="date"
+              max={MAX_BORROWER_DATE_OF_BIRTH}
               hasError={Boolean(errors.dateOfBirth)}
               {...register('dateOfBirth')}
             />

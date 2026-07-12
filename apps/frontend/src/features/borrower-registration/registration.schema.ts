@@ -6,6 +6,47 @@ import {
   MAX_BORROWER_PHOTO_BYTES,
 } from '@/constants/borrower-registration';
 
+const MIN_BORROWER_AGE_YEARS = 20;
+
+function todayIsoDate(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function maxBorrowerDateOfBirthIso(): string {
+  const date = new Date();
+  date.setUTCFullYear(date.getUTCFullYear() - MIN_BORROWER_AGE_YEARS);
+  return date.toISOString().slice(0, 10);
+}
+
+export const MAX_BORROWER_DATE_OF_BIRTH = maxBorrowerDateOfBirthIso();
+export const MAX_DATE_OF_BIRTH_TODAY = todayIsoDate();
+
+function requiredSelection<T extends readonly [string, ...string[]]>(
+  values: T,
+  message: string,
+) {
+  return z
+    .string()
+    .trim()
+    .min(1, message)
+    .refine((value): value is T[number] => values.includes(value as T[number]), {
+      message,
+    });
+}
+
+const dateOfBirthSchema = z
+  .string()
+  .min(1, 'Date of birth is required.')
+  .refine((value) => !Number.isNaN(new Date(`${value}T12:00:00Z`).getTime()), {
+    message: 'Enter a valid date of birth.',
+  })
+  .refine((value) => value <= todayIsoDate(), {
+    message: 'Date of birth cannot be in the future.',
+  })
+  .refine((value) => value <= maxBorrowerDateOfBirthIso(), {
+    message: 'Borrower must be at least 20 years old.',
+  });
+
 const phoneSchema = z
   .string()
   .trim()
@@ -34,10 +75,10 @@ function refineBorrowerId(
 
 const personalDetailsBaseSchema = z.object({
   fullName: z.string().trim().min(1, 'Full name is required.'),
-  dateOfBirth: z.string().min(1, 'Date of birth is required.'),
-  gender: z.enum(
-    [BORROWER_GENDER.FEMALE, BORROWER_GENDER.MALE, BORROWER_GENDER.OTHER],
-    { required_error: 'Gender is required.' },
+  dateOfBirth: dateOfBirthSchema,
+  gender: requiredSelection(
+    [BORROWER_GENDER.FEMALE, BORROWER_GENDER.MALE, BORROWER_GENDER.OTHER] as const,
+    'Please select your gender.',
   ),
   phone: phoneSchema,
   email: z
@@ -47,11 +88,11 @@ const personalDetailsBaseSchema = z.object({
       message: 'Enter a valid email address.',
     }),
   nationality: z.string().trim().min(1, 'Nationality is required.'),
-  idType: z.enum(
-    [BORROWER_ID_TYPE.GHANA_CARD, BORROWER_ID_TYPE.VOTER_ID, BORROWER_ID_TYPE.PASSPORT],
-    { required_error: 'ID type is required.' },
+  idType: requiredSelection(
+    [BORROWER_ID_TYPE.GHANA_CARD, BORROWER_ID_TYPE.VOTER_ID, BORROWER_ID_TYPE.PASSPORT] as const,
+    'Please select an ID type.',
   ),
-  idNumber: z.string().trim().min(1, 'ID number is required.'),
+  idNumber: z.string().trim().min(1, 'Please provide your ID number.'),
   idDocument: z.instanceof(File).nullable().optional(),
   idDocumentUploadId: z.string().optional(),
 });
@@ -79,11 +120,11 @@ const guarantorBaseSchema = z.object({
   guarantorName: z.string().trim().min(1, 'Guarantor full name is required.'),
   guarantorPhone: phoneSchema,
   guarantorRelationship: z.string().trim().min(1, 'Relationship is required.'),
-  guarantorIdType: z.enum(
-    [BORROWER_ID_TYPE.GHANA_CARD, BORROWER_ID_TYPE.VOTER_ID, BORROWER_ID_TYPE.PASSPORT],
-    { required_error: 'Guarantor ID type is required.' },
+  guarantorIdType: requiredSelection(
+    [BORROWER_ID_TYPE.GHANA_CARD, BORROWER_ID_TYPE.VOTER_ID, BORROWER_ID_TYPE.PASSPORT] as const,
+    'Please select guarantor ID type.',
   ),
-  guarantorIdNumber: z.string().trim().min(1, 'Guarantor national ID is required.'),
+  guarantorIdNumber: z.string().trim().min(1, 'Please provide guarantor ID number.'),
   guarantorPhoto: z
     .instanceof(File, { message: 'Guarantor passport photo is required.' })
     .refine((file) => file.type.startsWith('image/'), 'Guarantor photo must be an image file.')

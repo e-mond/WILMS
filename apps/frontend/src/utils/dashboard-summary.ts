@@ -459,5 +459,61 @@ export function buildDashboardSummary(input: BuildDashboardSummaryInput): Dashbo
     recentAlerts:
       input.overrides?.recentAlerts ??
       buildRecentAlerts(input.loans, input.schedulesByLoanId, referenceDate),
+    financialOverview: {
+      capital: {
+        totalCapitalAvailablePesewas: DEMO_OPERATING_POOL_PESEWAS,
+        totalCapitalInjectedPesewas: DEMO_OPERATING_POOL_PESEWAS + totalDisbursedPesewas,
+        currentAvailableBalancePesewas: Math.max(
+          0,
+          DEMO_OPERATING_POOL_PESEWAS - totalDisbursedPesewas,
+        ),
+      },
+      lending: {
+        totalLoanAmountDisbursedPesewas: totalDisbursedPesewas,
+        totalActiveLoans: activeLoans.length,
+        totalClosedLoans: input.loans.filter((loan) => loan.status === LOAN_STATUS.COMPLETED)
+          .length,
+      },
+      collections: {
+        totalAmountCollectedPesewas: totalCollectedPesewas,
+        outstandingBalancePesewas: totalOutstandingPesewas,
+        amountDueThisWeekPesewas: activeLoans.reduce(
+          (total, loan) => total + loan.weeklyPaymentPesewas,
+          0,
+        ),
+        overdueAmountPesewas: activeLoans
+          .filter((loan) => countMissedWeeks(input.schedulesByLoanId[loan.id] ?? []) > 0)
+          .reduce((total, loan) => total + loan.outstandingPesewas, 0),
+        collectionRatePercent: Math.round(repaymentRatePercent),
+      },
+      adminFees: {
+        totalAdminFeesExpectedPesewas: 0,
+        totalAdminFeesCollectedPesewas: 0,
+        outstandingAdminFeesPesewas: 0,
+      },
+      expenses: {
+        totalExpensesPesewas: 0,
+        operationalCostsPesewas: 0,
+        cashOutflowPesewas: 0,
+      },
+      cashFlow: {
+        moneyIn: {
+          loanCollectionsPesewas: totalCollectedPesewas,
+          adminFeesPesewas: 0,
+          capitalDepositsPesewas: DEMO_OPERATING_POOL_PESEWAS,
+          otherIncomePesewas: 0,
+          totalPesewas: totalCollectedPesewas + DEMO_OPERATING_POOL_PESEWAS,
+        },
+        moneyOut: {
+          loanDisbursementsPesewas: totalDisbursedPesewas,
+          operationalExpensesPesewas: 0,
+          refundsPesewas: 0,
+          adjustmentsPesewas: 0,
+          totalPesewas: totalDisbursedPesewas,
+        },
+        netPositionPesewas:
+          totalCollectedPesewas + DEMO_OPERATING_POOL_PESEWAS - totalDisbursedPesewas,
+      },
+    },
   };
 }
