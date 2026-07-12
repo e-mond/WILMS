@@ -1,6 +1,6 @@
 # WILMS Deployment Guide
 
-**Last updated:** 2026-07-12 (v1.3.5)
+**Last updated:** 2026-07-12 (v1.3.6)
 
 ## Deployment model
 
@@ -28,6 +28,8 @@ Recent migrations:
 | `0019_v123_platform_stabilization` | v1.2.3 | Invitation lifecycle timestamps, audit enums |
 | `0020_v130_field_operations` | v1.3.0 | Repayment cadence, holidays, fees, penalties |
 | `0022_v135_notification_events` | v1.3.5 | Password changed, invitation accepted, login alert notification events |
+
+**Health check:** After migrate, `GET /health` must return `"status":"ok"`. If `"status":"degraded"`, inspect `degradedReasons` — commonly `migrations_behind` or `schema_missing_tables` from unapplied `0020`/`0022`.
 
 See also: [Production runbook](operations/production-runbook.md), [Monitoring](operations/monitoring.md), [Backups](operations/backups.md).
 

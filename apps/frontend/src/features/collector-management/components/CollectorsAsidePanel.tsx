@@ -15,6 +15,7 @@ import {
 import { collectorRateBarClass } from '@/utils/collector-rate-display';
 import { formatCollectorJoinedDate } from '@/utils/format-collector-date';
 import { formatRelativeTime } from '@/utils/format-relative-time';
+import { resolveCollectorDisplayId } from '@/utils/entity-display-id';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
 import { cn } from '@/utils/cn';
 
@@ -55,7 +56,9 @@ export function CollectorsAsidePanel({ data, selected, onMessage }: CollectorsAs
             />
             <div className="min-w-0">
               <p className="text-body font-semibold text-text-primary">{selected.displayName}</p>
-              <p className="text-small font-semibold text-executive-gold">{selected.id}</p>
+              <p className="text-small font-semibold text-executive-gold">
+                {resolveCollectorDisplayId(selected)}
+              </p>
               <p className="mt-wilms-1 flex items-center gap-wilms-2 text-small">
                 <span
                   className={cn(

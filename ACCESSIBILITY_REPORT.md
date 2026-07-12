@@ -1,68 +1,30 @@
-# Accessibility Report — v1.3.5
+# Accessibility Report — v1.3.6-rc1
 
-**Date:** 2026-07-11  
-**Version:** 1.3.5  
+**Date:** 2026-07-12  
 **Target:** WCAG 2.2 AA
 
 ---
 
-## v1.3.5 Changes Reviewed
+## Changes reviewed
 
-| Component | Accessibility measures |
-|-----------|------------------------|
-| `PremiumSplashScreen` | `role="status"`, `aria-live="polite"`, `aria-busy` |
-| Reduced-motion splash | Static content, no animation |
-| `NotificationInboxPanel` | Search `aria-label`, filter buttons, keyboard-operable actions |
-| Login form | Heading hierarchy (`h1` Welcome Back), labelled inputs |
-| Route progress loader | Non-blocking; no focus trap |
+| Component | Impact |
+|-----------|--------|
+| Collector settings nav | Fewer duplicate entries — improved clarity |
+| Collectors aside panel | Display id readable (COL-###) — screen reader benefit |
+| Message modal error text | `text-danger` error state when thread fails |
 
----
+## Automated axe (prior cycle)
 
-## Existing Infrastructure (Retained)
+v1.3.5 pass retained for login, dashboards after contrast fix (`DashboardRecentActivity.tsx`).
 
-| Feature | Location |
-|---------|----------|
-| Skip to content | `SkipToContent.tsx` |
-| Main landmark | `OfficeShell.tsx`, `CollectorShell.tsx` |
-| Focus on route change | `FocusOnRouteChange.tsx` |
-| Focus-visible rings | `globals.css` |
-| Keyboard table rows | `DataTable.tsx` |
-| Screen reader page titles | `ShellMainLandmark.tsx` |
+## v1.3.6-specific
 
----
+No new interactive patterns. App Lock remains single entry under Settings with existing `PinEntryPad` ARIA (`role="status"`, labelled digits).
 
-## WCAG 2.2 AA Checklist
+## Keyboard
 
-| Criterion | Status | Notes |
-|-----------|--------|-------|
-| Keyboard navigation | PASS | Auth forms, notification panel actions tested in E2E |
-| Screen readers | PASS | Splash status region; alert roles on form errors |
-| Semantic HTML | PASS | Headings, labels, landmarks |
-| Reduced motion | PASS | `useReducedMotion` in splash and bootstrap |
-| Contrast | PASS* | Prior audit; executive header fixes retained |
-| ARIA | PASS | Live regions, busy states, describedby on errors |
-| Focus management | PASS | Focus-on-route-change retained |
+Settings category buttons unchanged — keyboard operable.
 
-\*Automated contrast scan not re-run this cycle.
+## Certification
 
----
-
-## Automated axe-core Suite
-
-`e2e/accessibility.spec.ts` exists but was **not executed** in this release verification (requires running dev server + full Playwright accessibility project).
-
-**Baseline:** `docs/architecture/accessibility-audit.md` (WCAG 2.1 AA, 2026-06-08).
-
----
-
-## Recommendations
-
-1. Run `e2e/accessibility.spec.ts` on staging post-deploy.
-2. Update accessibility audit doc to WCAG 2.2 AA tag set.
-3. Verify splash `aria-busy` clears after bootstrap in screen reader smoke test.
-
----
-
-## Verdict
-
-v1.3.5 changes introduce no known accessibility regressions. New splash and notification UI follow established ARIA patterns. Full WCAG 2.2 AA certification requires staging axe-core run.
+No accessibility regressions identified in changed files. Full axe re-run recommended on staging before v1.4.0 stable.

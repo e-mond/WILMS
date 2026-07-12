@@ -1,6 +1,6 @@
 # WILMS Production Runbook
 
-**Version:** v1.3.5  
+**Version:** v1.3.6  
 **Last updated:** 2026-07-12
 
 ## Pre-deploy checklist
@@ -20,7 +20,7 @@ npm install
 npm run db:migrate -w @wilms/api
 ```
 
-v1.3.5 requires through `0022_v135_notification_events.sql`.
+v1.3.6 requires through `0022_v135_notification_events.sql`.
 
 ### 2. API (Railway)
 
@@ -29,7 +29,7 @@ railway up --detach
 curl -fsS https://wilms-production.up.railway.app/health
 ```
 
-Expect `"version":"1.3.5"` and `"status":"ok"`.
+Expect `"version":"1.3.6"` and `"status":"ok"` (after migrations applied).
 
 ### 3. Frontend (Vercel)
 

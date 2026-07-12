@@ -8,8 +8,8 @@ import { validateBody } from '../../middleware/validate-body.js';
 import * as messageService from './service.js';
 
 const createThreadSchema = z.object({
-  collectorId: z.string().uuid(),
-  adminId: z.string().uuid().optional(),
+  collectorId: z.string().trim().min(1).max(128),
+  adminId: z.string().trim().min(1).max(128).optional(),
 });
 
 const sendMessageSchema = z.object({
