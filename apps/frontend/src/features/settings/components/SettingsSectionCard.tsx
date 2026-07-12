@@ -8,21 +8,36 @@ export interface SettingsSettingRowProps {
   description: string;
   control: ReactNode;
   className?: string;
+  /** Wider control column for integration and status fields. */
+  wideControl?: boolean;
 }
 
-export function SettingsSettingRow({ title, description, control, className }: SettingsSettingRowProps) {
+export function SettingsSettingRow({
+  title,
+  description,
+  control,
+  className,
+  wideControl = false,
+}: SettingsSettingRowProps) {
   return (
     <div
       className={cn(
-        'flex flex-col gap-wilms-3 border-b border-border py-wilms-4 last:border-b-0 sm:flex-row sm:items-center sm:justify-between',
+        'flex flex-col gap-wilms-3 border-b border-border py-wilms-4 last:border-b-0 lg:flex-row lg:items-start lg:justify-between',
         className,
       )}
     >
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 lg:max-w-[42%]">
         <p className="font-semibold text-text-primary">{title}</p>
-        <p className="mt-wilms-1 text-small text-text-muted">{description}</p>
+        <p className="mt-wilms-1 text-small leading-relaxed text-text-muted">{description}</p>
       </div>
-      <div className="shrink-0 sm:min-w-[180px]">{control}</div>
+      <div
+        className={cn(
+          'w-full shrink-0 lg:w-auto',
+          wideControl ? 'lg:min-w-[min(100%,22rem)] lg:max-w-md' : 'lg:min-w-[12rem] lg:max-w-xs',
+        )}
+      >
+        {control}
+      </div>
     </div>
   );
 }

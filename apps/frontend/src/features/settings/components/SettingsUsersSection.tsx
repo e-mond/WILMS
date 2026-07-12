@@ -29,6 +29,7 @@ const ROLE_TONE_CLASS = {
   muted: 'text-text-muted',
 } as const;
 
+const TABLE_CELL = 'whitespace-nowrap align-middle';
 const UsersIcon = SETTINGS_SECTION_ICONS.users;
 
 export function SettingsUsersSection() {
@@ -184,7 +185,7 @@ export function SettingsUsersSection() {
           </PermissionGate>
         }
       >
-        <div className="mb-wilms-4">
+        <div className="mb-wilms-4 max-w-xl">
           <Input
             aria-label="Search users"
             placeholder="Search users by name, email, or role..."
@@ -198,6 +199,7 @@ export function SettingsUsersSection() {
         ) : (
           <DataTable
             variant="executive"
+            layout="auto"
             caption="System users"
             data={filteredUsers}
             getRowId={(row) => row.id}
@@ -205,6 +207,7 @@ export function SettingsUsersSection() {
               {
                 id: 'user',
                 header: 'User',
+                className: cn(TABLE_CELL, 'min-w-[16rem]'),
                 cell: (row) => (
                   <div className="flex items-center gap-wilms-3">
                     <Avatar
@@ -216,12 +219,12 @@ export function SettingsUsersSection() {
                       })}
                       size="sm"
                     />
-                    <div>
-                      <p className="font-semibold text-text-primary">
+                    <div className="min-w-0">
+                      <p className="max-w-[14rem] truncate font-semibold text-text-primary">
                         {row.displayName}
                         {row.isCurrentUser ? ' (You)' : ''}
                       </p>
-                      <p className="text-small text-text-muted">{row.email}</p>
+                      <p className="max-w-[14rem] truncate text-small text-text-muted">{row.email}</p>
                     </div>
                   </div>
                 ),
@@ -229,14 +232,21 @@ export function SettingsUsersSection() {
               {
                 id: 'role',
                 header: 'Role',
+                className: cn(TABLE_CELL, 'min-w-[8rem]'),
                 cell: (row) => (
                   <span className={cn('font-semibold', ROLE_TONE_CLASS[row.roleTone])}>{row.roleLabel}</span>
                 ),
               },
-              { id: 'lastLogin', header: 'Last Login', cell: (row) => row.lastLoginLabel },
+              {
+                id: 'lastLogin',
+                header: 'Last Login',
+                className: cn(TABLE_CELL, 'min-w-[9rem]'),
+                cell: (row) => row.lastLoginLabel,
+              },
               {
                 id: 'status',
                 header: 'Status',
+                className: cn(TABLE_CELL, 'min-w-[8rem]'),
                 cell: (row) => (
                   <span
                     className={cn(
@@ -257,12 +267,13 @@ export function SettingsUsersSection() {
               },
               {
                 id: 'action',
-                header: '',
+                header: 'Actions',
+                className: cn(TABLE_CELL, 'min-w-[12rem]'),
                 cell: (row) => (
-                  <div className="flex flex-wrap gap-wilms-3">
+                  <div className="flex items-center gap-wilms-3">
                     <button
                       type="button"
-                      className="text-small font-semibold text-brand-primary hover:underline"
+                      className="whitespace-nowrap text-small font-semibold text-brand-primary hover:underline"
                       onClick={() => setProfileUserId(row.id)}
                     >
                       View profile
@@ -271,7 +282,7 @@ export function SettingsUsersSection() {
                       <PermissionGate permission={PERMISSION.MANAGE_USERS}>
                         <button
                           type="button"
-                          className="text-small font-semibold text-brand-primary hover:underline disabled:opacity-50"
+                          className="whitespace-nowrap text-small font-semibold text-brand-primary hover:underline disabled:opacity-50"
                           disabled={resendInvitation.isPending}
                           onClick={() => void handleResendInvitation(row)}
                         >
@@ -281,7 +292,7 @@ export function SettingsUsersSection() {
                     ) : null}
                     <button
                       type="button"
-                      className="text-small font-semibold text-executive-gold hover:underline"
+                      className="whitespace-nowrap text-small font-semibold text-executive-gold hover:underline"
                       onClick={() => {
                         setSelectedUser(row);
                         setModalMode('edit');

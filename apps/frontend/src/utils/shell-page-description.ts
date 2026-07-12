@@ -15,6 +15,8 @@ const EXACT_DESCRIPTIONS: Record<string, string> = {
     'Organise borrowers into lending groups, monitor membership, and review group risk.',
   '/risk-flags':
     'Review borrower, group, and loan risk signals raised during operations.',
+  '/expenses':
+    'Review field and office expense submissions, approve reimbursements, and monitor spend totals.',
   '/communication-center':
     'Compose broadcasts, manage templates, and review delivery analytics across email, SMS, and in-app channels.',
   '/adjustments':
