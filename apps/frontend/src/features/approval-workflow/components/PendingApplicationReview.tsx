@@ -98,7 +98,6 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
     queryFn: () =>
       borrowerService.checkGuarantorEligibility({
         guarantorPhone: data!.guarantorPhone,
-        guarantorIdNumber: data!.guarantorPhone,
         guarantorName: data!.guarantorName,
       }),
     enabled: Boolean(data?.guarantorPhone && data?.guarantorName),
