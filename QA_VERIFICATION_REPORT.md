@@ -16,7 +16,7 @@
 | Backend unit tests | `npm test -w @wilms/api` | **PASS** | 105/105 |
 | Frontend unit tests | `npm test` | **PASS** | 233/233 |
 | Version consistency | `npm run verify:version` | **PASS** | 1.3.5 all packages |
-| Bundle budget | `npm run bundle:budget-check` | **PASS** | 168.6 KB JS |
+| Bundle budget | `npm run bundle:budget-check` | **PASS** | 168.6 KB JS, 9.0 KB CSS |
 | Perf budget | `npm run perf:budget-check` | **PASS** | Bundle check |
 
 ---
