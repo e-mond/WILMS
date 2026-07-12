@@ -19,6 +19,7 @@ import { DashboardCollectorPerformance } from '@/features/super-admin-dashboard/
 import { DashboardCollectionSummary } from '@/features/super-admin-dashboard/components/DashboardCollectionSummary';
 import { DashboardCycleSnapshot } from '@/features/super-admin-dashboard/components/DashboardCycleSnapshot';
 import { DashboardExpenseSummary } from '@/features/super-admin-dashboard/components/DashboardExpenseSummary';
+import { DashboardFinancialOverviewPanel } from '@/features/super-admin-dashboard/components/DashboardFinancialOverviewPanel';
 import {
   buildDashboardExportDocument,
   useWilmsExportActor,
@@ -31,9 +32,12 @@ import { DashboardRecentActivity } from '@/features/super-admin-dashboard/compon
 import { cn } from '@/utils/cn';
 
 const KPI_ICON_NAMES: Record<string, DashboardKpiIconName> = {
+  pool: 'pool',
+  disbursed: 'outstanding',
+  collected: 'collected',
+  outstanding: 'outstanding',
   'collected-today': 'collected',
   'collected-total': 'collected',
-  outstanding: 'outstanding',
   'active-borrowers': 'pool',
 };
 
@@ -192,10 +196,16 @@ function SuperAdminDashboardContent({
               Financial Overview
             </h2>
             <p className="text-small text-text-muted">
-              Collection performance and expense summary side by side
+              Organisation-wide financial health from backend transactional data
             </p>
           </div>
         </div>
+
+        {data.financialOverview ? (
+          <div className="mb-wilms-8">
+            <DashboardFinancialOverviewPanel overview={data.financialOverview} />
+          </div>
+        ) : null}
 
         <div className="grid grid-cols-1 gap-wilms-6 lg:gap-wilms-8 xl:grid-cols-2">
           <div className="min-w-0 rounded-sm border border-border bg-background p-wilms-5 sm:p-wilms-6">

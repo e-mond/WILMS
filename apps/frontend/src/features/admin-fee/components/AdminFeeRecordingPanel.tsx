@@ -76,12 +76,17 @@ export function AdminFeeRecordingPanel({ borrowerId }: AdminFeeRecordingPanelPro
   }
 
   if (isError) {
+    const isForbidden = error instanceof ApiError && error.status === 403;
     return (
       <QueryErrorState
         error={error}
         onRetry={() => void refetch()}
-        title="Borrower not found"
-        description="This borrower could not be loaded for admin fee recording."
+        title={isForbidden ? 'Access denied' : 'Unable to load admin fee details'}
+        description={
+          isForbidden
+            ? 'You do not have permission to view admin fee status for this borrower.'
+            : 'This borrower could not be loaded for admin fee recording.'
+        }
       />
     );
   }

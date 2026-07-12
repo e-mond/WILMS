@@ -2,7 +2,8 @@
 
 | Version | Date | Phase | Summary |
 |---------|------|-------|---------|
-| **1.3.0** | 2026-07-08 | Field operations | Offline PWA shell, device health, background uploads, sync conflict UI, advanced lending domain |
+| **1.3.7-rc1** | 2026-07-12 | Stability RC | Financial dashboard KPIs, admin fee 403 fix, Remember Me, registration UX |
+| **1.3.6-rc1** | 2026-07-08 | Production stabilisation | Collector settings, health diagnostics, mock guard |
 | **1.2.3** | 2026-07-08 | Platform stabilization | Invitation lifecycle, SMS hardening, failed-message UX, createObjectURL fixes |
 | **1.2.2** | 2026-07-08 | Security | Admin fee persistence, session invalidation, permanent user deletion |
 | **1.2.1** | 2026-07-07 | Invitations | Invitation email fixes, delivery logging |

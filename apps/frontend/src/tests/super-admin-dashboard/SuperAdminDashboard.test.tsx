@@ -65,6 +65,6 @@ describe('SuperAdminDashboard', () => {
     expect(await screen.findByText('Recent Alerts')).toBeInTheDocument();
     expect(screen.getByText(/critical/)).toBeInTheDocument();
     expect(screen.getByText('Pending')).toBeInTheDocument();
-    expect(screen.getByText('GH₵4,820,000.00')).toBeInTheDocument();
+    expect(screen.getAllByText('GH₵4,820,000.00').length).toBeGreaterThan(0);
   });
 });
