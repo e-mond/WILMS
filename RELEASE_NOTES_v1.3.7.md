@@ -37,7 +37,30 @@ v1.3.7-rc1 focuses on stabilising production workflows, correcting business logi
 - [x] Backend type-check
 - [x] Frontend type-check
 - [x] ESLint
-- [x] Targeted unit tests (admin fee, dashboard, registration schema)
+- [x] Production build
+- [x] Backend unit tests (122/122)
+- [x] Frontend unit tests (356/356)
+- [x] Version consistency (`verify:version`)
+- [x] Bundle budget (`bundle:budget-check`)
+- [x] Financial endpoints RBAC audit test
+- [ ] E2E regression suite (Playwright — requires environment)
+- [ ] Production smoke (`smoke:production` — requires credentials)
+- [ ] Git tag `v1.3.7-rc1` (after gate sign-off)
+
+## Production Verification Report (2026-07-12)
+
+| Gate | Result |
+|------|--------|
+| TypeScript | PASS |
+| ESLint | PASS |
+| Build | PASS |
+| Backend tests | PASS (122) |
+| Frontend tests | PASS (356) |
+| Version consistency | PASS |
+| Bundle budget | PASS (JS 168.4 KB gzip / 350 KB) |
+| Financial RBAC audit | PASS |
+| E2E | Not run (no Playwright env in CI agent) |
+| Production smoke | Not run (requires live credentials) |
 
 ## Known Issues / Deferred
 

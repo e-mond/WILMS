@@ -11,6 +11,7 @@ vi.mock('../../db/persistence.js', () => ({
   listBorrowers: vi.fn(async () => []),
   listPayments: vi.fn(async () => []),
   listGroups: vi.fn(async () => []),
+  countBorrowers: vi.fn(async () => 0),
 }));
 
 vi.mock('../../db/client.js', () => ({
@@ -18,6 +19,49 @@ vi.mock('../../db/client.js', () => ({
   getDb: () => ({
     select: dbMocks.select,
     execute: vi.fn(async () => ({ rows: [] })),
+    insert: vi.fn(() => ({
+      values: vi.fn(() => ({
+        onConflictDoNothing: vi.fn(() => ({
+          returning: vi.fn(async () => [
+            {
+              id: 'default',
+              adminFeePesewas: 5000,
+              reconciliationVarianceThresholdPercent: 5,
+              smsNotificationsEnabled: true,
+              emailNotificationsEnabled: true,
+              paymentReminderDaysBefore: 1,
+              minGroupSize: 5,
+              maxGroupSize: 15,
+              organisationName: 'WILMS',
+              systemName: "Women's Interest-Free Loan Management System",
+              primaryColour: '#0F6E56',
+              accentColour: '#BA7517',
+              logoAsset: 'wilms-logo.svg',
+              sessionTimeoutMinutes: 30,
+              twoFactorRequired: false,
+              ipAllowlistEnabled: false,
+              failedLoginLockoutAttempts: 5,
+              passwordPolicy: 'strong',
+              maxLoanAmountPesewas: 500_000,
+              defaultLoanDurationWeeks: 12,
+              allowLoanRollovers: true,
+              latePaymentGraceDays: 3,
+              smsProvider: 'smsnotifygh',
+              smsSenderId: 'WILMS-GH',
+              missedPaymentSmsEnabled: true,
+              approvalSmsEnabled: true,
+              supervisorEscalationsEnabled: true,
+              immutableAuditTrail: true,
+              auditExportEnabled: true,
+              monitoringAlertsEnabled: true,
+              gpsVerificationEnabled: true,
+              emailProviderLabel: 'Gmail SMTP',
+              updatedAt: new Date('2026-06-01T08:00:00.000Z'),
+            },
+          ]),
+        })),
+      })),
+    })),
   }),
 }));
 
@@ -37,6 +81,7 @@ function mockEmptySelectChain() {
   dbMocks.groupBy.mockResolvedValue([]);
   const whereResult = {
     groupBy: dbMocks.groupBy,
+    limit: vi.fn(() => Promise.resolve([])),
     then(onFulfilled: (value: unknown[]) => unknown, onRejected?: (reason: unknown) => unknown) {
       return Promise.resolve([]).then(onFulfilled, onRejected);
     },
