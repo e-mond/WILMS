@@ -23,6 +23,7 @@ describe('health.service', () => {
   it('returns ok when database is disabled in development', async () => {
     const report = await buildHealthReport();
     expect(report.status).toBe('ok');
+    expect(report.degradedReasons).toEqual([]);
     expect(report.service).toBe('wilms-api');
     expect(report.database.status).toBe('disabled');
     expect(healthHttpStatus(report)).toBe(200);

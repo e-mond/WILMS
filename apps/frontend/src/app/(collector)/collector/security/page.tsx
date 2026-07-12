@@ -1,12 +1,6 @@
-import { PageShell } from '@/components/layout/PageShell';
-import { AppLockSetupPanel } from '@/features/app-lock/components/AppLockSetupPanel';
+import { redirect } from 'next/navigation';
 
+/** Legacy route — app lock is configured under Settings → App Lock. */
 export default function CollectorSecurityPage() {
-  return (
-    <PageShell
-      description="Configure device-level PIN protection for field work."
-    >
-      <AppLockSetupPanel />
-    </PageShell>
-  );
+  redirect('/collector/settings');
 }

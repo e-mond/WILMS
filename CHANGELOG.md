@@ -2,6 +2,24 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.3.6-rc1] — Production Stabilisation (Release Candidate)
+
+### Fixed
+- Collector Settings: removed duplicate PIN section; App Lock is the single device PIN entry point.
+- Legacy `/collector/security` redirects to Settings (App Lock).
+- Admin Collectors messaging: relaxed thread `collectorId` validation so demo and production user ids work.
+- Collectors aside panel: show formatted collector display id instead of raw internal user id.
+- Health endpoint: added `degradedReasons` array for migration/schema/upload diagnostics.
+- Production builds: webpack never resolves mock services when `NODE_ENV=production`.
+
+### Operations
+- Production health `degraded` root cause documented: pending migrations `0020_v130_field_operations` and `0022_v135_notification_events` (verified via live `/health` probe).
+
+### Changed
+- Application version bumped to `1.3.6`.
+
+---
+
 ## [1.3.5] — UI/UX & Communication Platform
 
 ### Added

@@ -438,7 +438,6 @@ function renderSection(section: RoleSettingsSection, role: UserRole) {
   switch (section) {
     case ROLE_SETTINGS_SECTION.PROFILE:
       return <ProfileSection />;
-    case ROLE_SETTINGS_SECTION.PIN:
     case ROLE_SETTINGS_SECTION.APP_LOCK:
       return <AppLockSetupPanel />;
     case ROLE_SETTINGS_SECTION.NOTIFICATIONS:

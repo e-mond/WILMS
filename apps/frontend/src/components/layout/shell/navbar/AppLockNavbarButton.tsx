@@ -16,7 +16,7 @@ export function AppLockNavbarButton() {
     if (user?.role === USER_ROLE.COLLECTOR) {
       return (
         <Link
-          href="/collector/security"
+          href="/collector/settings"
           className="text-small font-semibold text-text-muted hover:text-text-primary"
         >
           Set PIN

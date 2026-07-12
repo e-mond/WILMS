@@ -34,6 +34,7 @@ function readExpectedMigrationCount(): number {
 
 export interface HealthReport {
   status: 'ok' | 'degraded';
+  degradedReasons: string[];
   service: 'wilms-api';
   version: string;
   gitCommit: string | null;
@@ -123,8 +124,29 @@ export async function buildHealthReport(): Promise<HealthReport> {
     schemaReport.status === 'degraded' ||
     (env.nodeEnv === 'production' && !uploadReport.valid);
 
+  const degradedReasons: string[] = [];
+  if (isDatabaseEnabled() && !dbConnected) {
+    degradedReasons.push('database_disconnected');
+  }
+  if (migrationStatus === 'degraded') {
+    degradedReasons.push(
+      `migrations_behind:applied=${appliedMigrations ?? 0},expected=${expectedMigrations}`,
+    );
+  }
+  if (schemaReport.status === 'degraded') {
+    degradedReasons.push(
+      schemaReport.missingTables.length > 0
+        ? `schema_missing_tables:${schemaReport.missingTables.join(',')}`
+        : 'schema_probe_failed',
+    );
+  }
+  if (env.nodeEnv === 'production' && !uploadReport.valid) {
+    degradedReasons.push('upload_configuration_invalid');
+  }
+
   return {
     status: degraded ? 'degraded' : 'ok',
+    degradedReasons,
     service: 'wilms-api',
     version: readPackageVersion(),
     gitCommit: env.gitCommit ?? null,
