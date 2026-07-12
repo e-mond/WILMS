@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { DataTable, KpiCard } from '@/components/data-display';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
-import { ExecutiveKpiGrid, FilterPillBar, ManagementToolbar } from '@/components/layout/executive';
+import { ExecutiveKpiGrid, FilterDropdown, FilterDropdownRow, ManagementToolbar } from '@/components/layout/executive';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -171,14 +171,18 @@ export function CommunicationCenterPanel() {
         ))}
       </ExecutiveKpiGrid>
 
-      <FilterPillBar
-        options={TABS.map((tab) => ({ value: tab.id, label: tab.label }))}
-        value={activeTab}
-        onChange={(value) => setActiveTab(value as TabId)}
-        ariaLabel="Communication center sections"
-      />
-
       <ManagementToolbar
+        filters={
+          <FilterDropdownRow>
+            <FilterDropdown
+              label="Section"
+              ariaLabel="Communication center sections"
+              options={TABS.map((tab) => ({ value: tab.id, label: tab.label }))}
+              value={activeTab}
+              onChange={(value) => setActiveTab(value as TabId)}
+            />
+          </FilterDropdownRow>
+        }
         search={<Input placeholder="Search messages…" aria-label="Search messages" disabled />}
         actions={
           <div className="flex flex-wrap gap-wilms-2">

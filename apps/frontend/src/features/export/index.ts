@@ -36,6 +36,7 @@ export { getWilmsEnvironment } from '@/features/export/utils/environment';
 export { useWilmsExportActor } from '@/features/export/hooks/useWilmsExportActor';
 export { useWilmsExport, type WilmsExportFormat } from '@/features/export/hooks/useWilmsExport';
 export { ExportCsvButton, type ExportCsvButtonProps } from '@/features/export/components/ExportCsvButton';
+export const REGISTRATION_AGREEMENT_EXPORT_FORMATS = ['pdf', 'word', 'print'] as const;
 export { WilmsExportActions, type WilmsExportActionsProps } from '@/features/export/components/WilmsExportActions';
 export {
   WilmsExportModal,

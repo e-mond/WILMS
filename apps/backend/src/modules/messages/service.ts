@@ -4,6 +4,13 @@ import { USER_ROLE } from '@wilms/shared-rbac';
 import { isDatabaseEnabled, getDb } from '../../db/client.js';
 import { messageThreads, messages } from '../../db/schema/messages.js';
 import * as userRepo from '../../repositories/user.repository.js';
+import {
+  getOrCreateThreadInMemory,
+  getThreadInMemory,
+  isMemoryMessagingEnabled,
+  listThreadsInMemory,
+  sendMessageInMemory,
+} from './memory-store.js';
 
 export interface MessageDto {
   id: string;
@@ -32,7 +39,7 @@ export interface MessageThreadDetail extends MessageThreadSummary {
 
 function requireDatabase(): void {
   if (!isDatabaseEnabled()) {
-    throw new Error('VALIDATION:Database persistence is required for messaging.');
+    return;
   }
 }
 
@@ -83,6 +90,10 @@ async function mapThreadSummary(
 }
 
 export async function listThreads(userId: string): Promise<MessageThreadSummary[]> {
+  if (isMemoryMessagingEnabled()) {
+    return listThreadsInMemory(userId);
+  }
+
   requireDatabase();
 
   const db = getDb();
@@ -109,6 +120,10 @@ export async function listThreads(userId: string): Promise<MessageThreadSummary[
 }
 
 export async function getThread(threadId: string, userId: string): Promise<MessageThreadDetail> {
+  if (isMemoryMessagingEnabled()) {
+    return getThreadInMemory(threadId, userId);
+  }
+
   requireDatabase();
 
   const thread = await assertThreadParticipant(threadId, userId);
@@ -144,6 +159,10 @@ export async function getOrCreateThread(
   adminId: string,
   collectorId: string,
 ): Promise<MessageThreadDetail> {
+  if (isMemoryMessagingEnabled()) {
+    return getOrCreateThreadInMemory(adminId, collectorId);
+  }
+
   requireDatabase();
 
   const admin = await userRepo.getUserById(adminId);
@@ -190,6 +209,10 @@ export async function sendMessage(
   senderUserId: string,
   body: string,
 ): Promise<MessageDto> {
+  if (isMemoryMessagingEnabled()) {
+    return sendMessageInMemory(threadId, senderUserId, body);
+  }
+
   requireDatabase();
 
   const trimmedBody = body.trim();

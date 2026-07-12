@@ -5,7 +5,8 @@ import { CurrencyAmount, DataTable, KpiCard, UtilisationBar } from '@/components
 import { LoanPoolsKpiIcon } from '@/components/icons/LoanPoolsKpiIcon';
 import {
   ExecutiveKpiGrid,
-  FilterPillBar,
+  FilterDropdown,
+  FilterDropdownRow,
   ManagementToolbar,
 } from '@/components/layout/executive';
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
@@ -190,12 +191,15 @@ export function LoanPoolsPanel() {
           />
         }
         filters={
-          <FilterPillBar
-            ariaLabel="Filter loan pools by status"
-            options={POOL_STATUS_FILTERS}
-            value={statusFilter}
-            onChange={setStatusFilter}
-          />
+          <FilterDropdownRow>
+            <FilterDropdown
+              label="Status"
+              ariaLabel="Filter loan pools by status"
+              options={POOL_STATUS_FILTERS}
+              value={statusFilter}
+              onChange={setStatusFilter}
+            />
+          </FilterDropdownRow>
         }
         actions={
           <>
