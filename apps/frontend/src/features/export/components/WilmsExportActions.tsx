@@ -3,6 +3,7 @@
 import type { PermissionId } from '@/constants/permissions';
 import { PERMISSION } from '@/constants/permissions';
 import { WilmsExportTrigger } from '@/features/export/components/WilmsExportModal';
+import type { WilmsExportFormat } from '@/features/export/hooks/useWilmsExport';
 import type { WilmsExportDocument } from '@/features/export/types';
 import { cn } from '@/utils/cn';
 
@@ -13,6 +14,7 @@ export interface WilmsExportActionsProps {
   showIcons?: boolean;
   /** When set, export actions require any of these permissions. */
   permissions?: PermissionId[];
+  formats?: WilmsExportFormat[];
 }
 
 export function WilmsExportActions({
@@ -21,6 +23,7 @@ export function WilmsExportActions({
   className,
   showIcons = true,
   permissions = [PERMISSION.EXPORT_REPORTS],
+  formats,
 }: WilmsExportActionsProps) {
   return (
     <WilmsExportTrigger
@@ -29,6 +32,7 @@ export function WilmsExportActions({
       className={cn(className)}
       showIcon={showIcons}
       permissions={permissions}
+      formats={formats}
     />
   );
 }

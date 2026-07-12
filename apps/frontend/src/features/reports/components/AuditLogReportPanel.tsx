@@ -3,13 +3,17 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { DataTable, KpiCard, Avatar } from '@/components/data-display';
-import { ExecutiveKpiGrid, ManagementToolbar } from '@/components/layout/executive';
+import {
+  ExecutiveKpiGrid,
+  FilterDropdown,
+  FilterDropdownRow,
+  ManagementToolbar,
+} from '@/components/layout/executive';
 import { GuidedEmptyState } from '@/components/feedback/GuidedEmptyState';
 import { QueryErrorState } from '@/components/feedback/QueryErrorState';
 import { AuditLogTableSkeleton } from '@/components/feedback/AuditLogTableSkeleton';
 import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
 import { AUDIT_ACTION_FILTER_OPTIONS, AUDIT_ACTION_LABELS } from '@/constants/audit-display';
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
 import { WILMS_REPORT_TYPE } from '@/features/export';
@@ -22,11 +26,24 @@ import { settingsService } from '@/services';
 import type { AuditEntry } from '@/types/services';
 import { resolveEntityDisplayId, resolveUserDisplayId } from '@/utils/entity-display-id';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
+import { formatDisplayDate } from '@/utils/format-date';
+import { cn } from '@/utils/cn';
 
 const CSV_HEADERS = ['Timestamp', 'User', 'Action', 'Entity Type', 'Entity ID', 'Reason'];
 
 function resolveActorLabel(entry: AuditEntry): string {
   return entry.actorDisplayName ?? entry.actorDisplayId ?? resolveUserDisplayId(entry.actorId);
+}
+
+function resolveActorSubLabel(entry: AuditEntry): string | null {
+  const label = resolveActorLabel(entry);
+  const displayId = entry.actorDisplayId ?? resolveUserDisplayId(entry.actorId);
+
+  if (displayId && displayId !== label) {
+    return displayId;
+  }
+
+  return null;
 }
 
 function resolveTargetEntityLabel(entry: AuditEntry): string {
@@ -39,11 +56,31 @@ function resolveTargetEntityLabel(entry: AuditEntry): string {
   );
 }
 
-function formatAuditTimestamp(value: string): string {
-  return new Date(value).toLocaleString('en-GH', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  });
+function formatAuditTimestamp(value: string): { date: string; time: string } {
+  const parsed = new Date(value);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return { date: value, time: '' };
+  }
+
+  return {
+    date: formatDisplayDate(value),
+    time: parsed.toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
+  };
+}
+
+function AuditActionBadge({ action }: { action: AuditEntry['action'] }) {
+  const label =
+    AUDIT_ACTION_LABELS[action] ?? action.replaceAll('_', ' ').toLowerCase();
+
+  return (
+    <span className="inline-flex max-w-full rounded-sm border border-border bg-card px-wilms-2 py-wilms-1 text-small font-semibold text-text-primary">
+      {label}
+    </span>
+  );
 }
 
 export function AuditLogReportPanel() {
@@ -80,14 +117,17 @@ export function AuditLogReportPanel() {
 
   const csvRows = useMemo(
     () =>
-      (data ?? []).map((entry) => [
-        formatAuditTimestamp(entry.createdAt),
-        resolveActorLabel(entry),
-        AUDIT_ACTION_LABELS[entry.action],
-        entry.targetEntityType,
-        resolveTargetEntityLabel(entry),
-        entry.reason ?? '—',
-      ]),
+      (data ?? []).map((entry) => {
+        const timestamp = formatAuditTimestamp(entry.createdAt);
+        return [
+          timestamp.time ? `${timestamp.date} ${timestamp.time}` : timestamp.date,
+          resolveActorLabel(entry),
+          AUDIT_ACTION_LABELS[entry.action],
+          entry.targetEntityType,
+          resolveTargetEntityLabel(entry),
+          entry.reason ?? '—',
+        ];
+      }),
     [data],
   );
 
@@ -127,45 +167,41 @@ export function AuditLogReportPanel() {
       </ExecutiveKpiGrid>
 
       <ManagementToolbar
-        search={
-          <div className="grid gap-wilms-3 sm:grid-cols-2 xl:grid-cols-4">
-        <label className="space-y-wilms-1 text-body">
-          <span className="font-medium text-text-primary">From date</span>
-          <Input type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} />
-        </label>
-        <label className="space-y-wilms-1 text-body">
-          <span className="font-medium text-text-primary">To date</span>
-          <Input type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} />
-        </label>
-        <label className="space-y-wilms-1 text-body">
-          <span className="font-medium text-text-primary">User</span>
-          <Select
-            aria-label="Filter by user"
-            value={actorFilter}
-            onChange={(event) => setActorFilter(event.target.value)}
-          >
-            {userFilterOptions.map((option) => (
-              <option key={option.value || 'all-users'} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
-        </label>
-        <label className="space-y-wilms-1 text-body">
-          <span className="font-medium text-text-primary">Action</span>
-          <Select
-            aria-label="Filter by action"
-            value={actionFilter}
-            onChange={(event) => setActionFilter(event.target.value)}
-          >
-            {AUDIT_ACTION_FILTER_OPTIONS.map((option) => (
-              <option key={option.value || 'all-actions'} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
-        </label>
-          </div>
+        filters={
+          <FilterDropdownRow>
+            <label className="flex min-w-[9rem] flex-col gap-wilms-1">
+              <span className="text-small font-semibold text-text-muted">From date</span>
+              <Input
+                type="date"
+                aria-label="Filter from date"
+                value={fromDate}
+                onChange={(event) => setFromDate(event.target.value)}
+              />
+            </label>
+            <label className="flex min-w-[9rem] flex-col gap-wilms-1">
+              <span className="text-small font-semibold text-text-muted">To date</span>
+              <Input
+                type="date"
+                aria-label="Filter to date"
+                value={toDate}
+                onChange={(event) => setToDate(event.target.value)}
+              />
+            </label>
+            <FilterDropdown
+              label="User"
+              ariaLabel="Filter by user"
+              options={userFilterOptions}
+              value={actorFilter}
+              onChange={setActorFilter}
+            />
+            <FilterDropdown
+              label="Action"
+              ariaLabel="Filter by action"
+              options={AUDIT_ACTION_FILTER_OPTIONS}
+              value={actionFilter}
+              onChange={setActionFilter}
+            />
+          </FilterDropdownRow>
         }
         actions={
           <ExportCsvButton
@@ -195,9 +231,19 @@ export function AuditLogReportPanel() {
           columns={[
             {
               id: 'createdAt',
-              header: 'Timestamp',
-              className: 'w-[14%] whitespace-nowrap',
-              cell: (entry) => formatAuditTimestamp(entry.createdAt),
+              header: 'Date & Time',
+              className: 'w-[12%] whitespace-nowrap',
+              cell: (entry) => {
+                const timestamp = formatAuditTimestamp(entry.createdAt);
+                return (
+                  <div className="space-y-0.5">
+                    <p className="font-semibold text-text-primary">{timestamp.date}</p>
+                    {timestamp.time ? (
+                      <p className="text-small text-text-muted">{timestamp.time}</p>
+                    ) : null}
+                  </div>
+                );
+              },
             },
             {
               id: 'actor',
@@ -205,14 +251,24 @@ export function AuditLogReportPanel() {
               className: 'w-[18%] min-w-[10rem]',
               cell: (entry) => {
                 const label = resolveActorLabel(entry);
+                const subLabel = resolveActorSubLabel(entry);
                 return (
                   <div className="flex items-center gap-wilms-2">
                     <Avatar
                       label={label}
-                      photoUrl={resolveEntityPhotoUrl({ name: label, id: entry.actorId, photoUrl: entry.actorPhotoUrl })}
+                      photoUrl={resolveEntityPhotoUrl({
+                        name: label,
+                        id: entry.actorId,
+                        photoUrl: entry.actorPhotoUrl,
+                      })}
                       size="sm"
                     />
-                    <span>{label}</span>
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-text-primary">{label}</p>
+                      {subLabel ? (
+                        <p className="truncate text-small text-text-muted">{subLabel}</p>
+                      ) : null}
+                    </div>
                   </div>
                 );
               },
@@ -221,27 +277,35 @@ export function AuditLogReportPanel() {
               id: 'action',
               header: 'Action',
               className: 'w-[16%] min-w-[8rem]',
-              cell: (entry) =>
-                AUDIT_ACTION_LABELS[entry.action] ??
-                entry.action.replaceAll('_', ' ').toLowerCase(),
+              cell: (entry) => <AuditActionBadge action={entry.action} />,
             },
             {
               id: 'targetEntityType',
               header: 'Entity',
-              className: 'w-[12%] min-w-[6rem]',
-              cell: (entry) => entry.targetEntityType,
+              className: 'w-[10%] min-w-[6rem]',
+              cell: (entry) => (
+                <span className="text-small font-semibold uppercase tracking-wide text-text-muted">
+                  {entry.targetEntityType}
+                </span>
+              ),
             },
             {
               id: 'targetEntityId',
               header: 'Entity ID',
-              className: 'w-[18%] min-w-[8rem]',
-              cell: (entry) => resolveTargetEntityLabel(entry),
+              className: 'w-[16%] min-w-[8rem]',
+              cell: (entry) => (
+                <span className="font-mono text-small text-text-primary">
+                  {resolveTargetEntityLabel(entry)}
+                </span>
+              ),
             },
             {
               id: 'reason',
               header: 'Reason',
-              className: 'w-[22%] min-w-[10rem]',
-              cell: (entry) => entry.reason ?? '—',
+              className: cn('w-[22%] min-w-[10rem]'),
+              cell: (entry) => (
+                <span className="text-small text-text-muted">{entry.reason ?? '—'}</span>
+              ),
             },
           ]}
         />

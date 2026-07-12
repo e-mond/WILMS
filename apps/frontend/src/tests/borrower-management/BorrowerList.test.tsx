@@ -51,7 +51,7 @@ describe('BorrowerList', () => {
     );
 
     await screen.findByText('Ama Mensah');
-    await user.click(screen.getByRole('button', { name: 'Active' }));
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Filter borrowers by status' }), 'APPROVED');
 
     expect(screen.getByText('Ama Mensah')).toBeInTheDocument();
     expect(screen.queryByText('Adjoa Owusu')).not.toBeInTheDocument();

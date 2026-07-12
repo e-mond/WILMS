@@ -19,7 +19,8 @@ export function useMessageCollector() {
 
   const createThread = useMutation({
     mutationFn: (collectorId: string) => messageService.createThread({ collectorId }),
-    onError: () => {
+    onError: (error) => {
+      console.error('Unable to open collector conversation:', error);
       toast.error('Unable to open conversation', { message: 'Try again shortly.' });
     },
   });
