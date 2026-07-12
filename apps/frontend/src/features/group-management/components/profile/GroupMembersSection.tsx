@@ -10,7 +10,7 @@ import {
 } from '@/components/data-display';
 import { ProfileSection } from '@/components/layout/executive/ProfileSection';
 import { Input } from '@/components/ui/Input';
-import { FilterPillBar } from '@/components/layout/executive';
+import { FilterDropdown, FilterDropdownRow } from '@/components/layout/executive';
 import {
   GROUP_MEMBER_LOAN_STATUS,
   GROUP_MEMBER_ROLE,
@@ -74,12 +74,15 @@ export function GroupMembersSection({ members }: GroupMembersSectionProps) {
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
         />
-        <FilterPillBar
-          ariaLabel="Filter members by loan status"
-          options={LOAN_STATUS_FILTERS}
-          value={loanFilter}
-          onChange={setLoanFilter}
-        />
+        <FilterDropdownRow>
+          <FilterDropdown
+            label="Loan status"
+            ariaLabel="Filter members by loan status"
+            options={LOAN_STATUS_FILTERS}
+            value={loanFilter}
+            onChange={setLoanFilter}
+          />
+        </FilterDropdownRow>
       </div>
 
       <DataTable<GroupMemberDetail>

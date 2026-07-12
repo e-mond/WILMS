@@ -5,11 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { CurrencyAmount, DataTable, GroupRiskBadge, KpiCard } from '@/components/data-display';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
-import {
-  ExecutiveKpiGrid,
-  FilterPillBar,
-  ManagementToolbar,
-} from '@/components/layout/executive';
+import { ExecutiveKpiGrid, FilterDropdown, FilterDropdownRow, ManagementToolbar } from '@/components/layout/executive';
 import { GroupsKpiIcon } from '@/components/icons/GroupsKpiIcon';
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
 import { WILMS_REPORT_TYPE } from '@/features/export';
@@ -174,12 +170,15 @@ export function GroupsManagementPanel() {
           />
         }
         filters={
-          <FilterPillBar
-            ariaLabel="Filter groups by risk level"
-            options={RISK_FILTERS}
-            value={riskFilter}
-            onChange={handleRiskFilterChange}
-          />
+          <FilterDropdownRow>
+            <FilterDropdown
+              label="Risk level"
+              ariaLabel="Filter groups by risk level"
+              options={RISK_FILTERS}
+              value={riskFilter}
+              onChange={handleRiskFilterChange}
+            />
+          </FilterDropdownRow>
         }
         actions={
           <>

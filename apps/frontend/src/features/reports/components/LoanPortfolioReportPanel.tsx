@@ -10,14 +10,14 @@ import {
 } from '@/components/data-display';
 import {
   ExecutiveKpiGrid,
-  FilterPillBar,
+  FilterDropdown,
+  FilterDropdownRow,
   ManagementToolbar,
 } from '@/components/layout/executive';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { GuidedEmptyState } from '@/components/feedback/GuidedEmptyState';
 import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
 import { WILMS_REPORT_TYPE } from '@/features/export';
 import { useLoanPortfolioReport } from '@/features/reports/hooks/useLoanPortfolioReport';
@@ -130,26 +130,22 @@ export function LoanPortfolioReportPanel() {
           />
         }
         filters={
-          <div className="flex flex-wrap items-center gap-wilms-3">
-            <FilterPillBar
+          <FilterDropdownRow>
+            <FilterDropdown
+              label="Loan status"
               ariaLabel="Filter report by loan status"
               options={STATUS_FILTERS}
               value={statusFilter}
               onChange={setStatusFilter}
             />
-            <Select
-              aria-label="Filter by cycle or batch"
+            <FilterDropdown
+              label="Cycle / batch"
+              ariaLabel="Filter by cycle or batch"
+              options={CYCLE_FILTER_OPTIONS}
               value={cycleBatchFilter}
-              onChange={(event) => setCycleBatchFilter(event.target.value)}
-              className="min-w-[180px]"
-            >
-              {CYCLE_FILTER_OPTIONS.map((option) => (
-                <option key={option.value || 'all-cycles'} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </Select>
-          </div>
+              onChange={setCycleBatchFilter}
+            />
+          </FilterDropdownRow>
         }
         actions={
           <ExportCsvButton

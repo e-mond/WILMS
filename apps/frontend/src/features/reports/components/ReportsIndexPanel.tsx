@@ -7,7 +7,7 @@ import { EmptyState } from '@/components/feedback/EmptyState';
 import { resolveQueryErrorPresentation } from '@/utils/query-error-presentation';
 import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
-import { ExecutiveKpiGrid, FilterPillBar, ManagementToolbar } from '@/components/layout/executive';
+import { ExecutiveKpiGrid, FilterDropdown, FilterDropdownRow, ManagementToolbar } from '@/components/layout/executive';
 import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { ExportDownloadIcon } from '@/components/icons/ExportDownloadIcon';
 import { ReportsAsidePanel } from '@/features/reports/components/ReportsAsidePanel';
@@ -219,12 +219,15 @@ export function ReportsIndexPanel({ categoryFilterMode = 'default' }: ReportsInd
           />
         }
         filters={
-          <FilterPillBar
-            ariaLabel="Filter report types"
-            options={categoryFilterOptions}
-            value={typeFilter}
-            onChange={setTypeFilter}
-          />
+          <FilterDropdownRow>
+            <FilterDropdown
+              label="Category"
+              ariaLabel="Filter report types"
+              options={categoryFilterOptions}
+              value={typeFilter}
+              onChange={setTypeFilter}
+            />
+          </FilterDropdownRow>
         }
         actions={
           <WilmsExportActions document={exportDocument} filenameBase="reports-index" showIcons />

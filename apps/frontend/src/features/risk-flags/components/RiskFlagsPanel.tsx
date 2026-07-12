@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { PERMISSION } from '@/constants/permissions';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
-import { ExecutiveKpiGrid, FilterPillBar, ManagementToolbar } from '@/components/layout/executive';
+import { ExecutiveKpiGrid, FilterDropdown, FilterDropdownRow, ManagementToolbar } from '@/components/layout/executive';
 import {
   buildRiskFlagsExportDocument,
   useWilmsExportActor,
@@ -283,12 +283,15 @@ export function RiskFlagsPanel() {
           />
         }
         filters={
-          <FilterPillBar
-            ariaLabel="Filter risk flags"
-            options={STATUS_FILTERS}
-            value={statusFilter}
-            onChange={setStatusFilter}
-          />
+          <FilterDropdownRow>
+            <FilterDropdown
+              label="Status"
+              ariaLabel="Filter risk flags"
+              options={STATUS_FILTERS}
+              value={statusFilter}
+              onChange={setStatusFilter}
+            />
+          </FilterDropdownRow>
         }
         actions={
           <>

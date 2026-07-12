@@ -3,7 +3,12 @@
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
-import { PremiumSplashScreen, type SplashPhase } from '@/components/feedback/PremiumSplashScreen';
+import {
+  PremiumSplashScreen,
+  SPLASH_FADE_MS,
+  SPLASH_LOGO_MS,
+  type SplashPhase,
+} from '@/components/feedback/PremiumSplashScreen';
 import { WilmsSplashScreen } from '@/components/feedback/WilmsSplashScreen';
 import { useAppLockStore } from '@/state/appLockStore';
 import { useAuthStore } from '@/state/authStore';
@@ -13,8 +18,7 @@ interface AppBootstrapProps {
   children: ReactNode;
 }
 
-const SPLASH_LOGO_MS = 1200;
-const SPLASH_FADE_MS = 400;
+const SPLASH_LOADER_HOLD_MS = 450;
 
 export function AppBootstrap({ children }: AppBootstrapProps) {
   const authHydrated = useAuthStore((state) => state.isHydrated);
@@ -39,7 +43,10 @@ export function AppBootstrap({ children }: AppBootstrapProps) {
 
     const launchTimer = window.setTimeout(() => setSplashPhase('logo'), 80);
     const loaderTimer = window.setTimeout(() => setSplashPhase('loader'), SPLASH_LOGO_MS);
-    const fadeTimer = window.setTimeout(() => setSplashPhase('fade'), SPLASH_LOGO_MS + 300);
+    const fadeTimer = window.setTimeout(
+      () => setSplashPhase('fade'),
+      SPLASH_LOGO_MS + SPLASH_LOADER_HOLD_MS,
+    );
 
     return () => {
       window.clearTimeout(launchTimer);
@@ -55,7 +62,7 @@ export function AppBootstrap({ children }: AppBootstrapProps) {
 
     const completeTimer = window.setTimeout(() => {
       setSplashPhase('complete');
-    }, SPLASH_LOGO_MS + SPLASH_FADE_MS);
+    }, SPLASH_LOGO_MS + SPLASH_LOADER_HOLD_MS + SPLASH_FADE_MS);
 
     return () => window.clearTimeout(completeTimer);
   }, [storesReady, splashDone]);

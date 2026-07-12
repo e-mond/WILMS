@@ -71,7 +71,7 @@ describe('MyRegistrationsList', () => {
     renderList();
 
     await screen.findByRole('cell', { name: /Adjoa Owusu/i });
-    await user.click(screen.getByRole('button', { name: 'Under Review' }));
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Filter registrations by status' }), 'UNDER_REVIEW');
 
     await waitFor(() => {
       expect(screen.getByRole('cell', { name: /Adjoa Owusu/i })).toBeInTheDocument();

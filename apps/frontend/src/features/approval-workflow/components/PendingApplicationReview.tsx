@@ -33,6 +33,7 @@ import { useApprovalActions } from '@/features/approval-workflow/hooks/useApprov
 import { useBorrowerReview } from '@/features/approval-workflow/hooks/useBorrowerReview';
 
 import {
+  REGISTRATION_AGREEMENT_EXPORT_FORMATS,
   useWilmsExportActor,
   WilmsExportActions,
 } from '@/features/export';
@@ -271,6 +272,7 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
             filenameBase={`registration-${data?.fullName.replace(/\s+/g, '-').toLowerCase() ?? borrowerId}`}
             showIcons
             permissions={[]}
+            formats={[...REGISTRATION_AGREEMENT_EXPORT_FORMATS]}
           />
 
         ) : null}
