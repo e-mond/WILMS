@@ -79,6 +79,7 @@ const config: Config = {
         'wilms-2': '0.5rem',
         'wilms-3': '0.75rem',
         'wilms-4': '1rem',
+        'wilms-5': '1.25rem',
         'wilms-6': '1.5rem',
         'wilms-8': '2rem',
         'wilms-12': '3rem',
