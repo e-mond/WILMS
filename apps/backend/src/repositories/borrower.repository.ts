@@ -1,7 +1,9 @@
-import { and, count, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { and, count, eq, inArray, isNull, notExists } from 'drizzle-orm';
+import { BORROWER_STATUS } from '@wilms/shared-contracts';
 import { uuidv7 } from 'uuidv7';
 import type { WilmsDb } from '../db/client.js';
 import { getDb } from '../db/client.js';
+import { borrowerAdminFees } from '../db/schema/borrower-admin-fees.js';
 import { borrowers } from '../db/schema/borrowers.js';
 import type { BorrowerRecord, BorrowerStatus } from '../db/store.js';
 import { MAX_LIST_PAGE_SIZE, MAX_UNPAGINATED_LIST_ROWS } from '../http/list-pagination.js';
@@ -98,18 +100,25 @@ export async function listApprovedBorrowersWithoutAdminFee(
   limit = MAX_UNPAGINATED_LIST_ROWS,
 ): Promise<BorrowerRecord[]> {
   const db = getDb();
-  const rows = await db.execute(sql`
-    SELECT b.*
-    FROM borrowers b
-    LEFT JOIN borrower_admin_fees f ON f.borrower_id = b.id
-    WHERE b.deleted_at IS NULL
-      AND b.status = 'APPROVED'
-      AND f.borrower_id IS NULL
-    ORDER BY b.full_name ASC
-    LIMIT ${limit}
-  `);
+  const rows = await db
+    .select()
+    .from(borrowers)
+    .where(
+      and(
+        isNull(borrowers.deletedAt),
+        eq(borrowers.status, BORROWER_STATUS.APPROVED as typeof borrowers.$inferSelect.status),
+        notExists(
+          db
+            .select({ borrowerId: borrowerAdminFees.borrowerId })
+            .from(borrowerAdminFees)
+            .where(eq(borrowerAdminFees.borrowerId, borrowers.id)),
+        ),
+      ),
+    )
+    .orderBy(borrowers.fullName)
+    .limit(limit);
 
-  return (rows.rows as (typeof borrowers.$inferSelect)[]).map(rowToRecord);
+  return rows.map(rowToRecord);
 }
 
 export async function getBorrower(id: string): Promise<BorrowerRecord | undefined> {

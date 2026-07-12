@@ -281,8 +281,12 @@ borrowersRouter.get(
     PERMISSION.MANAGE_SYSTEM_SETTINGS,
   ),
   asyncHandler(async (_req, res) => {
-    const { listBorrowersAwaitingAdminFee } = await import('../transactions/service.js');
-    sendData(res, await listBorrowersAwaitingAdminFee());
+    try {
+      const { listBorrowersAwaitingAdminFee } = await import('../transactions/service.js');
+      sendData(res, await listBorrowersAwaitingAdminFee());
+    } catch (error) {
+      mapError(error);
+    }
   }),
 );
 
