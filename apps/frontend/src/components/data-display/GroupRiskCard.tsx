@@ -38,11 +38,31 @@ export function GroupRiskCard({ segments, totalGroups, compact = false }: GroupR
   }, []);
 
   return (
-    <section className={compact ? 'min-w-0 rounded-sm border border-border bg-card p-wilms-3' : 'min-w-0 rounded-sm border border-border bg-card p-wilms-4'}>
-      <h2 className={compact ? 'text-body font-semibold text-text-primary' : 'text-heading-2 font-semibold text-text-primary'}>
+    <section
+      aria-labelledby="group-risk-distribution-heading"
+      className={
+        compact
+          ? 'min-w-0 rounded-sm border border-border bg-card p-wilms-3'
+          : 'min-w-0 rounded-sm border border-border bg-card p-wilms-5 sm:p-wilms-6 lg:p-wilms-8'
+      }
+    >
+      <h2
+        id="group-risk-distribution-heading"
+        className={
+          compact
+            ? 'text-body font-semibold text-text-primary'
+            : 'text-heading-2 font-semibold text-text-primary'
+        }
+      >
         Group Risk Distribution
       </h2>
-      <div className={compact ? 'mt-wilms-3 flex items-center gap-wilms-3' : 'mt-wilms-4 flex flex-col items-center gap-wilms-4 md:flex-row md:items-start'}>
+      <div
+        className={
+          compact
+            ? 'mt-wilms-3 flex items-center gap-wilms-3'
+            : 'mt-wilms-6 flex flex-col items-center gap-wilms-6 md:flex-row md:items-start lg:gap-wilms-8'
+        }
+      >
         <div
           className={
             compact
@@ -67,11 +87,18 @@ export function GroupRiskCard({ segments, totalGroups, compact = false }: GroupR
             ) : null}
           </div>
         </div>
-        <ul className={compact ? 'grid min-w-0 flex-1 gap-wilms-1' : 'grid w-full min-w-0 gap-wilms-2 sm:grid-cols-2 md:flex-1 md:grid-cols-1'}>
+        <ul
+          className={
+            compact
+              ? 'grid min-w-0 flex-1 gap-wilms-1'
+              : 'grid w-full min-w-0 gap-wilms-3 sm:grid-cols-2 md:flex-1 md:grid-cols-1 lg:gap-wilms-4'
+          }
+          role="list"
+        >
           {segments.map((segment) => (
             <li
               key={segment.label}
-              className="flex min-w-0 items-center gap-wilms-2 text-small"
+              className="flex min-w-0 items-center gap-wilms-3 text-small"
             >
               <span
                 className={`h-3 w-3 shrink-0 rounded-sm ${DASHBOARD_GROUP_RISK_TONE_CLASS[segment.tone]}`}
@@ -79,7 +106,7 @@ export function GroupRiskCard({ segments, totalGroups, compact = false }: GroupR
               />
               <Link
                 href={`/groups?risk=${RISK_FILTER_BY_TONE[segment.tone]}`}
-                className="min-w-0 flex-1 truncate text-text-primary hover:text-brand-primary hover:underline"
+                className="min-w-0 flex-1 truncate text-text-primary hover:text-brand-primary hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary"
               >
                 {segment.label}
               </Link>
@@ -93,7 +120,7 @@ export function GroupRiskCard({ segments, totalGroups, compact = false }: GroupR
       {!compact ? (
         <Link
           href="/groups"
-          className="mt-wilms-4 inline-block text-small font-semibold text-brand-primary hover:underline"
+          className="mt-wilms-6 inline-block text-small font-semibold text-brand-primary hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary"
         >
           View all groups
         </Link>
