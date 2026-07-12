@@ -25,10 +25,10 @@ import { WILMS_REPORT_TYPE } from '@/features/export';
 import { DisbursementsAsidePanel } from '@/features/loan-management/components/DisbursementsAsidePanel';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { LOAN_CYCLE_BATCH_OPTIONS } from '@/constants/loan';
 import { LOAN_STATUS_FILTER_OPTIONS } from '@/constants/loan-status';
 import { useLoanPortfolio } from '@/features/loan-management/hooks/useLoanPortfolio';
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
+import { buildCycleBatchFilterOptions } from '@/utils/cycle-batch-options';
 import {
   filterPortfolioEntries,
   summarizePortfolioEntries,
@@ -36,12 +36,6 @@ import {
 import type { LoanPortfolioEntry } from '@/types/loan';
 import { formatPesewasForCsv } from '@/utils/export-csv';
 import { resolveLoanDisplayId } from '@/utils/entity-display-id';
-
-const CYCLE_FILTER_OPTIONS = [
-  { value: '', label: 'All cycles' },
-  ...LOAN_CYCLE_BATCH_OPTIONS.map((cycle) => ({ value: cycle, label: cycle })),
-  { value: 'Cycle 4 — October 2025', label: 'Cycle 4 — October 2025' },
-];
 
 const STATUS_FILTER_OPTIONS = [
   { value: '', label: 'All statuses' },
@@ -57,6 +51,11 @@ export function LoanPortfolioList() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [cycleBatchFilter, setCycleBatchFilter] = useState('');
+
+  const cycleFilterOptions = useMemo(
+    () => buildCycleBatchFilterOptions(data ?? []),
+    [data],
+  );
 
   const filteredEntries = useMemo(
     () =>
@@ -180,7 +179,7 @@ export function LoanPortfolioList() {
               onChange={(event) => setCycleBatchFilter(event.target.value)}
               className="h-10 min-w-[180px] rounded-sm border border-border bg-card px-wilms-3 text-small"
             >
-              {CYCLE_FILTER_OPTIONS.map((option) => (
+              {cycleFilterOptions.map((option) => (
                 <option key={option.value || 'all-cycles'} value={option.value}>
                   {option.label}
                 </option>

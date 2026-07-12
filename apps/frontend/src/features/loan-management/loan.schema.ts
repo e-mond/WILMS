@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import {
-  LOAN_CYCLE_BATCH_OPTIONS,
   PAYMENT_DAY_OPTIONS,
 } from '@/constants/loan';
 import { parseGhsToPesewas } from '@/features/loan-management/loan.utils';
@@ -28,9 +27,11 @@ export const loanScheduleSchema = z.object({
   paymentDay: z.enum(PAYMENT_DAY_OPTIONS, {
     required_error: 'Payment day is required.',
   }),
-  cycleBatch: z.enum(LOAN_CYCLE_BATCH_OPTIONS, {
-    required_error: 'Cycle or batch is required.',
-  }),
+  cycleBatch: z
+    .string()
+    .trim()
+    .min(1, 'Cycle or batch is required.')
+    .max(120, 'Cycle or batch label is too long.'),
   startDate: z
     .string()
     .min(1, 'Start date is required.')
