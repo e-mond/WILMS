@@ -2,6 +2,23 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.3.7-rc1] — Stability, UX & Business Logic (Release Candidate)
+
+### Fixed
+- **Admin fee 403:** `GET /borrowers/:id/admin-fee-status` now uses `RECORD_COLLECTIONS` permission instead of borrower group-assignment checks that conflicted with the admin-fee queue.
+- **Remember Me:** Login form no longer clears email/password when toggling “Remember email” or typing while the preference is enabled.
+- **Reviewed applications table:** Backend returns correct DTO (`borrowerId`, `borrowerName`, `reviewedBy`); table columns and layout improved.
+- **Registration validation:** User-friendly messages for gender, ID type, and date of birth (no raw Zod enum errors).
+- **Date of birth:** Maximum date enforces 20+ age; future dates blocked.
+
+### Changed
+- **Super Admin dashboard:** Production `/dashboard/summary` KPIs aligned to spec (`pool`, `disbursed`, `collected`, `outstanding`) with backend `financialOverview` aggregates (capital, lending, collections, admin fees, expenses, cash flow).
+- **Registration wizard:** Visual step progress bar (`Step N of M`) with accessible progress indicator.
+- **Approver navigation:** Distinct icons for Pending Queue (clock) vs Offline Sync (cloud-off).
+- Application version bumped to `1.3.7-rc1`.
+
+---
+
 ## [1.3.6-rc1] — Production Stabilisation (Release Candidate)
 
 ### Fixed

@@ -24,6 +24,8 @@ export interface MultiStepFormProps {
   className?: string;
   /** When true, progress shows only completed + current steps (hides future step titles). */
   hideFutureSteps?: boolean;
+  /** Visual progress bar with step counter (registration wizard). */
+  showProgressBar?: boolean;
 }
 
 export function MultiStepForm({
@@ -39,10 +41,12 @@ export function MultiStepForm({
   submitPermissions,
   className,
   hideFutureSteps = false,
+  showProgressBar = false,
 }: MultiStepFormProps) {
   const isFirstStep = currentStep === 0;
   const isReviewStep = currentStep === steps.length - 1;
   const visibleSteps = hideFutureSteps ? steps.slice(0, currentStep + 1) : steps;
+  const progressPercent = Math.round(((currentStep + 1) / steps.length) * 100);
 
   const submitButton = (
     <Button type="button" onClick={onSubmit} disabled={isSubmitting}>
@@ -52,6 +56,28 @@ export function MultiStepForm({
 
   return (
     <div className={cn('space-y-wilms-6', className)}>
+      {showProgressBar ? (
+        <div className="space-y-wilms-3" aria-live="polite">
+          <p className="text-small font-semibold text-text-muted">
+            Step {currentStep + 1} of {steps.length}
+          </p>
+          <div
+            className="h-2 overflow-hidden rounded-full bg-border"
+            role="progressbar"
+            aria-valuemin={1}
+            aria-valuemax={steps.length}
+            aria-valuenow={currentStep + 1}
+            aria-label={`Registration progress: step ${currentStep + 1} of ${steps.length}`}
+          >
+            <div
+              className="h-full rounded-full bg-brand-primary transition-[width] duration-300 ease-out"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+          <p className="text-body font-semibold text-text-primary">{steps[currentStep]?.title}</p>
+        </div>
+      ) : null}
+
       <ol
         aria-label="Registration progress"
         className={cn(

@@ -6,7 +6,7 @@ export interface ReleaseNotes {
 }
 
 export const CURRENT_RELEASE_NOTES: ReleaseNotes = {
-  version: '1.3.6',
+  version: '1.3.7-rc1',
   summary: 'Production stabilisation RC — bug fixes, mock guard, and health diagnostics.',
   highlights: [
     'Collector settings consolidated to a single App Lock section.',
