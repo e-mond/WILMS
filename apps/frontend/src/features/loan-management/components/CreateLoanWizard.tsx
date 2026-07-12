@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import {
-  LOAN_CYCLE_BATCH_OPTIONS,
+  LOAN_CYCLE_BATCH_SUGGESTIONS,
   LOAN_STEP_LABELS,
   PAYMENT_DAY_OPTIONS,
 } from '@/constants/loan';
@@ -315,18 +315,18 @@ export function CreateLoanWizard() {
             required
             error={errors.cycleBatch?.message}
           >
-            <Select
+            <Input
               id="cycleBatch"
+              list="cycle-batch-suggestions"
+              placeholder="e.g. Cycle 5 — January 2027"
               hasError={Boolean(errors.cycleBatch)}
               {...register('cycleBatch')}
-            >
-              <option value="">Select cycle or batch</option>
-              {LOAN_CYCLE_BATCH_OPTIONS.map((cycle) => (
-                <option key={cycle} value={cycle}>
-                  {cycle}
-                </option>
+            />
+            <datalist id="cycle-batch-suggestions">
+              {LOAN_CYCLE_BATCH_SUGGESTIONS.map((cycle) => (
+                <option key={cycle} value={cycle} />
               ))}
-            </Select>
+            </datalist>
           </FormField>
           <FormField
             label="Start date"

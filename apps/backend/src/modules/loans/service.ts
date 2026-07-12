@@ -16,6 +16,7 @@ import {
   type LoanDetailDto,
 } from '../../domain/loan/mappers.js';
 import { generateLoanScheduleWeeks } from '../../domain/loan/schedule.js';
+import { isValidPaymentDay } from '../../domain/loan/payment-day.js';
 import { runWithIdempotency } from '../../infrastructure/idempotency/run-with-idempotency.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import { notifyLoanDisbursed, notifyLoanApproved, notifyLoanRejected } from '../../infrastructure/notifications/event-dispatch.js';
@@ -98,6 +99,10 @@ export async function createLoan(input: CreateLoanBody, actorId: string): Promis
   }
   if (await loanRepo.borrowerHasOpenLoan(input.borrowerId)) {
     throw new Error('VALIDATION:This borrower already has an active or pending loan.');
+  }
+
+  if (!isValidPaymentDay(input.paymentDay)) {
+    throw new Error('VALIDATION:Payment day must be a valid weekday (Sunday through Saturday).');
   }
 
   const weeklyPaymentPesewas = calculateWeeklyPaymentPesewas(

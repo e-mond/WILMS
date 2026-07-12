@@ -21,8 +21,8 @@ import { Input } from '@/components/ui/Input';
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
 import { WILMS_REPORT_TYPE } from '@/features/export';
 import { useLoanPortfolioReport } from '@/features/reports/hooks/useLoanPortfolioReport';
-import { LOAN_CYCLE_BATCH_OPTIONS } from '@/constants/loan';
 import { LOAN_STATUS_FILTER_OPTIONS } from '@/constants/loan-status';
+import { buildCycleBatchFilterOptions } from '@/utils/cycle-batch-options';
 import type { LoanPortfolioEntry } from '@/types/loan';
 import { formatDisplayDate } from '@/utils/format-date';
 import { formatPesewasForCsv } from '@/utils/export-csv';
@@ -31,12 +31,6 @@ const STATUS_FILTERS = LOAN_STATUS_FILTER_OPTIONS.map((option) => ({
   value: option.value,
   label: option.value ? option.label : 'All',
 }));
-
-const CYCLE_FILTER_OPTIONS = [
-  { value: '', label: 'All cycles' },
-  ...LOAN_CYCLE_BATCH_OPTIONS.map((cycle) => ({ value: cycle, label: cycle })),
-  { value: 'Cycle 4 — October 2025', label: 'Cycle 4 — October 2025' },
-];
 
 const CSV_HEADERS = [
   'Borrower',
@@ -61,6 +55,11 @@ export function LoanPortfolioReportPanel() {
     status: statusFilter,
     cycleBatch: cycleBatchFilter,
   });
+
+  const cycleFilterOptions = useMemo(
+    () => buildCycleBatchFilterOptions(data?.entries ?? []),
+    [data?.entries],
+  );
 
   const csvRows = useMemo(
     () =>
@@ -141,7 +140,7 @@ export function LoanPortfolioReportPanel() {
             <FilterDropdown
               label="Cycle / batch"
               ariaLabel="Filter by cycle or batch"
-              options={CYCLE_FILTER_OPTIONS}
+              options={cycleFilterOptions}
               value={cycleBatchFilter}
               onChange={setCycleBatchFilter}
             />
