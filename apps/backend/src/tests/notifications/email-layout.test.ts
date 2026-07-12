@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { buildEmailHtml, emailButton, emailCard } from '../../infrastructure/notifications/email-layout.js';
+import { buildEmailHtml, emailButton, emailCard, resolveEmailLogoUrl } from '../../infrastructure/notifications/email-layout.js';
 import {
+  buildLoginOtpEmail,
   buildPasswordResetEmail,
   buildPasswordChangedEmail,
   buildVerifyEmailEmail,
@@ -8,16 +9,25 @@ import {
 } from '../../infrastructure/notifications/templates.js';
 
 describe('email layout engine', () => {
-  it('renders branded HTML with WILMS header', () => {
+  it('renders branded HTML with WILMS header and logo image', () => {
     const html = buildEmailHtml({
       greeting: 'Test User',
       body: emailCard('Details', [{ label: 'Status', value: 'Active' }]),
       theme: 'success',
+      logoUrl: 'https://wilms.vercel.app/icons/icon-192.png',
     });
 
     expect(html).toContain('WILMS');
     expect(html).toContain('Test User');
     expect(html).toContain('<!DOCTYPE html>');
+    expect(html).toContain('https://wilms.vercel.app/icons/icon-192.png');
+    expect(html).toContain('width:600px');
+  });
+
+  it('resolves default logo URL from app base', () => {
+    expect(resolveEmailLogoUrl('https://wilms.vercel.app')).toBe(
+      'https://wilms.vercel.app/icons/icon-192.png',
+    );
   });
 
   it('renders CTA buttons with correct label', () => {
@@ -67,5 +77,18 @@ describe('email layout engine', () => {
     });
     expect(changed.subject).toContain('password');
     expect(verify.html).toContain('Verify Email');
+  });
+
+  it('builds branded login OTP email with code block', () => {
+    const otp = buildLoginOtpEmail({
+      displayName: 'Ama Boateng',
+      code: '482913',
+    });
+
+    expect(otp.subject).toContain('sign-in code');
+    expect(otp.html).toContain('482913');
+    expect(otp.html).toContain('<!DOCTYPE html>');
+    expect(otp.html).toContain('Verification code');
+    expect(otp.text).toContain('482913');
   });
 });
