@@ -4,6 +4,7 @@ import {
   emailButton,
   emailCard,
   emailDivider,
+  emailOtpCode,
   emailParagraph,
   emailReceipt,
   emailSecondaryButton,
@@ -850,6 +851,48 @@ export function buildPasswordChangedEmail(input: {
       emailStatusBanner('Password updated', `Changed on ${input.changedAt}.`, 'success'),
       emailAlert('If you did not request this change, contact support immediately.', 'warning'),
       emailButton('Sign in', input.loginUrl, 'primary'),
+    ].join(''),
+  });
+}
+
+export function buildLoginOtpEmail(input: {
+  displayName: string;
+  code: string;
+  expiresMinutes?: number;
+}): EmailTemplate {
+  const expiresMinutes = input.expiresMinutes ?? 10;
+
+  return buildEmailTemplate({
+    subject: 'Your WILMS sign-in code',
+    greeting: input.displayName,
+    preheader: `Your WILMS sign-in code: ${input.code}`,
+    theme: 'info',
+    textLines: [
+      `Dear ${input.displayName},`,
+      '',
+      `Your WILMS sign-in code is ${input.code}.`,
+      `It expires in ${expiresMinutes} minutes.`,
+      '',
+      'If you did not request this code, you can ignore this email.',
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailStatusBanner(
+        'Sign-in verification',
+        'Use this one-time code to complete your login.',
+        'info',
+      ),
+      emailParagraph('Enter the code below on the WILMS sign-in screen:'),
+      emailOtpCode(input.code),
+      emailCard('Code details', [
+        { label: 'Expires in', value: `${expiresMinutes} minutes` },
+        { label: 'Security', value: 'Never share this code with anyone' },
+      ]),
+      emailAlert(
+        'WILMS staff will never ask for this code by phone or email.',
+        'warning',
+      ),
     ].join(''),
   });
 }

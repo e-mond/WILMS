@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useMemo } from 'react';
 import { CurrencyAmount, GroupRiskCard, KpiCard } from '@/components/data-display';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
+import { ExecutiveKpiGrid } from '@/components/layout/executive';
 import {
   DashboardKpiIcon,
   type DashboardKpiIconName,
@@ -108,88 +109,85 @@ function SuperAdminDashboardContent({
           permissions={[]}
         />
       </div>
-      {/* Top Section: KPIs + Risk + Quick Actions */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-        {/* KPIs */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-8 lg:grid-cols-2 xl:grid-cols-4">
-          {data.kpis.map((kpi) => (
-            <KpiCard
-              key={kpi.id}
-              variant="executive"
-              label={kpi.label}
-              icon={KPI_ICON_NAMES[kpi.id] ? <DashboardKpiIcon name={KPI_ICON_NAMES[kpi.id]} /> : null}
-              value={
-                kpi.valueKind === 'count' ? (
-                  <span
-                    className={cn(
-                      'text-heading-2 font-bold',
-                      DASHBOARD_VALUE_TONE_CLASS[kpi.valueTone ?? 'default'],
-                    )}
-                  >
-                    {kpi.amountPesewas.toLocaleString()}
-                  </span>
-                ) : (
-                  <CurrencyAmount
-                    value={kpi.amountPesewas}
-                    className={DASHBOARD_VALUE_TONE_CLASS[kpi.valueTone ?? 'default']}
-                  />
-                )
-              }
-              trend={kpi.trendLabel}
-              trendDirection={kpi.trendDirection}
-              trendTone={kpi.trendTone}
-            />
-          ))}
-        </div>
 
-        {/* Group Risk + Quick Actions */}
-        <div className="flex flex-col gap-4 lg:col-span-4">
-          <GroupRiskCard segments={data.groupRisk} totalGroups={data.totalGroups} compact />
-
-          <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-            <h2 className="mb-4 text-lg font-semibold text-text-primary">Quick Actions</h2>
-            <div className="grid gap-3">
-              {QUICK_ACTIONS.map((action) => (
-                <Link
-                  key={action.href}
-                  href={action.href}
+      <ExecutiveKpiGrid>
+        {data.kpis.map((kpi) => (
+          <KpiCard
+            key={kpi.id}
+            variant="executive"
+            label={kpi.label}
+            icon={KPI_ICON_NAMES[kpi.id] ? <DashboardKpiIcon name={KPI_ICON_NAMES[kpi.id]} /> : null}
+            value={
+              kpi.valueKind === 'count' ? (
+                <span
                   className={cn(
-                    'group flex h-14 items-center gap-3 rounded-xl border px-5 py-3 text-sm font-semibold transition-all hover:shadow-md active:scale-[0.985]',
-                    action.className
+                    'text-heading-2 font-bold',
+                    DASHBOARD_VALUE_TONE_CLASS[kpi.valueTone ?? 'default'],
                   )}
                 >
-                  <DashboardQuickActionIcon name={action.icon} className="transition-transform group-hover:scale-110" />
-                  {action.label}
-                </Link>
-              ))}
-            </div>
-          </section>
-        </div>
+                  {kpi.amountPesewas.toLocaleString()}
+                </span>
+              ) : (
+                <CurrencyAmount
+                  value={kpi.amountPesewas}
+                  className={DASHBOARD_VALUE_TONE_CLASS[kpi.valueTone ?? 'default']}
+                />
+              )
+            }
+            trend={kpi.trendLabel}
+            trendDirection={kpi.trendDirection}
+            trendTone={kpi.trendTone}
+          />
+        ))}
+      </ExecutiveKpiGrid>
+
+      <div className="grid grid-cols-1 gap-wilms-4 xl:grid-cols-2">
+        <GroupRiskCard segments={data.groupRisk} totalGroups={data.totalGroups} />
+
+        <section className="rounded-sm border border-border bg-card p-wilms-4">
+          <h2 className="text-heading-2 font-semibold text-text-primary">Quick Actions</h2>
+          <div className="mt-wilms-4 grid gap-wilms-3">
+            {QUICK_ACTIONS.map((action) => (
+              <Link
+                key={action.href}
+                href={action.href}
+                className={cn(
+                  'group flex min-h-[44px] items-center gap-wilms-3 rounded-sm border px-wilms-4 py-wilms-3 text-body font-semibold transition-colors hover:shadow-sm',
+                  action.className,
+                )}
+              >
+                <DashboardQuickActionIcon
+                  name={action.icon}
+                  className="shrink-0 transition-transform group-hover:scale-105"
+                />
+                {action.label}
+              </Link>
+            ))}
+          </div>
+        </section>
       </div>
 
-      {/* === COLLECTION & EXPENSE SUMMARY - Grouped Section === */}
-      <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-        <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-          <h2 className="text-2xl font-semibold text-text-primary">Financial Overview</h2>
-          <p className="text-sm text-text-muted">Collection Performance &amp; Expense Summary</p>
+      <section className="rounded-sm border border-border bg-card p-wilms-5">
+        <div className="mb-wilms-5 flex flex-col gap-wilms-2 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-heading-2 font-semibold text-text-primary">Financial Overview</h2>
+          <p className="text-small text-text-muted">Collection performance and expense summary</p>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className="rounded-xl border border-border bg-background p-5">
+        <div className="grid grid-cols-1 gap-wilms-5 xl:grid-cols-2">
+          <div className="min-w-0 rounded-sm border border-border bg-background p-wilms-4">
             <DashboardCollectionSummary compact />
           </div>
-          <div className="rounded-xl border border-border bg-background p-5">
+          <div className="min-w-0 rounded-sm border border-border bg-background p-wilms-4">
             <DashboardExpenseSummary compact />
           </div>
         </div>
       </section>
 
-      {/* Borrower Status */}
-      <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-          <h2 className="text-2xl font-semibold text-text-primary">Borrower Status</h2>
-          <p className="text-sm text-text-muted">
-            Total Borrowers:{' '}
+      <section className="rounded-sm border border-border bg-card p-wilms-5">
+        <div className="flex flex-col justify-between gap-wilms-2 sm:flex-row sm:items-end">
+          <h2 className="text-heading-2 font-semibold text-text-primary">Borrower Status</h2>
+          <p className="text-small text-text-muted">
+            Total borrowers:{' '}
             <span className="font-semibold text-text-primary">{borrowerTotal.toLocaleString()}</span>
           </p>
         </div>
@@ -197,7 +195,7 @@ function SuperAdminDashboardContent({
         {borrowerTotal > 0 && (
           <>
             <div
-              className="mt-6 flex h-5 overflow-hidden rounded-2xl"
+              className="mt-wilms-5 flex h-5 overflow-hidden rounded-sm"
               role="img"
               aria-label="Borrower status distribution"
             >
@@ -206,27 +204,37 @@ function SuperAdminDashboardContent({
                   key={segment.id}
                   className={cn(
                     'h-full transition-all hover:brightness-110',
-                    DASHBOARD_BORROWER_TONE_CLASS[segment.tone].bar
+                    DASHBOARD_BORROWER_TONE_CLASS[segment.tone].bar,
                   )}
                   style={{ width: `${(segment.count / borrowerTotal) * 100}%` }}
                 />
               ))}
             </div>
 
-            <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            <div className="mt-wilms-5 grid grid-cols-1 gap-wilms-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
               {data.borrowerSegments.map((segment) => (
-                <div key={segment.id} className="flex items-center gap-3 rounded-lg bg-background p-3">
+                <div
+                  key={segment.id}
+                  className="flex min-w-0 items-center gap-wilms-3 rounded-sm border border-border bg-background p-wilms-3"
+                >
                   <span
                     className={cn(
-                      'h-4 w-4 shrink-0 rounded-md',
-                      DASHBOARD_BORROWER_TONE_CLASS[segment.tone].bar
+                      'h-4 w-4 shrink-0 rounded-sm',
+                      DASHBOARD_BORROWER_TONE_CLASS[segment.tone].bar,
                     )}
                   />
                   <div className="min-w-0 flex-1">
-                    <p className={cn('truncate font-medium', DASHBOARD_BORROWER_TONE_CLASS[segment.tone].text)}>
+                    <p
+                      className={cn(
+                        'truncate font-medium',
+                        DASHBOARD_BORROWER_TONE_CLASS[segment.tone].text,
+                      )}
+                    >
                       {segment.label}
                     </p>
-                    <p className="text-sm text-text-muted">{segment.count.toLocaleString()} borrowers</p>
+                    <p className="text-small text-text-muted">
+                      {segment.count.toLocaleString()} borrowers
+                    </p>
                   </div>
                 </div>
               ))}
@@ -235,23 +243,23 @@ function SuperAdminDashboardContent({
         )}
       </section>
 
-      {/* Recent activity */}
-      <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-        <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-          <h2 className="text-2xl font-semibold text-text-primary">Recent Activity</h2>
-          <p className="text-sm text-text-muted">What needs attention right now</p>
+      <section className="rounded-sm border border-border bg-card p-wilms-5">
+        <div className="mb-wilms-4 flex flex-col gap-wilms-1 sm:flex-row sm:items-end sm:justify-between">
+          <h2 className="text-heading-2 font-semibold text-text-primary">Recent Activity</h2>
+          <p className="text-small text-text-muted">What needs attention right now</p>
         </div>
         <DashboardRecentActivity alerts={data.recentAlerts} />
       </section>
 
-      {/* Bottom Section */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-          <h2 className="mb-5 text-2xl font-semibold text-text-primary">Collector Performance</h2>
+      <div className="grid grid-cols-1 gap-wilms-5 xl:grid-cols-2">
+        <section className="min-w-0 rounded-sm border border-border bg-card p-wilms-5">
+          <h2 className="mb-wilms-4 text-heading-2 font-semibold text-text-primary">
+            Collector Performance
+          </h2>
           <DashboardCollectorPerformance rows={data.collectorPerformance} />
         </section>
 
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <div className="min-w-0 rounded-sm border border-border bg-card p-wilms-5">
           <DashboardCycleSnapshot metrics={data.cycleMetrics} />
         </div>
       </div>

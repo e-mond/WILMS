@@ -17,6 +17,12 @@ const BRAND = {
   year: new Date().getFullYear(),
 };
 
+/** Public app icon used in email headers (must be absolute URL for clients). */
+export function resolveEmailLogoUrl(appBaseUrl?: string): string {
+  const base = (appBaseUrl ?? process.env.WILMS_APP_URL ?? BRAND.website).replace(/\/$/, '');
+  return `${base}/icons/icon-192.png`;
+}
+
 const COLORS: Record<EmailTheme, { accent: string; bg: string; border: string }> = {
   default: { accent: '#1B5E4B', bg: '#F0FDF4', border: '#BBF7D0' },
   success: { accent: '#16A34A', bg: '#F0FDF4', border: '#BBF7D0' },
@@ -41,15 +47,17 @@ function escapeHtml(value: string): string {
     .replace(/"/g, '&quot;');
 }
 
-export function emailHeader(theme: EmailTheme = 'default'): string {
+export function emailHeader(theme: EmailTheme = 'default', logoUrl?: string): string {
   const { accent } = COLORS[theme];
+  const resolvedLogo = logoUrl ?? resolveEmailLogoUrl();
   return `
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
   <tr>
-    <td style="background:${accent};border-radius:12px 12px 0 0;padding:28px 32px;text-align:center;">
-      <div style="font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:700;color:#ffffff;letter-spacing:2px;">WILMS</div>
-      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;color:rgba(255,255,255,0.85);margin-top:4px;">${escapeHtml(BRAND.tagline)}</div>
-      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:11px;color:rgba(255,255,255,0.7);margin-top:6px;font-style:italic;">${escapeHtml(BRAND.missionTagline)}</div>
+    <td style="background:${accent};border-radius:12px 12px 0 0;padding:28px 40px;text-align:center;">
+      <img src="${escapeHtml(resolvedLogo)}" alt="WILMS" width="64" height="64" style="display:block;margin:0 auto 14px;border-radius:12px;border:0;outline:none;text-decoration:none;" />
+      <div style="font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:700;color:#ffffff;letter-spacing:1.5px;">WILMS</div>
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:13px;color:rgba(255,255,255,0.9);margin-top:6px;line-height:1.4;">${escapeHtml(BRAND.tagline)}</div>
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;color:rgba(255,255,255,0.75);margin-top:8px;font-style:italic;line-height:1.4;">${escapeHtml(BRAND.missionTagline)}</div>
     </td>
   </tr>
 </table>`.trim();
@@ -179,6 +187,7 @@ export interface EmailLayoutInput {
   greeting?: string;
   body: string;
   preheader?: string;
+  logoUrl?: string;
 }
 
 export function buildEmailHtml(input: EmailLayoutInput): string {
@@ -193,19 +202,25 @@ export function buildEmailHtml(input: EmailLayoutInput): string {
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>WILMS</title>
   ${input.preheader ? `<span style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${escapeHtml(input.preheader)}</span>` : ''}
+  <style type="text/css">
+    @media only screen and (max-width: 620px) {
+      .wilms-email-shell { width: 100% !important; }
+      .wilms-email-body { padding: 24px 20px 28px !important; }
+    }
+  </style>
 </head>
 <body style="margin:0;padding:0;background:#F1F5F9;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F1F5F9;padding:32px 16px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F1F5F9;padding:40px 24px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08);overflow:hidden;">
+        <table role="presentation" class="wilms-email-shell" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;min-width:320px;background:#ffffff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08);overflow:hidden;">
           <tr>
             <td style="padding:0;">
-              ${emailHeader(theme)}
+              ${emailHeader(theme, input.logoUrl)}
             </td>
           </tr>
           <tr>
-            <td style="padding:8px 32px 32px;">
+            <td class="wilms-email-body" style="padding:8px 40px 36px;">
               ${greeting}
               ${input.body}
               ${emailFooter()}
@@ -225,6 +240,18 @@ export interface EmailTemplate {
   html: string;
 }
 
+export function emailOtpCode(code: string): string {
+  return `
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;">
+  <tr>
+    <td align="center" style="background:#F8FAFC;border:1px dashed #CBD5E1;border-radius:12px;padding:24px 20px;">
+      <p style="margin:0 0 8px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:13px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:0.08em;">Verification code</p>
+      <p style="margin:0;font-family:'Courier New',Courier,monospace;font-size:32px;font-weight:700;letter-spacing:0.35em;color:#1B5E4B;">${escapeHtml(code)}</p>
+    </td>
+  </tr>
+</table>`.trim();
+}
+
 export function buildEmailTemplate(input: {
   subject: string;
   greeting?: string;
@@ -232,6 +259,7 @@ export function buildEmailTemplate(input: {
   htmlBody: string;
   theme?: EmailTheme;
   preheader?: string;
+  logoUrl?: string;
 }): EmailTemplate {
   const text = input.textLines.join('\n');
   const html = buildEmailHtml({
@@ -239,6 +267,7 @@ export function buildEmailTemplate(input: {
     greeting: input.greeting,
     body: input.htmlBody,
     preheader: input.preheader,
+    logoUrl: input.logoUrl,
   });
   return { subject: input.subject, text, html };
 }

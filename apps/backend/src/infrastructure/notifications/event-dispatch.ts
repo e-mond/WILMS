@@ -31,6 +31,7 @@ import {
   buildPasswordResetEmail,
   buildPasswordChangedEmail,
   buildLoginAlertEmail,
+  buildLoginOtpEmail,
   buildInvitationAcceptedEmail,
   buildPaymentConfirmationEmail,
   buildPaymentConfirmationSmsBody,
@@ -423,16 +424,17 @@ export async function notifyLoginOtp(input: {
   phone?: string | null;
   code: string;
 }): Promise<void> {
-  const subject = 'Your WILMS sign-in code';
-  const text = `Hello ${input.displayName}, your WILMS sign-in code is ${input.code}. It expires in 10 minutes.`;
-  const html = `<p>Hello <strong>${input.displayName}</strong>,</p><p>Your WILMS sign-in code is <strong>${input.code}</strong>.</p><p>It expires in 10 minutes.</p>`;
+  const template = buildLoginOtpEmail({
+    displayName: input.displayName,
+    code: input.code,
+  });
 
   await dispatchMail({
     event: 'LOGIN_OTP',
     to: input.email,
-    subject,
-    text,
-    html,
+    subject: template.subject,
+    text: template.text,
+    html: template.html,
     userId: input.userId,
     enableTracking: false,
     maxRetries: 0,
