@@ -1,3 +1,4 @@
+import { formatUserDisplayId } from '@wilms/shared-utils';
 import { BORROWER_STATUS } from '@wilms/shared-contracts';
 import { listBorrowers, listPayments } from '../../db/persistence.js';
 import { isDatabaseEnabled } from '../../db/client.js';
@@ -72,6 +73,7 @@ export interface DashboardSummary {
   }>;
   collectorPerformance: Array<{
     collectorId: string;
+    collectorDisplayId: string;
     name: string;
     expectedPesewas: number;
     actualPesewas: number;
@@ -158,6 +160,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
         expectedPesewas === 0 ? 0 : Math.round((actualPesewas / expectedPesewas) * 100);
       return {
         collectorId: user.id,
+        collectorDisplayId: formatUserDisplayId({ id: user.id }),
         name: user.displayName,
         expectedPesewas,
         actualPesewas,
@@ -166,8 +169,9 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
       };
     });
   } else {
-    collectorPerformance = Array.from(paymentsByCollector.entries()).map(([collectorId, actualPesewas]) => ({
+    collectorPerformance = Array.from(paymentsByCollector.entries()).map(([collectorId, actualPesewas], index) => ({
       collectorId,
+      collectorDisplayId: formatUserDisplayId({ id: collectorId, sequence: index + 1 }),
       name: 'Collector',
       expectedPesewas: actualPesewas,
       actualPesewas,

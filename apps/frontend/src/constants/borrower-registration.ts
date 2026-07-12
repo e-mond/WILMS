@@ -35,6 +35,10 @@ export const TYPE_OF_WORK_OPTIONS = [
   'Other',
 ] as const;
 
+export const REGISTRATION_ADDRESS_MIN_LENGTH = 5;
+export const REGISTRATION_ADDRESS_MAX_LENGTH = 200;
+export const REGISTRATION_GPS_MAX_ACCURACY_METERS = 150;
+
 export const GUARANTOR_RELATIONSHIP_OPTIONS = [
   'Spouse',
   'Sibling',

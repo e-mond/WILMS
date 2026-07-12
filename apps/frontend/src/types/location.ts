@@ -19,4 +19,5 @@ export interface CurrentLocationResult {
   latitude: number;
   longitude: number;
   address?: string;
+  accuracyMeters?: number;
 }

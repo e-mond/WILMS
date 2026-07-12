@@ -19,6 +19,9 @@ import {
   BORROWER_GENDER,
   BORROWER_ID_TYPE,
   GUARANTOR_RELATIONSHIP_OPTIONS,
+  REGISTRATION_ADDRESS_MAX_LENGTH,
+  REGISTRATION_ADDRESS_MIN_LENGTH,
+  REGISTRATION_GPS_MAX_ACCURACY_METERS,
   TYPE_OF_WORK_OPTIONS,
 } from '@/constants/borrower-registration';
 import { RegistrationConflictAlerts } from '@/features/borrower-registration/components/RegistrationConflictAlerts';
@@ -248,6 +251,9 @@ export function BorrowerRegistrationWizard() {
   const watchedTypeOfWork = watch('typeOfWork');
   const watchedRegion = watch('region');
   const watchedDistrict = watch('district');
+  const watchedHouseAddress = watch('houseAddress') ?? '';
+  const watchedBusinessAddress = watch('businessAddress') ?? '';
+  const watchedGpsAddress = watch('gpsAddress') ?? '';
   const [locationFeedback, setLocationFeedback] = useState<string | null>(null);
   const [isLocating, setIsLocating] = useState(false);
 
@@ -286,12 +292,27 @@ export function BorrowerRegistrationWizard() {
 
     try {
       const result = await locationService.getCurrentLocation();
+
+      if (
+        result.accuracyMeters != null &&
+        result.accuracyMeters > REGISTRATION_GPS_MAX_ACCURACY_METERS
+      ) {
+        setLocationFeedback(
+          `Location accuracy is low (±${Math.round(result.accuracyMeters)}m). Move outdoors or enter the GPS address manually.`,
+        );
+        return;
+      }
+
       const gpsValue =
         result.address ??
         `${result.latitude.toFixed(6)}, ${result.longitude.toFixed(6)}`;
 
       setValue('gpsAddress', gpsValue, { shouldDirty: true, shouldValidate: true });
-      setLocationFeedback('Current location applied to GPS address.');
+      const accuracyNote =
+        result.accuracyMeters != null
+          ? ` Accuracy ±${Math.round(result.accuracyMeters)}m.`
+          : '';
+      setLocationFeedback(`Current location applied to GPS address.${accuracyNote}`);
     } catch (error) {
       const message =
         error instanceof Error
@@ -661,10 +682,18 @@ export function BorrowerRegistrationWizard() {
             htmlFor="houseAddress"
             required
             error={errors.houseAddress?.message}
+            hint={`Street, landmark, or house number (${REGISTRATION_ADDRESS_MIN_LENGTH}–${REGISTRATION_ADDRESS_MAX_LENGTH} characters).`}
+            characterCount={{
+              current: watchedHouseAddress.length,
+              max: REGISTRATION_ADDRESS_MAX_LENGTH,
+            }}
             className="md:col-span-2"
           >
             <Textarea
               id="houseAddress"
+              rows={3}
+              maxLength={REGISTRATION_ADDRESS_MAX_LENGTH}
+              placeholder="e.g. House No. 12, Ring Road Central, Accra"
               hasError={Boolean(errors.houseAddress)}
               {...register('houseAddress')}
             />
@@ -674,6 +703,11 @@ export function BorrowerRegistrationWizard() {
             htmlFor="gpsAddress"
             required
             error={errors.gpsAddress?.message}
+            hint="Ghana Post GPS code (GA-XXX-XXXX) or coordinates from current location."
+            characterCount={{
+              current: watchedGpsAddress.length,
+              max: REGISTRATION_ADDRESS_MAX_LENGTH,
+            }}
             className="md:col-span-2"
           >
             <div className="flex flex-col gap-wilms-2 sm:flex-row sm:items-start">
@@ -681,7 +715,8 @@ export function BorrowerRegistrationWizard() {
                 id="gpsAddress"
                 hasError={Boolean(errors.gpsAddress)}
                 className="min-w-0 flex-1"
-                placeholder="GA-XXX-XXXX or coordinates"
+                maxLength={REGISTRATION_ADDRESS_MAX_LENGTH}
+                placeholder="GA-123-4567 or coordinates"
                 {...register('gpsAddress')}
               />
               <Button
@@ -834,10 +869,18 @@ export function BorrowerRegistrationWizard() {
             htmlFor="businessAddress"
             required
             error={errors.businessAddress?.message}
+            hint={`Where the business operates (${REGISTRATION_ADDRESS_MIN_LENGTH}–${REGISTRATION_ADDRESS_MAX_LENGTH} characters).`}
+            characterCount={{
+              current: watchedBusinessAddress.length,
+              max: REGISTRATION_ADDRESS_MAX_LENGTH,
+            }}
             className="md:col-span-2"
           >
             <Textarea
               id="businessAddress"
+              rows={3}
+              maxLength={REGISTRATION_ADDRESS_MAX_LENGTH}
+              placeholder="e.g. Makola Market, Stall 24, Accra"
               hasError={Boolean(errors.businessAddress)}
               {...register('businessAddress')}
             />

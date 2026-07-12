@@ -4,6 +4,7 @@ import { ActivityFeed, CurrencyAmount, UtilisationBar } from '@/components/data-
 import { DetailSidebarCard } from '@/components/layout/executive';
 import type { GroupActivity } from '@/types/group';
 import type { LoanPoolAllocationSegment, LoanPoolSummary } from '@/types/loan-pool';
+import { resolvePoolDisplayId } from '@/utils/entity-display-id';
 
 export interface LoanPoolsAsidePanelProps {
   selected: LoanPoolSummary | null;
@@ -20,7 +21,7 @@ export function LoanPoolsAsidePanel({
     <>
       {selected ? (
         <DetailSidebarCard
-          eyebrow={selected.id}
+          eyebrow={resolvePoolDisplayId(selected)}
           title={selected.name}
           subtitle={`${selected.region} · ${selected.source}`}
         >

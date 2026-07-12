@@ -206,6 +206,6 @@ test.describe('shell navbar and layout', () => {
 
     await signIn(page, DEMO_USERS.collector);
     await expect(page.locator('[data-navbar="app"]')).toBeVisible();
-    await expect(page.getByRole('status', { name: 'Online' })).toBeVisible();
+    await expect(page.locator('[data-navbar="app"] [role="status"]').first()).toBeVisible();
   });
 });

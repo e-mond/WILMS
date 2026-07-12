@@ -158,6 +158,7 @@ export function Drawer({
         ref={panelRef}
         role="dialog"
         aria-modal="true"
+        aria-label={title}
         aria-labelledby={titleId}
         className={cn(
           'relative z-10 flex h-full flex-col border-border shadow-xl transition-transform duration-300 ease-out',
