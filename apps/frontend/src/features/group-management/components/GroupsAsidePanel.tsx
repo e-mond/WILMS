@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/Textarea';
 import { GROUP_RISK_DISPLAY } from '@/constants/group-risk-display';
 import { GROUP_RISK_LEVEL, type GroupListResponse, type GroupSummary } from '@/types/group';
 import { buildGroupMemberLabels } from '@/utils/group-member-labels';
+import { resolveGroupDisplayId } from '@/utils/entity-display-id';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import { groupService } from '@/services';
@@ -66,7 +67,7 @@ export function GroupsAsidePanel({ data, selected }: GroupsAsidePanelProps) {
     <>
       {selected ? (
         <DetailSidebarCard
-          eyebrow={selected.id}
+          eyebrow={resolveGroupDisplayId(selected)}
           title={selected.name}
           subtitle={selected.community}
           actions={

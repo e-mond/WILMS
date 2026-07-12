@@ -23,6 +23,7 @@ import { LOAN_STATUS, type LoanPortfolioEntry } from '@/types/loan';
 import { SCHEDULE_WEEK_STATUS, type LoanScheduleWeek } from '@/types/loan-schedule';
 import { TRANSACTION_TYPE, type FinancialTransaction } from '@/types/transaction';
 import type { BuildDashboardSummaryInput, DashboardBorrowerInput } from '@/utils/dashboard-summary';
+import { formatCollectorDisplayId } from '@wilms/shared-utils';
 import { createSeededRng, pickFrom, randomInt, type SeededRng } from '@/services/mock/factories/seeded-rng';
 
 const COLLECTOR_FIRST_NAMES = [
@@ -232,6 +233,7 @@ function generateCollectorNames(
 function buildReferenceTableCollectors(): DashboardCollectorPerformanceRow[] {
   return DASHBOARD_REFERENCE_TABLE_COLLECTORS.map((collector, index) => ({
     collectorId: `demo-collector-${index + 1}`,
+    collectorDisplayId: formatCollectorDisplayId({ sequence: index + 1 }),
     name: collector.name,
     expectedPesewas: collector.expectedPesewas,
     actualPesewas: collector.actualPesewas,
@@ -258,6 +260,7 @@ function generateCollectorPerformance(rng: SeededRng): DashboardCollectorPerform
 
     return {
       collectorId,
+      collectorDisplayId: formatCollectorDisplayId({ sequence: pinned.length + index + 1 }),
       name,
       expectedPesewas,
       actualPesewas,

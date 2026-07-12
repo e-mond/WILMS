@@ -17,6 +17,7 @@ import { LOAN_STATUS, type LoanPortfolioEntry } from '@/types/loan';
 import { SCHEDULE_WEEK_STATUS, type LoanScheduleWeek } from '@/types/loan-schedule';
 import { TRANSACTION_TYPE, type FinancialTransaction } from '@/types/transaction';
 import { hasConsecutiveMissedWeeks } from '@/utils/defaulter-escalation';
+import { resolveUserDisplayId } from '@/utils/entity-display-id';
 import { countMissedWeeks } from '@/utils/schedule-missed-marking';
 
 export interface DashboardBorrowerInput {
@@ -242,7 +243,7 @@ export function buildCollectorPerformanceRows(
     return [];
   }
 
-  return collectorIds.map((collectorId) => {
+  return collectorIds.map((collectorId, index) => {
     const actualPesewas = sumRepaymentsByCollector(transactions, collectorId);
     const expectedPesewas = sumExpectedWeeklyForCollector(loans, loanCollectorMap, collectorId);
     const collectionRatePercent =
@@ -251,6 +252,7 @@ export function buildCollectorPerformanceRows(
 
     return {
       collectorId,
+      collectorDisplayId: resolveUserDisplayId(collectorId, index + 1),
       name: resolveDashboardCollectorName(collectorId),
       expectedPesewas,
       actualPesewas,

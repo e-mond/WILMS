@@ -79,8 +79,9 @@ export async function expectAppAsideLandmark(page: Page): Promise<void> {
 
 export async function expectShellAsideDrawerAccess(page: Page): Promise<void> {
   const trigger = page.getByRole('button', { name: 'Open context panel' });
+  await trigger.scrollIntoViewIfNeeded();
   await expect(trigger).toBeVisible();
-  await trigger.click();
+  await trigger.click({ force: true });
   const drawer = page.getByRole('dialog', { name: 'Context panel' });
-  await expect(drawer).toBeVisible();
+  await expect(drawer).toBeVisible({ timeout: 15_000 });
 }

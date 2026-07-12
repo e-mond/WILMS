@@ -1,6 +1,11 @@
 import { CurrencyAmount, DataTable } from '@/components/data-display';
 import type { DashboardCollectorPerformanceRow } from '@/types/dashboard';
 import { cn } from '@/utils/cn';
+import { resolveUserDisplayId } from '@/utils/entity-display-id';
+
+function collectorLabel(row: DashboardCollectorPerformanceRow): string {
+  return row.collectorDisplayId || resolveUserDisplayId(row.collectorId);
+}
 
 function collectionRateClass(rate: number): string {
   if (rate >= 100) {
@@ -50,7 +55,7 @@ export function DashboardCollectorPerformance({ rows }: DashboardCollectorPerfor
             <div className="flex flex-wrap items-start justify-between gap-wilms-2">
               <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold text-text-primary">{row.name}</p>
-                <p className="truncate text-small text-text-muted">{row.collectorId}</p>
+                <p className="truncate text-small font-semibold text-executive-gold">{collectorLabel(row)}</p>
               </div>
               <span className={cn('text-body', collectionRateClass(row.collectionRatePercent))}>
                 {row.collectionRatePercent}%
@@ -91,7 +96,16 @@ export function DashboardCollectorPerformance({ rows }: DashboardCollectorPerfor
           data={rows}
           getRowId={(row) => row.collectorId}
           columns={[
-            { id: 'name', header: 'Collector', cell: (row) => row.name },
+            {
+              id: 'name',
+              header: 'Collector',
+              cell: (row) => (
+                <div>
+                  <p className="font-semibold text-text-primary">{row.name}</p>
+                  <p className="text-small font-semibold text-executive-gold">{collectorLabel(row)}</p>
+                </div>
+              ),
+            },
             {
               id: 'expected',
               header: 'Expected',

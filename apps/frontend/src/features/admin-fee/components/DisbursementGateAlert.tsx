@@ -1,7 +1,9 @@
 'use client';
 
+import Link from 'next/link';
 import { Alert } from '@/components/feedback/Alert';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { Button } from '@/components/ui/Button';
 import { useDisbursementEligibility } from '@/features/admin-fee/hooks/useDisbursementEligibility';
 
 export interface DisbursementGateAlertProps {
@@ -21,9 +23,16 @@ export function DisbursementGateAlert({ borrowerId }: DisbursementGateAlertProps
 
   if (data.canDisburse) {
     return (
-      <Alert title="Disbursement unlocked" variant="success">
-        Admin fee confirmed. This borrower is eligible for loan disbursement.
-      </Alert>
+      <div className="space-y-wilms-3">
+        <Alert title="Disbursement unlocked" variant="success">
+          Admin fee confirmed. This borrower is eligible for loan disbursement.
+        </Alert>
+        <Link href="/loans/new">
+          <Button type="button" variant="primary">
+            Create loan
+          </Button>
+        </Link>
+      </div>
     );
   }
 
