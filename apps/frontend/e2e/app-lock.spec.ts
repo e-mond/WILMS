@@ -21,7 +21,8 @@ test.describe('app lock', () => {
   test('collector can enable pin and unlock after idle lock', async ({ page }) => {
     await signIn(page, DEMO_USERS.collector, { skipMandatoryAppLock: true });
 
-    await page.goto('/collector/security');
+    await page.goto('/collector/settings');
+    await page.getByRole('button', { name: 'App Lock' }).click();
     await expect(page.getByRole('heading', { name: 'App lock', level: 2 })).toBeVisible();
 
     await page.getByRole('button', { name: 'Set up app lock' }).click();
@@ -42,7 +43,8 @@ test.describe('app lock', () => {
   test('shows lockout warning after repeated failed pin attempts', async ({ page }) => {
     await signIn(page, DEMO_USERS.collector, { skipMandatoryAppLock: true });
 
-    await page.goto('/collector/security');
+    await page.goto('/collector/settings');
+    await page.getByRole('button', { name: 'App Lock' }).click();
     await page.getByRole('button', { name: 'Set up app lock' }).click();
     await enterPin(page, '123456');
     await enterPin(page, '123456');
@@ -64,7 +66,8 @@ test.describe('app lock', () => {
   test('remains locked after page refresh', async ({ page }) => {
     await signIn(page, DEMO_USERS.collector, { skipMandatoryAppLock: true });
 
-    await page.goto('/collector/security');
+    await page.goto('/collector/settings');
+    await page.getByRole('button', { name: 'App Lock' }).click();
     await page.getByRole('button', { name: 'Set up app lock' }).click();
     await enterPin(page, '654321');
     await enterPin(page, '654321');

@@ -6,13 +6,12 @@ export interface ReleaseNotes {
 }
 
 export const CURRENT_RELEASE_NOTES: ReleaseNotes = {
-  version: '1.3.5',
-  summary: 'Premium splash, unified email design system, and notification center refresh.',
+  version: '1.3.6',
+  summary: 'Production stabilisation RC — bug fixes, mock guard, and health diagnostics.',
   highlights: [
-    'Animated startup splash with reduced-motion support.',
-    'Login page simplified — mission tagline moved to email communications only.',
-    'Expanded email catalogue with status banners, privacy footer, and new security templates.',
-    'Notification center search, categories, pagination, and archive actions.',
-    'User notification preferences respected by transactional email dispatch.',
+    'Collector settings consolidated to a single App Lock section.',
+    'Admin collector messaging opens conversations reliably.',
+    'Health endpoint reports explicit degradedReasons for pending migrations.',
+    'Production builds always use live API services (no mock data).',
   ],
 };
