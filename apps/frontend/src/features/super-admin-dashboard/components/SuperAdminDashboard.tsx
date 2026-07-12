@@ -141,18 +141,19 @@ function SuperAdminDashboardContent({
         ))}
       </ExecutiveKpiGrid>
 
-      <div className="grid grid-cols-1 gap-wilms-4 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-wilms-5 xl:grid-cols-2">
         <GroupRiskCard segments={data.groupRisk} totalGroups={data.totalGroups} />
 
-        <section className="rounded-sm border border-border bg-card p-wilms-4">
+        <section className="rounded-sm border border-border bg-card p-wilms-5">
           <h2 className="text-heading-2 font-semibold text-text-primary">Quick Actions</h2>
-          <div className="mt-wilms-4 grid gap-wilms-3">
+          <p className="mt-wilms-1 text-small text-text-muted">Common supervisory workflows</p>
+          <div className="mt-wilms-5 grid gap-wilms-3">
             {QUICK_ACTIONS.map((action) => (
               <Link
                 key={action.href}
                 href={action.href}
                 className={cn(
-                  'group flex min-h-[44px] items-center gap-wilms-3 rounded-sm border px-wilms-4 py-wilms-3 text-body font-semibold transition-colors hover:shadow-sm',
+                  'group flex min-h-[48px] items-center gap-wilms-3 rounded-sm border px-wilms-4 py-wilms-3 text-body font-semibold transition-colors hover:shadow-sm',
                   action.className,
                 )}
               >
@@ -160,24 +161,28 @@ function SuperAdminDashboardContent({
                   name={action.icon}
                   className="shrink-0 transition-transform group-hover:scale-105"
                 />
-                {action.label}
+                <span className="whitespace-nowrap">{action.label}</span>
               </Link>
             ))}
           </div>
         </section>
       </div>
 
-      <section className="rounded-sm border border-border bg-card p-wilms-5">
-        <div className="mb-wilms-5 flex flex-col gap-wilms-2 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-heading-2 font-semibold text-text-primary">Financial Overview</h2>
-          <p className="text-small text-text-muted">Collection performance and expense summary</p>
+      <section className="rounded-sm border border-border bg-card p-wilms-6">
+        <div className="mb-wilms-6 flex flex-col gap-wilms-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-heading-2 font-semibold text-text-primary">Financial Overview</h2>
+            <p className="mt-wilms-1 text-small text-text-muted">
+              Collection performance and expense summary side by side
+            </p>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-wilms-5 xl:grid-cols-2">
-          <div className="min-w-0 rounded-sm border border-border bg-background p-wilms-4">
+        <div className="grid grid-cols-1 gap-wilms-6 xl:grid-cols-2">
+          <div className="min-w-0 rounded-sm border border-border bg-background p-wilms-5">
             <DashboardCollectionSummary compact />
           </div>
-          <div className="min-w-0 rounded-sm border border-border bg-background p-wilms-4">
+          <div className="min-w-0 rounded-sm border border-border bg-background p-wilms-5">
             <DashboardExpenseSummary compact />
           </div>
         </div>

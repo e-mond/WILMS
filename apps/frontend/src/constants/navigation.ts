@@ -16,7 +16,8 @@ export type ShellNavIcon =
   | 'reconcile'
   | 'register'
   | 'queue'
-  | 'reviewed';
+  | 'reviewed'
+  | 'expenses';
 
 export interface ShellNavItem {
   href: string;
@@ -35,6 +36,7 @@ export const SUPER_ADMIN_NAV: ShellNavItem[] = [
   { href: '/collectors', label: 'Collectors', icon: 'collectors' },
   { href: '/groups', label: 'Groups', icon: 'groups' },
   { href: '/risk-flags', label: 'Risk & Flags', icon: 'risk' },
+  { href: '/expenses', label: 'Expense Management', icon: 'expenses' },
   { href: '/communication-center', label: 'Communication Center', icon: 'reports' },
   { href: '/reports/audit-log', label: 'Audit Log', exact: true, icon: 'audit' },
   { href: '/reports', label: 'Reports', exact: true, icon: 'reports' },

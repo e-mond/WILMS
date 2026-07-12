@@ -6,6 +6,11 @@ import { ExecutiveKpiGrid } from '@/components/layout/executive';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { expenseService } from '@/services';
+import {
+  CurrencyStatValue,
+  DashboardFinancialStat,
+  DashboardFinancialStatGrid,
+} from '@/features/super-admin-dashboard/components/DashboardFinancialStat';
 
 export interface DashboardExpenseSummaryProps {
   compact?: boolean;
@@ -24,7 +29,7 @@ export function DashboardExpenseSummary({ compact = false }: DashboardExpenseSum
         isLoading
         isTimedOut
         isError={false}
-      isForbidden={isForbidden}
+        isForbidden={isForbidden}
         onRetry={() => void refetch()}
         variant="inline"
       >
@@ -70,16 +75,30 @@ export function DashboardExpenseSummary({ compact = false }: DashboardExpenseSum
     { label: 'This Year', value: data.yearPesewas },
   ];
 
+  if (compact) {
+    return (
+      <section className="space-y-wilms-4">
+        <div>
+          <h3 className="text-heading-3 font-semibold text-text-primary">Expense Summary</h3>
+          <p className="mt-wilms-1 text-small text-text-muted">Approved field and office spend by period</p>
+        </div>
+        <DashboardFinancialStatGrid>
+          {periods.map((period) => (
+            <DashboardFinancialStat
+              key={period.label}
+              label={period.label}
+              value={<CurrencyStatValue pesewas={period.value} />}
+            />
+          ))}
+        </DashboardFinancialStatGrid>
+      </section>
+    );
+  }
+
   return (
     <section className="space-y-wilms-3">
       <h2 className="text-heading-2 font-semibold text-text-primary">Expense Summary</h2>
-      <ExecutiveKpiGrid
-        className={
-          compact
-            ? 'grid-cols-1 sm:grid-cols-2'
-            : 'sm:grid-cols-2 xl:grid-cols-4'
-        }
-      >
+      <ExecutiveKpiGrid className="sm:grid-cols-2 xl:grid-cols-4">
         {periods.map((period) => (
           <KpiCard
             key={period.label}

@@ -18,6 +18,8 @@ export interface DataTableProps<T> {
   selectedRowId?: string | null;
   onRowClick?: (row: T) => void;
   variant?: 'default' | 'executive';
+  /** `fixed` fits columns to container; `auto` sizes columns from content (better for settings tables). */
+  layout?: 'fixed' | 'auto';
   className?: string;
 }
 
@@ -30,9 +32,11 @@ export function DataTable<T>({
   selectedRowId,
   onRowClick,
   variant = 'default',
+  layout,
   className,
 }: DataTableProps<T>) {
   const isExecutive = variant === 'executive';
+  const tableLayout = layout ?? (isExecutive ? 'fixed' : 'auto');
 
   const scrollLabel = caption ?? 'Scrollable table';
 
@@ -46,7 +50,8 @@ export function DataTable<T>({
       <table
         className={cn(
           'min-w-full border-collapse text-left text-body',
-          isExecutive && 'table-fixed',
+          tableLayout === 'fixed' && 'table-fixed',
+          tableLayout === 'auto' && 'w-max min-w-full table-auto',
         )}
       >
         {caption ? <caption className="sr-only">{caption}</caption> : null}
