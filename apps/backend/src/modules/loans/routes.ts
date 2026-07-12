@@ -8,14 +8,15 @@ import { PERMISSION } from '../../infrastructure/permissions/matrix.js';
 import { requireAuth } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/require-permission.js';
 import { validateBody } from '../../middleware/validate-body.js';
+import { PAYMENT_DAY_OPTIONS } from '../../domain/loan/payment-day.js';
 import * as loanService from './service.js';
 
 const createLoanSchema = z.object({
   borrowerId: z.string().min(1),
   amountPesewas: z.number().int().positive(),
   durationWeeks: z.number().int().min(1).max(52),
-  paymentDay: z.string().min(1),
-  cycleBatch: z.string().min(1),
+  paymentDay: z.enum(PAYMENT_DAY_OPTIONS),
+  cycleBatch: z.string().trim().min(1).max(120),
   startDate: z.string().min(1),
 });
 

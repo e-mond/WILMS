@@ -15,6 +15,19 @@ describe('createLoanSchema', () => {
     expect(parsed.success).toBe(true);
   });
 
+  it('accepts Sunday as a payment day and custom cycle labels', () => {
+    const parsed = createLoanSchema.safeParse({
+      borrowerId: 'borrower-003',
+      amountGhs: '300',
+      durationWeeks: 12,
+      paymentDay: 'Sunday',
+      cycleBatch: 'Cycle 5 — January 2027',
+      startDate: '2026-06-10',
+    });
+
+    expect(parsed.success).toBe(true);
+  });
+
   it('rejects amounts that do not divide evenly across weeks', () => {
     const parsed = createLoanSchema.safeParse({
       borrowerId: 'borrower-003',
