@@ -141,56 +141,83 @@ function SuperAdminDashboardContent({
         ))}
       </ExecutiveKpiGrid>
 
-      <div className="grid grid-cols-1 gap-wilms-5 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-wilms-6 lg:gap-wilms-8 xl:grid-cols-2">
         <GroupRiskCard segments={data.groupRisk} totalGroups={data.totalGroups} />
 
-        <section className="rounded-sm border border-border bg-card p-wilms-5">
-          <h2 className="text-heading-2 font-semibold text-text-primary">Quick Actions</h2>
-          <p className="mt-wilms-1 text-small text-text-muted">Common supervisory workflows</p>
-          <div className="mt-wilms-5 grid gap-wilms-3">
-            {QUICK_ACTIONS.map((action) => (
-              <Link
-                key={action.href}
-                href={action.href}
-                className={cn(
-                  'group flex min-h-[48px] items-center gap-wilms-3 rounded-sm border px-wilms-4 py-wilms-3 text-body font-semibold transition-colors hover:shadow-sm',
-                  action.className,
-                )}
-              >
-                <DashboardQuickActionIcon
-                  name={action.icon}
-                  className="shrink-0 transition-transform group-hover:scale-105"
-                />
-                <span className="whitespace-nowrap">{action.label}</span>
-              </Link>
-            ))}
+        <section
+          aria-labelledby="dashboard-quick-actions-heading"
+          className="rounded-sm border border-border bg-card p-wilms-5 sm:p-wilms-6 lg:p-wilms-8"
+        >
+          <div className="space-y-wilms-2">
+            <h2
+              id="dashboard-quick-actions-heading"
+              className="text-heading-2 font-semibold text-text-primary"
+            >
+              Quick Actions
+            </h2>
+            <p className="text-small text-text-muted">Common supervisory workflows</p>
           </div>
+          <ul className="mt-wilms-6 grid gap-wilms-4" role="list">
+            {QUICK_ACTIONS.map((action) => (
+              <li key={action.href}>
+                <Link
+                  href={action.href}
+                  className={cn(
+                    'group flex min-h-[48px] items-center gap-wilms-4 rounded-sm border px-wilms-5 py-wilms-4 text-body font-semibold transition-colors hover:shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary',
+                    action.className,
+                  )}
+                >
+                  <DashboardQuickActionIcon
+                    name={action.icon}
+                    className="shrink-0 transition-transform group-hover:scale-105"
+                  />
+                  <span className="min-w-0 break-words">{action.label}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </section>
       </div>
 
-      <section className="rounded-sm border border-border bg-card p-wilms-6">
-        <div className="mb-wilms-6 flex flex-col gap-wilms-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 className="text-heading-2 font-semibold text-text-primary">Financial Overview</h2>
-            <p className="mt-wilms-1 text-small text-text-muted">
+      <section
+        aria-labelledby="dashboard-financial-overview-heading"
+        className="rounded-sm border border-border bg-card p-wilms-5 sm:p-wilms-6 lg:p-wilms-8"
+      >
+        <div className="mb-wilms-6 flex flex-col gap-wilms-3 sm:flex-row sm:items-end sm:justify-between lg:mb-wilms-8">
+          <div className="space-y-wilms-2">
+            <h2
+              id="dashboard-financial-overview-heading"
+              className="text-heading-2 font-semibold text-text-primary"
+            >
+              Financial Overview
+            </h2>
+            <p className="text-small text-text-muted">
               Collection performance and expense summary side by side
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-wilms-6 xl:grid-cols-2">
-          <div className="min-w-0 rounded-sm border border-border bg-background p-wilms-5">
+        <div className="grid grid-cols-1 gap-wilms-6 lg:gap-wilms-8 xl:grid-cols-2">
+          <div className="min-w-0 rounded-sm border border-border bg-background p-wilms-5 sm:p-wilms-6">
             <DashboardCollectionSummary compact />
           </div>
-          <div className="min-w-0 rounded-sm border border-border bg-background p-wilms-5">
+          <div className="min-w-0 rounded-sm border border-border bg-background p-wilms-5 sm:p-wilms-6">
             <DashboardExpenseSummary compact />
           </div>
         </div>
       </section>
 
-      <section className="rounded-sm border border-border bg-card p-wilms-5">
-        <div className="flex flex-col justify-between gap-wilms-2 sm:flex-row sm:items-end">
-          <h2 className="text-heading-2 font-semibold text-text-primary">Borrower Status</h2>
+      <section
+        aria-labelledby="dashboard-borrower-status-heading"
+        className="rounded-sm border border-border bg-card p-wilms-5 sm:p-wilms-6 lg:p-wilms-8"
+      >
+        <div className="flex flex-col justify-between gap-wilms-3 sm:flex-row sm:items-end">
+          <h2
+            id="dashboard-borrower-status-heading"
+            className="text-heading-2 font-semibold text-text-primary"
+          >
+            Borrower Status
+          </h2>
           <p className="text-small text-text-muted">
             Total borrowers:{' '}
             <span className="font-semibold text-text-primary">{borrowerTotal.toLocaleString()}</span>
@@ -200,7 +227,7 @@ function SuperAdminDashboardContent({
         {borrowerTotal > 0 && (
           <>
             <div
-              className="mt-wilms-5 flex h-5 overflow-hidden rounded-sm"
+              className="mt-wilms-6 flex h-5 overflow-hidden rounded-sm sm:mt-wilms-8"
               role="img"
               aria-label="Borrower status distribution"
             >
@@ -216,11 +243,14 @@ function SuperAdminDashboardContent({
               ))}
             </div>
 
-            <div className="mt-wilms-5 grid grid-cols-1 gap-wilms-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
+            <ul
+              className="mt-wilms-6 grid grid-cols-1 gap-wilms-4 sm:mt-wilms-8 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5"
+              role="list"
+            >
               {data.borrowerSegments.map((segment) => (
-                <div
+                <li
                   key={segment.id}
-                  className="flex min-w-0 items-center gap-wilms-3 rounded-sm border border-border bg-background p-wilms-3"
+                  className="flex min-w-0 items-center gap-wilms-4 rounded-sm border border-border bg-background p-wilms-4 sm:p-wilms-5"
                 >
                   <span
                     className={cn(
@@ -241,9 +271,9 @@ function SuperAdminDashboardContent({
                       {segment.count.toLocaleString()} borrowers
                     </p>
                   </div>
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
           </>
         )}
       </section>

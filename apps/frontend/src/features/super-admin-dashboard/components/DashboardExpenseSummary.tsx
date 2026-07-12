@@ -77,10 +77,10 @@ export function DashboardExpenseSummary({ compact = false }: DashboardExpenseSum
 
   if (compact) {
     return (
-      <section className="space-y-wilms-4">
-        <div>
+      <section className="space-y-wilms-5 sm:space-y-wilms-6">
+        <div className="space-y-wilms-2">
           <h3 className="text-heading-3 font-semibold text-text-primary">Expense Summary</h3>
-          <p className="mt-wilms-1 text-small text-text-muted">Approved field and office spend by period</p>
+          <p className="text-small text-text-muted">Approved field and office spend by period</p>
         </div>
         <DashboardFinancialStatGrid>
           {periods.map((period) => (
