@@ -12,7 +12,7 @@ export type GuarantorValidationStatus =
 
 export interface GuarantorEligibilityInput {
   guarantorPhone: string;
-  guarantorIdNumber: string;
+  guarantorIdNumber?: string;
   guarantorName: string;
   borrowerPhone?: string;
   isGroupLeader?: boolean;

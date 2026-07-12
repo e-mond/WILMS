@@ -12,6 +12,9 @@ test.describe('app lock', () => {
     await page.addInitScript(() => {
       (window as Window & { __WILMS_E2E_APP_LOCK_IDLE_MS?: number }).__WILMS_E2E_APP_LOCK_IDLE_MS =
         2_000;
+      (
+        window as Window & { __WILMS_E2E_APP_LOCK_POST_LOGIN_GRACE_MS?: number }
+      ).__WILMS_E2E_APP_LOCK_POST_LOGIN_GRACE_MS = 0;
     });
   });
 
@@ -46,12 +49,16 @@ test.describe('app lock', () => {
 
     await page.goto('/collector/dashboard');
     await expect(page.getByRole('dialog')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/Field Collector/i)).toBeVisible();
 
-    for (let attempt = 0; attempt < 4; attempt += 1) {
+    for (let attempt = 0; attempt < 3; attempt += 1) {
       await enterPin(page, '000000');
+      await expect(page.getByRole('dialog').getByText(/Incorrect PIN/i)).toBeVisible({
+        timeout: 10_000,
+      });
     }
 
-    await expect(page.getByText(/attempts left/i)).toBeVisible();
+    await expect(page.getByText(/attempts left before sign-out/i)).toBeVisible();
   });
 
   test('remains locked after page refresh', async ({ page }) => {

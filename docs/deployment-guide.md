@@ -1,6 +1,6 @@
 # WILMS Deployment Guide
 
-**Last updated:** 2026-07-08 (v1.3.0)
+**Last updated:** 2026-07-12 (v1.3.5)
 
 ## Deployment model
 
@@ -27,6 +27,9 @@ Recent migrations:
 |-----|---------|---------|
 | `0019_v123_platform_stabilization` | v1.2.3 | Invitation lifecycle timestamps, audit enums |
 | `0020_v130_field_operations` | v1.3.0 | Repayment cadence, holidays, fees, penalties |
+| `0022_v135_notification_events` | v1.3.5 | Password changed, invitation accepted, login alert notification events |
+
+See also: [Production runbook](operations/production-runbook.md), [Monitoring](operations/monitoring.md), [Backups](operations/backups.md).
 
 ## API deploy
 
@@ -49,7 +52,7 @@ vercel deploy --prod --yes
 
 Production domain: https://wilms.vercel.app
 
-After deploy, collectors should hard-refresh or reinstall the PWA to pick up the v1.3.0 service worker (`wilms-v130-shell` cache).
+After deploy, collectors should hard-refresh or reinstall the PWA to pick up the latest service worker cache.
 
 ## Required production secrets
 

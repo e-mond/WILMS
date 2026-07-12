@@ -54,7 +54,7 @@ for (const breakpoint of BREAKPOINTS) {
 
     test('login page is usable', async ({ page }) => {
       await waitForLoginForm(page);
-      await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Welcome Back' })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
       await expect(page.getByText('WILMS').first()).toBeVisible();
     });

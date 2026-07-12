@@ -42,7 +42,7 @@ test.describe('shell navbar and layout', () => {
   test('super admin global search opens and returns borrower results', async ({ page }) => {
     await signIn(page, DEMO_USERS.superAdmin);
 
-    await page.getByRole('button', { name: 'Open global search' }).click();
+    await page.getByRole('button', { name: /Search WILMS/i }).click();
     const dialog = page.getByRole('dialog', { name: 'Search WILMS' });
     await expect(dialog).toBeVisible();
 
