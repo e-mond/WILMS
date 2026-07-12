@@ -52,13 +52,18 @@ export function PremiumSplashScreen({
         aria-live="polite"
         aria-busy={phase !== 'complete'}
         className={cn(
-          'fixed inset-0 z-[100] flex min-h-dvh flex-col items-center justify-center bg-background px-wilms-4 text-center',
+          'fixed inset-0 z-[100] flex min-h-dvh flex-col bg-background px-wilms-4',
           className,
         )}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/icons/icon-192.png" alt="WILMS" width={64} height={64} className="h-16 w-16 rounded-lg" />
-        <p className="mt-wilms-4 text-small text-text-muted">{loaderMessage}</p>
+        <div className="flex flex-1 items-center justify-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icons/icon-192.png" alt="WILMS" width={64} height={64} className="h-16 w-16 rounded-lg" />
+        </div>
+        <div className="flex flex-col items-center gap-wilms-2 pb-wilms-8 text-center">
+          <p className="text-heading-3 font-bold tracking-wide text-brand-primary">WILMS</p>
+          <p className="text-small text-text-muted">{loaderMessage}</p>
+        </div>
       </div>
     );
   }
@@ -71,26 +76,23 @@ export function PremiumSplashScreen({
       initial={{ opacity: 1 }}
       animate={{ opacity: phase === 'complete' ? 0 : 1 }}
       transition={{ duration: FADE_DURATION_MS / 1000, ease: 'easeInOut' }}
-      className={cn(
-        'fixed inset-0 z-[100] flex min-h-dvh flex-col items-center justify-center bg-background px-wilms-4',
-        className,
-      )}
+      className={cn('fixed inset-0 z-[100] flex min-h-dvh flex-col bg-background px-wilms-4', className)}
     >
       <div
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(212,175,55,0.06),_transparent_70%)]"
         aria-hidden="true"
       />
 
-      <motion.div
-        initial={{ opacity: 0, scale: 0.88 }}
-        animate={{ opacity: logoOpacity, scale: phase === 'launch' ? 0.88 : 1 }}
-        transition={{
-          duration: LOGO_DURATION_MS / 1000,
-          ease: [0.22, 1, 0.36, 1],
-        }}
-        className="relative flex flex-col items-center"
-      >
-        <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-brand-primary-light ring-1 ring-executive-gold/30 shadow-sm">
+      <div className="relative flex flex-1 items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.88 }}
+          animate={{ opacity: logoOpacity, scale: phase === 'launch' ? 0.88 : 1 }}
+          transition={{
+            duration: LOGO_DURATION_MS / 1000,
+            ease: [0.22, 1, 0.36, 1],
+          }}
+          className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-brand-primary-light ring-1 ring-executive-gold/30 shadow-sm"
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/icons/icon-192.png"
@@ -99,35 +101,38 @@ export function PremiumSplashScreen({
             height={80}
             className="h-full w-full object-cover"
           />
-        </div>
+        </motion.div>
+      </div>
+
+      <div className="relative flex flex-col items-center gap-wilms-3 pb-wilms-8 text-center">
+        {showLoader ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.35, delay: 0.5 }}
+            className="flex flex-col items-center gap-wilms-3"
+          >
+            <div className="h-1 w-32 overflow-hidden rounded-full bg-border">
+              <motion.div
+                className="h-full rounded-full bg-brand-primary"
+                initial={{ width: '0%' }}
+                animate={{ width: '100%' }}
+                transition={{ duration: 1.2, ease: 'easeInOut' }}
+              />
+            </div>
+            <p className="text-small text-text-muted">{loaderMessage}</p>
+          </motion.div>
+        ) : null}
+
         <motion.p
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: phase === 'launch' ? 0 : 1, y: phase === 'launch' ? 8 : 0 }}
-          transition={{ duration: 0.5, delay: 0.35, ease: 'easeOut' }}
-          className="mt-wilms-5 text-display font-bold tracking-wide text-brand-primary"
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: phase === 'launch' ? 0 : 1, y: phase === 'launch' ? 6 : 0 }}
+          transition={{ duration: 0.45, delay: 0.35, ease: 'easeOut' }}
+          className="text-heading-3 font-bold tracking-wide text-brand-primary"
         >
           WILMS
         </motion.p>
-      </motion.div>
-
-      {showLoader ? (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.35, delay: 0.5 }}
-          className="relative mt-wilms-10 flex flex-col items-center gap-wilms-3"
-        >
-          <div className="h-1 w-32 overflow-hidden rounded-full bg-border">
-            <motion.div
-              className="h-full rounded-full bg-brand-primary"
-              initial={{ width: '0%' }}
-              animate={{ width: '100%' }}
-              transition={{ duration: 1.2, ease: 'easeInOut' }}
-            />
-          </div>
-          <p className="text-small text-text-muted">{loaderMessage}</p>
-        </motion.div>
-      ) : null}
+      </div>
     </motion.div>
   );
 }

@@ -18,6 +18,12 @@ All notable changes to WILMS are documented in this file.
 ### Changed
 - Application version bumped to `1.3.6`.
 
+### Fixed (post-merge)
+- Login OTP emails now use the branded WILMS HTML template (logo, header, OTP code block).
+- Email layout: logo image in header, fixed 600px desktop width with responsive fallback.
+- Splash screen: logo stays centered; smaller `WILMS` wordmark anchored at bottom.
+- Super admin dashboard: full-width KPI grid and relaxed section spacing (less cramped layout).
+
 ---
 
 ## [1.3.5] — UI/UX & Communication Platform
