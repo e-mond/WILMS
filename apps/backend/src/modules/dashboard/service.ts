@@ -1,10 +1,56 @@
 import { BORROWER_STATUS } from '@wilms/shared-contracts';
 import { listBorrowers, listPayments } from '../../db/persistence.js';
 import { isDatabaseEnabled } from '../../db/client.js';
-import * as loanRepo from '../../repositories/loan.repository.js';
 import * as userRepo from '../../repositories/user.repository.js';
-import { decimalToPesewas } from '../../domain/money.js';
 import { listGroupsResponse } from '../groups/service.js';
+import { buildDashboardFinancialOverview } from './financial-overview.js';
+
+export interface DashboardFinancialOverview {
+  capital: {
+    totalCapitalAvailablePesewas: number;
+    totalCapitalInjectedPesewas: number;
+    currentAvailableBalancePesewas: number;
+  };
+  lending: {
+    totalLoanAmountDisbursedPesewas: number;
+    totalActiveLoans: number;
+    totalClosedLoans: number;
+  };
+  collections: {
+    totalAmountCollectedPesewas: number;
+    outstandingBalancePesewas: number;
+    amountDueThisWeekPesewas: number;
+    overdueAmountPesewas: number;
+    collectionRatePercent: number;
+  };
+  adminFees: {
+    totalAdminFeesExpectedPesewas: number;
+    totalAdminFeesCollectedPesewas: number;
+    outstandingAdminFeesPesewas: number;
+  };
+  expenses: {
+    totalExpensesPesewas: number;
+    operationalCostsPesewas: number;
+    cashOutflowPesewas: number;
+  };
+  cashFlow: {
+    moneyIn: {
+      loanCollectionsPesewas: number;
+      adminFeesPesewas: number;
+      capitalDepositsPesewas: number;
+      otherIncomePesewas: number;
+      totalPesewas: number;
+    };
+    moneyOut: {
+      loanDisbursementsPesewas: number;
+      operationalExpensesPesewas: number;
+      refundsPesewas: number;
+      adjustmentsPesewas: number;
+      totalPesewas: number;
+    };
+    netPositionPesewas: number;
+  };
+}
 
 export interface DashboardSummary {
   generatedAt: string;
@@ -48,30 +94,18 @@ export interface DashboardSummary {
     createdAt: string;
     icon: 'danger' | 'warning' | 'info' | 'edit';
   }>;
+  financialOverview: DashboardFinancialOverview;
 }
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {
-  const [borrowers, payments, groupsResponse] = await Promise.all([
+  const [borrowers, payments, groupsResponse, financialOverview] = await Promise.all([
     listBorrowers(),
     listPayments(),
     listGroupsResponse(),
+    buildDashboardFinancialOverview(),
   ]);
 
   const groups = groupsResponse.groups;
-
-  const today = new Date().toISOString().slice(0, 10);
-  const todayPayments = payments.filter((payment) => payment.paymentDate === today);
-  const collectedTodayPesewas = todayPayments.reduce((sum, payment) => sum + payment.amountPesewas, 0);
-  const collectedTotalPesewas = payments.reduce((sum, payment) => sum + payment.amountPesewas, 0);
-
-  let outstandingPesewas = 0;
-  if (isDatabaseEnabled()) {
-    const loans = await loanRepo.listLoans({ externalStatus: 'ACTIVE' });
-    outstandingPesewas = loans.reduce(
-      (sum, loan) => sum + decimalToPesewas(loan.loanBalance),
-      0,
-    );
-  }
 
   const borrowerSegments = [
     {
@@ -175,30 +209,27 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     generatedAt: new Date().toISOString(),
     kpis: [
       {
-        id: 'collected-today',
-        label: 'Collected today',
-        amountPesewas: collectedTodayPesewas,
-        trendDirection: 'up',
-        trendTone: 'success',
-        valueTone: 'success',
-      },
-      {
-        id: 'collected-total',
-        label: 'Total collected',
-        amountPesewas: collectedTotalPesewas,
+        id: 'pool',
+        label: 'Total Pool Funds',
+        amountPesewas: financialOverview.capital.totalCapitalAvailablePesewas,
         valueTone: 'gold',
       },
       {
-        id: 'outstanding',
-        label: 'Outstanding balance',
-        amountPesewas: outstandingPesewas,
+        id: 'disbursed',
+        label: 'Total Disbursed',
+        amountPesewas: financialOverview.lending.totalLoanAmountDisbursedPesewas,
         valueTone: 'default',
       },
       {
-        id: 'active-borrowers',
-        label: 'Active borrowers',
-        amountPesewas: borrowerSegments.find((segment) => segment.id === 'active')?.count ?? 0,
-        valueKind: 'count',
+        id: 'collected',
+        label: 'Total Collected',
+        amountPesewas: financialOverview.collections.totalAmountCollectedPesewas,
+        valueTone: 'success',
+      },
+      {
+        id: 'outstanding',
+        label: 'Total Outstanding',
+        amountPesewas: financialOverview.collections.outstandingBalancePesewas,
         valueTone: 'default',
       },
     ],
@@ -212,5 +243,6 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
       { label: 'Payments recorded', value: String(payments.length) },
     ],
     recentAlerts: [],
+    financialOverview,
   };
 }

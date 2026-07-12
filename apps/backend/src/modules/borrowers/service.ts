@@ -1,6 +1,6 @@
 import { env } from '../../config/env.js';
 import { normalizeBorrowerId, validateBorrowerId } from '@wilms/shared-validation';
-import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
+import { appendAuditEntry, listAuditEntries } from '../../infrastructure/audit/audit-log.js';
 import { isDatabaseEnabled } from '../../db/client.js';
 import {
   BORROWER_STATUS,
@@ -303,28 +303,39 @@ export async function listMyRegistrations(officerId: string) {
 
 export async function listReviewedApplications(approverId: string) {
   void approverId;
-  const reviewedStatuses = new Set<string>([
-    BORROWER_STATUS.APPROVED,
-    BORROWER_STATUS.REJECTED,
-    BORROWER_STATUS.BLACKLISTED,
+
+  const reviewActions = new Set<string>([
+    'BORROWER_APPROVED',
+    'BORROWER_REJECTED',
+    'BORROWER_BLACKLISTED',
   ]);
 
-  return (await listBorrowers())
-    .filter((record) => reviewedStatuses.has(record.status))
-    .map((record) => ({
-      id: record.id,
-      fullName: record.fullName,
-      phone: record.phone,
-      community: record.community,
-      decision:
-        record.status === BORROWER_STATUS.APPROVED
-          ? 'APPROVED'
-          : record.status === BORROWER_STATUS.REJECTED
-            ? 'REJECTED'
-            : 'BLACKLISTED',
-      reviewedAt: record.registeredAt,
-      reason: record.rejectionReason,
-    }));
+  const decisionByAction: Record<string, 'APPROVED' | 'REJECTED' | 'BLACKLISTED'> = {
+    BORROWER_APPROVED: 'APPROVED',
+    BORROWER_REJECTED: 'REJECTED',
+    BORROWER_BLACKLISTED: 'BLACKLISTED',
+  };
+
+  const borrowers = await listBorrowers();
+  const borrowerById = new Map(borrowers.map((record) => [record.id, record]));
+  const entries = await listAuditEntries({ limit: 500 });
+
+  return entries
+    .filter((entry) => reviewActions.has(entry.action))
+    .map((entry) => {
+      const borrower = borrowerById.get(entry.targetEntityId);
+
+      return {
+        borrowerId: entry.targetEntityId,
+        borrowerName: borrower?.fullName ?? entry.targetEntityDisplayId ?? 'Unknown borrower',
+        community: borrower?.community ?? '—',
+        decision: decisionByAction[entry.action] ?? 'REJECTED',
+        reason: entry.reason,
+        reviewedAt: entry.createdAt,
+        reviewedBy: entry.actorDisplayName ?? entry.actorDisplayId ?? 'Approver',
+        status: borrower?.status,
+      };
+    });
 }
 
 export async function getBorrowerDetail(id: string) {

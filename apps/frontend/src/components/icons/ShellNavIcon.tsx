@@ -254,8 +254,33 @@ export function ShellNavIcon({ name, className }: ShellNavIconProps) {
     case 'queue':
       return (
         <svg className={iconClass} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.5" />
           <path
-            d="M5 6h14M5 12h14M5 18h14"
+            d="M12 7v5l3 2"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      );
+    case 'offline-sync':
+      return (
+        <svg className={iconClass} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M16 7a4 4 0 0 0-8 0v2"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+          <path
+            d="M12 11v6M9 14h6"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+          <path
+            d="m4 4 2 2M20 4l-2 2"
             stroke="currentColor"
             strokeWidth="1.5"
             strokeLinecap="round"

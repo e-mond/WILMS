@@ -47,4 +47,6 @@ export interface ReviewedApplicationSummary {
   decision: ReviewedDecision;
   reason?: string;
   reviewedAt: string;
+  reviewedBy?: string;
+  status?: string;
 }

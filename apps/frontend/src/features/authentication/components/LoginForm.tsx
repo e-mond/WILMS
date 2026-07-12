@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -64,10 +64,10 @@ export function LoginForm() {
     mode: 'onTouched',
   });
 
-  const emailValue = watch('email');
+  const hasInitializedForm = useRef(false);
 
   useEffect(() => {
-    if (!isPreferencesHydrated) {
+    if (!isPreferencesHydrated || hasInitializedForm.current) {
       return;
     }
 
@@ -75,19 +75,8 @@ export function LoginForm() {
       email: invitedEmail || (rememberEmail ? rememberedEmail : ''),
       password: '',
     });
+    hasInitializedForm.current = true;
   }, [isPreferencesHydrated, invitedEmail, rememberEmail, rememberedEmail, reset]);
-
-  useEffect(() => {
-    if (!rememberEmail) {
-      return;
-    }
-
-    const trimmedEmail = emailValue.trim();
-
-    if (trimmedEmail) {
-      setRememberedEmail(trimmedEmail);
-    }
-  }, [emailValue, rememberEmail, setRememberedEmail]);
 
   const onSubmit = handleSubmit(async (values) => {
     setSubmitError(null);
@@ -239,7 +228,16 @@ export function LoginForm() {
               id="login-remember-email"
               label="Remember email"
               checked={rememberEmail}
-              onChange={(event) => setRememberEmail(event.target.checked)}
+              onChange={(event) => {
+                const checked = event.target.checked;
+                setRememberEmail(checked);
+                if (checked) {
+                  const trimmedEmail = watch('email').trim();
+                  if (trimmedEmail) {
+                    setRememberedEmail(trimmedEmail);
+                  }
+                }
+              }}
               className="min-h-11"
             />
             <p className="text-small text-text-muted">

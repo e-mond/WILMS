@@ -95,4 +95,52 @@ export interface DashboardSummary {
   totalGroups: number;
   cycleMetrics: DashboardCycleMetric[];
   recentAlerts: DashboardAlert[];
+  financialOverview?: DashboardFinancialOverview;
+}
+
+export interface DashboardFinancialOverview {
+  capital: {
+    totalCapitalAvailablePesewas: number;
+    totalCapitalInjectedPesewas: number;
+    currentAvailableBalancePesewas: number;
+  };
+  lending: {
+    totalLoanAmountDisbursedPesewas: number;
+    totalActiveLoans: number;
+    totalClosedLoans: number;
+  };
+  collections: {
+    totalAmountCollectedPesewas: number;
+    outstandingBalancePesewas: number;
+    amountDueThisWeekPesewas: number;
+    overdueAmountPesewas: number;
+    collectionRatePercent: number;
+  };
+  adminFees: {
+    totalAdminFeesExpectedPesewas: number;
+    totalAdminFeesCollectedPesewas: number;
+    outstandingAdminFeesPesewas: number;
+  };
+  expenses: {
+    totalExpensesPesewas: number;
+    operationalCostsPesewas: number;
+    cashOutflowPesewas: number;
+  };
+  cashFlow: {
+    moneyIn: {
+      loanCollectionsPesewas: number;
+      adminFeesPesewas: number;
+      capitalDepositsPesewas: number;
+      otherIncomePesewas: number;
+      totalPesewas: number;
+    };
+    moneyOut: {
+      loanDisbursementsPesewas: number;
+      operationalExpensesPesewas: number;
+      refundsPesewas: number;
+      adjustmentsPesewas: number;
+      totalPesewas: number;
+    };
+    netPositionPesewas: number;
+  };
 }

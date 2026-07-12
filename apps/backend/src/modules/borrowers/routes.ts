@@ -314,9 +314,13 @@ borrowersRouter.delete(
 
 borrowersRouter.get(
   '/borrowers/:id/admin-fee-status',
+  requirePermission(
+    PERMISSION.ACCESS_ADMIN_PORTAL,
+    PERMISSION.RECORD_COLLECTIONS,
+    PERMISSION.MANAGE_SYSTEM_SETTINGS,
+  ),
   asyncHandler(async (req, res) => {
     try {
-      await assertBorrowerReadAccess(req.session!, req.params.id!);
       const { getAdminFeeStatus } = await import('../transactions/service.js');
       sendData(res, await getAdminFeeStatus(req.params.id!));
     } catch (error) {

@@ -76,25 +76,43 @@ export function ReviewedApplicationsPanel() {
 
       <DataTable<ReviewedApplicationSummary>
         variant="executive"
+        layout="auto"
         caption="Reviewed borrower applications"
         data={filteredApplications}
         emptyMessage="No applications match your search."
         getRowId={(row) => `${row.borrowerId}-${row.reviewedAt}`}
         columns={[
           {
-            id: 'reviewedAt',
-            header: 'Reviewed',
-            cell: (row) => formatDisplayDate(row.reviewedAt.slice(0, 10)),
+            id: 'borrower',
+            header: 'Borrower name',
+            cell: (row) => row.borrowerName,
+            className: 'min-w-[10rem] whitespace-nowrap',
           },
-          { id: 'borrower', header: 'Borrower', cell: (row) => row.borrowerName },
-          { id: 'community', header: 'Community', cell: (row) => row.community },
+          {
+            id: 'reviewedBy',
+            header: 'Reviewed by',
+            cell: (row) => row.reviewedBy ?? '—',
+            className: 'min-w-[8rem] whitespace-nowrap',
+          },
+          {
+            id: 'reviewedAt',
+            header: 'Review date',
+            cell: (row) => formatDisplayDate(row.reviewedAt.slice(0, 10)),
+            className: 'whitespace-nowrap',
+          },
+          {
+            id: 'status',
+            header: 'Status',
+            cell: (row) => row.status ?? '—',
+            className: 'whitespace-nowrap',
+          },
           {
             id: 'decision',
             header: 'Decision',
             cell: (row) => (
               <span
                 className={cn(
-                  'inline-flex rounded-sm px-wilms-2 py-wilms-1 text-small font-semibold',
+                  'inline-flex whitespace-nowrap rounded-sm px-wilms-2 py-wilms-1 text-small font-semibold',
                   REVIEWED_DECISION_BADGE_CLASS[row.decision],
                 )}
               >
@@ -102,10 +120,12 @@ export function ReviewedApplicationsPanel() {
               </span>
             ),
           },
+          { id: 'community', header: 'Community', cell: (row) => row.community },
           {
             id: 'reason',
-            header: 'Reason',
+            header: 'Comments',
             cell: (row) => row.reason ?? '—',
+            className: 'min-w-[12rem]',
           },
         ]}
       />
