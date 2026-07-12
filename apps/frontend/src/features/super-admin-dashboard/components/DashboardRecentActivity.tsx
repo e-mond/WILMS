@@ -30,7 +30,7 @@ export function DashboardRecentActivity({ alerts, limit = 5 }: DashboardRecentAc
         const content = (
           <>
             <p className="text-body font-semibold">{alert.message}</p>
-            <p className="mt-wilms-1 text-small opacity-80">
+            <p className="mt-wilms-1 text-small text-text-muted">
               {new Intl.DateTimeFormat('en-GB', {
                 day: 'numeric',
                 month: 'short',

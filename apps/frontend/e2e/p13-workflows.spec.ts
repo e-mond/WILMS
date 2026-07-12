@@ -19,7 +19,8 @@ test.describe('P13 expanded workflows', () => {
     await signIn(page, DEMO_USERS.superAdmin);
     await page.goto('/groups');
     await expect(page.getByRole('heading', { name: 'Groups' })).toBeVisible();
-    await page.getByRole('link', { name: /GRP-/ }).first().click();
+    await expect(page.locator('table a[href^="/groups/"]').first()).toBeVisible({ timeout: 15_000 });
+    await page.locator('table a[href^="/groups/"]').first().click();
     await expect(page.getByRole('heading', { name: 'Group Information' })).toBeVisible();
   });
 
@@ -40,7 +41,7 @@ test.describe('P13 expanded workflows', () => {
   test('super admin can open reports hub', async ({ page }) => {
     await signIn(page, DEMO_USERS.superAdmin);
     await page.goto('/reports');
-    await expect(page.getByRole('heading', { name: 'Reports' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Reports', level: 1 })).toBeVisible();
   });
 
   test('super admin can open user management settings', async ({ page }) => {
@@ -58,7 +59,7 @@ test.describe('P13 expanded workflows', () => {
       await page.getByRole('button', { name: 'More actions' }).click();
       await page.getByRole('menuitem', { name: 'Search' }).click();
     } else {
-      await page.getByRole('button', { name: 'Open global search' }).click();
+      await page.getByRole('button', { name: /Search WILMS/i }).click();
     }
 
     const dialog = page.getByRole('dialog', { name: 'Search WILMS' });

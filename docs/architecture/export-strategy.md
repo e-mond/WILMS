@@ -126,7 +126,7 @@ await exportWilmsDocument(document, 'pdf', 'report.pdf');
 
 ## 6. Migration Rule
 
-Legacy utilities in `src/utils/export-csv.ts` and `src/utils/export-group-profile.ts` re-export from the framework. New code must import from `@/features/export` only.
+Legacy utility `src/utils/export-csv.ts` re-exports from the framework. New code must import from `@/features/export` only.
 
 ---
 
