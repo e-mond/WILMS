@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Avatar,
   CurrencyAmount,
@@ -11,7 +11,8 @@ import {
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import {
   ExecutiveKpiGrid,
-  FilterPillBar,
+  FilterDropdown,
+  FilterDropdownRow,
   ManagementToolbar,
 } from '@/components/layout/executive';
 import { CollectorsKpiIcon } from '@/components/icons/CollectorsKpiIcon';
@@ -78,6 +79,7 @@ export function CollectorsManagementPanel() {
   const { showLoading, isTimedOut, isForbidden } = useQueryLoadingPolicy({ isLoading, isError, error });
   const onboardCollector = useOnboardCollector();
   const { createThread, sendMessage } = useMessageCollector();
+  const { mutateAsync: openCollectorThread, reset: resetOpenThread, isError: isThreadError, isPending: isThreadPending } = createThread;
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -90,6 +92,7 @@ export function CollectorsManagementPanel() {
   const [threadId, setThreadId] = useState<string | null>(null);
   const [messageBody, setMessageBody] = useState('');
   const { data: thread } = useMessageThread(threadId);
+  const threadRequestRef = useRef(0);
 
   const filteredCollectors = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -114,34 +117,65 @@ export function CollectorsManagementPanel() {
     slice[0] ??
     null;
 
+  const openMessageModal = useCallback((collector: CollectorSummary) => {
+    resetOpenThread();
+    setMessageCollector(collector);
+    setThreadId(null);
+    setMessageBody('');
+    setMessageModalOpen(true);
+  }, [resetOpenThread]);
+
   useEffect(() => {
     if (!messageModalOpen || !messageCollector) {
       return;
     }
 
-    void createThread.mutateAsync(messageCollector.id).then(
-      (createdThread) => {
-        setThreadId(createdThread.id);
-      },
-      () => {
-        setMessageModalOpen(false);
-        setMessageCollector(null);
-      },
-    );
-  }, [messageCollector, messageModalOpen, createThread]);
-
-  function openMessageModal(collector: CollectorSummary) {
-    setMessageCollector(collector);
+    const requestId = threadRequestRef.current + 1;
+    threadRequestRef.current = requestId;
     setThreadId(null);
-    setMessageBody('');
-    setMessageModalOpen(true);
-  }
+    resetOpenThread();
+
+    void openCollectorThread(messageCollector.id).then((createdThread) => {
+      if (threadRequestRef.current !== requestId) {
+        return;
+      }
+
+      setThreadId(createdThread.id);
+    });
+  }, [messageCollector, messageModalOpen, openCollectorThread, resetOpenThread]);
+
+  const handleAsideMessage = useCallback(() => {
+    if (selected) {
+      openMessageModal(selected);
+    }
+  }, [openMessageModal, selected]);
 
   function closeMessageModal() {
+    threadRequestRef.current += 1;
+    resetOpenThread();
     setMessageModalOpen(false);
     setMessageCollector(null);
     setThreadId(null);
     setMessageBody('');
+  }
+
+  function retryOpenConversation() {
+    if (!messageCollector) {
+      return;
+    }
+
+    const requestId = threadRequestRef.current + 1;
+    threadRequestRef.current = requestId;
+    setThreadId(null);
+    resetOpenThread();
+
+    void openCollectorThread(messageCollector.id).then((createdThread) => {
+      if (threadRequestRef.current !== requestId) {
+        return;
+      }
+
+      setThreadId(createdThread.id);
+    });
   }
 
   const asideContent = useMemo(() => {
@@ -153,14 +187,10 @@ export function CollectorsManagementPanel() {
       <CollectorsAsidePanel
         data={data}
         selected={selected}
-        onMessage={() => {
-          if (selected) {
-            openMessageModal(selected);
-          }
-        }}
+        onMessage={handleAsideMessage}
       />
     );
-  }, [data, selected]);
+  }, [data, handleAsideMessage, selected]);
 
   useShellAsideContent(asideContent);
 
@@ -232,12 +262,15 @@ export function CollectorsManagementPanel() {
                 />
               }
               filters={
-                <FilterPillBar
-                  ariaLabel="Filter collectors"
-                  options={STATUS_FILTERS}
-                  value={statusFilter}
-                  onChange={setStatusFilter}
-                />
+                <FilterDropdownRow>
+                  <FilterDropdown
+                    label="Status"
+                    ariaLabel="Filter collectors"
+                    options={STATUS_FILTERS}
+                    value={statusFilter}
+                    onChange={setStatusFilter}
+                  />
+                </FilterDropdownRow>
               }
               actions={
                 <>
@@ -458,7 +491,7 @@ export function CollectorsManagementPanel() {
               variant="primary"
               size="sm"
               disabled={
-                !threadId || !messageBody.trim() || sendMessage.isPending || createThread.isPending
+                !threadId || !messageBody.trim() || sendMessage.isPending || isThreadPending
               }
               onClick={() => {
                 if (!threadId) {
@@ -476,10 +509,21 @@ export function CollectorsManagementPanel() {
         }
       >
         <div className="space-y-wilms-4">
-          {createThread.isError ? (
-            <p className="text-small text-danger">Unable to open conversation. Try again shortly.</p>
+          {isThreadError ? (
+            <div className="rounded-sm border border-danger/30 bg-danger/5 p-wilms-3">
+              <p className="text-small text-danger">Unable to open conversation. Try again shortly.</p>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="mt-wilms-2"
+                onClick={retryOpenConversation}
+              >
+                Retry
+              </Button>
+            </div>
           ) : null}
-          {createThread.isPending ? (
+          {isThreadPending ? (
             <p className="text-small text-text-muted">Opening conversation…</p>
           ) : null}
           {thread?.messages.length ? (

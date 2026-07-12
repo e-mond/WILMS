@@ -5,7 +5,9 @@ import Link from 'next/link';
 import { Avatar, DataTable, KpiCard, StatusBadge } from '@/components/data-display';
 import {
   ExecutiveKpiGrid,
-  FilterPillBar,
+  FilterDropdown,
+  FilterDropdownRow,
+  ManagementToolbar,
 } from '@/components/layout/executive';
 import { GuidedEmptyState } from '@/components/feedback/GuidedEmptyState';
 import { QueryErrorState } from '@/components/feedback/QueryErrorState';
@@ -194,24 +196,26 @@ export function MyRegistrationsList() {
         <KpiCard variant="executive" label="Draft" value={statusCounts[REGISTRATION_WORKFLOW_STATUS.DRAFT]} />
       </ExecutiveKpiGrid>
 
-      <div className="space-y-wilms-3 border-b border-border/80 pb-wilms-3">
-        <Input
-          aria-label="Search registrations"
-          placeholder="Search by name, phone, or community"
-          value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
-          className="max-w-xl"
-        />
-
-        <div className="flex flex-col gap-wilms-3 lg:flex-row lg:items-end lg:justify-between">
-          <div className="flex min-w-0 flex-col gap-wilms-2">
-            <FilterPillBar
+      <ManagementToolbar
+        search={
+          <Input
+            aria-label="Search registrations"
+            placeholder="Search by name, phone, or community"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+          />
+        }
+        filters={
+          <FilterDropdownRow>
+            <FilterDropdown
+              label="Status"
               ariaLabel="Filter registrations by status"
               options={STATUS_FILTERS}
               value={statusFilter}
               onChange={setStatusFilter}
             />
-            <FilterPillBar
+            <FilterDropdown
+              label="Date"
               ariaLabel="Filter registrations by date"
               options={REGISTRATION_DATE_FILTERS.map((option) => ({
                 value: option.value,
@@ -220,17 +224,17 @@ export function MyRegistrationsList() {
               value={dateFilter}
               onChange={(value) => setDateFilter(value as RegistrationDateFilter)}
             />
-          </div>
-
+          </FilterDropdownRow>
+        }
+        actions={
           <WilmsExportActions
             document={exportDocument}
             filenameBase="my-registrations"
             showIcons
             permissions={[PERMISSION.EXPORT_REPORTS, PERMISSION.REGISTER_BORROWERS]}
-            className="lg:justify-end"
           />
-        </div>
-      </div>
+        }
+      />
 
       <DataTable
         variant="executive"

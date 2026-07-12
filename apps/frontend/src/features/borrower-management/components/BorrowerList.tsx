@@ -11,7 +11,8 @@ import { Button } from '@/components/ui/Button';
 import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import {
   ExecutiveKpiGrid,
-  FilterPillBar,
+  FilterDropdown,
+  FilterDropdownRow,
   ManagementToolbar,
 } from '@/components/layout/executive';
 import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
@@ -194,12 +195,15 @@ export function BorrowerList() {
           />
         }
         filters={
-          <FilterPillBar
-            ariaLabel="Filter borrowers by status"
-            options={STATUS_FILTERS}
-            value={statusFilter}
-            onChange={handleStatusFilterChange}
-          />
+          <FilterDropdownRow>
+            <FilterDropdown
+              label="Status"
+              ariaLabel="Filter borrowers by status"
+              options={STATUS_FILTERS}
+              value={statusFilter}
+              onChange={handleStatusFilterChange}
+            />
+          </FilterDropdownRow>
         }
         actions={
           <ExportCsvButton
