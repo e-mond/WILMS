@@ -1,58 +1,55 @@
 # WILMS - Project Status
 
-**Last updated:** 2026-07-11 (v1.3.5 ready)  
-**Package version:** `1.3.5`  
-**Branch:** `cursor/v135-ui-communication-release-8847`  
-**Production:** v1.3.4 deployed — v1.3.5 pending
+**Last updated:** 2026-07-12 (v1.3.6-rc1)  
+**Package version:** `1.3.6`  
+**Branch:** `cursor/v136-rc1-production-stabilisation-8847`  
+**Production:** v1.3.5 deployed — migrations 0020/0022 pending (health degraded)
 
 ---
 
 ## Summary
 
-v1.3.5 is a UI/UX and communication platform release: premium startup splash, unified email design system, expanded transactional email catalogue, notification center refresh, and preference-aware dispatch.
+v1.3.6-rc1 is a production stabilisation release candidate. No new features. Fixes duplicate collector PIN settings, production mock guard, health diagnostics, admin collector messaging, and display formatting.
 
 ---
 
-## v1.3.5 scope
+## v1.3.6-rc1 scope
 
 | Item | Status |
 |------|--------|
-| Login tagline removed (emails only) | ✅ |
-| Premium animated startup splash | ✅ |
-| Email design system (header, banners, CTAs, footer) | ✅ |
-| Email catalogue + new security templates | ✅ |
-| Notification center search, filters, pagination, delete | ✅ |
-| Notification preferences (email/SMS/push/in-app/digest) | ✅ |
-| Login-alert dispatch on successful sign-in | ✅ |
-| Route transition progress loader | ✅ |
-| Version bump to 1.3.5 | ✅ |
+| Remove duplicate PIN / App Lock on collector settings | ✅ |
+| Redirect `/collector/security` → settings | ✅ |
+| Production mock webpack guard | ✅ |
+| Health `degradedReasons` diagnostics | ✅ |
+| Fix collectors page open messages (id validation) | ✅ |
+| Collector aside display id formatting | ✅ |
+| Version bump to 1.3.6 | ✅ |
+| RC audit reports (13 deliverables) | ✅ |
 
 ---
 
-## v1.3.4 scope
-
-| Item | Status |
-|------|--------|
-| Mobile photo capture public route 401 fix | ✅ |
-| BFF CSRF exempt for capture sessions | ✅ |
-| Password reset session invalidation | ✅ |
-| Capture status-specific error UX | ✅ |
-
----
-
-## Deploy checklist
-
-Migrations through `0022_v135_notification_events.sql` are required.
+## Production action required
 
 ```bash
 npm run db:migrate -w @wilms/api
 ```
 
+Until applied, production `/health` reports `degraded` (22/23 migrations; missing `0020` tables).
+
 ---
 
-## Next candidates
+## Verification (2026-07-12)
 
-- Admin UI for organization holidays management
-- Bluetooth thermal receipt printing integration
-- Offline registration draft sync expansion
-- Digest scheduler for daily/weekly notification summaries
+| Gate | Result |
+|------|--------|
+| type-check | PASS |
+| lint | PASS |
+| backend tests | 108/108 |
+| frontend tests | 233/233 |
+| build + bundle | PASS |
+
+---
+
+## Next milestone
+
+**v1.4.0 Stable Production Release** — after migrations applied, smoke tests pass, and RC sign-off.

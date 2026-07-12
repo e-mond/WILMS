@@ -4,7 +4,7 @@ import { USER_ROLE } from '@/constants/roles';
 
 export default function CollectorSettingsPage() {
   return (
-    <PageShell description="Profile, PIN, notifications, and device preferences for field work.">
+    <PageShell description="Profile, app lock, notifications, and device preferences for field work.">
       <RoleSettingsPanel role={USER_ROLE.COLLECTOR} />
     </PageShell>
   );

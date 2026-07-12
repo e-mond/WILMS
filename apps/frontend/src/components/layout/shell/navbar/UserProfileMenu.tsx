@@ -96,7 +96,7 @@ export function UserProfileMenu({ roleLabel, compact = false }: UserProfileMenuP
           <div className="space-y-wilms-2">
             {user?.role === USER_ROLE.COLLECTOR ? (
               <Link
-                href="/collector/security"
+                href="/collector/settings"
                 role="menuitem"
                 className="block rounded-sm px-wilms-2 py-wilms-2 text-body text-text-primary hover:bg-background"
                 onClick={() => setIsOpen(false)}

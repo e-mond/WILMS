@@ -119,9 +119,15 @@ export function CollectorsManagementPanel() {
       return;
     }
 
-    void createThread.mutateAsync(messageCollector.id).then((createdThread) => {
-      setThreadId(createdThread.id);
-    });
+    void createThread.mutateAsync(messageCollector.id).then(
+      (createdThread) => {
+        setThreadId(createdThread.id);
+      },
+      () => {
+        setMessageModalOpen(false);
+        setMessageCollector(null);
+      },
+    );
   }, [messageCollector, messageModalOpen, createThread]);
 
   function openMessageModal(collector: CollectorSummary) {
@@ -470,6 +476,9 @@ export function CollectorsManagementPanel() {
         }
       >
         <div className="space-y-wilms-4">
+          {createThread.isError ? (
+            <p className="text-small text-danger">Unable to open conversation. Try again shortly.</p>
+          ) : null}
           {createThread.isPending ? (
             <p className="text-small text-text-muted">Opening conversation…</p>
           ) : null}
