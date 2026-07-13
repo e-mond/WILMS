@@ -1,6 +1,6 @@
 # Operational Readiness Report — v1.3.7
 
-**Date:** 2026-07-13
+**Date:** 2026-07-13 (remediation sprint)
 
 ---
 
@@ -8,36 +8,28 @@
 
 | Item | Status |
 |------|--------|
-| `/health` endpoint | Enhanced with `degradedReasons` |
-| Production probe | Executed 2026-07-13 — **degraded** (migrations 23/24, schema missing tables) |
-| Monitoring guide | `docs/operations/monitoring.md` |
+| `/health` endpoint | Extended with `integrations`, `workers` |
+| Production probe | **degraded** — migrations 23/24, schema gaps |
+| Remediation | `0026` schema repair + journal fix in PR |
 
 ## Migrations
 
-**Critical:** Production must run through `0025_v137_rc3_pool_allocations_backfill.sql` (26 journal entries).
-
-Journal entries for `0024` and `0025` were added in certification branch `cursor/v137-production-cert-8847`.
-
 ```bash
-npm run db:migrate -w @wilms/api
+npm run verify:migrations    # journal integrity
+npm run db:migrate -w @wilms/api   # on production DATABASE_URL
 ```
 
-## Documentation
-
-| Doc | Status |
-|-----|--------|
-| `docs/certification/v1.3.7/` | **NEW** — 13 certification deliverables |
-| `docs/operations/production-runbook.md` | Updated — v1.3.7, migrations through 0025 |
-| `docs/financial-calculations.md` | Current |
-| `CHANGELOG.md` | v1.3.7 stable |
+Journal: **27 entries** (`0000`–`0026`).
 
 ## Smoke tests
 
-| Command | Agent result (2026-07-13) |
-|---------|----------------------------|
-| `smoke:production` | **14/33** — schema/migrations degraded; auth 401 |
-| `smoke:rbac` | **0/3** — demo credentials disabled in prod |
+| Command | Result |
+|---------|--------|
+| `smoke:production` | **BLOCKED** — requires `WILMS_SMOKE_*` on live |
+| `smoke:rbac` | **BLOCKED** — requires per-role prod credentials |
 
 ## Ready for production deploy
 
-**NO** — apply pending migrations, restore schema health, re-run smoke with production credentials. See [docs/certification/v1.3.7/PRODUCTION_CERTIFICATION_REPORT.md](./docs/certification/v1.3.7/PRODUCTION_CERTIFICATION_REPORT.md).
+**NO** — merge remediation PR, redeploy Railway, confirm health `ok`, then re-run smoke.
+
+See [docs/certification/v1.3.7/REMEDIATION_RUNBOOK.md](./docs/certification/v1.3.7/REMEDIATION_RUNBOOK.md).
