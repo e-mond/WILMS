@@ -165,9 +165,10 @@ function toDetail(record: BorrowerRecord, sequence?: number) {
 
 async function toReview(record: BorrowerRecord, officerDisplayName: string, sequence?: number) {
   const detail = toDetail(record, sequence);
-  const [photoUrl, guarantorPhotoUrl] = await Promise.all([
+  const [photoUrl, guarantorPhotoUrl, idDocumentUrl] = await Promise.all([
     resolvePhotoUrl(record.profile.photoUploadId),
     resolvePhotoUrl(record.profile.guarantorPhotoUploadId),
+    resolvePhotoUrl(record.profile.idDocumentUploadId),
   ]);
 
   return {
@@ -197,6 +198,7 @@ async function toReview(record: BorrowerRecord, officerDisplayName: string, sequ
     photoMimeType: record.profile.photoMimeType ?? '',
     photoUrl,
     guarantorPhotoUrl,
+    idDocumentUrl,
     registeredByOfficerId: record.registeredByOfficerId,
     registeredByOfficerName: officerDisplayName,
     status: record.status,

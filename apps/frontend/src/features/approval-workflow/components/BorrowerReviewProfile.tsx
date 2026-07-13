@@ -39,6 +39,31 @@ function formatPhotoReference(borrower: BorrowerReviewDetail): string {
   return 'No photo uploaded';
 }
 
+function IdDocumentPreview({ url }: { url: string }) {
+  const isImage = /\.(jpe?g|png|gif|webp)(\?|$)/i.test(url);
+
+  return (
+    <div className="mt-wilms-3 space-y-wilms-2">
+      {isImage ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={url}
+          alt="Borrower ID document"
+          className="max-h-64 rounded-sm border border-border object-contain"
+        />
+      ) : null}
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex text-small font-semibold text-brand-primary hover:underline"
+      >
+        Open ID document
+      </a>
+    </div>
+  );
+}
+
 function ReviewSection({
   title,
   items,
@@ -129,6 +154,15 @@ export function BorrowerReviewProfile({
           ['ID number', formatField(borrower.idNumber)],
         ]}
       />
+
+      <section className="rounded-sm border border-border bg-card p-wilms-4">
+        <h2 className="text-heading-3 font-semibold text-text-primary">Identity document</h2>
+        {borrower.idDocumentUrl ? (
+          <IdDocumentPreview url={borrower.idDocumentUrl} />
+        ) : (
+          <p className="mt-wilms-3 text-body text-text-muted">No ID document uploaded</p>
+        )}
+      </section>
 
       <ReviewSection
         title="Address"

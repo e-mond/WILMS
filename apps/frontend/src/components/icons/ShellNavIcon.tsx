@@ -299,6 +299,23 @@ export function ShellNavIcon({ name, className }: ShellNavIconProps) {
           />
         </svg>
       );
+    case 'messages':
+      return (
+        <svg className={iconClass} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v8A2.5 2.5 0 0 1 17.5 17H9l-5 3v-3.5Z"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M8 9.5h8M8 12.5h5"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+        </svg>
+      );
     default:
       return (
         <svg className={iconClass} viewBox="0 0 24 24" fill="none" aria-hidden="true">

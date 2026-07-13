@@ -524,6 +524,7 @@ export async function listBorrowerLoans(borrowerId: string) {
     const detail = mapLoanRowToDetail(row);
     return {
       id: detail.id,
+      displayId: detail.displayId,
       amountPesewas: detail.amountPesewas,
       outstandingPesewas: detail.outstandingPesewas,
       weeklyPaymentPesewas: detail.weeklyPaymentPesewas,

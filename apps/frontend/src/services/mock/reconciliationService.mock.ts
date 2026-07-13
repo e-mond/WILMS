@@ -154,6 +154,21 @@ const reconciliationServiceMock: IReconciliationService = {
     await simulateDelay();
     return [];
   },
+
+  async reviewReconciliation(id: string, input) {
+    await simulateDelay();
+    void id;
+    return {
+      collectorId: 'collector-001',
+      date: new Date().toISOString().slice(0, 10),
+      expectedPesewas: 10000,
+      actualPesewas: 9000,
+      variancePesewas: -1000,
+      submitted: true,
+      status: input.status,
+      resolutionNotes: input.resolutionNotes,
+    };
+  },
 };
 
 export function resetMockReconciliationSubmissions(): void {

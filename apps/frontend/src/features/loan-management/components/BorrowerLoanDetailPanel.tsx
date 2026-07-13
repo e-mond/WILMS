@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { resolveLoanDisplayId } from '@/utils/entity-display-id';
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -139,7 +140,7 @@ export function BorrowerLoanDetailPanel({ borrowerId, loanId }: BorrowerLoanDeta
       </div>
 
       <div className="flex flex-wrap items-center gap-wilms-3">
-        <h1 className="text-heading-1 font-semibold text-text-primary">{loan.id}</h1>
+        <h1 className="text-heading-1 font-semibold text-text-primary">{resolveLoanDisplayId(loan)}</h1>
         <LoanStatusBadge status={loan.status} />
       </div>
 
