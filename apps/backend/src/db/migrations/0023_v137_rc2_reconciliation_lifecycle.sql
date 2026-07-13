@@ -9,10 +9,30 @@ ALTER TABLE "financial_reconciliations" ADD COLUMN IF NOT EXISTS "reviewed_by_us
 ALTER TABLE "financial_reconciliations" ADD COLUMN IF NOT EXISTS "reviewed_at" timestamp with time zone;
 ALTER TABLE "financial_reconciliations" ADD COLUMN IF NOT EXISTS "resolution_notes" text;
 --> statement-breakpoint
-ALTER TABLE "financial_reconciliations" ADD CONSTRAINT "financial_reconciliations_reviewed_by_user_id_users_id_fk"
-  FOREIGN KEY ("reviewed_by_user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
+DO $$ BEGIN
+  ALTER TABLE "financial_reconciliations" ADD CONSTRAINT "financial_reconciliations_reviewed_by_user_id_users_id_fk"
+    FOREIGN KEY ("reviewed_by_user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 --> statement-breakpoint
 DROP INDEX IF EXISTS "financial_reconciliations_collector_date_submitted_uidx";
+--> statement-breakpoint
+-- Remove duplicate collector+date rows before enforcing uniqueness (production data may have drift).
+DELETE FROM "financial_reconciliations" AS fr
+WHERE fr."id" IN (
+  SELECT "id"
+  FROM (
+    SELECT
+      "id",
+      ROW_NUMBER() OVER (
+        PARTITION BY "collector_user_id", "reconciliation_date"
+        ORDER BY "submitted_at" DESC, "created_at" DESC
+      ) AS rn
+    FROM "financial_reconciliations"
+  ) AS ranked
+  WHERE rn > 1
+);
 --> statement-breakpoint
 CREATE UNIQUE INDEX IF NOT EXISTS "financial_reconciliations_collector_date_uidx"
   ON "financial_reconciliations" ("collector_user_id", "reconciliation_date");
