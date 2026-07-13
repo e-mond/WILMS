@@ -27,7 +27,7 @@ export function assignLoanDisplayIds<T extends { cycleBatch: string; startDate: 
   });
 }
 
-export function assignPoolDisplayIds<T extends { region: string; name: string }>(
+export function assignPoolDisplayIds<T extends { region: string; name: string; createdAt?: string | Date }>(
   rows: T[],
 ): Array<T & { displayId: string }> {
   const regionCounters = new Map<string, number>();
@@ -40,8 +40,10 @@ export function assignPoolDisplayIds<T extends { region: string; name: string }>
     return {
       ...row,
       displayId: formatPoolDisplayId({
-        region: row.region,
-        name: row.name,
+        createdAt:
+          row.createdAt instanceof Date
+            ? row.createdAt.toISOString()
+            : row.createdAt ?? new Date().toISOString(),
         sequence: nextSequence,
       }),
     };

@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { CurrencyAmount, KpiCard } from '@/components/data-display';
+import { CurrencyAmount, KpiCard, VarianceAmount } from '@/components/data-display';
 import { ExecutiveKpiGrid } from '@/components/layout/executive';
 import { Alert } from '@/components/feedback/Alert';
 import { EmptyState } from '@/components/feedback/EmptyState';
@@ -198,9 +198,9 @@ export function ReconciliationForm() {
           label="Variance"
           value={
             data.submitted ? (
-              <CurrencyAmount value={data.variancePesewas} />
+              <VarianceAmount value={data.variancePesewas ?? 0} />
             ) : previewVariancePesewas !== null ? (
-              <CurrencyAmount value={previewVariancePesewas} />
+              <VarianceAmount value={previewVariancePesewas} />
             ) : (
               '—'
             )

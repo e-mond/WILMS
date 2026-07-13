@@ -1,4 +1,4 @@
-import { CurrencyAmount, DataTable } from '@/components/data-display';
+import { CurrencyAmount, DataTable, VarianceAmount } from '@/components/data-display';
 import type { DashboardCollectorPerformanceRow } from '@/types/dashboard';
 import { cn } from '@/utils/cn';
 import { resolveUserDisplayId } from '@/utils/entity-display-id';
@@ -77,11 +77,7 @@ export function DashboardCollectorPerformance({ rows }: DashboardCollectorPerfor
               <div className="col-span-2">
                 <dt className="text-text-muted">Variance</dt>
                 <dd className={varianceClass(row.variancePesewas)}>
-                  {row.variancePesewas === 0 ? (
-                    '—'
-                  ) : (
-                    <CurrencyAmount value={Math.abs(row.variancePesewas)} />
-                  )}
+                  <VarianceAmount value={row.variancePesewas} />
                 </dd>
               </div>
             </dl>
@@ -92,6 +88,7 @@ export function DashboardCollectorPerformance({ rows }: DashboardCollectorPerfor
       <div className="hidden lg:block">
         <DataTable
           variant="executive"
+          layout="auto"
           caption="Collector performance"
           data={rows}
           getRowId={(row) => row.collectorId}
@@ -128,13 +125,10 @@ export function DashboardCollectorPerformance({ rows }: DashboardCollectorPerfor
             {
               id: 'variance',
               header: 'Variance',
+              className: 'whitespace-nowrap tabular-nums',
               cell: (row) => (
                 <span className={varianceClass(row.variancePesewas)}>
-                  {row.variancePesewas === 0 ? (
-                    '—'
-                  ) : (
-                    <CurrencyAmount value={Math.abs(row.variancePesewas)} />
-                  )}
+                  <VarianceAmount value={row.variancePesewas} />
                 </span>
               ),
             },

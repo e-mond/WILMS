@@ -76,7 +76,6 @@ export async function findSubmittedReconciliationByCollectorAndDate(
       and(
         eq(financialReconciliations.collectorUserId, collectorUserId),
         eq(financialReconciliations.reconciliationDate, reconciliationDate),
-        eq(financialReconciliations.status, 'SUBMITTED'),
       ),
     )
     .limit(1);

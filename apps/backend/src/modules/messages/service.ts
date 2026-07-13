@@ -11,6 +11,8 @@ import {
   listThreadsInMemory,
   sendMessageInMemory,
 } from './memory-store.js';
+import { createInAppNotification } from '../../infrastructure/notifications/in-app-notify.js';
+import { sendPushToUser } from '../notifications/push.service.js';
 
 export interface MessageDto {
   id: string;
@@ -220,7 +222,9 @@ export async function sendMessage(
     throw new Error('VALIDATION:Message body is required.');
   }
 
-  await assertThreadParticipant(threadId, senderUserId);
+  const thread = await assertThreadParticipant(threadId, senderUserId);
+  const recipientUserId =
+    thread.adminUserId === senderUserId ? thread.collectorUserId : thread.adminUserId;
 
   const messageId = uuidv7();
   const now = new Date();
@@ -239,7 +243,7 @@ export async function sendMessage(
     .set({ updatedAt: now })
     .where(eq(messageThreads.id, threadId));
 
-  return {
+  const messageDto = {
     id: messageId,
     threadId,
     senderUserId,
@@ -247,4 +251,21 @@ export async function sendMessage(
     body: trimmedBody,
     sentAt: now.toISOString(),
   };
+
+  void createInAppNotification({
+    userId: recipientUserId,
+    event: 'COMMUNICATION',
+    title: 'New message',
+    body: trimmedBody.slice(0, 120),
+    href: '/messages',
+  });
+
+  void sendPushToUser(recipientUserId, {
+    title: 'New message',
+    body: trimmedBody.slice(0, 120),
+    url: '/messages',
+    category: 'MESSAGE',
+  });
+
+  return messageDto;
 }

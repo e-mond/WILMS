@@ -281,7 +281,14 @@ export const reconciliationVarianceClassEnum = pgEnum('reconciliation_variance_c
 ]);
 
 /** P14.3B Phase 4C.1 — Reconciliation submission lifecycle (v1: submit-only). */
-export const reconciliationStatusEnum = pgEnum('reconciliation_status', ['SUBMITTED']);
+export const reconciliationStatusEnum = pgEnum('reconciliation_status', [
+  'SUBMITTED',
+  'PENDING_REVIEW',
+  'UNDER_INVESTIGATION',
+  'APPROVED',
+  'REJECTED',
+  'REOPENED',
+]);
 
 /** P14.3B Phase 4C.1 — Append-only reconciliation history events. */
 export const reconciliationHistoryEventEnum = pgEnum('reconciliation_history_event', [

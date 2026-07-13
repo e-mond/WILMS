@@ -1,36 +1,16 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { CurrencyAmount, DataTable } from '@/components/data-display';
 import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
 import { SettingsSectionCard } from '@/features/settings/components/SettingsSectionCard';
 import { useExpenses } from '@/features/expenses/hooks/useExpenses';
-import { PermissionGate } from '@/components/auth/PermissionGate';
-import { PERMISSION } from '@/constants/permissions';
-import { Button } from '@/components/ui/Button';
-import { expenseService } from '@/services';
-import { EXPENSE_STATUS, type ExpenseRecord } from '@/types/expense';
+import type { ExpenseRecord } from '@/types/expense';
 import { SettingsExpensesIcon } from '@/features/settings/components/SettingsSectionIcons';
-import { useToast } from '@/hooks/useToast';
+import { resolveExpenseDisplayId } from '@/utils/entity-display-id';
+import { formatDisplayDate } from '@/utils/format-date';
 
 export function SettingsExpensesSection() {
-  const toast = useToast();
-  const queryClient = useQueryClient();
   const { data, isLoading } = useExpenses();
-
-  const reviewExpense = useMutation({
-    mutationFn: ({
-      id,
-      status,
-    }: {
-      id: string;
-      status: typeof EXPENSE_STATUS.APPROVED | typeof EXPENSE_STATUS.REJECTED;
-    }) => expenseService.reviewExpense(id, { status }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['expenses'] });
-      toast.success('Expense updated');
-    },
-  });
 
   if (isLoading || !data) {
     return <LoadingSpinner label="Loading expenses" className="py-wilms-6" />;
@@ -40,26 +20,24 @@ export function SettingsExpensesSection() {
     <div className="space-y-wilms-4">
       <div className="grid gap-wilms-3 sm:grid-cols-3">
         <div className="rounded-sm border border-border bg-card p-wilms-4">
-          <p className="text-small text-text-muted">Pending approvals</p>
-          <p className="text-heading-3 font-bold text-text-primary">{data.summary.pendingCount}</p>
+          <p className="text-small text-text-muted">Total expenses</p>
+          <p className="text-heading-3 font-bold text-text-primary">{data.expenses.length}</p>
         </div>
         <div className="rounded-sm border border-border bg-card p-wilms-4">
-          <p className="text-small text-text-muted">Pending amount</p>
-          <p className="text-heading-3 font-bold text-danger">
-            <CurrencyAmount value={data.summary.pendingTotalPesewas} />
-          </p>
-        </div>
-        <div className="rounded-sm border border-border bg-card p-wilms-4">
-          <p className="text-small text-text-muted">Approved total</p>
+          <p className="text-small text-text-muted">Recorded amount</p>
           <p className="text-heading-3 font-bold text-status-active">
             <CurrencyAmount value={data.summary.approvedTotalPesewas} />
           </p>
+        </div>
+        <div className="rounded-sm border border-border bg-card p-wilms-4">
+          <p className="text-small text-text-muted">Pending legacy items</p>
+          <p className="text-heading-3 font-bold text-text-primary">{data.summary.pendingCount}</p>
         </div>
       </div>
 
       <SettingsSectionCard
         title="Expense Records"
-        description="Fuel, transport, airtime, field operations, and office expenses with approval workflow."
+        description="Field expenses are recorded automatically and deducted from operational balances — no approval required."
         icon={<SettingsExpensesIcon />}
       >
         <DataTable<ExpenseRecord>
@@ -72,8 +50,8 @@ export function SettingsExpensesSection() {
             {
               id: 'id',
               header: 'Expense ID',
-              className: 'whitespace-nowrap align-middle font-mono text-small',
-              cell: (row) => row.id,
+              className: 'whitespace-nowrap align-middle font-mono text-small tabular-nums',
+              cell: (row) => resolveExpenseDisplayId(row),
             },
             {
               id: 'category',
@@ -84,14 +62,14 @@ export function SettingsExpensesSection() {
             {
               id: 'amount',
               header: 'Amount',
-              className: 'whitespace-nowrap align-middle',
+              className: 'whitespace-nowrap align-middle tabular-nums',
               cell: (row) => <CurrencyAmount value={row.amountPesewas} />,
             },
             {
               id: 'date',
               header: 'Date',
-              className: 'whitespace-nowrap align-middle',
-              cell: (row) => row.expenseDate,
+              className: 'whitespace-nowrap align-middle tabular-nums',
+              cell: (row) => formatDisplayDate(row.expenseDate),
             },
             {
               id: 'reason',
@@ -110,40 +88,6 @@ export function SettingsExpensesSection() {
               header: 'Status',
               className: 'whitespace-nowrap align-middle',
               cell: (row) => row.status,
-            },
-            {
-              id: 'actions',
-              header: 'Actions',
-              className: 'whitespace-nowrap align-middle min-w-[10rem]',
-              cell: (row) =>
-                row.status === EXPENSE_STATUS.PENDING ? (
-                  <div className="flex flex-wrap gap-wilms-2">
-                  <PermissionGate permission={PERMISSION.MANAGE_EXPENSES}>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="primary"
-                      onClick={() =>
-                        reviewExpense.mutate({ id: row.id, status: EXPENSE_STATUS.APPROVED })
-                      }
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      onClick={() =>
-                        reviewExpense.mutate({ id: row.id, status: EXPENSE_STATUS.REJECTED })
-                      }
-                    >
-                      Reject
-                    </Button>
-                  </PermissionGate>
-                  </div>
-                ) : (
-                  '—'
-                ),
             },
           ]}
         />

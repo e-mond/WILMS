@@ -2,6 +2,29 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.3.7-rc2] — UI, Financial Dashboard, Notifications & Workflow
+
+### Fixed
+- **Financial KPI zeros:** Dashboard aggregates now reconcile loan portfolio totals with pool allocations; pool aggregates refresh on disbursement and repayment.
+- **Collector variance:** Expected collections derived from active portfolio loans; variance displays signed `+/-` amounts with colour coding.
+- **Collections reconciliation:** Variance KPI uses `VarianceAmount` instead of accounting parentheses.
+- **Display IDs:** Year-based `POOL-YYYY-###`, `GRP-YYYY-###`, `EXP-YYYY-###`; loans no longer fall back to raw UUIDs in UI.
+- **Disbursement layout:** Toolbar actions stack on small screens; loan table uses nowrap identifiers and amounts.
+- **Stale bundle:** Automatic chunk recovery reload on deploy mismatch (`ChunkRecoveryHandler`).
+- **Collector messaging:** In-app and push notifications delivered to message recipients.
+
+### Changed
+- **Financial overview:** Cards / Charts toggle with bar, line, area, and pie chart modes (summary cards remain default).
+- **Loan rules:** Duration options expanded to 4–52 weeks (4, 8, 10, 12, 16, 20, 24, 26, 36, 52).
+- **Expense workflow:** Expenses auto-record as approved — no approval gate; admin view is audit/read-only.
+- **Collector expenses:** History panel with search, filter, and export on `/collector/expenses`.
+- **Audit log:** Grouped sections (Today, Yesterday, This Week, etc.) with expand/collapse, search, and pagination.
+- **Reconciliation lifecycle:** Status tracking (`PENDING_REVIEW`, `UNDER_INVESTIGATION`, `APPROVED`, `REJECTED`, `REOPENED`) with review metadata; Super Admin notified on submit.
+- **Notification sounds:** Optional message, security, and loan decision tones (respects reduced motion).
+- Application version bumped to `1.3.7-rc2`.
+
+---
+
 ## [1.3.7-rc1] — Stability, UX & Business Logic (Release Candidate)
 
 ### Fixed

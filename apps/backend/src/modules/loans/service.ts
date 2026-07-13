@@ -25,7 +25,9 @@ import * as disbursementRepo from '../../repositories/loan-disbursement.reposito
 import * as ledgerRepo from '../../repositories/ledger.repository.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import * as scheduleRepo from '../../repositories/loan-schedule.repository.js';
+import * as poolRepo from '../../repositories/loan-pool.repository.js';
 import { getSettings } from '../settings/service.js';
+import { decimalToPesewas } from '../../domain/money.js';
 
 export interface CreateLoanBody {
   borrowerId: string;
@@ -346,6 +348,23 @@ export async function disburseLoan(
           },
           tx,
         );
+
+        if (loan.loanPoolId) {
+          const amountPesewas = decimalToPesewas(amountDecimal);
+          await poolRepo.appendAllocation(
+            {
+              poolId: loan.loanPoolId,
+              allocationType: 'DISBURSEMENT',
+              amountPesewas,
+              loanId,
+              borrowerId: loan.borrowerId,
+              description: `Loan disbursement for ${loanId.slice(-8)}`,
+              actorUserId: actorId,
+            },
+            tx,
+          );
+          await poolRepo.refreshPoolAggregates(loan.loanPoolId, tx);
+        }
 
         return active;
       });

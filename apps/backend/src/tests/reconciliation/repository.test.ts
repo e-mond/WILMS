@@ -4,6 +4,7 @@ import { mapReconciliationRowToSummary, mapSnapshotToSummary } from '../../domai
 describe('reconciliation repository mapping', () => {
   it('maps persisted row to summary contract', () => {
     const summary = mapReconciliationRowToSummary({
+      id: 'recon-1',
       collectorUserId: 'collector-1',
       reconciliationDate: '2026-06-02',
       expectedDuePesewas: 10000,
@@ -11,6 +12,7 @@ describe('reconciliation repository mapping', () => {
       physicalCashPesewas: 8500,
       primaryVariancePesewas: -1500,
       varianceFlagged: true,
+      status: 'PENDING_REVIEW',
       submittedAt: new Date('2026-06-02T18:00:00.000Z'),
     });
 

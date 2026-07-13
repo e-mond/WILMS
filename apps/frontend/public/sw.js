@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'wilms-v132-shell';
+const CACHE_VERSION = 'wilms-v137-shell';
 const SHELL_ASSETS = [
   '/login',
   '/collector/dashboard',
