@@ -24,6 +24,7 @@ import {
   type CollectorRecentPayment,
   type CollectorTodayGroup,
 } from '@/types/collector-dashboard';
+import { resolveGroupDisplayId } from '@/utils/entity-display-id';
 import { formatDisplayDate } from '@/utils/format-date';
 import { cn } from '@/utils/cn';
 import { resolveQueryErrorPresentation } from '@/utils/query-error-presentation';
@@ -75,7 +76,7 @@ function TodayGroupCard({ group }: { group: CollectorTodayGroup }) {
             <div className="min-w-0">
               <h3 className="truncate text-body font-semibold text-text-primary">{group.groupName}</h3>
               <p className="truncate text-small text-text-muted">
-                {group.community} · {group.groupId}
+                {group.community} · {resolveGroupDisplayId({ id: group.groupId })}
               </p>
               <p className="mt-wilms-1 text-small text-text-muted">Leader: {group.leaderName}</p>
             </div>

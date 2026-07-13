@@ -16,6 +16,8 @@ export interface FinancialTransaction {
   loanId?: string;
   amountPesewas: number;
   collectorId: string;
+  /** Business date of the payment (may differ from recordedAt for arrears). */
+  paymentDate?: string;
   recordedAt: string;
 }
 

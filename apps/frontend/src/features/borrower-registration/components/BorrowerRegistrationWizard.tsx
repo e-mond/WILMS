@@ -20,6 +20,7 @@ import {
   BORROWER_ID_TYPE,
   GUARANTOR_RELATIONSHIP_OPTIONS,
   REGISTRATION_ADDRESS_MAX_LENGTH,
+  REGISTRATION_TEXT_FIELD_MAX_LENGTH,
   REGISTRATION_ADDRESS_MIN_LENGTH,
   REGISTRATION_GPS_MAX_ACCURACY_METERS,
   TYPE_OF_WORK_OPTIONS,
@@ -253,6 +254,8 @@ export function BorrowerRegistrationWizard() {
   const watchedDistrict = watch('district');
   const watchedHouseAddress = watch('houseAddress') ?? '';
   const watchedBusinessAddress = watch('businessAddress') ?? '';
+  const watchedBusinessName = watch('businessName') ?? '';
+  const watchedTypeOfWorkOther = watch('typeOfWorkOther') ?? '';
   const watchedGpsAddress = watch('gpsAddress') ?? '';
   const [locationFeedback, setLocationFeedback] = useState<string | null>(null);
   const [isLocating, setIsLocating] = useState(false);
@@ -827,10 +830,15 @@ export function BorrowerRegistrationWizard() {
             htmlFor="businessName"
             required
             error={errors.businessName?.message}
+            characterCount={{
+              current: watchedBusinessName.length,
+              max: REGISTRATION_TEXT_FIELD_MAX_LENGTH,
+            }}
           >
             <Input
               id="businessName"
               hasError={Boolean(errors.businessName)}
+              maxLength={REGISTRATION_TEXT_FIELD_MAX_LENGTH}
               {...register('businessName')}
             />
           </FormField>
@@ -856,10 +864,15 @@ export function BorrowerRegistrationWizard() {
               required
               error={errors.typeOfWorkOther?.message}
               className="md:col-span-2"
+              characterCount={{
+                current: watchedTypeOfWorkOther.length,
+                max: REGISTRATION_TEXT_FIELD_MAX_LENGTH,
+              }}
             >
               <Input
                 id="typeOfWorkOther"
                 hasError={Boolean(errors.typeOfWorkOther)}
+                maxLength={REGISTRATION_TEXT_FIELD_MAX_LENGTH}
                 {...register('typeOfWorkOther')}
               />
             </FormField>

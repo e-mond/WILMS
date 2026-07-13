@@ -1,8 +1,9 @@
-import { eq, isNull } from 'drizzle-orm';
+import { eq, inArray, isNull } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
 import { formatExpenseDisplayId } from '@wilms/shared-utils';
 import { isDatabaseEnabled, getDb } from '../../db/client.js';
 import { expenses } from '../../db/schema/expenses.js';
+import { users } from '../../db/schema/users.js';
 
 export interface ExpenseRecord {
   id: string;
@@ -76,12 +77,26 @@ async function loadExpenses(): Promise<ExpenseRecord[]> {
 
   const db = getDb();
   const rows = await db.select().from(expenses).where(isNull(expenses.deletedAt));
+  const recorderIds = [...new Set(rows.map((row) => row.recordedByUserId))];
+  const recorderNames = new Map<string, string>();
+
+  if (recorderIds.length > 0) {
+    const recorders = await db
+      .select({ id: users.id, displayName: users.displayName })
+      .from(users)
+      .where(inArray(users.id, recorderIds));
+
+    for (const recorder of recorders) {
+      recorderNames.set(recorder.id, recorder.displayName);
+    }
+  }
+
   const yearCounters = new Map<string, number>();
   return rows.map((row) => {
     const year = row.expenseDate.slice(0, 4);
     const nextSequence = (yearCounters.get(year) ?? 0) + 1;
     yearCounters.set(year, nextSequence);
-    return rowToRecord(row, 'Collector', nextSequence);
+    return rowToRecord(row, recorderNames.get(row.recordedByUserId) ?? 'Collector', nextSequence);
   });
 }
 

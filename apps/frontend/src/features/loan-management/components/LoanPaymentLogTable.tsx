@@ -4,7 +4,7 @@ import { CurrencyAmount, DataTable } from '@/components/data-display';
 import { Badge } from '@/components/ui/Badge';
 import type { LoanPaymentLogEntry } from '@/types/loan';
 import { formatDisplayDate } from '@/utils/format-date';
-import { resolveDisbursementDisplayId } from '@/utils/entity-display-id';
+import { resolveDisbursementDisplayId, resolveCollectorDisplayId, resolvePaymentDisplayId } from '@/utils/entity-display-id';
 
 export interface LoanPaymentLogTableProps {
   entries: LoanPaymentLogEntry[];
@@ -36,7 +36,7 @@ export function LoanPaymentLogTable({ entries, detailed = false }: LoanPaymentLo
                 header: 'Week Number',
                 cell: (row) => (row.weekNumber ? `Week ${row.weekNumber}` : '—'),
               },
-              { id: 'collector', header: 'Collector', cell: (row) => row.collectorId },
+              { id: 'collector', header: 'Collector', cell: (row) => resolveCollectorDisplayId({ id: row.collectorId }) },
               {
                 id: 'receipt',
                 header: 'Receipt Number',
@@ -65,7 +65,7 @@ export function LoanPaymentLogTable({ entries, detailed = false }: LoanPaymentLo
                   <span className="font-semibold text-brand-primary">
                     {row.type === 'DISBURSEMENT'
                       ? resolveDisbursementDisplayId(row)
-                      : row.id}
+                      : resolvePaymentDisplayId(row)}
                   </span>
                 ),
               },
@@ -88,7 +88,7 @@ export function LoanPaymentLogTable({ entries, detailed = false }: LoanPaymentLo
                 header: 'Amount',
                 cell: (row) => <CurrencyAmount value={row.amountPesewas} />,
               },
-              { id: 'collector', header: 'Collector', cell: (row) => row.collectorId },
+              { id: 'collector', header: 'Collector', cell: (row) => resolveCollectorDisplayId({ id: row.collectorId }) },
             ]
       }
     />

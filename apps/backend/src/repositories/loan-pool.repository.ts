@@ -1,4 +1,4 @@
-import { eq, sql, asc } from 'drizzle-orm';
+import { and, eq, sql, asc } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
 import type { WilmsDb } from '../db/client.js';
 import { getDb } from '../db/client.js';
@@ -61,6 +61,37 @@ export async function sumAllocationTotals(poolId: string, tx: WilmsDb = getDb())
   }
 
   return totals;
+}
+
+export async function findPoolIdForGroup(groupId: string, tx: WilmsDb = getDb()): Promise<string | undefined> {
+  const [row] = await tx
+    .select({ poolId: poolMemberships.poolId })
+    .from(poolMemberships)
+    .where(eq(poolMemberships.groupId, groupId))
+    .limit(1);
+
+  return row?.poolId;
+}
+
+export async function hasAllocationForLoan(
+  poolId: string,
+  loanId: string,
+  allocationType: 'DISBURSEMENT' | 'REPAYMENT',
+  tx: WilmsDb = getDb(),
+): Promise<boolean> {
+  const [row] = await tx
+    .select({ id: poolAllocations.id })
+    .from(poolAllocations)
+    .where(
+      and(
+        eq(poolAllocations.poolId, poolId),
+        eq(poolAllocations.loanId, loanId),
+        eq(poolAllocations.allocationType, allocationType),
+      ),
+    )
+    .limit(1);
+
+  return Boolean(row);
 }
 
 export async function countPoolMemberships(poolId: string, tx: WilmsDb = getDb()) {

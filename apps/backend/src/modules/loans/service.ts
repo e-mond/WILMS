@@ -29,6 +29,15 @@ import * as poolRepo from '../../repositories/loan-pool.repository.js';
 import { getSettings } from '../settings/service.js';
 import { decimalToPesewas } from '../../domain/money.js';
 
+async function resolveLoanPoolIdForBorrower(borrowerId: string): Promise<string | undefined> {
+  const borrower = await borrowerRepo.getBorrower(borrowerId);
+  if (!borrower?.groupId) {
+    return undefined;
+  }
+
+  return poolRepo.findPoolIdForGroup(borrower.groupId);
+}
+
 export interface CreateLoanBody {
   borrowerId: string;
   amountPesewas: number;
@@ -124,6 +133,8 @@ export async function createLoan(input: CreateLoanBody, actorId: string): Promis
   });
 
   try {
+    const loanPoolId = await resolveLoanPoolIdForBorrower(input.borrowerId);
+
     const loan = await runInTransaction(async (tx) => {
       const row = await loanRepo.insertLoan(
         {
@@ -135,6 +146,7 @@ export async function createLoan(input: CreateLoanBody, actorId: string): Promis
           startDate: input.startDate,
           cycleBatch: input.cycleBatch,
           createdByUserId: actorId,
+          loanPoolId,
         },
         tx,
       );
@@ -308,6 +320,8 @@ export async function disburseLoan(
       const amountDecimal = loan.principalAmount;
 
       const updated = await runInTransaction(async (tx) => {
+        const resolvedPoolId = loan.loanPoolId ?? (await resolveLoanPoolIdForBorrower(loan.borrowerId));
+
         const disbursed = await loanRepo.updateLoanLifecycle(
           {
             loanId,
@@ -315,6 +329,7 @@ export async function disburseLoan(
             lifecycleStatus: LOAN_LIFECYCLE.DISBURSED,
             disbursedAmount: amountDecimal,
             disbursedByUserId: actorId,
+            loanPoolId: resolvedPoolId ?? undefined,
           },
           tx,
         );
@@ -349,21 +364,31 @@ export async function disburseLoan(
           tx,
         );
 
-        if (loan.loanPoolId) {
+        if (resolvedPoolId) {
           const amountPesewas = decimalToPesewas(amountDecimal);
-          await poolRepo.appendAllocation(
-            {
-              poolId: loan.loanPoolId,
-              allocationType: 'DISBURSEMENT',
-              amountPesewas,
-              loanId,
-              borrowerId: loan.borrowerId,
-              description: `Loan disbursement for ${loanId.slice(-8)}`,
-              actorUserId: actorId,
-            },
+          const hasAllocation = await poolRepo.hasAllocationForLoan(
+            resolvedPoolId,
+            loanId,
+            'DISBURSEMENT',
             tx,
           );
-          await poolRepo.refreshPoolAggregates(loan.loanPoolId, tx);
+
+          if (!hasAllocation) {
+            await poolRepo.appendAllocation(
+              {
+                poolId: resolvedPoolId,
+                allocationType: 'DISBURSEMENT',
+                amountPesewas,
+                loanId,
+                borrowerId: loan.borrowerId,
+                description: `Loan disbursement for ${loanId.slice(-8)}`,
+                actorUserId: actorId,
+              },
+              tx,
+            );
+          }
+
+          await poolRepo.refreshPoolAggregates(resolvedPoolId, tx);
         }
 
         return active;

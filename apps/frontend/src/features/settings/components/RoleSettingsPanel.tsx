@@ -40,9 +40,11 @@ import {
   SettingsSyncIcon,
 } from '@/features/settings/components/SettingsSectionIcons';
 import { cn } from '@/utils/cn';
+import { useReplayProductTour } from '@/components/onboarding/ProductTourOverlay';
 
 function ProfileSection() {
   const { user } = useAuth();
+  const replayTour = useReplayProductTour();
   const toast = useToast();
   const { data: me } = useSettingsMe();
   const updateMe = useUpdateSettingsMe();
@@ -130,6 +132,15 @@ function ProfileSection() {
         title="Role"
         description="Current access level."
         control={<Input defaultValue={user.role?.replace(/_/g, ' ') ?? 'User'} readOnly aria-label="Role" />}
+      />
+      <SettingsSettingRow
+        title="Product tour"
+        description="Replay the guided walkthrough for your role."
+        control={
+          <Button type="button" size="sm" variant="secondary" onClick={replayTour}>
+            Replay tour
+          </Button>
+        }
       />
       <div className="flex justify-end pt-wilms-2">
         <Button

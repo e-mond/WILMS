@@ -50,7 +50,7 @@ async function buildReconciliationSummary(
     date,
     expectedPesewas,
     actualPesewas,
-    variancePesewas: 0,
+    variancePesewas: actualPesewas - expectedPesewas,
     submitted: false,
   };
 }
