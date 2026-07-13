@@ -49,7 +49,7 @@ export function isVarianceFlagged(
   thresholdPercent: number = DEFAULT_RECONCILIATION_THRESHOLD_PERCENT,
 ): boolean {
   if (expectedDuePesewas === 0) {
-    return Math.abs(primaryVariancePesewas) > 0;
+    return false;
   }
 
   return calculateVariancePercentage(primaryVariancePesewas, expectedDuePesewas) > thresholdPercent;

@@ -44,6 +44,7 @@ describe('variance', () => {
 
   it('flags variance above threshold', () => {
     expect(isVarianceFlagged(-25, 200, 10)).toBe(true);
+    expect(isVarianceFlagged(500, 0, 10)).toBe(false);
     expect(calculateVariancePercentage(-25, 200)).toBe(12.5);
     expect(calculatePrimaryVariancePesewas(175, 200)).toBe(-25);
   });

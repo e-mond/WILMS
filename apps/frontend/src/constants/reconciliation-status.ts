@@ -50,7 +50,7 @@ export function reconciliationLifecycleLabel(status?: string, submitted?: boolea
   }
 
   if (status === 'APPROVED' && submitted) {
-    return 'Locked';
+    return 'Approved';
   }
 
   return RECONCILIATION_STATUS_LABELS[status ?? 'SUBMITTED'] ?? status ?? 'Submitted';
