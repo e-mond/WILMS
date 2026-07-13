@@ -19,6 +19,13 @@ vi.mock('../../db/schema-health.js', () => ({
   verifyCoreApplicationTables: async () => ({ status: 'disabled', missingTables: [] }),
 }));
 
+vi.mock('../../infrastructure/integrations/status.js', () => ({
+  getIntegrationStatus: () => ({
+    sms: { provider: 'none', configured: false, setupHint: '' },
+    mail: { provider: 'none', configured: false, setupHint: '' },
+  }),
+}));
+
 describe('health.service', () => {
   it('returns ok when database is disabled in development', async () => {
     const report = await buildHealthReport();
@@ -33,6 +40,8 @@ describe('health.service', () => {
     const report = await buildHealthReport();
     expect(report).not.toHaveProperty('sessionSecret');
     expect(report.uploads).not.toHaveProperty('apiSecret');
+    expect(report.integrations.mail).not.toHaveProperty('setupHint');
+    expect(report.workers.redis).toBe('not_used');
   });
 
   it('returns HTTP 200 when schema is degraded but database is connected', () => {

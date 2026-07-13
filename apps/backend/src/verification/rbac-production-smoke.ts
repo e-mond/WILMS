@@ -5,6 +5,7 @@
  *   WILMS_APP_URL=https://wilms.vercel.app npm run smoke:rbac -w @wilms/api
  */
 import '../config/load-env.js';
+import { resolveRoleSmokeCredential } from './smoke-credentials.js';
 
 interface SmokeCheck {
   name: string;
@@ -84,7 +85,14 @@ async function main(): Promise<void> {
   console.log('RC1.1 RBAC Production Smoke');
   console.log(`APP: ${appUrl}`);
 
-  const admin = await bffLogin(appUrl, 'admin@wilms.demo', 'DemoAdmin1!');
+  const adminCreds = resolveRoleSmokeCredential(appUrl, {
+    label: 'admin',
+    emailEnv: 'WILMS_SMOKE_EMAIL',
+    passwordEnv: 'WILMS_SMOKE_PASSWORD',
+    fallbackEmail: 'admin@wilms.demo',
+    fallbackPassword: 'DemoAdmin1!',
+  });
+  const admin = await bffLogin(appUrl, adminCreds.email, adminCreds.password);
   record('admin-login', admin.ok, admin.ok ? 'ok' : 'failed');
 
   if (admin.ok) {
@@ -105,7 +113,14 @@ async function main(): Promise<void> {
     );
   }
 
-  const collector = await bffLogin(appUrl, 'collector@wilms.demo', 'DemoCollect1!');
+  const collectorCreds = resolveRoleSmokeCredential(appUrl, {
+    label: 'collector',
+    emailEnv: 'WILMS_SMOKE_COLLECTOR_EMAIL',
+    passwordEnv: 'WILMS_SMOKE_COLLECTOR_PASSWORD',
+    fallbackEmail: 'collector@wilms.demo',
+    fallbackPassword: 'DemoCollect1!',
+  });
+  const collector = await bffLogin(appUrl, collectorCreds.email, collectorCreds.password);
   record('collector-login', collector.ok, collector.ok ? 'ok' : 'failed');
 
   if (collector.ok && collector.userId) {
@@ -131,7 +146,14 @@ async function main(): Promise<void> {
     );
   }
 
-  const officer = await bffLogin(appUrl, 'officer@wilms.demo', 'DemoOfficer1!');
+  const officerCreds = resolveRoleSmokeCredential(appUrl, {
+    label: 'officer',
+    emailEnv: 'WILMS_SMOKE_OFFICER_EMAIL',
+    passwordEnv: 'WILMS_SMOKE_OFFICER_PASSWORD',
+    fallbackEmail: 'officer@wilms.demo',
+    fallbackPassword: 'DemoOfficer1!',
+  });
+  const officer = await bffLogin(appUrl, officerCreds.email, officerCreds.password);
   record('officer-login', officer.ok, officer.ok ? 'ok' : 'failed');
 
   if (officer.ok) {

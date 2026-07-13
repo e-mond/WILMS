@@ -1,89 +1,69 @@
 # Smoke Test Report — v1.3.7
 
-**Date:** 2026-07-13  
-**Environment:** Production (https://wilms.vercel.app / https://wilms-production.up.railway.app)
+**Date:** 2026-07-13 (remediation sprint)  
+**Environment:** Production
 
 ---
 
-## Automated production smoke
+## Credential policy (updated)
 
-**Command:**
+Production smoke **no longer falls back to demo accounts** on `wilms.vercel.app`. Set:
 
 ```bash
-WILMS_APP_URL=https://wilms.vercel.app \
-WILMS_API_URL=https://wilms-production.up.railway.app \
-npm run smoke:production -w @wilms/api
+WILMS_SMOKE_EMAIL=<production-super-admin>
+WILMS_SMOKE_PASSWORD=<secret>
 ```
 
-**Result:** **14/33 PASS** — **FAIL**
-
-| Check | Result | Detail |
-|-------|--------|--------|
-| URLs not localhost | PASS | |
-| API health HTTP 200 | PASS | status=degraded |
-| Database connected | PASS | |
-| gitCommit present | PASS | 7b3bdb27… |
-| Schema ok | **FAIL** | degraded, 3 missing tables |
-| Migrations ok | **FAIL** | 23/24 applied |
-| Version present | PASS | 1.3.7 |
-| Runtime metadata | PASS | node v20.20.2 |
-| Frontend login page | PASS | HTTP 200 |
-| CSRF token issued | PASS | |
-| CSRF blocks login without token | PASS | HTTP 403 |
-| BFF login | **FAIL** | HTTP 401 |
-| Session cookie httponly | **FAIL** | no set-cookie |
-| Login session | **FAIL** | |
-| BFF proxy loans | **FAIL** | HTTP 401 |
-| RBAC unauthenticated API | PASS | HTTP 401 |
-| BFF proxy reports | **FAIL** | HTTP 401 |
-| BFF proxy settings/dashboard/groups/pools/risk/messages/collectors/borrowers/portfolio | **FAIL** | HTTP 401 |
-| BFF encoding (gzip JSON) | **FAIL** | HTTP 401 |
-| No demo banner | PASS | |
-| Photo capture public routes | PASS | HTTP 404 (expected) |
-
-**Root cause of auth failures:** Default smoke credentials (`admin@wilms.demo` / `DemoAdmin1!`) return HTTP 401 in production. Demo accounts are not enabled on the live database.
+Without these, smoke exits immediately with a clear error (verified 2026-07-13).
 
 ---
 
-## RBAC production smoke
+## Prior automated run (pre-remediation)
 
-**Command:**
+**14/33 PASS** when demo credentials were attempted — auth failed with HTTP 401.
 
-```bash
-WILMS_APP_URL=https://wilms.vercel.app npm run smoke:rbac -w @wilms/api
-```
+Infrastructure checks passed: CSRF, public photo-capture routes, unauthenticated API 401.
 
-**Result:** **0/3 PASS** — **FAIL**
+---
 
-| Role | Login | Downstream checks |
-|------|-------|-------------------|
-| Admin | FAIL | Skipped |
-| Collector | FAIL | Skipped |
-| Registration officer | FAIL | Skipped |
+## Health gate (updated)
+
+`api-health-status` now requires `status=ok` (not `degraded`).
+
+---
+
+## Expanded route coverage (remediation)
+
+Added smoke probes for:
+
+- `/expenses`
+- `/reconciliations`
+- `/notifications/inbox`
+- `/audit-log`
+- `/search?q=test`
+
+---
+
+## RBAC smoke
+
+Requires per-role env vars on production:
+
+| Role | Email env | Password env |
+|------|-----------|--------------|
+| Admin | `WILMS_SMOKE_EMAIL` | `WILMS_SMOKE_PASSWORD` |
+| Collector | `WILMS_SMOKE_COLLECTOR_EMAIL` | `WILMS_SMOKE_COLLECTOR_PASSWORD` |
+| Officer | `WILMS_SMOKE_OFFICER_EMAIL` | `WILMS_SMOKE_OFFICER_PASSWORD` |
+
+**Status:** **BLOCKED** — credentials not available in agent environment.
 
 ---
 
 ## Manual workflow smoke
 
-| Workflow | Status | Notes |
-|----------|--------|-------|
-| Login / logout | **BLOCKED** | No production credentials |
-| Remember me | **BLOCKED** | |
-| Password reset | **BLOCKED** | |
-| MFA | **BLOCKED** | |
-| Session expiry | **BLOCKED** | |
-| App lock | **BLOCKED** | |
-| Borrower registration (7-step) | **BLOCKED** | |
-| Loan workflow (pool → completion) | **BLOCKED** | |
-| Expenses | **BLOCKED** | |
-| Messaging chain | **BLOCKED** | |
-| Notifications (browser/in-app/sound) | **BLOCKED** | |
-| Reports (CSV/Excel/PDF) | **BLOCKED** | |
+All manual workflows remain **BLOCKED** until authenticated production access is provided.
 
 ---
 
 ## Verdict
 
-Automated infrastructure checks (CSRF, public routes, unauthenticated RBAC) pass. **Authenticated end-to-end smoke cannot be certified** without production user credentials and a healthy database schema.
-
-**Re-test after:** migrations applied + `WILMS_SMOKE_*` credentials provided.
+**NOT PASS** — awaiting migration remediation deploy + production credentials.

@@ -20,7 +20,13 @@ npm install
 npm run db:migrate -w @wilms/api
 ```
 
-v1.3.7 requires through `0025_v137_rc3_pool_allocations_backfill.sql` (26 migrations in journal).
+v1.3.7 requires through `0026_v137_prod_schema_repair.sql` (27 migrations in journal).
+
+Verify journal before migrate:
+
+```bash
+npm run verify:migrations
+```
 
 Pre-migration backup:
 
@@ -35,7 +41,7 @@ railway up --detach
 curl -fsS https://wilms-production.up.railway.app/health
 ```
 
-Expect `"version":"1.3.7"`, `"status":"ok"`, `migrations.applied` = `migrations.expected` = 26, and `schema.status: ok`.
+Expect `"version":"1.3.7"`, `"status":"ok"`, `migrations.applied` = `migrations.expected` = 27, and `schema.status: ok`.
 
 ### 3. Frontend (Vercel)
 
@@ -58,7 +64,7 @@ npm run smoke:rbac -w @wilms/api
 npm run verify:version
 ```
 
-See [docs/certification/v1.3.7/](../certification/v1.3.7/INDEX.md) for full production certification reports.
+See [docs/certification/v1.3.7/REMEDIATION_RUNBOOK.md](../certification/v1.3.7/REMEDIATION_RUNBOOK.md) for production blocker remediation.
 
 ### 5. Manual workflow smoke (15 min)
 

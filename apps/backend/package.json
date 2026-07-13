@@ -45,7 +45,8 @@
     "smoke:production": "tsx src/verification/production-smoke.ts",
     "smoke:rbac": "tsx src/verification/rbac-production-smoke.ts",
     "verify:empty-db": "tsx src/verification/empty-database-list-smoke.ts",
-    "smoke:staging": "tsx src/verification/production-smoke.ts"
+    "smoke:staging": "tsx src/verification/production-smoke.ts",
+    "verify:migrations": "tsx src/verification/verify-migration-journal.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

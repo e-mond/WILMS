@@ -5,6 +5,7 @@ import { sql } from 'drizzle-orm';
 import { env } from '../../config/env.js';
 import { getDb, isDatabaseEnabled } from '../../db/client.js';
 import { validateUploadEnvironment } from '../../infrastructure/uploads/env-validation.js';
+import { getIntegrationStatus } from '../../infrastructure/integrations/status.js';
 import { verifyCoreApplicationTables } from '../../db/schema-health.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -70,10 +71,21 @@ export interface HealthReport {
     status: 'ok' | 'degraded' | 'disabled';
     missingTables: string[];
   };
+  integrations: {
+    mail: { provider: string; configured: boolean };
+    sms: { provider: string; configured: boolean };
+    notifications: { inApp: 'available'; push: 'optional'; email: 'optional' | 'configured'; sms: 'optional' | 'configured' };
+  };
+  workers: {
+    redis: 'not_used';
+    queue: 'in_process';
+    scheduler: 'http_triggered';
+  };
 }
 
 export async function buildHealthReport(): Promise<HealthReport> {
   const uploadReport = validateUploadEnvironment();
+  const integrationReport = getIntegrationStatus();
   const schemaReport = await verifyCoreApplicationTables();
   const expectedMigrations = readExpectedMigrationCount();
   let dbConnected = false;
@@ -181,6 +193,27 @@ export async function buildHealthReport(): Promise<HealthReport> {
     schema: {
       status: schemaReport.status,
       missingTables: schemaReport.missingTables,
+    },
+    integrations: {
+      mail: {
+        provider: integrationReport.mail.provider,
+        configured: integrationReport.mail.configured,
+      },
+      sms: {
+        provider: integrationReport.sms.provider,
+        configured: integrationReport.sms.configured,
+      },
+      notifications: {
+        inApp: 'available',
+        push: 'optional',
+        email: integrationReport.mail.configured ? 'configured' : 'optional',
+        sms: integrationReport.sms.configured ? 'configured' : 'optional',
+      },
+    },
+    workers: {
+      redis: 'not_used',
+      queue: 'in_process',
+      scheduler: 'http_triggered',
     },
   };
 }
