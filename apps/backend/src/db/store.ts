@@ -23,6 +23,7 @@ export interface BorrowerProfile {
   photoMimeType: string;
   photoUploadId?: string;
   guarantorPhotoUploadId?: string;
+  idDocumentUploadId?: string;
 }
 
 export interface BorrowerRecord {

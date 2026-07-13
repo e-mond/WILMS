@@ -18,7 +18,8 @@ export type ShellNavIcon =
   | 'queue'
   | 'offline-sync'
   | 'reviewed'
-  | 'expenses';
+  | 'expenses'
+  | 'messages';
 
 export interface ShellNavItem {
   href: string;
@@ -48,6 +49,7 @@ export const COLLECTOR_NAV: ShellNavItem[] = [
   { href: '/collector/dashboard', label: 'Dashboard', exact: true, icon: 'dashboard' },
   { href: '/collector/admin-fee', label: 'Collector Fees', icon: 'admin-fee' },
   { href: '/collector/my-borrowers', label: 'Borrowers', icon: 'borrowers' },
+  { href: '/collector/messages', label: 'Messages', icon: 'messages' },
   { href: '/collector/expenses', label: 'Expenses', icon: 'reports' },
   { href: '/collector/reconciliation', label: 'Reconcile', icon: 'reconcile' },
   { href: '/collector/settings', label: 'Settings', icon: 'settings' },

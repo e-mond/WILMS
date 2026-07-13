@@ -36,6 +36,7 @@ function rowToRecord(row: typeof borrowers.$inferSelect): BorrowerRecord {
       ...profile,
       photoUploadId: row.photoUploadId ?? profile.photoUploadId,
       guarantorPhotoUploadId: row.guarantorPhotoUploadId ?? profile.guarantorPhotoUploadId,
+      idDocumentUploadId: row.idDocumentUploadId ?? profile.idDocumentUploadId,
     },
     rejectionReason: row.rejectionReason ?? undefined,
   };

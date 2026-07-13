@@ -61,6 +61,21 @@ describe('financial endpoints RBAC audit', () => {
     );
   });
 
+  it('allows super admins to review reconciliations and blocks collectors from review', async () => {
+    expect(
+      await requestStatus('/reconciliations/recon-audit/review', {
+        method: 'PATCH',
+        token: superAdminToken,
+      }),
+    ).not.toBe(403);
+    expect(
+      await requestStatus('/reconciliations/recon-audit/review', {
+        method: 'PATCH',
+        token: collectorToken,
+      }),
+    ).toBe(403);
+  });
+
   it('blocks collectors from executive dashboard and expense management', async () => {
     expect(await requestStatus('/dashboard/summary', { token: collectorToken })).toBe(403);
     expect(await requestStatus('/expenses', { token: collectorToken })).toBe(403);

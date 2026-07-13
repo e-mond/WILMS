@@ -4,6 +4,7 @@ import loanServiceMock, { resetMockLoans } from '@/services/mock/loanService.moc
 import { resetMockBorrowerRegistrations } from '@/services/mock/borrowerService.mock';
 import { resetMockTransactions } from '@/services/mock/transactionService.mock';
 import { TestQueryProvider } from '@/tests/utils/test-query-client';
+import { resolveLoanDisplayId } from '@/utils/entity-display-id';
 
 const mockListBorrowerLoans = vi.hoisted(() => vi.fn());
 const mockGetLoan = vi.hoisted(() => vi.fn());
@@ -47,7 +48,15 @@ describe('BorrowerLoanDetailPanel', () => {
       </TestQueryProvider>,
     );
 
-    expect(await screen.findByRole('heading', { name: 'loan-001' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', {
+        name: resolveLoanDisplayId({
+          id: 'loan-001',
+          cycleBatch: 'Cycle 1 — January 2026',
+          startDate: '2026-05-01',
+        }),
+      }),
+    ).toBeInTheDocument();
     expect(screen.getByText('Progress metrics')).toBeInTheDocument();
     expect(screen.getByText('Percent repaid')).toBeInTheDocument();
     expect(screen.getByText('GH₵150.00')).toBeInTheDocument();

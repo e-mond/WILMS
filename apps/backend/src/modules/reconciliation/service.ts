@@ -297,6 +297,24 @@ export async function reviewReconciliation(
     })
     .where(eq(financialReconciliations.id, reconciliationId));
 
+  await reconciliationHistoryRepo.appendReconciliationHistory({
+    reconciliationId,
+    eventType: 'COMMENT_ADDED',
+    actorUserId: input.reviewerUserId,
+    beforeSnapshot: {
+      status: row.status,
+      reviewedByUserId: row.reviewedByUserId,
+      resolutionNotes: row.resolutionNotes,
+    },
+    afterSnapshot: {
+      status: input.status,
+      reviewedByUserId: input.reviewerUserId,
+      resolutionNotes: input.resolutionNotes?.trim() ?? null,
+    },
+    reason: input.resolutionNotes?.trim(),
+    createdAt: reviewedAt,
+  });
+
   const [updated] = await db
     .select()
     .from(financialReconciliations)
