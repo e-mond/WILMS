@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { CurrencyAmount } from '@/components/data-display';
 import type {
   DashboardCollectorPerformanceRow,
@@ -32,6 +33,21 @@ function toneClass(tone: BarChartItem['tone'] = 'brand'): string {
   }
 }
 
+function formatChartValue(
+  value: number,
+  format: 'currency' | 'percent' | 'count',
+): ReactNode {
+  if (format === 'currency') {
+    return <CurrencyAmount value={value} className="whitespace-nowrap tabular-nums" />;
+  }
+
+  if (format === 'percent') {
+    return <span className="whitespace-nowrap tabular-nums">{value}%</span>;
+  }
+
+  return <span className="whitespace-nowrap tabular-nums">{value.toLocaleString()}</span>;
+}
+
 function HorizontalBarChart({
   title,
   description,
@@ -46,7 +62,7 @@ function HorizontalBarChart({
   const max = Math.max(...items.map((item) => item.value), 1);
 
   return (
-    <section className="rounded-sm border border-border bg-background p-wilms-5 sm:p-wilms-6">
+    <section className="min-w-0 overflow-hidden rounded-sm border border-border bg-background p-wilms-5 sm:p-wilms-6">
       <div className="mb-wilms-5 space-y-wilms-1">
         <h3 className="text-heading-3 font-semibold text-text-primary">{title}</h3>
         {description ? <p className="text-small text-text-muted">{description}</p> : null}
@@ -56,17 +72,11 @@ function HorizontalBarChart({
           const widthPercent = Math.max(4, Math.round((item.value / max) * 100));
 
           return (
-            <li key={item.label}>
-              <div className="mb-wilms-1 flex items-center justify-between gap-wilms-2 text-small">
-                <span className="font-medium text-text-primary">{item.label}</span>
-                <span className="font-semibold text-text-primary">
-                  {format === 'currency' ? (
-                    <CurrencyAmount value={item.value} />
-                  ) : format === 'percent' ? (
-                    `${item.value}%`
-                  ) : (
-                    item.value.toLocaleString()
-                  )}
+            <li key={item.label} className="min-w-0">
+              <div className="mb-wilms-1 flex min-w-0 items-center justify-between gap-wilms-2 text-small">
+                <span className="min-w-0 truncate font-medium text-text-primary">{item.label}</span>
+                <span className="shrink-0 font-semibold text-text-primary">
+                  {formatChartValue(item.value, format)}
                 </span>
               </div>
               <div
@@ -107,12 +117,12 @@ function PieChart({
   });
 
   return (
-    <section className="rounded-sm border border-border bg-background p-wilms-5 sm:p-wilms-6">
+    <section className="min-w-0 overflow-hidden rounded-sm border border-border bg-background p-wilms-5 sm:p-wilms-6">
       <div className="mb-wilms-5 space-y-wilms-1">
         <h3 className="text-heading-3 font-semibold text-text-primary">{title}</h3>
         {description ? <p className="text-small text-text-muted">{description}</p> : null}
       </div>
-      <div className="flex flex-col gap-wilms-4 sm:flex-row sm:items-center">
+      <div className="flex min-w-0 flex-col gap-wilms-4 sm:flex-row sm:items-center">
         <svg viewBox="0 0 36 36" className="mx-auto h-36 w-36 shrink-0" role="img" aria-label={title}>
           {slices.map((slice) => {
             const radius = 16;
@@ -138,9 +148,11 @@ function PieChart({
         </svg>
         <ul className="min-w-0 flex-1 space-y-wilms-2" role="list">
           {items.map((item) => (
-            <li key={item.label} className="flex items-center justify-between gap-wilms-2 text-small">
-              <span className="font-medium text-text-primary">{item.label}</span>
-              <CurrencyAmount value={item.value} />
+            <li key={item.label} className="flex min-w-0 items-center justify-between gap-wilms-2 text-small">
+              <span className="min-w-0 truncate font-medium text-text-primary">{item.label}</span>
+              <span className="shrink-0">
+                <CurrencyAmount value={item.value} className="whitespace-nowrap tabular-nums" />
+              </span>
             </li>
           ))}
         </ul>
@@ -172,25 +184,29 @@ function TrendChart({
   const areaPath = `${linePath} L${width},${height} L0,${height} Z`;
 
   return (
-    <section className="rounded-sm border border-border bg-background p-wilms-5 sm:p-wilms-6">
+    <section className="min-w-0 overflow-hidden rounded-sm border border-border bg-background p-wilms-5 sm:p-wilms-6">
       <div className="mb-wilms-5 space-y-wilms-1">
         <h3 className="text-heading-3 font-semibold text-text-primary">{title}</h3>
         {description ? <p className="text-small text-text-muted">{description}</p> : null}
       </div>
-      <svg viewBox={`0 0 ${width} ${height}`} className="h-32 w-full" role="img" aria-label={title}>
-        {chartType === 'area' ? (
-          <path d={areaPath} className="fill-brand-primary/20 stroke-none" />
-        ) : null}
-        <path d={linePath} className="fill-none stroke-brand-primary" strokeWidth="2" />
-        {points.map((point) => (
-          <circle key={point.item.label} cx={point.x} cy={point.y} r="3" className="fill-brand-primary" />
-        ))}
-      </svg>
-      <ul className="mt-wilms-4 grid gap-wilms-2 sm:grid-cols-2" role="list">
+      <div className="min-w-0 overflow-hidden">
+        <svg viewBox={`0 0 ${width} ${height}`} className="h-32 w-full max-w-full" preserveAspectRatio="none" role="img" aria-label={title}>
+          {chartType === 'area' ? (
+            <path d={areaPath} className="fill-brand-primary/20 stroke-none" />
+          ) : null}
+          <path d={linePath} className="fill-none stroke-brand-primary" strokeWidth="2" />
+          {points.map((point) => (
+            <circle key={point.item.label} cx={point.x} cy={point.y} r="3" className="fill-brand-primary" />
+          ))}
+        </svg>
+      </div>
+      <ul className="mt-wilms-4 grid min-w-0 gap-wilms-2 sm:grid-cols-2" role="list">
         {items.map((item) => (
-          <li key={item.label} className="flex items-center justify-between gap-wilms-2 text-small">
-            <span className="font-medium text-text-primary">{item.label}</span>
-            <CurrencyAmount value={item.value} />
+          <li key={item.label} className="flex min-w-0 items-center justify-between gap-wilms-2 text-small">
+            <span className="min-w-0 truncate font-medium text-text-primary">{item.label}</span>
+            <span className="shrink-0">
+              <CurrencyAmount value={item.value} className="whitespace-nowrap tabular-nums" />
+            </span>
           </li>
         ))}
       </ul>
@@ -228,6 +244,11 @@ export function DashboardFinancialAnalyticsPanel({
       tone: 'success',
     },
     {
+      label: 'Net after expenses',
+      value: overview.collections.netCollectionsAfterExpensesPesewas,
+      tone: 'gold',
+    },
+    {
       label: 'Outstanding',
       value: overview.collections.outstandingBalancePesewas,
       tone: 'danger',
@@ -248,9 +269,9 @@ export function DashboardFinancialAnalyticsPanel({
     { label: 'Money in', value: overview.cashFlow.moneyIn.totalPesewas, tone: 'success' },
     { label: 'Money out', value: overview.cashFlow.moneyOut.totalPesewas, tone: 'danger' },
     {
-      label: 'Net position',
-      value: Math.abs(overview.cashFlow.netPositionPesewas),
-      tone: overview.cashFlow.netPositionPesewas >= 0 ? 'success' : 'danger',
+      label: 'Net operating cash',
+      value: Math.abs(overview.cashFlow.netOperatingCashPesewas),
+      tone: overview.cashFlow.netOperatingCashPesewas >= 0 ? 'success' : 'danger',
     },
   ];
 
@@ -282,8 +303,8 @@ export function DashboardFinancialAnalyticsPanel({
   };
 
   return (
-    <div className="space-y-wilms-6">
-      <div className="grid grid-cols-1 gap-wilms-6 xl:grid-cols-2">
+    <div className="min-w-0 space-y-wilms-6">
+      <div className="grid min-w-0 grid-cols-1 gap-wilms-6 xl:grid-cols-2">
         {renderChart('Capital distribution', 'Pool funds and lending capacity', capitalItems)}
         {renderChart(
           'Collections performance',
@@ -292,7 +313,7 @@ export function DashboardFinancialAnalyticsPanel({
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-wilms-6 xl:grid-cols-2">
+      <div className="grid min-w-0 grid-cols-1 gap-wilms-6 xl:grid-cols-2">
         {renderChart('Cash flow', 'Organisation money in vs money out', cashFlowItems)}
         {topCollectors.length > 0 ? (
           renderChart(
@@ -302,31 +323,31 @@ export function DashboardFinancialAnalyticsPanel({
             'percent',
           )
         ) : (
-          <section className="rounded-sm border border-border bg-background p-wilms-5 sm:p-wilms-6">
+          <section className="min-w-0 overflow-hidden rounded-sm border border-border bg-background p-wilms-5 sm:p-wilms-6">
             <h3 className="text-heading-3 font-semibold text-text-primary">Collector performance</h3>
             <p className="mt-wilms-3 text-body text-text-muted">No collector repayments recorded yet.</p>
           </section>
         )}
       </div>
 
-      <section className="rounded-sm border border-border bg-background p-wilms-5 sm:p-wilms-6">
+      <section className="min-w-0 overflow-hidden rounded-sm border border-border bg-background p-wilms-5 sm:p-wilms-6">
         <h3 className="text-heading-3 font-semibold text-text-primary">Lending snapshot</h3>
-        <dl className="mt-wilms-4 grid grid-cols-1 gap-wilms-4 sm:grid-cols-3">
-          <div>
-            <dt className="text-small text-text-muted">Disbursed</dt>
+        <dl className="mt-wilms-4 grid min-w-0 grid-cols-1 gap-wilms-4 sm:grid-cols-3">
+          <div className="min-w-0">
+            <dt className="truncate text-small text-text-muted">Disbursed</dt>
             <dd className="mt-wilms-1 font-semibold text-text-primary">
-              <CurrencyAmount value={overview.lending.totalLoanAmountDisbursedPesewas} />
+              <CurrencyAmount value={overview.lending.totalLoanAmountDisbursedPesewas} className="whitespace-nowrap tabular-nums" />
             </dd>
           </div>
-          <div>
-            <dt className="text-small text-text-muted">Active loans</dt>
-            <dd className="mt-wilms-1 font-semibold text-text-primary">
+          <div className="min-w-0">
+            <dt className="truncate text-small text-text-muted">Active loans</dt>
+            <dd className="mt-wilms-1 whitespace-nowrap font-semibold tabular-nums text-text-primary">
               {overview.lending.totalActiveLoans.toLocaleString()}
             </dd>
           </div>
-          <div>
-            <dt className="text-small text-text-muted">Closed loans</dt>
-            <dd className="mt-wilms-1 font-semibold text-text-primary">
+          <div className="min-w-0">
+            <dt className="truncate text-small text-text-muted">Closed loans</dt>
+            <dd className="mt-wilms-1 whitespace-nowrap font-semibold tabular-nums text-text-primary">
               {overview.lending.totalClosedLoans.toLocaleString()}
             </dd>
           </div>

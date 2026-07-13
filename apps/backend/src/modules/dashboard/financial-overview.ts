@@ -3,11 +3,12 @@ import { sql } from 'drizzle-orm';
 import { countBorrowers, listPayments } from '../../db/persistence.js';
 import { isDatabaseEnabled, getDb } from '../../db/client.js';
 import { isUndefinedTableError } from '../../lib/db-errors.js';
-import { decimalToPesewas } from '../../domain/money.js';
-import * as loanRepo from '../../repositories/loan.repository.js';
+import { computeLoanPortfolioTotals } from '../../domain/loan-pool/portfolio-totals.js';
 import { listLoanPools } from '../loan-pools/service.js';
 import { getExpenseSummary } from '../expenses/service.js';
 import { getSettings } from '../settings/service.js';
+import * as loanRepo from '../../repositories/loan.repository.js';
+import { decimalToPesewas } from '../../domain/money.js';
 
 export interface DashboardFinancialOverview {
   capital: {
@@ -22,6 +23,7 @@ export interface DashboardFinancialOverview {
   };
   collections: {
     totalAmountCollectedPesewas: number;
+    netCollectionsAfterExpensesPesewas: number;
     outstandingBalancePesewas: number;
     amountDueThisWeekPesewas: number;
     overdueAmountPesewas: number;
@@ -53,6 +55,7 @@ export interface DashboardFinancialOverview {
       totalPesewas: number;
     };
     netPositionPesewas: number;
+    netOperatingCashPesewas: number;
   };
 }
 
@@ -77,31 +80,6 @@ async function sumAdminFeesCollected(): Promise<number> {
   }
 }
 
-async function computeLoanPortfolioTotals(): Promise<{
-  totalDisbursedPesewas: number;
-  totalOutstandingPesewas: number;
-}> {
-  const loans = await loanRepo.listLoans();
-  let totalDisbursedPesewas = 0;
-  let totalOutstandingPesewas = 0;
-
-  for (const loan of loans) {
-    const disbursedPesewas = decimalToPesewas(loan.disbursedAmount);
-    const balancePesewas = decimalToPesewas(loan.loanBalance);
-    const principalPesewas = decimalToPesewas(loan.principalAmount);
-
-    if (loan.externalStatus !== 'PENDING_DISBURSEMENT') {
-      totalDisbursedPesewas += disbursedPesewas > 0 ? disbursedPesewas : principalPesewas;
-    }
-
-    if (loan.externalStatus === 'ACTIVE' || loan.externalStatus === 'DEFAULTED') {
-      totalOutstandingPesewas += balancePesewas;
-    }
-  }
-
-  return { totalDisbursedPesewas, totalOutstandingPesewas };
-}
-
 export async function buildDashboardFinancialOverview(): Promise<DashboardFinancialOverview> {
   const payments = await listPayments();
   const totalCollectedPesewas = payments.reduce((sum, payment) => sum + payment.amountPesewas, 0);
@@ -109,6 +87,7 @@ export async function buildDashboardFinancialOverview(): Promise<DashboardFinanc
   let poolSummary = {
     totalPoolFundsPesewas: 0,
     totalDisbursedPesewas: 0,
+    totalCollectedPesewas: 0,
     totalOutstandingPesewas: 0,
   };
   let activeLoans = 0;
@@ -124,6 +103,7 @@ export async function buildDashboardFinancialOverview(): Promise<DashboardFinanc
       poolSummary = {
         totalPoolFundsPesewas: 0,
         totalDisbursedPesewas: 0,
+        totalCollectedPesewas: 0,
         totalOutstandingPesewas: 0,
       };
     }
@@ -151,11 +131,12 @@ export async function buildDashboardFinancialOverview(): Promise<DashboardFinanc
 
   const loanTotals = isDatabaseEnabled()
     ? await computeLoanPortfolioTotals()
-    : { totalDisbursedPesewas: 0, totalOutstandingPesewas: 0 };
+    : { totalDisbursedPesewas: 0, totalCollectedPesewas: 0, totalOutstandingPesewas: 0 };
 
   poolSummary = {
     ...poolSummary,
     totalDisbursedPesewas: Math.max(poolSummary.totalDisbursedPesewas, loanTotals.totalDisbursedPesewas),
+    totalCollectedPesewas: Math.max(poolSummary.totalCollectedPesewas, loanTotals.totalCollectedPesewas),
     totalOutstandingPesewas: Math.max(
       poolSummary.totalOutstandingPesewas,
       loanTotals.totalOutstandingPesewas,
@@ -179,6 +160,7 @@ export async function buildDashboardFinancialOverview(): Promise<DashboardFinanc
 
   const expenseSummary = await getExpenseSummary();
   const totalExpensesPesewas = expenseSummary.yearPesewas;
+  const netCollectionsAfterExpensesPesewas = Math.max(0, totalCollectedPesewas - totalExpensesPesewas);
 
   const moneyInCollections = totalCollectedPesewas;
   const moneyInAdminFees = adminFeesCollectedPesewas;
@@ -188,6 +170,7 @@ export async function buildDashboardFinancialOverview(): Promise<DashboardFinanc
   const moneyOutDisbursements = poolSummary.totalDisbursedPesewas;
   const moneyOutExpenses = totalExpensesPesewas;
   const moneyOutTotal = moneyOutDisbursements + moneyOutExpenses;
+  const netOperatingCashPesewas = moneyInCollections + moneyInAdminFees - moneyOutExpenses;
 
   return {
     capital: {
@@ -195,7 +178,7 @@ export async function buildDashboardFinancialOverview(): Promise<DashboardFinanc
       totalCapitalInjectedPesewas: poolSummary.totalPoolFundsPesewas + poolSummary.totalDisbursedPesewas,
       currentAvailableBalancePesewas: Math.max(
         0,
-        poolSummary.totalPoolFundsPesewas - poolSummary.totalDisbursedPesewas,
+        poolSummary.totalPoolFundsPesewas - poolSummary.totalOutstandingPesewas,
       ),
     },
     lending: {
@@ -205,6 +188,7 @@ export async function buildDashboardFinancialOverview(): Promise<DashboardFinanc
     },
     collections: {
       totalAmountCollectedPesewas: totalCollectedPesewas,
+      netCollectionsAfterExpensesPesewas,
       outstandingBalancePesewas,
       amountDueThisWeekPesewas,
       overdueAmountPesewas,
@@ -236,6 +220,7 @@ export async function buildDashboardFinancialOverview(): Promise<DashboardFinanc
         totalPesewas: moneyOutTotal,
       },
       netPositionPesewas: moneyInTotal - moneyOutTotal,
+      netOperatingCashPesewas,
     },
   };
 }

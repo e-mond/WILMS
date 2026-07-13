@@ -24,6 +24,23 @@ import { resolveUserDisplayId } from '@/utils/entity-display-id';
 import { formatDisplayDate } from '@/utils/format-date';
 import { cn } from '@/utils/cn';
 
+function needsReconciliationReview(row: ReconciliationSummary): boolean {
+  if (!row.submitted) {
+    return false;
+  }
+
+  if (row.status === 'APPROVED' || row.status === 'REJECTED' || row.status === 'LOCKED') {
+    return false;
+  }
+
+  return (
+    row.varianceFlagged ||
+    row.status === 'PENDING_REVIEW' ||
+    row.status === 'UNDER_INVESTIGATION' ||
+    row.status === 'REOPENED'
+  );
+}
+
 function statusTone(status?: string): string {
   switch (status) {
     case 'APPROVED':
@@ -148,15 +165,7 @@ function ReconciliationReviewRow({
 export function ReconciliationReviewQueue() {
   const { data, isLoading, refetch } = useReconciliationList();
   const pendingReview = useMemo(
-    () =>
-      (data ?? []).filter(
-        (row) =>
-          row.submitted &&
-          (row.varianceFlagged ||
-            row.status === 'PENDING_REVIEW' ||
-            row.status === 'UNDER_INVESTIGATION' ||
-            row.status === 'REOPENED'),
-      ),
+    () => (data ?? []).filter(needsReconciliationReview),
     [data],
   );
 

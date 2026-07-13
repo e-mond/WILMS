@@ -18,6 +18,8 @@ vi.mock('../../repositories/loan-pool.repository.js', () => ({
   findPoolById: mocks.findPoolById,
   listRecentAllocations: mocks.listRecentAllocations,
   refreshPoolAggregates: vi.fn().mockResolvedValue(undefined),
+  hasLoansMissingPoolAllocations: vi.fn().mockResolvedValue(false),
+  reconcilePoolAllocationsFromLoans: vi.fn().mockResolvedValue(undefined),
   listPools: vi.fn(),
 }));
 

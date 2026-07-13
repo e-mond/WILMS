@@ -8,6 +8,7 @@ import {
   type LoanPoolDetailDto,
   type LoanPoolListResponseDto,
 } from '../../domain/loan-pool/mappers.js';
+import { computeLoanPortfolioTotals } from '../../domain/loan-pool/portfolio-totals.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import * as poolRepo from '../../repositories/loan-pool.repository.js';
 
@@ -22,6 +23,11 @@ function requireDatabase(): void {
  */
 export async function listLoanPools(): Promise<LoanPoolListResponseDto> {
   requireDatabase();
+
+  if (await poolRepo.hasLoansMissingPoolAllocations()) {
+    await poolRepo.reconcilePoolAllocationsFromLoans();
+  }
+
   const rows = await poolRepo.listPools();
   const regionCounters = new Map<string, number>();
   const pools = rows.map((row) => {
@@ -30,7 +36,28 @@ export async function listLoanPools(): Promise<LoanPoolListResponseDto> {
     regionCounters.set(regionKey, nextSequence);
     return mapPoolRowToSummary(row, nextSequence);
   });
-  return buildListResponse(pools);
+
+  const response = buildListResponse(pools);
+  const loanTotals = await computeLoanPortfolioTotals();
+
+  return {
+    ...response,
+    summary: {
+      ...response.summary,
+      totalDisbursedPesewas: Math.max(
+        response.summary.totalDisbursedPesewas,
+        loanTotals.totalDisbursedPesewas,
+      ),
+      totalCollectedPesewas: Math.max(
+        response.summary.totalCollectedPesewas,
+        loanTotals.totalCollectedPesewas,
+      ),
+      totalOutstandingPesewas: Math.max(
+        response.summary.totalOutstandingPesewas,
+        loanTotals.totalOutstandingPesewas,
+      ),
+    },
+  };
 }
 
 /**

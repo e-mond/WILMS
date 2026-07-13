@@ -467,7 +467,7 @@ export function buildDashboardSummary(input: BuildDashboardSummaryInput): Dashbo
         totalCapitalInjectedPesewas: DEMO_OPERATING_POOL_PESEWAS + totalDisbursedPesewas,
         currentAvailableBalancePesewas: Math.max(
           0,
-          DEMO_OPERATING_POOL_PESEWAS - totalDisbursedPesewas,
+          DEMO_OPERATING_POOL_PESEWAS - totalOutstandingPesewas,
         ),
       },
       lending: {
@@ -478,6 +478,7 @@ export function buildDashboardSummary(input: BuildDashboardSummaryInput): Dashbo
       },
       collections: {
         totalAmountCollectedPesewas: totalCollectedPesewas,
+        netCollectionsAfterExpensesPesewas: totalCollectedPesewas,
         outstandingBalancePesewas: totalOutstandingPesewas,
         amountDueThisWeekPesewas: activeLoans.reduce(
           (total, loan) => total + loan.weeklyPaymentPesewas,
@@ -515,6 +516,7 @@ export function buildDashboardSummary(input: BuildDashboardSummaryInput): Dashbo
         },
         netPositionPesewas:
           totalCollectedPesewas + DEMO_OPERATING_POOL_PESEWAS - totalDisbursedPesewas,
+        netOperatingCashPesewas: totalCollectedPesewas,
       },
     },
   };
