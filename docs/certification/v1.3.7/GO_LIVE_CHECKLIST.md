@@ -18,9 +18,10 @@
 ## Database
 
 - [ ] `pg_dump` pre-migration backup
-- [ ] Register migrations `0024`/`0025` in journal (done in cert branch)
+- [ ] Register migrations through `0026` in journal (remediation branch)
+- [ ] `npm run verify:migrations` — journal integrity PASS
 - [ ] `npm run db:migrate -w @wilms/api` on production
-- [ ] `/health` → `migrations.status: ok` (applied = expected = 26)
+- [ ] `/health` → `migrations.status: ok` (applied = expected = 27)
 - [ ] `/health` → `schema.status: ok` (no missing tables)
 - [ ] Verify indexes / FKs on `pool_allocations`, `financial_reconciliations`
 

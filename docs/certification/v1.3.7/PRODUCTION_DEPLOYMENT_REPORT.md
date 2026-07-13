@@ -65,9 +65,8 @@
 | Item | Detail |
 |------|--------|
 | Latest applied (prod) | 23 of 24 expected at probe time |
-| Pending | At minimum `0023_v137_rc2_reconciliation_lifecycle` |
-| v1.3.7 financial | `0024`, `0025` SQL files existed but were **not in Drizzle journal** — fixed in certification branch |
-| Post-fix expected count | **26** migrations |
+| Pending | `0023`–`0026` after remediation deploy |
+| Post-fix expected count | **27** migrations |
 
 **Action:** Operator must run `npm run db:migrate -w @wilms/api` against production `DATABASE_URL`.
 
