@@ -209,6 +209,7 @@ function SuperAdminDashboardContent({
       <section
         aria-labelledby="dashboard-financial-overview-heading"
         className="rounded-sm border border-border bg-card p-wilms-5 sm:p-wilms-6 lg:p-wilms-8"
+        data-tour="financial-overview"
       >
         <div className="mb-wilms-6 flex flex-col gap-wilms-3 sm:flex-row sm:items-end sm:justify-between lg:mb-wilms-8">
           <div className="space-y-wilms-2">
