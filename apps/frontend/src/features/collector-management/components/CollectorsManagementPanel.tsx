@@ -195,7 +195,7 @@ export function CollectorsManagementPanel() {
   useShellAsideContent(asideContent);
 
   const csvRows = filteredCollectors.map((collector) => [
-    collector.id,
+    resolveCollectorDisplayId(collector),
     collector.displayName,
     collector.zone,
     String(collector.groupCount),

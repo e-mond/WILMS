@@ -11,6 +11,8 @@ import { WILMS_REPORT_TYPE } from '@/features/export';
 import { useFinancialLedgerReport } from '@/features/reports/hooks/useFinancialLedgerReport';
 import type { FinancialLedgerReportRow } from '@/types/reports';
 import { formatPesewasForCsv } from '@/utils/export-csv';
+import { resolveBorrowerDisplayId } from '@/utils/format-borrower-display-id';
+import { resolveLoanDisplayId, resolveUserDisplayId } from '@/utils/entity-display-id';
 
 const CSV_HEADERS = ['Type', 'Borrower', 'Loan', 'Amount (GHS)', 'Collector', 'Recorded At'];
 
@@ -27,10 +29,10 @@ export function FinancialLedgerReportPanel() {
     () =>
       (data?.rows ?? []).map((row) => [
         row.type,
-        row.borrowerId,
-        row.loanId ?? '—',
+        resolveBorrowerDisplayId({ id: row.borrowerId }),
+        row.loanId ? resolveLoanDisplayId({ id: row.loanId }) : '—',
         formatPesewasForCsv(row.amountPesewas),
-        row.collectorId,
+        resolveUserDisplayId(row.collectorId),
         row.recordedAt,
       ]),
     [data?.rows],
@@ -54,6 +56,7 @@ export function FinancialLedgerReportPanel() {
           value={
             <CurrencyAmount
               value={data.rows.reduce((total, row) => total + Math.abs(row.amountPesewas), 0)}
+              className="whitespace-nowrap tabular-nums"
             />
           }
           valueClassName="text-brand-primary"
@@ -91,6 +94,7 @@ export function FinancialLedgerReportPanel() {
 
       <DataTable<FinancialLedgerReportRow>
         variant="executive"
+        layout="auto"
         caption="Financial ledger"
         data={data.rows}
         getRowId={(row) => row.id}
@@ -98,16 +102,39 @@ export function FinancialLedgerReportPanel() {
           {
             id: 'type',
             header: 'Type',
+            className: 'whitespace-nowrap',
             cell: (row) => <Badge variant="default">{row.type}</Badge>,
           },
-          { id: 'borrower', header: 'Borrower', cell: (row) => row.borrowerId },
-          { id: 'loan', header: 'Loan', cell: (row) => row.loanId ?? '—' },
+          {
+            id: 'borrower',
+            header: 'Borrower',
+            className: 'whitespace-nowrap font-mono text-small',
+            cell: (row) => resolveBorrowerDisplayId({ id: row.borrowerId }),
+          },
+          {
+            id: 'loan',
+            header: 'Loan',
+            className: 'whitespace-nowrap font-mono text-small',
+            cell: (row) => (row.loanId ? resolveLoanDisplayId({ id: row.loanId }) : '—'),
+          },
           {
             id: 'amount',
             header: 'Amount',
+            className: 'whitespace-nowrap tabular-nums',
             cell: (row) => <CurrencyAmount value={row.amountPesewas} />,
           },
-          { id: 'recordedAt', header: 'Recorded', cell: (row) => row.recordedAt.slice(0, 10) },
+          {
+            id: 'collector',
+            header: 'Collector',
+            className: 'whitespace-nowrap font-mono text-small',
+            cell: (row) => resolveUserDisplayId(row.collectorId),
+          },
+          {
+            id: 'recordedAt',
+            header: 'Recorded',
+            className: 'whitespace-nowrap',
+            cell: (row) => row.recordedAt.slice(0, 10),
+          },
         ]}
       />
     </div>

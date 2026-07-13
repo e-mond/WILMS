@@ -578,8 +578,22 @@ export function BorrowerRegistrationWizard() {
 
       {currentStep === 0 ? (
         <section className="grid gap-wilms-4 md:grid-cols-2">
-          <FormField label="Full name" htmlFor="fullName" required error={errors.fullName?.message}>
-            <Input id="fullName" hasError={Boolean(errors.fullName)} {...register('fullName')} />
+          <FormField
+            label="Full name"
+            htmlFor="fullName"
+            required
+            error={errors.fullName?.message}
+            characterCount={{
+              current: watchedFullName.length,
+              max: REGISTRATION_TEXT_FIELD_MAX_LENGTH,
+            }}
+          >
+            <Input
+              id="fullName"
+              maxLength={REGISTRATION_TEXT_FIELD_MAX_LENGTH}
+              hasError={Boolean(errors.fullName)}
+              {...register('fullName')}
+            />
           </FormField>
           <FormField
             label="Date of birth"
@@ -614,9 +628,14 @@ export function BorrowerRegistrationWizard() {
             htmlFor="nationality"
             required
             error={errors.nationality?.message}
+            characterCount={{
+              current: (watch('nationality') ?? '').length,
+              max: REGISTRATION_TEXT_FIELD_MAX_LENGTH,
+            }}
           >
             <Input
               id="nationality"
+              maxLength={REGISTRATION_TEXT_FIELD_MAX_LENGTH}
               hasError={Boolean(errors.nationality)}
               {...register('nationality')}
             />
