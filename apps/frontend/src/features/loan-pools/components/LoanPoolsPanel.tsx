@@ -117,7 +117,7 @@ export function LoanPoolsPanel() {
   useShellAsideContent(asideContent);
 
   const csvRows = (data?.pools ?? filteredPools).map((pool) => [
-    pool.id,
+    resolvePoolDisplayId(pool),
     pool.name,
     pool.region,
     pool.source,
