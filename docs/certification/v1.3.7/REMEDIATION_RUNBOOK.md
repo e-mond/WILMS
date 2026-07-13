@@ -18,6 +18,27 @@ This runbook resolves production certification blockers without application feat
 
 ---
 
+## Deploy failure (2026-07-13)
+
+If Railway deploy fails on boot, check logs for `drizzle-kit migrate failed`.
+
+**Fixed in PR #110:** migration `0023` dedupes reconciliation rows before unique index; FK constraint is idempotent.
+
+**Fixed in PR #111:** migration `0025` skips orphaned `loan_pool_id` rows.
+
+After merge to `main`, trigger redeploy:
+
+1. **Railway dashboard** → WILMS API service → Deployments → Redeploy latest commit (`e2becb2` or newer), or
+2. **GitHub Actions** → Deploy Production → Run workflow → `confirm=deploy`
+
+Verify new commit in health:
+
+```bash
+curl -fsS https://wilms-production.up.railway.app/health | jq '.data.gitCommit, .data.status, .data.migrations'
+```
+
+---
+
 ## Operator sequence
 
 ### 1. Merge and deploy API
