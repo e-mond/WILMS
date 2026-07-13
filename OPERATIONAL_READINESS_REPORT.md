@@ -1,6 +1,6 @@
-# Operational Readiness Report — v1.3.6-rc1
+# Operational Readiness Report — v1.3.7
 
-**Date:** 2026-07-12
+**Date:** 2026-07-13
 
 ---
 
@@ -9,12 +9,14 @@
 | Item | Status |
 |------|--------|
 | `/health` endpoint | Enhanced with `degradedReasons` |
-| Production probe | Executed 2026-07-12 — degraded due to migrations (documented) |
-| Monitoring guide | `docs/operations/monitoring.md` — update version refs to 1.3.6 |
+| Production probe | Executed 2026-07-13 — **degraded** (migrations 23/24, schema missing tables) |
+| Monitoring guide | `docs/operations/monitoring.md` |
 
 ## Migrations
 
-**Critical:** Production must run through `0022_v135_notification_events.sql` before stable release.
+**Critical:** Production must run through `0025_v137_rc3_pool_allocations_backfill.sql` (26 journal entries).
+
+Journal entries for `0024` and `0025` were added in certification branch `cursor/v137-production-cert-8847`.
 
 ```bash
 npm run db:migrate -w @wilms/api
@@ -24,22 +26,18 @@ npm run db:migrate -w @wilms/api
 
 | Doc | Status |
 |-----|--------|
-| `docs/deployment-guide.md` | Updated — health degraded troubleshooting |
-| `docs/operations/production-runbook.md` | Exists — bump version on merge |
-| `docs/operations/backups.md` | Exists |
-| `CHANGELOG.md` | v1.3.6-rc1 section added |
+| `docs/certification/v1.3.7/` | **NEW** — 13 certification deliverables |
+| `docs/operations/production-runbook.md` | Updated — v1.3.7, migrations through 0025 |
+| `docs/financial-calculations.md` | Current |
+| `CHANGELOG.md` | v1.3.7 stable |
 
 ## Smoke tests
 
-| Command | Agent result |
-|---------|--------------|
-| `smoke:production` | SKIPPED — no `WILMS_APP_URL` in agent |
-| `smoke:rbac` | PARTIAL — missing smoke credentials |
-
-## Rollback
-
-Standard Railway/Vercel rollback per `docs/operations/production-runbook.md`. No schema rollback in this RC.
+| Command | Agent result (2026-07-13) |
+|---------|----------------------------|
+| `smoke:production` | **14/33** — schema/migrations degraded; auth 401 |
+| `smoke:rbac` | **0/3** — demo credentials disabled in prod |
 
 ## Ready for production deploy
 
-**Conditional** — apply pending migrations first; re-verify health `status: ok`.
+**NO** — apply pending migrations, restore schema health, re-run smoke with production credentials. See [docs/certification/v1.3.7/PRODUCTION_CERTIFICATION_REPORT.md](./docs/certification/v1.3.7/PRODUCTION_CERTIFICATION_REPORT.md).

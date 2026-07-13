@@ -169,6 +169,20 @@
       "when": 1783784000000,
       "tag": "0023_v137_rc2_reconciliation_lifecycle",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1783870400000,
+      "tag": "0024_v137_rc3_pool_loan_linkage",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1783956800000,
+      "tag": "0025_v137_rc3_pool_allocations_backfill",
+      "breakpoints": true
     }
   ]
 }

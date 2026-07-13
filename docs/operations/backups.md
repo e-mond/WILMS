@@ -29,7 +29,7 @@ npm run db:migrate -w @wilms/api
 curl -fsS "${WILMS_API_URL}/health" | jq '.data.migrations'
 ```
 
-Confirm `applied` equals `expected` (23 migrations through `0022_v135_notification_events` for v1.3.5).
+Confirm `applied` equals `expected` (26 migrations through `0025_v137_rc3_pool_allocations_backfill` for v1.3.7).
 
 ## File uploads (Cloudinary)
 
