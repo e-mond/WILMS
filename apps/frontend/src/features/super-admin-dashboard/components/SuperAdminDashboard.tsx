@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { CurrencyAmount, GroupRiskCard, KpiCard } from '@/components/data-display';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { ExecutiveKpiGrid } from '@/components/layout/executive';
@@ -100,8 +100,27 @@ function SuperAdminDashboardContent({
   borrowerTotal: number;
 }) {
   const generatedBy = useWilmsExportActor();
-  const [financialView, setFinancialView] = useState<'cards' | 'charts'>('cards');
-  const [chartType, setChartType] = useState<'bar' | 'line' | 'area' | 'pie'>('bar');
+  const [financialView, setFinancialView] = useState<'cards' | 'charts'>(() => {
+    if (typeof window === 'undefined') {
+      return 'cards';
+    }
+    return sessionStorage.getItem('wilms-dashboard-financial-view') === 'charts' ? 'charts' : 'cards';
+  });
+  const [chartType, setChartType] = useState<'bar' | 'line' | 'area' | 'pie'>(() => {
+    if (typeof window === 'undefined') {
+      return 'bar';
+    }
+    const stored = sessionStorage.getItem('wilms-dashboard-chart-type');
+    return stored === 'line' || stored === 'area' || stored === 'pie' ? stored : 'bar';
+  });
+
+  useEffect(() => {
+    sessionStorage.setItem('wilms-dashboard-financial-view', financialView);
+  }, [financialView]);
+
+  useEffect(() => {
+    sessionStorage.setItem('wilms-dashboard-chart-type', chartType);
+  }, [chartType]);
   const exportDocument = useMemo(
     () => buildDashboardExportDocument({ summary: data, generatedBy }),
     [data, generatedBy],

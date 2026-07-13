@@ -4,6 +4,7 @@ import { TRANSACTION_TYPE } from '@/types/transaction';
 import {
   buildDailyCollectionReport,
   extractRepaymentsFromTransactions,
+  normalizeDailyCollectionReport,
 } from '@/utils/daily-collection-report';
 
 describe('daily-collection-report.utils', () => {
@@ -111,5 +112,26 @@ describe('daily-collection-report.utils', () => {
     expect(report.summary.collectedPesewas).toBe(5000);
     expect(report.summary.borrowersDueCount).toBe(0);
     expect(report.rows[0]?.collectorName).toBe('COL-000');
+  });
+
+  it('recomputes variance when normalizing API payloads with summary', () => {
+    const normalized = normalizeDailyCollectionReport(
+      {
+        summary: {
+          date: '2026-05-23',
+          paymentDayLabel: 'Saturday',
+          borrowersDueCount: 0,
+          borrowersPaidCount: 1,
+          expectedPesewas: 0,
+          collectedPesewas: 5000,
+          variancePesewas: 0,
+          collectorsActiveCount: 1,
+        },
+        rows: [],
+      },
+      '2026-05-23',
+    );
+
+    expect(normalized.summary.variancePesewas).toBe(5000);
   });
 });

@@ -20,6 +20,7 @@ import { PwaIosInstallPrompt } from '@/components/pwa/PwaIosInstallPrompt';
 import { AppUpdatePrompt } from '@/components/pwa/AppUpdatePrompt';
 import { ChunkRecoveryHandler } from '@/components/pwa/ChunkRecoveryHandler';
 import { NotificationSoundBridge } from '@/components/notifications/NotificationSoundBridge';
+import { ProductTourOverlay } from '@/components/onboarding/ProductTourOverlay';
 import { ServiceWorkerRegistrar } from '@/components/pwa/ServiceWorkerRegistrar';
 import { getServerSession } from '@/lib/auth/server-session';
 import '@/styles/globals.css';
@@ -79,6 +80,7 @@ export default function RootLayout({
                 <ToastContainer />
                 <ConnectionStatusBar />
                 <NotificationSoundBridge />
+                <ProductTourOverlay />
                 {children}
               </AppBootstrap>
               </PermissionProvider>

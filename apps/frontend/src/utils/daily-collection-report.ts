@@ -54,7 +54,7 @@ export function extractRepaymentsFromTransactions(
     .filter(
       (transaction) =>
         transaction.type === TRANSACTION_TYPE.REPAYMENT &&
-        transaction.recordedAt.slice(0, 10) === date,
+        (transaction.paymentDate ?? transaction.recordedAt.slice(0, 10)) === date,
     )
     .map((transaction) => ({
       id: transaction.id,
@@ -178,10 +178,18 @@ export function normalizeDailyCollectionReport(
   requestedDate: string,
 ): DailyCollectionReport {
   if (payload.summary?.date) {
+    const rows = payload.rows ?? [];
+    const expectedPesewas = payload.summary.expectedPesewas;
+    const collectedPesewas = payload.summary.collectedPesewas;
+    const variancePesewas = collectedPesewas - expectedPesewas;
+
     return {
       generatedAt: payload.generatedAt ?? new Date().toISOString(),
-      summary: payload.summary,
-      rows: payload.rows ?? [],
+      summary: {
+        ...payload.summary,
+        variancePesewas,
+      },
+      rows,
     };
   }
 

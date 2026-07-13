@@ -16,6 +16,7 @@ export interface CreateLoanRecordInput {
   startDate: string;
   cycleBatch: string;
   createdByUserId: string;
+  loanPoolId?: string;
 }
 
 export async function insertLoan(input: CreateLoanRecordInput, tx: WilmsDb = getDb()) {
@@ -40,6 +41,7 @@ export async function insertLoan(input: CreateLoanRecordInput, tx: WilmsDb = get
       startDate: input.startDate,
       cycleBatch: input.cycleBatch,
       createdByUserId: input.createdByUserId,
+      loanPoolId: input.loanPoolId ?? null,
     })
     .returning();
 
@@ -84,6 +86,7 @@ export async function updateLoanLifecycle(
     approvedByUserId?: string;
     disbursedByUserId?: string;
     rejectionReason?: string;
+    loanPoolId?: string;
   },
   tx: WilmsDb = getDb(),
 ) {
@@ -98,6 +101,7 @@ export async function updateLoanLifecycle(
       approvedByUserId: input.approvedByUserId,
       disbursedByUserId: input.disbursedByUserId,
       rejectionReason: input.rejectionReason,
+      ...(input.loanPoolId !== undefined ? { loanPoolId: input.loanPoolId } : {}),
       updatedAt: new Date(),
       version: input.expectedVersion + 1,
     })

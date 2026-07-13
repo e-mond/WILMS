@@ -12,7 +12,10 @@ import { PERMISSION } from '@/constants/permissions';
 import { Button } from '@/components/ui/Button';
 import { FormField } from '@/components/forms';
 import { Input } from '@/components/ui/Input';
-import { RECONCILIATION_VARIANCE_THRESHOLD_PERCENT } from '@/constants/reconciliation';
+import {
+  RECONCILIATION_VARIANCE_THRESHOLD_PERCENT,
+} from '@/constants/reconciliation';
+import { reconciliationLifecycleLabel } from '@/constants/reconciliation-status';
 import { useReconciliation } from '@/features/reconciliation/hooks/useReconciliation';
 import { useSubmitReconciliation } from '@/features/reconciliation/hooks/useSubmitReconciliation';
 import { useAuth } from '@/hooks/useAuth';
@@ -208,17 +211,30 @@ export function ReconciliationForm() {
         />
       </ExecutiveKpiGrid>
 
+      <p className="text-small text-text-muted">
+        Status:{' '}
+        <span className="font-semibold text-text-primary">
+          {reconciliationLifecycleLabel(data.status, data.submitted)}
+        </span>
+        {data.submittedAt ? ` · Submitted ${formatDisplayDate(data.submittedAt.slice(0, 10))}` : ''}
+        {data.reviewedAt ? ` · Reviewed ${formatDisplayDate(data.reviewedAt.slice(0, 10))}` : ''}
+      </p>
+
       {data.submitted ? (
         <Alert
-          title="Reconciliation locked"
+          title={`Reconciliation ${reconciliationLifecycleLabel(data.status, data.submitted).toLowerCase()}`}
           variant={data.varianceFlagged ? 'warning' : data.variancePesewas === 0 ? 'success' : 'info'}
         >
-          Reconciliation submitted for {formatDisplayDate(date)} and is locked.{' '}
-          {data.varianceFlagged
-            ? 'Variance exceeds the review threshold — Super Admin has been notified.'
-            : data.variancePesewas === 0
-              ? 'Physical cash matches expected collections.'
-              : 'Minor variance recorded.'}
+          {data.status === 'APPROVED'
+            ? `Reconciliation for ${formatDisplayDate(date)} is approved and locked.`
+            : data.status === 'REJECTED'
+              ? `Reconciliation for ${formatDisplayDate(date)} was rejected. Contact your supervisor.`
+              : data.varianceFlagged
+                ? `Submitted for ${formatDisplayDate(date)} — variance exceeds threshold. Super Admin review is in progress.`
+                : data.variancePesewas === 0
+                  ? `Submitted for ${formatDisplayDate(date)}. Physical cash matches expected collections.`
+                  : `Submitted for ${formatDisplayDate(date)} with minor variance recorded.`}
+          {data.resolutionNotes ? ` Notes: ${data.resolutionNotes}` : ''}
         </Alert>
       ) : null}
 
