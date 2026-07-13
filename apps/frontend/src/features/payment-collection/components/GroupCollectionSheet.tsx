@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { useCollectorDashboard } from '@/features/payment-collection/hooks/useCollectorDashboard';
 import { useAuth } from '@/hooks/useAuth';
 import { resolvePersonPhotoUrl } from '@/utils/person-photo';
+import { resolveGroupDisplayId } from '@/utils/entity-display-id';
 
 export interface GroupCollectionSheetProps {
   groupId: string;
@@ -72,7 +73,7 @@ export function GroupCollectionSheet({ groupId }: GroupCollectionSheetProps) {
             {group?.groupName ?? 'Group Collection Sheet'}
           </h1>
           <p className="text-small text-text-muted">
-            {group?.community ?? 'Assigned group'} · {groupId}
+            {group?.community ?? 'Assigned group'} · {resolveGroupDisplayId({ id: groupId })}
           </p>
         </div>
         <div className="flex flex-wrap gap-wilms-2">

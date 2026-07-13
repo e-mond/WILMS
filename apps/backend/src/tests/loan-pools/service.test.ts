@@ -17,6 +17,7 @@ vi.mock('../../repositories/loan-pool.repository.js', () => ({
   appendAllocation: mocks.appendAllocation,
   findPoolById: mocks.findPoolById,
   listRecentAllocations: mocks.listRecentAllocations,
+  refreshPoolAggregates: vi.fn().mockResolvedValue(undefined),
   listPools: vi.fn(),
 }));
 

@@ -83,6 +83,7 @@ export function DailyCollectionReportPanel() {
           reportDate={data.summary.date}
           borrowersDue={data.summary.borrowersDueCount}
           borrowersPaid={data.summary.borrowersPaidCount}
+          expectedPesewas={data.summary.expectedPesewas}
           collectedPesewas={data.summary.collectedPesewas}
           variancePesewas={data.summary.variancePesewas}
         />
