@@ -101,6 +101,8 @@ export async function createLoanPool(
     recordedAt: now,
   });
 
+  await poolRepo.refreshPoolAggregates(poolId);
+
   appendAuditEntry({
     action: 'loan-pool.created',
     actorId,

@@ -2,6 +2,25 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.3.7-rc3] — RC3 Blocking Fixes
+
+### Fixed
+- **Financial KPI zeros (production):** Loans now link to loan pools via borrower group membership at creation/disbursement; pool allocations refresh on disbursement; migration backfills `loan_pool_id` on existing loans.
+- **Collections variance:** Daily collection summary always recomputes `collected − expected`; aside panel shows expected, collected, and signed variance with contextual notes.
+- **Collector dashboard:** Expected collections filtered by payment day (matches daily collection report).
+- **Expense recorded-by:** Super Admin expense list resolves collector display names from user records (not generic "Collector").
+- **Display ID leaks:** Payment log, collector group cards, and collection sheet use human-readable IDs.
+- **Reconciliation preview:** Unsubmitted variance reflects system recorded vs expected (not hardcoded zero).
+
+### Changed
+- **Financial overview:** Cards/charts toggle and chart type persist for the browser session.
+- **Reconciliation lifecycle:** Expanded status labels (Draft, Submitted, Under review, Returned, Approved, Rejected, Locked, Archived) with richer submitted-state messaging.
+- **Registration:** Character counters on business name and type-of-work fields.
+- **Product tour:** Role-specific optional walkthrough with dismiss, keyboard access, and replay from Settings → Profile.
+- Application version bumped to `1.3.7-rc3`.
+
+---
+
 ## [1.3.7-rc2] — UI, Financial Dashboard, Notifications & Workflow
 
 ### Fixed

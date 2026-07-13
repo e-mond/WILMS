@@ -8,6 +8,7 @@ export interface CollectionsAsidePanelProps {
   reportDate: string;
   borrowersDue: number;
   borrowersPaid: number;
+  expectedPesewas: number;
   collectedPesewas: number;
   variancePesewas: number;
 }
@@ -16,9 +17,17 @@ export function CollectionsAsidePanel({
   reportDate,
   borrowersDue,
   borrowersPaid,
+  expectedPesewas,
   collectedPesewas,
   variancePesewas,
 }: CollectionsAsidePanelProps) {
+  const varianceLabel =
+    variancePesewas === 0
+      ? 'Balanced'
+      : variancePesewas > 0
+        ? 'Above expected'
+        : 'Below expected';
+
   return (
     <>
       <DetailSidebarCard title="Collection Summary">
@@ -36,23 +45,43 @@ export function CollectionsAsidePanel({
             <dd className="font-semibold text-status-active">{borrowersPaid}</dd>
           </div>
           <div className="flex justify-between">
+            <dt className="text-text-muted">Expected</dt>
+            <dd className="font-semibold">
+              <CurrencyAmount value={expectedPesewas} />
+            </dd>
+          </div>
+          <div className="flex justify-between">
             <dt className="text-text-muted">Collected</dt>
             <dd className="font-semibold">
               <CurrencyAmount value={collectedPesewas} />
             </dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-text-muted">Variance</dt>
-            <dd className={variancePesewas === 0 ? 'font-semibold text-status-active' : 'font-semibold text-danger'}>
-              <CurrencyAmount value={Math.abs(variancePesewas)} />
+            <dt className="text-text-muted">Variance ({varianceLabel})</dt>
+            <dd
+              className={
+                variancePesewas === 0
+                  ? 'font-semibold text-status-active'
+                  : variancePesewas > 0
+                    ? 'font-semibold text-brand-primary'
+                    : 'font-semibold text-danger'
+              }
+            >
+              {variancePesewas === 0 ? (
+                '—'
+              ) : (
+                <CurrencyAmount value={Math.abs(variancePesewas)} />
+              )}
             </dd>
           </div>
         </dl>
       </DetailSidebarCard>
       <DetailSidebarCard title="Reconciliation Notes">
         <p className="mt-wilms-3 text-small text-text-muted">
-          Compare collector totals against GPS-verified receipts before closing the daily collection
-          report.
+          Variance is calculated as collected minus expected for borrowers due on the report date.
+          {variancePesewas !== 0
+            ? ` ${varianceLabel} by ${Math.abs(variancePesewas / 100).toFixed(2)} GHS — review flagged reconciliations before closing.`
+            : ' Totals match expected collections for due borrowers.'}
         </p>
       </DetailSidebarCard>
     </>

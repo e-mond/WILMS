@@ -39,7 +39,7 @@ describe('reconciliationService.mock', () => {
       expectedPesewas: 11000,
       actualPesewas: 0,
       submitted: false,
-      variancePesewas: 0,
+      variancePesewas: -11000,
     });
   });
 

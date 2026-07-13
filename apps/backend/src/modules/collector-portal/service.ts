@@ -3,6 +3,7 @@ import * as groupService from '../groups/service.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import { isDatabaseEnabled } from '../../db/client.js';
 import { decimalToPesewas } from '../../domain/money.js';
+import { isLoanDueOnDate } from '../../domain/reconciliation/weekday.js';
 
 export interface CollectorDashboardSummary {
   date: string;
@@ -116,17 +117,22 @@ export async function getCollectorDashboard(
     const activeLoans = await loanRepo.listLoans({ externalStatus: 'ACTIVE' });
     for (const borrower of scopedBorrowers) {
       const loan = activeLoans.find((entry) => entry.borrowerId === borrower.id);
-      const weeklyExpected = loan ? decimalToPesewas(loan.installmentAmount) : 0;
+      const weeklyExpected =
+        loan && isLoanDueOnDate(loan.paymentDay, referenceDate)
+          ? decimalToPesewas(loan.installmentAmount)
+          : 0;
       expectedPesewas += weeklyExpected;
       const collectedForBorrower = collectorPayments
         .filter((payment) => payment.borrowerId === borrower.id)
         .reduce((sum, payment) => sum + payment.amountPesewas, 0);
       const paymentStatus =
-        collectedForBorrower >= weeklyExpected && weeklyExpected > 0
+        weeklyExpected > 0 && collectedForBorrower >= weeklyExpected
           ? 'COLLECTED'
           : collectedForBorrower > 0
             ? 'PENDING'
-            : 'PENDING';
+            : weeklyExpected > 0
+              ? 'PENDING'
+              : 'PENDING';
 
       borrowerRows.push({
         borrowerId: borrower.id,
