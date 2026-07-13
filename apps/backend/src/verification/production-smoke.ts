@@ -12,6 +12,7 @@
  * WILMS_API_URL — Railway Express (direct /health, optional RBAC probes)
  */
 import '../config/load-env.js';
+import { resolveSmokeCredentials } from './smoke-credentials.js';
 
 interface SmokeCheck {
   name: string;
@@ -63,8 +64,7 @@ function requireEnv(name: string): string {
 async function main(): Promise<void> {
   const appUrl = requireEnv('WILMS_APP_URL');
   const apiUrl = requireEnv('WILMS_API_URL');
-  const email = process.env.WILMS_SMOKE_EMAIL ?? 'admin@wilms.demo';
-  const password = process.env.WILMS_SMOKE_PASSWORD ?? 'DemoAdmin1!';
+  const { email, password } = resolveSmokeCredentials(appUrl);
 
   console.log('P14.5D Production Smoke Tests');
   console.log(`Started: ${new Date().toISOString()}`);
@@ -93,7 +93,7 @@ async function main(): Promise<void> {
   const healthJson = healthEnvelope.data ?? {};
   record(
     'api-health-status',
-    healthRes.status === 200 && (healthJson.status === 'ok' || healthJson.status === 'degraded'),
+    healthRes.status === 200 && healthJson.status === 'ok',
     `http=${healthRes.status} status=${healthJson.status ?? 'unknown'}`,
   );
   record(
@@ -230,6 +230,11 @@ async function main(): Promise<void> {
     ['bff-proxy-collectors', '/collectors'],
     ['bff-proxy-borrowers', '/borrowers'],
     ['bff-proxy-loans-portfolio', '/loans/portfolio'],
+    ['bff-proxy-expenses', '/expenses'],
+    ['bff-proxy-reconciliations', '/reconciliations'],
+    ['bff-proxy-notifications-inbox', '/notifications/inbox'],
+    ['bff-proxy-audit-log', '/audit-log'],
+    ['bff-proxy-search', '/search?q=test'],
   ] as const) {
     const res = await fetch(`${appUrl}/api/wilms${path}`, { headers: authHeaders });
     record(name, res.status === 200, `status=${res.status}`);

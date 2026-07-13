@@ -183,6 +183,13 @@
       "when": 1783956800000,
       "tag": "0025_v137_rc3_pool_allocations_backfill",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1784043200000,
+      "tag": "0026_v137_prod_schema_repair",
+      "breakpoints": true
     }
   ]
 }

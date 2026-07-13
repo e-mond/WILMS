@@ -1,8 +1,12 @@
 # WILMS v1.3.7 Production Certification — Index
 
-**Sprint date:** 2026-07-13  
+**Sprint date:** 2026-07-13 (remediation)  
 **Release tag:** `v1.3.7`  
-**Certification tag:** **NOT ISSUED** — see [Production Certification Report](./PRODUCTION_CERTIFICATION_REPORT.md)
+**Certification tag:** **NOT ISSUED**
+
+| Doc | Description |
+|-----|-------------|
+| [REMEDIATION_RUNBOOK.md](./REMEDIATION_RUNBOOK.md) | **Operator steps** to fix production blockers |
 
 | # | Deliverable | Status |
 |---|-------------|--------|
@@ -29,7 +33,7 @@
 
 ## Critical blockers before go-live
 
-1. Apply pending database migrations (`0023`–`0025` minimum; journal updated in this sprint).
-2. Resolve schema probe failures (`organization_holidays`, `loan_fee_charges`, `loan_penalty_rules`).
-3. Re-run `smoke:production` and `smoke:rbac` with production credentials after migrations.
-4. Complete manual workflow smoke and financial reconciliation on live data.
+1. **Merge remediation PR** and redeploy Railway API (`start:prod` auto-runs migrations).
+2. Confirm `/health` → `status: ok`, `migrations.applied: 27`, `schema.status: ok`.
+3. Re-run `smoke:production` with `WILMS_SMOKE_EMAIL` / `WILMS_SMOKE_PASSWORD` (not demo accounts).
+4. Complete manual go-live checklist and blocked audits (backup, browser, a11y).

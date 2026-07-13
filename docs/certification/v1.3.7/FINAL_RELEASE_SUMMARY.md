@@ -1,85 +1,59 @@
 # Final Release Summary — v1.3.7 Production Certification
 
-**Date:** 2026-07-13  
+**Date:** 2026-07-13 (remediation sprint)  
 **Stable tag:** [`v1.3.7`](https://github.com/e-mond/WILMS/releases/tag/v1.3.7)  
 **Production certified tag:** **NOT ISSUED**
 
 ---
 
-## Summary
+## Status
 
-WILMS v1.3.7 is **feature-complete and stable at the code level**. All local quality gates pass. Production hosts run v1.3.7, but the live database is **degraded** (pending migrations, missing schema tables), and authenticated smoke tests **fail** because production credentials are unavailable and demo accounts are disabled.
-
-**The system is not ready for public go-live** until remediation steps below are completed and certification is re-run.
-
----
-
-## What passed
-
-| Area | Evidence |
-|------|----------|
-| Version alignment | 1.3.7 across root, frontend, backend, CHANGELOG |
-| Type safety | `npm run type-check` |
-| Lint | PASS (1 non-blocking warning) |
-| Build | Production Next.js build |
-| Bundle budget | 168.4 KB gzip JS |
-| Unit tests | **366/366** (129 API + 237 frontend) |
-| API integrity | Frontend client paths match backend routes |
-| Mock guard | No forbidden mock imports |
-| CSRF (prod) | Blocks login without token |
-| Unauthenticated RBAC | API returns 401 |
-| Financial model docs | `docs/financial-calculations.md` |
+| Layer | State |
+|-------|-------|
+| Application code | **Stable** — 366 unit tests pass |
+| Migration journal | **Fixed** — 27 entries (`0000`–`0026`) |
+| Live production DB | **Degraded** — pending operator deploy + migrate |
+| Certification | **NOT COMPLETE** |
 
 ---
 
-## What failed or is blocked
+## What changed in remediation sprint
 
-| Area | Issue |
-|------|-------|
-| `/health` | `status: degraded` — migrations + schema |
-| Migrations | 23/24 applied; `0024`/`0025` not in journal (fixed in repo) |
-| Schema | Missing `organization_holidays`, `loan_fee_charges`, `loan_penalty_rules` |
-| Smoke tests | 14/33 — auth failures |
-| RBAC smoke | 0/3 — login failures |
-| Financial audit (live) | No DB / credentials |
-| Backup & restore | No Neon access |
-| DR drill | Not executed |
-| Browser / mobile | No real devices |
-| Accessibility | No axe/Lighthouse |
-| Lighthouse CWV | Not run |
-| E2E Playwright | Not run |
+1. **`0026_v137_prod_schema_repair`** — recreates missing `0020` tables/enums idempotently
+2. **`npm run verify:migrations`** — journal/SQL parity + optional DB state check
+3. **Health endpoint** — reports mail/SMS integration status and worker model (no Redis)
+4. **Smoke scripts** — refuse demo credentials on `wilms.vercel.app`; require `status=ok`
+5. **Documentation** — [REMEDIATION_RUNBOOK.md](./REMEDIATION_RUNBOOK.md) for operators
 
 ---
 
-## Repository fix in this sprint
+## Operator checklist (remaining)
 
-**Migration journal:** Added `0024_v137_rc3_pool_loan_linkage` and `0025_v137_rc3_pool_allocations_backfill` to `apps/backend/src/db/migrations/meta/_journal.json` so `drizzle-kit migrate` can apply v1.3.7 financial backfill on production.
-
----
-
-## Operator actions (ordered)
-
-1. Merge certification PR and deploy API if journal fix not yet on Railway.
-2. `pg_dump` production database.
-3. `npm run db:migrate -w @wilms/api` with production `DATABASE_URL`.
-4. Confirm `/health` → `status: ok`, `migrations.applied: 26`, `schema.status: ok`.
-5. Provide production smoke credentials; re-run `smoke:production` and `smoke:rbac`.
-6. Execute [Go-Live Checklist](./GO_LIVE_CHECKLIST.md) manual items.
-7. Run financial reconciliation audit on live data.
-8. Complete browser/mobile/a11y/performance audits.
-9. Execute backup restore drill.
-10. Tag `v1.3.7-production-certified` and update GitHub Release.
+- [ ] Merge remediation PR to `main`
+- [ ] `pg_dump` production database
+- [ ] Railway redeploy (auto-migrates via `start:prod`)
+- [ ] Confirm `/health` → `ok`, `migrations.applied: 27`
+- [ ] Run `smoke:production` with `WILMS_SMOKE_EMAIL` / `WILMS_SMOKE_PASSWORD`
+- [ ] Run `smoke:rbac` with per-role credentials
+- [ ] Live financial reconciliation with `verify:financial`
+- [ ] Backup restore drill on Neon branch
+- [ ] Browser / mobile / WCAG / Lighthouse audits
+- [ ] Tag `v1.3.7-production-certified` + update GitHub Release
 
 ---
 
-## Deliverables
+## Blocked validations (honest)
 
-All thirteen reports are under [docs/certification/v1.3.7/](./INDEX.md).
+| Validation | Blocker |
+|------------|---------|
+| Production migrate | No `DATABASE_URL` in agent |
+| Smoke / RBAC | No production user passwords |
+| Backup / restore | No Neon console |
+| Financial live audit | No DB access |
+| Browser / mobile / a11y | No real devices / browser automation |
 
 ---
 
 ## Recommendation
 
-**Hold public go-live.** Proceed with migration remediation and authenticated validation. Re-run this certification sprint after `/health` is green and smoke tests pass 33/33.
-
-**Signed:** Automated certification sprint — 2026-07-13
+**Hold go-live.** Merge remediation PR, apply migrations on production, re-run smoke with real credentials, then complete manual certification checklist before tagging `v1.3.7-production-certified`.
