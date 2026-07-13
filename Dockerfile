@@ -17,6 +17,8 @@ RUN npm ci --include=dev
 COPY apps/backend apps/backend
 COPY packages packages
 
+RUN chmod +x apps/backend/scripts/start-production.sh
+
 # Bake the build commit only as a fallback. At runtime, env.ts prefers the
 # platform-injected RAILWAY_GIT_COMMIT_SHA over WILMS_GIT_COMMIT so redeploys
 # always report the live commit even if this build arg is stale.

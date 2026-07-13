@@ -20,7 +20,7 @@ jobs:
       - name: Confirm current production health
         run: |
           curl -fsS "${{ secrets.WILMS_API_URL }}/health"
-          echo "Baseline healthy"
+          echo "Baseline reachable (migrate step will bring schema current)"
 
   deploy-api:
     if: inputs.confirm == 'deploy'
