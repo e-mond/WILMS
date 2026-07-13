@@ -13,22 +13,24 @@ function shouldRetryNotificationQuery(failureCount: number, error: unknown): boo
   return failureCount < 1;
 }
 
-export function useNotificationInbox(enabled = true) {
+export function useNotificationInbox(enabled = true, refetchInterval?: number) {
   return useQuery({
     queryKey: notificationInboxQueryKey,
     queryFn: () => notificationService.listInbox(),
     enabled,
     staleTime: 30_000,
+    refetchInterval,
     retry: shouldRetryNotificationQuery,
   });
 }
 
-export function useNotificationUnreadCount(enabled = true) {
+export function useNotificationUnreadCount(enabled = true, refetchInterval?: number) {
   return useQuery({
     queryKey: notificationUnreadCountQueryKey,
     queryFn: () => notificationService.getUnreadCount(),
     enabled,
     staleTime: 30_000,
+    refetchInterval,
     retry: shouldRetryNotificationQuery,
   });
 }

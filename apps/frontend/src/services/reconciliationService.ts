@@ -1,5 +1,9 @@
 import type { ReconciliationHistoryEntry, SubmitReconciliationInput } from '@/types/reconciliation';
-import type { IReconciliationService, ReconciliationSummary } from '@/types/services';
+import type {
+  IReconciliationService,
+  ReconciliationSummary,
+  ReviewReconciliationInput,
+} from '@/types/services';
 import { apiClient } from '@/utils/apiClient';
 
 const reconciliationService: IReconciliationService = {
@@ -26,6 +30,10 @@ const reconciliationService: IReconciliationService = {
 
   getReconciliationHistory(id: string): Promise<ReconciliationHistoryEntry[]> {
     return apiClient.get<ReconciliationHistoryEntry[]>(`/reconciliations/${id}/history`);
+  },
+
+  reviewReconciliation(id: string, input: ReviewReconciliationInput): Promise<ReconciliationSummary> {
+    return apiClient.patch<ReconciliationSummary>(`/reconciliations/${id}/review`, input);
   },
 };
 
