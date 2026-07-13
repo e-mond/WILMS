@@ -28,6 +28,7 @@ LEFT JOIN LATERAL (
   LIMIT 1
 ) AS ld ON TRUE
 WHERE l.loan_pool_id IS NOT NULL
+  AND EXISTS (SELECT 1 FROM loan_pools AS lp WHERE lp.id = l.loan_pool_id)
   AND l.external_status <> 'PENDING_DISBURSEMENT'
   AND l.deleted_at IS NULL
   AND NOT EXISTS (
@@ -62,6 +63,7 @@ SELECT
 FROM payments AS p
 INNER JOIN loans AS l ON l.id = p.loan_id
 WHERE l.loan_pool_id IS NOT NULL
+  AND EXISTS (SELECT 1 FROM loan_pools AS lp WHERE lp.id = l.loan_pool_id)
   AND p.status = 'CONFIRMED'
   AND NOT EXISTS (
     SELECT 1
