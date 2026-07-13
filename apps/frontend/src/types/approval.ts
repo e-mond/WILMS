@@ -34,6 +34,7 @@ export interface BorrowerReviewDetail extends BorrowerDetail {
   photoMimeType: string;
   photoUrl?: string | null;
   guarantorPhotoUrl?: string | null;
+  idDocumentUrl?: string | null;
   registeredByOfficerName: string;
   registeredByOfficerId?: string;
 }

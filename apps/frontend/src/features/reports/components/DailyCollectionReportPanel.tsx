@@ -12,6 +12,7 @@ import { Select } from '@/components/ui/Select';
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
 import { WILMS_REPORT_TYPE } from '@/features/export';
 import { CollectionsAsidePanel } from '@/features/reports/components/CollectionsAsidePanel';
+import { ReconciliationReviewQueue } from '@/features/reconciliation/components/ReconciliationReviewQueue';
 import { useDailyCollectionReport } from '@/features/reports/hooks/useDailyCollectionReport';
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { collectorManagementService } from '@/services';
@@ -172,6 +173,8 @@ export function DailyCollectionReportPanel() {
           Collections match expected totals for due borrowers.
         </p>
       )}
+
+      <ReconciliationReviewQueue />
 
       {data.rows.length === 0 ? (
         <GuidedEmptyState

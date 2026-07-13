@@ -288,6 +288,7 @@ export interface IOverpaymentReviewService {
 }
 
 export interface ReconciliationSummary {
+  id?: string;
   collectorId: string;
   date: string;
   expectedPesewas: number;
@@ -297,6 +298,21 @@ export interface ReconciliationSummary {
   varianceFlagged?: boolean;
   submitted: boolean;
   submittedAt?: string;
+  status?: string;
+  submittedById?: string;
+  reviewedById?: string;
+  reviewedAt?: string;
+  resolutionNotes?: string;
+}
+
+export interface ReviewReconciliationInput {
+  status:
+    | 'PENDING_REVIEW'
+    | 'UNDER_INVESTIGATION'
+    | 'APPROVED'
+    | 'REJECTED'
+    | 'REOPENED';
+  resolutionNotes?: string;
 }
 
 export interface ICollectorService {
@@ -317,6 +333,7 @@ export interface IReconciliationService {
   listReconciliations(filter?: { collectorId?: string }): Promise<ReconciliationSummary[]>;
   getReconciliation(id: string): Promise<ReconciliationSummary>;
   getReconciliationHistory(id: string): Promise<ReconciliationHistoryEntry[]>;
+  reviewReconciliation(id: string, input: ReviewReconciliationInput): Promise<ReconciliationSummary>;
 }
 
 export interface ReportSummary {

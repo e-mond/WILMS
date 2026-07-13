@@ -257,13 +257,13 @@ export async function sendMessage(
     event: 'COMMUNICATION',
     title: 'New message',
     body: trimmedBody.slice(0, 120),
-    href: '/messages',
+    href: '/collector/messages',
   });
 
   void sendPushToUser(recipientUserId, {
     title: 'New message',
     body: trimmedBody.slice(0, 120),
-    url: '/messages',
+    url: '/collector/messages',
     category: 'MESSAGE',
   });
 

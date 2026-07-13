@@ -58,7 +58,7 @@ reconciliationRouter.get(
 
 reconciliationRouter.get(
   '/reconciliations',
-  requirePermission(PERMISSION.RECORD_COLLECTIONS),
+  requirePermission(PERMISSION.RECORD_COLLECTIONS, PERMISSION.VIEW_REPORTS),
   asyncHandler(async (req, res) => {
     const collectorId = req.query.collectorId ? String(req.query.collectorId) : undefined;
 
@@ -121,6 +121,37 @@ reconciliationRouter.post(
           idempotencyKey,
         ),
         201,
+      );
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+const reviewReconciliationBodySchema = z.object({
+  status: z.enum([
+    'PENDING_REVIEW',
+    'UNDER_INVESTIGATION',
+    'APPROVED',
+    'REJECTED',
+    'REOPENED',
+  ]),
+  resolutionNotes: z.string().optional(),
+});
+
+reconciliationRouter.patch(
+  '/reconciliations/:id/review',
+  requirePermission(PERMISSION.VIEW_REPORTS),
+  validateBody(reviewReconciliationBodySchema),
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(
+        res,
+        await reconciliationService.reviewReconciliation(req.params.id!, {
+          status: req.body.status,
+          resolutionNotes: req.body.resolutionNotes,
+          reviewerUserId: req.session!.userId,
+        }),
       );
     } catch (error) {
       mapError(error);
