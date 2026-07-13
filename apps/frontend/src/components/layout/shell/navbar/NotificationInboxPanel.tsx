@@ -370,6 +370,7 @@ export function NotificationInboxTrigger() {
   return (
     <button
       type="button"
+      data-tour="notifications-bell"
       className={cn(
         'relative inline-flex h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-lg border transition-colors',
         'border-border bg-card text-text-primary',
