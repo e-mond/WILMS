@@ -1,7 +1,7 @@
 # WILMS Production Runbook
 
-**Version:** v1.3.6  
-**Last updated:** 2026-07-12
+**Version:** v1.3.7  
+**Last updated:** 2026-07-13
 
 ## Pre-deploy checklist
 
@@ -20,7 +20,13 @@ npm install
 npm run db:migrate -w @wilms/api
 ```
 
-v1.3.6 requires through `0022_v135_notification_events.sql`.
+v1.3.7 requires through `0025_v137_rc3_pool_allocations_backfill.sql` (26 migrations in journal).
+
+Pre-migration backup:
+
+```bash
+pg_dump "$DATABASE_URL" --format=custom --file=wilms-pre-migrate-$(date +%Y%m%d).dump
+```
 
 ### 2. API (Railway)
 
@@ -29,7 +35,7 @@ railway up --detach
 curl -fsS https://wilms-production.up.railway.app/health
 ```
 
-Expect `"version":"1.3.6"` and `"status":"ok"` (after migrations applied).
+Expect `"version":"1.3.7"`, `"status":"ok"`, `migrations.applied` = `migrations.expected` = 26, and `schema.status: ok`.
 
 ### 3. Frontend (Vercel)
 
@@ -42,6 +48,8 @@ vercel deploy --prod --yes
 ```bash
 WILMS_APP_URL=https://wilms.vercel.app \
 WILMS_API_URL=https://wilms-production.up.railway.app \
+WILMS_SMOKE_EMAIL=<production-admin> \
+WILMS_SMOKE_PASSWORD=<secret> \
 npm run smoke:production -w @wilms/api
 
 WILMS_APP_URL=https://wilms.vercel.app \
@@ -49,6 +57,8 @@ npm run smoke:rbac -w @wilms/api
 
 npm run verify:version
 ```
+
+See [docs/certification/v1.3.7/](../certification/v1.3.7/INDEX.md) for full production certification reports.
 
 ### 5. Manual workflow smoke (15 min)
 

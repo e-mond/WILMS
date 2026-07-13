@@ -27,6 +27,7 @@ Stable production release consolidating rc1–rc3: financial integrity, human-re
 ### Deployment
 - Apply migrations `0024` and `0025` before production promote.
 - Verify `/health` → `schema.status: ok`.
+- Production certification reports: `docs/certification/v1.3.7/` (2026-07-13 — **not certified**; migrations pending on live).
 
 ---
 
