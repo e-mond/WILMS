@@ -19,6 +19,7 @@ import { DashboardCollectorPerformance } from '@/features/super-admin-dashboard/
 import { DashboardCollectionSummary } from '@/features/super-admin-dashboard/components/DashboardCollectionSummary';
 import { DashboardCycleSnapshot } from '@/features/super-admin-dashboard/components/DashboardCycleSnapshot';
 import { DashboardExpenseSummary } from '@/features/super-admin-dashboard/components/DashboardExpenseSummary';
+import { DashboardReconciliationSummary } from '@/features/super-admin-dashboard/components/DashboardReconciliationSummary';
 import { DashboardFinancialOverviewPanel } from '@/features/super-admin-dashboard/components/DashboardFinancialOverviewPanel';
 import { DashboardFinancialAnalyticsPanel } from '@/features/super-admin-dashboard/components/DashboardFinancialAnalyticsPanel';
 import {
@@ -27,11 +28,17 @@ import {
   WilmsExportActions,
 } from '@/features/export';
 import { useDashboardSummary } from '@/features/super-admin-dashboard/hooks/useDashboardSummary';
+import { useAuth } from '@/hooks/useAuth';
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { DashboardRecentActivity } from '@/features/super-admin-dashboard/components/DashboardRecentActivity';
 import { cn } from '@/utils/cn';
 import { Select } from '@/components/ui/Select';
+import {
+  readDashboardPreference,
+  writeDashboardPreference,
+} from '@/utils/dashboard-preferences';
+import { useReplayProductTour } from '@/components/onboarding/ProductTourOverlay';
 
 const KPI_ICON_NAMES: Record<string, DashboardKpiIconName> = {
   pool: 'pool',
@@ -63,6 +70,21 @@ const QUICK_ACTIONS = [
     className: 'border-status-info text-status-info hover:bg-status-info-light',
   },
 ];
+
+function ProductTourQuickAction({ onReplay }: { onReplay: () => void }) {
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={onReplay}
+        className="group flex min-h-[48px] w-full items-center gap-wilms-4 rounded-sm border border-border px-wilms-5 py-wilms-4 text-left text-body font-semibold text-text-primary transition-colors hover:border-brand-primary hover:bg-brand-primary-light hover:shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary"
+      >
+        <DashboardQuickActionIcon name="variance" className="shrink-0 text-brand-primary" />
+        <span className="min-w-0 break-words">Replay product tour</span>
+      </button>
+    </li>
+  );
+}
 
 export function SuperAdminDashboard() {
   const { data, isLoading, isError, error, refetch } = useDashboardSummary();
@@ -100,27 +122,31 @@ function SuperAdminDashboardContent({
   borrowerTotal: number;
 }) {
   const generatedBy = useWilmsExportActor();
+  const { user } = useAuth();
+  const replayTour = useReplayProductTour();
   const [financialView, setFinancialView] = useState<'cards' | 'charts'>(() => {
     if (typeof window === 'undefined') {
       return 'cards';
     }
-    return sessionStorage.getItem('wilms-dashboard-financial-view') === 'charts' ? 'charts' : 'cards';
+    return readDashboardPreference(user?.id, 'financial-view', 'cards') === 'charts'
+      ? 'charts'
+      : 'cards';
   });
   const [chartType, setChartType] = useState<'bar' | 'line' | 'area' | 'pie'>(() => {
     if (typeof window === 'undefined') {
       return 'bar';
     }
-    const stored = sessionStorage.getItem('wilms-dashboard-chart-type');
+    const stored = readDashboardPreference(user?.id, 'chart-type', 'bar');
     return stored === 'line' || stored === 'area' || stored === 'pie' ? stored : 'bar';
   });
 
   useEffect(() => {
-    sessionStorage.setItem('wilms-dashboard-financial-view', financialView);
-  }, [financialView]);
+    writeDashboardPreference(user?.id, 'financial-view', financialView);
+  }, [financialView, user?.id]);
 
   useEffect(() => {
-    sessionStorage.setItem('wilms-dashboard-chart-type', chartType);
-  }, [chartType]);
+    writeDashboardPreference(user?.id, 'chart-type', chartType);
+  }, [chartType, user?.id]);
   const exportDocument = useMemo(
     () => buildDashboardExportDocument({ summary: data, generatedBy }),
     [data, generatedBy],
@@ -202,6 +228,7 @@ function SuperAdminDashboardContent({
                 </Link>
               </li>
             ))}
+            <ProductTourQuickAction onReplay={replayTour} />
           </ul>
         </section>
       </div>
@@ -293,6 +320,10 @@ function SuperAdminDashboardContent({
           <div className="min-w-0 rounded-sm border border-border bg-background p-wilms-5 sm:p-wilms-6">
             <DashboardExpenseSummary compact />
           </div>
+        </div>
+
+        <div className="min-w-0 rounded-sm border border-border bg-background p-wilms-5 sm:p-wilms-6">
+          <DashboardReconciliationSummary compact />
         </div>
       </section>
 

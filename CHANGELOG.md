@@ -2,6 +2,34 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.3.7] — Stable Release
+
+**Release date:** July 2026
+
+### Summary
+
+Stable production release consolidating rc1–rc3: financial integrity, human-readable IDs, reconciliation lifecycle, collector workflows, notifications, and executive dashboard polish.
+
+### Fixed
+- **Display IDs:** Remaining UUID leaks in group collector profile, financial ledger report, CSV exports (groups, pools, collectors), and disbursement toasts.
+- **Groups table:** Responsive columns with truncation and tooltips; no clipped group names.
+- **Registration:** Character counters on full name and nationality fields.
+- **Dashboard preferences:** Cards/charts toggle persists in `localStorage` per user across refresh and re-login.
+
+### Added
+- **Reconciliation dashboard summary:** Super Admin financial overview shows awaiting review, approved today, rejected, and total submitted.
+- **Product tour replay:** Quick action on executive dashboard; existing replay from Settings → Profile.
+- **Financial calculations doc:** `docs/financial-calculations.md` — single source of truth for pool and dashboard formulas.
+
+### Changed
+- Application version set to **1.3.7** (stable).
+
+### Deployment
+- Apply migrations `0024` and `0025` before production promote.
+- Verify `/health` → `schema.status: ok`.
+
+---
+
 ## [1.3.7-rc3] — RC3 Blocking Fixes
 
 ### Fixed

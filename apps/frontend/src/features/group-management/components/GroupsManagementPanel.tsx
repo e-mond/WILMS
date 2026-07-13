@@ -102,7 +102,7 @@ export function GroupsManagementPanel() {
   useShellAsideContent(asideContent);
 
   const csvRows = filteredGroups.map((group) => [
-    group.id,
+    resolveGroupDisplayId(group),
     group.name,
     group.community,
     group.officerName,
@@ -224,6 +224,7 @@ export function GroupsManagementPanel() {
           {
             id: 'groupId',
             header: 'Group ID',
+            className: 'whitespace-nowrap font-mono text-small',
             cell: (row) => (
               <Link
                 href={`/groups/${row.id}`}
@@ -237,21 +238,32 @@ export function GroupsManagementPanel() {
           {
             id: 'group',
             header: 'Name',
+            className: 'min-w-[10rem] max-w-[16rem]',
             cell: (row) => (
               <Link
                 href={`/groups/${row.id}`}
-                className="text-left hover:underline"
+                className="block min-w-0 text-left hover:underline"
                 onClick={(event) => event.stopPropagation()}
               >
-                <p className="font-semibold text-text-primary">{row.name}</p>
-                <p className="text-small text-text-muted">
+                <p className="truncate font-semibold text-text-primary">{row.name}</p>
+                <p className="truncate text-small text-text-muted">
                   Formed {formatDisplayDate(row.formedAt)}
                 </p>
               </Link>
             ),
           },
-          { id: 'community', header: 'Community', cell: (row) => row.community },
-          { id: 'officer', header: 'Officer', cell: (row) => row.officerName },
+          {
+            id: 'community',
+            header: 'Community',
+            className: 'max-w-[10rem] truncate whitespace-nowrap',
+            cell: (row) => <span title={row.community}>{row.community}</span>,
+          },
+          {
+            id: 'officer',
+            header: 'Officer',
+            className: 'max-w-[10rem] truncate whitespace-nowrap',
+            cell: (row) => <span title={row.officerName}>{row.officerName}</span>,
+          },
           {
             id: 'members',
             header: 'Members',

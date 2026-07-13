@@ -85,7 +85,11 @@ export function ReviewedApplicationsPanel() {
           {
             id: 'borrower',
             header: 'Borrower name',
-            cell: (row) => row.borrowerName,
+            cell: (row) => (
+              <span className="block max-w-[14rem] truncate" title={row.borrowerName}>
+                {row.borrowerName}
+              </span>
+            ),
             className: 'min-w-[10rem] whitespace-nowrap',
           },
           {
