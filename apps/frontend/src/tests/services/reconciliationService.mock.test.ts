@@ -91,7 +91,7 @@ describe('reconciliationService.mock', () => {
     await expect(
       reconciliationServiceMock.submitReconciliation({
         collectorId: 'user-collector',
-        date: '2026-05-30',
+        date: '2026-05-29',
         physicalCashPesewas: 4000,
       }),
     ).rejects.toMatchObject({
@@ -103,7 +103,7 @@ describe('reconciliationService.mock', () => {
     await expect(
       reconciliationServiceMock.submitReconciliation({
         collectorId: 'user-collector',
-        date: '2026-05-31',
+        date: '2026-05-29',
         physicalCashPesewas: 4000,
         comment: 'short',
       }),

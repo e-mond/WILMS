@@ -42,6 +42,7 @@ async function buildReconciliationSummary(
       varianceFlagged: submission.varianceFlagged,
       submitted: true,
       submittedAt: submission.submittedAt,
+      status: submission.varianceFlagged ? 'PENDING_REVIEW' : 'APPROVED',
     };
   }
 

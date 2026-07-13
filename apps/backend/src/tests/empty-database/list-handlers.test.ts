@@ -71,6 +71,8 @@ vi.mock('../../repositories/loan.repository.js', () => ({
 
 vi.mock('../../repositories/loan-pool.repository.js', () => ({
   listPools: vi.fn(async () => []),
+  hasLoansMissingPoolAllocations: vi.fn(async () => false),
+  reconcilePoolAllocationsFromLoans: vi.fn(async () => undefined),
 }));
 
 vi.mock('../../repositories/user.repository.js', () => ({

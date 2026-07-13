@@ -77,6 +77,11 @@ export function DashboardFinancialOverviewPanel({ overview }: DashboardFinancial
               tone="success"
             />
             <DashboardFinancialStat
+              label="Net collections after expenses"
+              value={<CurrencyAmount value={overview.collections.netCollectionsAfterExpensesPesewas} />}
+              tone="success"
+            />
+            <DashboardFinancialStat
               label="Outstanding balance"
               value={<CurrencyAmount value={overview.collections.outstandingBalancePesewas} />}
             />
@@ -162,6 +167,11 @@ export function DashboardFinancialOverviewPanel({ overview }: DashboardFinancial
             <DashboardFinancialStat
               label="Money out — expenses"
               value={<CurrencyAmount value={overview.cashFlow.moneyOut.operationalExpensesPesewas} />}
+            />
+            <DashboardFinancialStat
+              label="Net operating cash"
+              value={<CurrencyAmount value={overview.cashFlow.netOperatingCashPesewas} />}
+              tone={overview.cashFlow.netOperatingCashPesewas >= 0 ? 'success' : 'danger'}
             />
             <DashboardFinancialStat
               label="Net position"

@@ -112,6 +112,7 @@ export interface DashboardFinancialOverview {
   };
   collections: {
     totalAmountCollectedPesewas: number;
+    netCollectionsAfterExpensesPesewas: number;
     outstandingBalancePesewas: number;
     amountDueThisWeekPesewas: number;
     overdueAmountPesewas: number;
@@ -143,5 +144,6 @@ export interface DashboardFinancialOverview {
       totalPesewas: number;
     };
     netPositionPesewas: number;
+    netOperatingCashPesewas: number;
   };
 }
