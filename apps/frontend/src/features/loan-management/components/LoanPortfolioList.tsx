@@ -163,7 +163,6 @@ export function LoanPortfolioList() {
       </ExecutiveKpiGrid>
 
       <ManagementToolbar
-        className="flex-col gap-wilms-3 lg:flex-row lg:items-end lg:justify-between"
         search={
           <Input
             aria-label="Search loan portfolio"
@@ -172,13 +171,13 @@ export function LoanPortfolioList() {
             onChange={(event) => setSearchQuery(event.target.value)}
           />
         }
-        secondaryFilters={
+        filters={
           <div className="flex flex-wrap gap-wilms-2">
             <Select
               aria-label="Filter by cycle or batch"
               value={cycleBatchFilter}
               onChange={(event) => setCycleBatchFilter(event.target.value)}
-              className="h-10 min-w-[180px] rounded-sm border border-border bg-card px-wilms-3 text-small"
+              className="h-10 min-w-[11rem] rounded-sm border border-border bg-card px-wilms-3 text-small"
             >
               {cycleFilterOptions.map((option) => (
                 <option key={option.value || 'all-cycles'} value={option.value}>
@@ -190,7 +189,7 @@ export function LoanPortfolioList() {
               aria-label="Filter by loan status"
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
-              className="h-10 min-w-[180px] rounded-sm border border-border bg-card px-wilms-3 text-small"
+              className="h-10 min-w-[11rem] rounded-sm border border-border bg-card px-wilms-3 text-small"
             >
               {STATUS_FILTER_OPTIONS.map((option) => (
                 <option key={option.value || 'all-statuses'} value={option.value}>
@@ -201,7 +200,7 @@ export function LoanPortfolioList() {
           </div>
         }
         actions={
-          <div className="flex w-full flex-col gap-wilms-2 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-end">
+          <>
             <ExportCsvButton
               label="Export"
               filename="loan-portfolio.csv"
@@ -222,12 +221,12 @@ export function LoanPortfolioList() {
             <PermissionGate permission={PERMISSION.APPROVE_LOANS}>
               <Link
                 href="/loans/new"
-                className="inline-flex h-10 w-full items-center justify-center rounded-sm border border-brand-primary bg-brand-primary px-wilms-4 text-body font-semibold text-card hover:opacity-90 sm:w-auto"
+                className="inline-flex h-10 items-center justify-center rounded-sm border border-brand-primary bg-brand-primary px-wilms-4 text-body font-semibold text-card hover:opacity-90"
               >
                 Create loan
               </Link>
             </PermissionGate>
-          </div>
+          </>
         }
       />
 

@@ -45,7 +45,7 @@ export function isVarianceAboveThreshold(
   thresholdPercent: number = RECONCILIATION_VARIANCE_THRESHOLD_PERCENT,
 ): boolean {
   if (expectedDuePesewas === 0) {
-    return Math.abs(primaryVariancePesewas) > 0;
+    return false;
   }
 
   const variancePercent = (Math.abs(primaryVariancePesewas) / expectedDuePesewas) * 100;

@@ -53,8 +53,8 @@ describe('reconciliation-summary utils', () => {
     expect(isVarianceAboveThreshold(400, 5000)).toBe(false);
   });
 
-  it('flags any variance when expected collections are zero', () => {
-    expect(isVarianceAboveThreshold(100, 0)).toBe(true);
+  it('does not flag variance when no collections were expected', () => {
+    expect(isVarianceAboveThreshold(100, 0)).toBe(false);
     expect(isVarianceAboveThreshold(0, 0)).toBe(false);
   });
 });

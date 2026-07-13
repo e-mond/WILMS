@@ -39,6 +39,7 @@ export interface LoanPoolListSummaryDto {
   totalPoolFundsPesewas: number;
   activePools: number;
   totalDisbursedPesewas: number;
+  totalCollectedPesewas: number;
   totalOutstandingPesewas: number;
 }
 
@@ -87,8 +88,9 @@ export function mapAllocationToActivity(
 
 export function buildListResponse(pools: LoanPoolSummaryDto[]): LoanPoolListResponseDto {
   const totalDisbursedPesewas = pools.reduce((total, pool) => total + pool.disbursedPesewas, 0);
+  const totalCollectedPesewas = pools.reduce((total, pool) => total + pool.collectedPesewas, 0);
   const totalOutstandingPesewas = pools.reduce((total, pool) => total + pool.outstandingPesewas, 0);
-  const activePools = pools.filter((pool) => pool.status !== 'LAUNCHING').length;
+  const activePools = pools.filter((pool) => pool.capitalPesewas > 0).length;
   const allocationTotal = pools.reduce((total, pool) => total + pool.capitalPesewas, 0) || 1;
 
   return {
@@ -97,6 +99,7 @@ export function buildListResponse(pools: LoanPoolSummaryDto[]): LoanPoolListResp
       totalPoolFundsPesewas: pools.reduce((total, pool) => total + pool.capitalPesewas, 0),
       activePools,
       totalDisbursedPesewas,
+      totalCollectedPesewas,
       totalOutstandingPesewas,
     },
     pools,
