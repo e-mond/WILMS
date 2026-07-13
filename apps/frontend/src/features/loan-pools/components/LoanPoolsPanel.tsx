@@ -150,36 +150,45 @@ export function LoanPoolsPanel() {
           allowing administrators to monitor capital allocation, repayments, and utilization.
         </p>
       </div>
-      <ExecutiveKpiGrid>
+      <div data-tour="loan-pool-kpis">
+      <ExecutiveKpiGrid className="sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
         <KpiCard
           variant="executive"
           label="Total Pool Funds"
           value={<CurrencyAmount value={data.summary.totalPoolFundsPesewas} />}
-          valueClassName="text-brand-primary"
+          valueClassName="text-brand-primary whitespace-nowrap tabular-nums"
           icon={<LoanPoolsKpiIcon name="pool-funds" />}
         />
         <KpiCard
           variant="executive"
           label="Active Pools"
           value={data.summary.activePools}
-          valueClassName="text-brand-primary"
+          valueClassName="text-brand-primary tabular-nums"
           icon={<LoanPoolsKpiIcon name="active-pools" />}
         />
         <KpiCard
           variant="executive"
           label="Total Disbursed"
           value={<CurrencyAmount value={data.summary.totalDisbursedPesewas} />}
-          valueClassName="text-status-active"
+          valueClassName="text-status-active whitespace-nowrap tabular-nums"
+          icon={<LoanPoolsKpiIcon name="disbursed" />}
+        />
+        <KpiCard
+          variant="executive"
+          label="Total Collected"
+          value={<CurrencyAmount value={data.summary.totalCollectedPesewas} />}
+          valueClassName="text-status-active whitespace-nowrap tabular-nums"
           icon={<LoanPoolsKpiIcon name="disbursed" />}
         />
         <KpiCard
           variant="executive"
           label="Total Outstanding"
           value={<CurrencyAmount value={data.summary.totalOutstandingPesewas} />}
-          valueClassName="text-danger"
+          valueClassName="text-danger whitespace-nowrap tabular-nums"
           icon={<LoanPoolsKpiIcon name="outstanding" />}
         />
       </ExecutiveKpiGrid>
+      </div>
 
       <ManagementToolbar
         search={
