@@ -20,6 +20,7 @@ export type ExpenseStatus = (typeof EXPENSE_STATUS)[keyof typeof EXPENSE_STATUS]
 
 export interface ExpenseRecord {
   id: string;
+  displayId?: string;
   category: ExpenseCategory;
   categoryLabel: string;
   amountPesewas: number;

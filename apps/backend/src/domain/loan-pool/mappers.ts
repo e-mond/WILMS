@@ -56,8 +56,7 @@ export function mapPoolRowToSummary(
   return {
     id: row.id,
     displayId: formatPoolDisplayId({
-      region: row.region,
-      name: row.name,
+      createdAt: row.createdAt?.toISOString(),
       sequence,
     }),
     name: row.name,

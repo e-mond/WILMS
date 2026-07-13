@@ -2,6 +2,7 @@ import {
   formatBorrowerDisplayId,
   formatCollectorDisplayId,
   formatEntityDisplayId,
+  formatExpenseDisplayId,
   formatGroupDisplayId,
   formatLoanDisplayId,
   formatPoolDisplayId,
@@ -15,6 +16,7 @@ export {
   formatBorrowerDisplayId,
   formatCollectorDisplayId,
   formatEntityDisplayId,
+  formatExpenseDisplayId,
   formatGroupDisplayId,
   formatLoanDisplayId,
   formatPoolDisplayId,
@@ -57,7 +59,14 @@ export function resolveLoanDisplayId(loan: {
     });
   }
 
-  return loan.id;
+  if (isReadableWilmsId(loan.id)) {
+    return loan.id.toUpperCase();
+  }
+
+  return formatEntityDisplayId({
+    entityType: 'LOAN',
+    entityId: loan.id,
+  });
 }
 
 export function resolvePoolDisplayId(pool: {
@@ -65,31 +74,69 @@ export function resolvePoolDisplayId(pool: {
   displayId?: string;
   region?: string;
   name?: string;
+  createdAt?: string;
 }): string {
   if (pool.displayId) {
     return pool.displayId;
   }
 
-  if (pool.region) {
+  if (pool.region || pool.createdAt) {
     return formatPoolDisplayId({
-      region: pool.region,
-      name: pool.name,
+      createdAt: pool.createdAt,
       sequence: 1,
     });
   }
 
-  return pool.id;
+  if (isReadableWilmsId(pool.id)) {
+    return pool.id.toUpperCase();
+  }
+
+  return formatEntityDisplayId({
+    entityType: 'POOL',
+    entityId: pool.id,
+    entityName: pool.name,
+  });
 }
 
 export function resolveGroupDisplayId(group: {
   id: string;
   groupSystemId?: string;
+  formedAt?: string;
+  displayId?: string;
 }): string {
-  if (group.groupSystemId) {
-    return formatGroupDisplayId(group.groupSystemId);
+  if (group.displayId) {
+    return group.displayId;
   }
 
-  return isReadableWilmsId(group.id) ? group.id : group.id;
+  if (group.groupSystemId) {
+    return formatGroupDisplayId({
+      systemId: group.groupSystemId,
+      createdAt: group.formedAt,
+    });
+  }
+
+  return isReadableWilmsId(group.id)
+    ? group.id.toUpperCase()
+    : formatGroupDisplayId({ createdAt: group.formedAt });
+}
+
+export function resolveExpenseDisplayId(
+  expense: { id: string; displayId?: string; expenseDate?: string; createdAt?: string },
+  sequence?: number,
+): string {
+  if (expense.displayId) {
+    return expense.displayId;
+  }
+
+  if (isReadableWilmsId(expense.id)) {
+    return expense.id.toUpperCase();
+  }
+
+  return formatExpenseDisplayId({
+    expenseDate: expense.expenseDate,
+    createdAt: expense.createdAt,
+    sequence,
+  });
 }
 
 export function resolveUserDisplayId(

@@ -2,6 +2,7 @@ import { formatUserDisplayId } from '@wilms/shared-utils';
 import { BORROWER_STATUS } from '@wilms/shared-contracts';
 import { listBorrowers, listPayments } from '../../db/persistence.js';
 import { isDatabaseEnabled } from '../../db/client.js';
+import * as loanRepo from '../../repositories/loan.repository.js';
 import * as userRepo from '../../repositories/user.repository.js';
 import { listGroupsResponse } from '../groups/service.js';
 import { buildDashboardFinancialOverview } from './financial-overview.js';
@@ -153,21 +154,31 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   let collectorPerformance: DashboardSummary['collectorPerformance'] = [];
   if (isDatabaseEnabled()) {
     const collectors = await userRepo.listCollectors();
-    collectorPerformance = collectors.map(({ user }) => {
-      const actualPesewas = paymentsByCollector.get(user.id) ?? 0;
-      const expectedPesewas = actualPesewas;
-      const collectionRatePercent =
-        expectedPesewas === 0 ? 0 : Math.round((actualPesewas / expectedPesewas) * 100);
-      return {
-        collectorId: user.id,
-        collectorDisplayId: formatUserDisplayId({ id: user.id }),
-        name: user.displayName,
-        expectedPesewas,
-        actualPesewas,
-        collectionRatePercent,
-        variancePesewas: actualPesewas - expectedPesewas,
-      };
-    });
+    collectorPerformance = await Promise.all(
+      collectors.map(async ({ user }, index) => {
+        const actualPesewas = paymentsByCollector.get(user.id) ?? 0;
+        const dueLoans = await loanRepo.listPortfolioLoansForCollector(user.id);
+        const expectedPesewas = dueLoans.reduce(
+          (sum, loan) => sum + loan.weeklyPaymentPesewas,
+          0,
+        );
+        const collectionRatePercent =
+          expectedPesewas === 0
+            ? actualPesewas > 0
+              ? 100
+              : 0
+            : Math.min(100, Math.round((actualPesewas / expectedPesewas) * 100));
+        return {
+          collectorId: user.id,
+          collectorDisplayId: formatUserDisplayId({ id: user.id }),
+          name: user.displayName,
+          expectedPesewas,
+          actualPesewas,
+          collectionRatePercent,
+          variancePesewas: actualPesewas - expectedPesewas,
+        };
+      }),
+    );
   } else {
     collectorPerformance = Array.from(paymentsByCollector.entries()).map(([collectorId, actualPesewas], index) => ({
       collectorId,

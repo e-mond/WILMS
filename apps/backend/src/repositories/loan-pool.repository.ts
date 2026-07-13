@@ -4,6 +4,7 @@ import type { WilmsDb } from '../db/client.js';
 import { getDb } from '../db/client.js';
 import { loanPools, poolAllocations, poolMemberships } from '../db/schema/loan-pools.js';
 import type { PoolAllocationTotals } from '../domain/loan-pool/balance.js';
+import { derivePoolAggregates } from '../domain/loan-pool/balance.js';
 
 export async function listPools(tx: WilmsDb = getDb()) {
   return tx.select().from(loanPools).orderBy(asc(loanPools.name));
@@ -157,4 +158,33 @@ export async function updatePoolAggregates(
       updatedAt: new Date(),
     })
     .where(eq(loanPools.id, poolId));
+}
+
+/** Recompute denormalized pool totals from append-only allocation rows. */
+export async function refreshPoolAggregates(poolId: string, tx: WilmsDb = getDb()) {
+  const pool = await findPoolById(poolId, tx);
+  if (!pool) {
+    return;
+  }
+
+  const totals = await sumAllocationTotals(poolId, tx);
+  const groupCount = await countPoolMemberships(poolId, tx);
+  const aggregates = derivePoolAggregates({
+    capitalPesewas: pool.capitalPesewas,
+    totals,
+  });
+
+  await updatePoolAggregates(
+    poolId,
+    {
+      disbursedPesewas: aggregates.disbursedPesewas,
+      collectedPesewas: aggregates.collectedPesewas,
+      outstandingPesewas: aggregates.outstandingPesewas,
+      utilisationPercent: aggregates.utilisationPercent,
+      repaymentRatePercent: aggregates.repaymentRatePercent.toFixed(1),
+      status: aggregates.status,
+      groupCount,
+    },
+    tx,
+  );
 }

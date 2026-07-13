@@ -5,7 +5,11 @@
  * Audit entries are best-effort async after commit (P14.3A pattern).
  */
 import { z } from 'zod';
-import { isDatabaseEnabled, runInTransaction } from '../../db/client.js';
+import { and, eq, isNull } from 'drizzle-orm';
+import { USER_ROLE } from '@wilms/shared-rbac';
+import { isDatabaseEnabled, runInTransaction, getDb } from '../../db/client.js';
+import { financialReconciliations } from '../../db/schema/financial-reconciliations.js';
+import { users } from '../../db/schema/users.js';
 import { buildReconciliationSnapshot } from '../../domain/reconciliation/snapshot.js';
 import {
   mapReconciliationRowToSummary,
@@ -16,6 +20,8 @@ import {
   type ReconciliationSummary,
 } from '../../domain/reconciliation/types.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
+import { createInAppNotification } from '../../infrastructure/notifications/in-app-notify.js';
+import { sendPushToUser } from '../notifications/push.service.js';
 import { runWithIdempotency } from '../../infrastructure/idempotency/run-with-idempotency.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import * as paymentRepo from '../../repositories/payment.repository.js';
@@ -204,7 +210,98 @@ export async function submitReconciliation(
           : undefined,
       });
 
+      void notifySuperAdminsOfReconciliation(summary, input.actorDisplayName);
+
       return summary;
     },
   });
+}
+
+async function notifySuperAdminsOfReconciliation(
+  summary: ReconciliationSummary,
+  actorDisplayName?: string,
+): Promise<void> {
+  const title = summary.varianceFlagged
+    ? 'Reconciliation requires review'
+    : 'Reconciliation submitted';
+  const body = `${actorDisplayName ?? 'Collector'} submitted reconciliation for ${summary.date}${
+    summary.varianceFlagged ? ' — variance exceeds threshold.' : '.'
+  }`;
+
+  if (!isDatabaseEnabled()) {
+    return;
+  }
+
+  try {
+    const db = getDb();
+    const supervisors = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(and(eq(users.role, USER_ROLE.SUPER_ADMIN), isNull(users.deletedAt)));
+
+    await Promise.all(
+      supervisors.map(async (supervisor) => {
+        await createInAppNotification({
+          userId: supervisor.id,
+          event: 'SUPERVISOR_ALERT',
+          title,
+          body,
+          href: '/reports/daily-collection',
+        });
+        await sendPushToUser(supervisor.id, {
+          title,
+          body,
+          url: '/reports/daily-collection',
+          category: 'RECONCILIATION',
+        });
+      }),
+    );
+  } catch {
+    // Notification delivery is best-effort when persistence is unavailable.
+  }
+}
+
+export const reviewReconciliationSchema = z.object({
+  status: z.enum([
+    'PENDING_REVIEW',
+    'UNDER_INVESTIGATION',
+    'APPROVED',
+    'REJECTED',
+    'REOPENED',
+  ]),
+  resolutionNotes: z.string().optional(),
+  reviewerUserId: z.string().min(1),
+});
+
+export async function reviewReconciliation(
+  reconciliationId: string,
+  input: z.infer<typeof reviewReconciliationSchema>,
+): Promise<ReconciliationSummary> {
+  requireDatabase();
+
+  const row = await reconciliationRepo.findReconciliationById(reconciliationId);
+  if (!row) {
+    throw new Error('NOT_FOUND');
+  }
+
+  const db = getDb();
+  const reviewedAt = new Date();
+
+  await db
+    .update(financialReconciliations)
+    .set({
+      status: input.status,
+      reviewedByUserId: input.reviewerUserId,
+      reviewedAt,
+      resolutionNotes: input.resolutionNotes?.trim() ?? null,
+    })
+    .where(eq(financialReconciliations.id, reconciliationId));
+
+  const [updated] = await db
+    .select()
+    .from(financialReconciliations)
+    .where(eq(financialReconciliations.id, reconciliationId))
+    .limit(1);
+
+  return mapReconciliationRowToSummary(updated!);
 }

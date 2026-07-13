@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Current release** | `v1.3.7-rc1` |
+| **Current release** | `v1.3.7-rc2` |
 | **Release type** | Release Candidate (stability & business logic) |
 | **Target stable** | `v1.3.7` |
 | **Previous release** | `v1.3.6-rc1` |
@@ -12,9 +12,9 @@
 
 | Package | Version |
 |---------|---------|
-| `wilms` (root) | `1.3.7-rc1` |
-| `@wilms/frontend` | `1.3.7-rc1` |
-| `@wilms/api` | `1.3.7-rc1` |
+| `wilms` (root) | `1.3.7-rc2` |
+| `@wilms/frontend` | `1.3.7-rc2` |
+| `@wilms/api` | `1.3.7-rc2` |
 
 ## Promotion criteria (v1.3.7 stable)
 

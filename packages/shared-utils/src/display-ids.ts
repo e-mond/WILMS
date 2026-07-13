@@ -38,19 +38,42 @@ export function formatLoanDisplayId(input: {
 }
 
 export function formatPoolDisplayId(input: {
-  region: string;
+  region?: string;
   name?: string;
+  createdAt?: string;
   sequence?: number;
 }): string {
-  const regionCode = normalizeCode(input.region, 3);
+  const year = (input.createdAt ?? new Date().toISOString()).slice(0, 4);
   const sequence = input.sequence ?? 1;
 
-  return `POOL-${regionCode}-${String(sequence).padStart(3, '0')}`;
+  return `POOL-${year}-${String(sequence).padStart(3, '0')}`;
 }
 
-export function formatGroupDisplayId(systemId: string | null | undefined): string {
-  const normalized = systemId?.trim();
-  return normalized ? normalized.toUpperCase() : 'GRP-000';
+export function formatGroupDisplayId(input: {
+  systemId?: string | null;
+  createdAt?: string;
+  sequence?: number;
+}): string {
+  const systemId = input.systemId?.trim();
+  if (systemId && /^(GRP|POOL|EXP|LOAN)-/i.test(systemId)) {
+    return systemId.toUpperCase();
+  }
+
+  const year = (input.createdAt ?? new Date().toISOString()).slice(0, 4);
+  const sequence = input.sequence ?? 1;
+
+  return `GRP-${year}-${String(sequence).padStart(3, '0')}`;
+}
+
+export function formatExpenseDisplayId(input: {
+  expenseDate?: string;
+  createdAt?: string;
+  sequence?: number;
+}): string {
+  const year = (input.expenseDate ?? input.createdAt ?? new Date().toISOString()).slice(0, 4);
+  const sequence = input.sequence ?? 1;
+
+  return `EXP-${year}-${String(sequence).padStart(3, '0')}`;
 }
 
 export function formatEntityDisplayId(input: {
@@ -121,5 +144,5 @@ export function formatDisbursementDisplayId(input: {
 }
 
 export function isReadableWilmsId(value: string): boolean {
-  return /^(BWR|BOR|COL|GRP|LOAN|POOL|ENT|USR|TXN|DIS|MEM)-/i.test(value.trim());
+  return /^(BWR|BOR|COL|GRP|LOAN|POOL|ENT|USR|TXN|DIS|MEM|EXP)-/i.test(value.trim());
 }
