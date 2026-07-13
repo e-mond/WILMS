@@ -18,6 +18,7 @@ import { ToastContainer } from '@/components/feedback/ToastContainer';
 import { PwaInstallBanner } from '@/components/pwa/PwaInstallBanner';
 import { PwaIosInstallPrompt } from '@/components/pwa/PwaIosInstallPrompt';
 import { AppUpdatePrompt } from '@/components/pwa/AppUpdatePrompt';
+import { ChunkRecoveryHandler } from '@/components/pwa/ChunkRecoveryHandler';
 import { ServiceWorkerRegistrar } from '@/components/pwa/ServiceWorkerRegistrar';
 import { getServerSession } from '@/lib/auth/server-session';
 import '@/styles/globals.css';
@@ -55,6 +56,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-background text-text-primary">
         <SkipToContent />
         <ServiceWorkerRegistrar />
+        <ChunkRecoveryHandler />
         <AppUpdatePrompt />
         {isDemoMode() ? (
           <>

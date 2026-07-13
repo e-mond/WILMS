@@ -14,6 +14,7 @@ import { QueryErrorState } from '@/components/feedback/QueryErrorState';
 import { AuditLogTableSkeleton } from '@/components/feedback/AuditLogTableSkeleton';
 import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
 import { AUDIT_ACTION_FILTER_OPTIONS, AUDIT_ACTION_LABELS } from '@/constants/audit-display';
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
 import { WILMS_REPORT_TYPE } from '@/features/export';
@@ -25,6 +26,7 @@ import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { settingsService } from '@/services';
 import type { AuditEntry } from '@/types/services';
 import { resolveEntityDisplayId, resolveUserDisplayId } from '@/utils/entity-display-id';
+import { groupAuditEntriesByPeriod } from '@/utils/audit-log-groups';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
 import { formatDisplayDate } from '@/utils/format-date';
 import { cn } from '@/utils/cn';
@@ -89,6 +91,10 @@ export function AuditLogReportPanel() {
   const [toDate, setToDate] = useState('');
   const [actorFilter, setActorFilter] = useState('');
   const [actionFilter, setActionFilter] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+  const pageSize = 25;
 
   const usersQuery = useQuery({
     queryKey: ['settings-users-filter'],
@@ -131,7 +137,43 @@ export function AuditLogReportPanel() {
     [data],
   );
 
-  const entries = data ?? [];
+  const entries = useMemo(() => data ?? [], [data]);
+
+  const filteredEntries = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) {
+      return entries;
+    }
+
+    return entries.filter((entry) => {
+      const haystack = [
+        resolveActorLabel(entry),
+        entry.action,
+        entry.targetEntityType,
+        resolveTargetEntityLabel(entry),
+        entry.reason ?? '',
+      ]
+        .join(' ')
+        .toLowerCase();
+
+      return haystack.includes(query);
+    });
+  }, [entries, searchQuery]);
+
+  const pagedEntries = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filteredEntries.slice(start, start + pageSize);
+  }, [filteredEntries, page]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredEntries.length / pageSize));
+
+  const groupedEntries = useMemo(
+    () =>
+      groupAuditEntriesByPeriod(
+        pagedEntries.map((entry) => ({ ...entry, timestamp: entry.createdAt })),
+      ),
+    [pagedEntries],
+  );
 
   const asideContent = useMemo(
     () => <AuditLogAsidePanel entriesLoaded={entries.length} />,
@@ -167,6 +209,17 @@ export function AuditLogReportPanel() {
       </ExecutiveKpiGrid>
 
       <ManagementToolbar
+        search={
+          <Input
+            aria-label="Search audit log"
+            placeholder="Search user, action, entity, or reason"
+            value={searchQuery}
+            onChange={(event) => {
+              setSearchQuery(event.target.value);
+              setPage(1);
+            }}
+          />
+        }
         filters={
           <FilterDropdownRow>
             <label className="flex min-w-[9rem] flex-col gap-wilms-1">
@@ -216,19 +269,43 @@ export function AuditLogReportPanel() {
         }
       />
 
-      {entries.length === 0 ? (
+      {filteredEntries.length === 0 ? (
         <GuidedEmptyState
           {...EMPTY_STATE_COPY.reports}
           title="No audit entries"
           description="Adjust filters or perform system actions to populate the log."
         />
       ) : (
-        <DataTable<AuditEntry>
-          variant="executive"
-          caption="Audit log entries"
-          data={entries}
-          getRowId={(entry) => entry.id}
-          columns={[
+        <div className="space-y-wilms-6">
+          {groupedEntries.map((group) => {
+            const collapsed = collapsedGroups[group.key] ?? false;
+            return (
+              <section key={group.key} className="rounded-sm border border-border bg-card">
+                <button
+                  type="button"
+                  className="flex w-full items-center justify-between px-wilms-4 py-wilms-3 text-left"
+                  aria-expanded={!collapsed}
+                  onClick={() =>
+                    setCollapsedGroups((current) => ({
+                      ...current,
+                      [group.key]: !collapsed,
+                    }))
+                  }
+                >
+                  <span className="text-heading-3 font-semibold text-text-primary">
+                    {group.label}
+                  </span>
+                  <span className="text-small text-text-muted">{group.entries.length} entries</span>
+                </button>
+                {!collapsed ? (
+                  <div className="border-t border-border p-wilms-3">
+                    <DataTable<AuditEntry>
+                      variant="executive"
+                      layout="auto"
+                      caption={`${group.label} audit entries`}
+                      data={group.entries}
+                      getRowId={(entry) => entry.id}
+                      columns={[
             {
               id: 'createdAt',
               header: 'Date & Time',
@@ -308,7 +385,43 @@ export function AuditLogReportPanel() {
               ),
             },
           ]}
-        />
+                    />
+                  </div>
+                ) : null}
+              </section>
+            );
+          })}
+
+          <div className="flex flex-col gap-wilms-2 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-small text-text-muted">
+              Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, filteredEntries.length)} of{' '}
+              {filteredEntries.length}
+            </p>
+            <div className="flex items-center gap-wilms-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                disabled={page <= 1}
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+              >
+                Previous
+              </Button>
+              <span className="text-small text-text-muted">
+                Page {page} of {totalPages}
+              </span>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                disabled={page >= totalPages}
+                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -1,3 +1,35 @@
+# WILMS v1.3.7-rc2 Release Notes
+
+**Release type:** Release Candidate (UI, financial visibility & workflow)  
+**Target stable:** v1.3.7  
+**Date:** July 2026
+
+## Overview
+
+v1.3.7-rc2 improves executive financial visibility, human-readable identifiers, collector workflows, notifications, reconciliation tracking, and responsive layout across disbursement, collections, expenses, and audit modules.
+
+## Highlights
+
+| Area | Change |
+|------|--------|
+| Financial dashboard | Cards/Charts toggle; KPIs reconcile loans + pool allocations |
+| Display IDs | `POOL-2026-001`, `GRP-2026-015`, `EXP-2026-042`, loan fallbacks |
+| Expenses | Auto-recorded (no approval); collector history view |
+| Reconciliation | Lifecycle statuses + Super Admin alerts |
+| Messaging | Collector inbox notifications + push |
+| Audit log | Period grouping, search, pagination |
+| Resilience | Stale bundle auto-recovery after deploy |
+
+## Verification
+
+- [x] Backend type-check
+- [x] Frontend type-check
+- [x] ESLint
+- [x] Backend unit tests (128)
+- [x] Frontend unit tests (482)
+
+---
+
 # WILMS v1.3.7-rc1 Release Notes
 
 **Release type:** Release Candidate (stability & business logic)  

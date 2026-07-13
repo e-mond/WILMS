@@ -18,6 +18,7 @@ import { notifyPaymentReceived, notifyMissedPayment, notifyLoanFullyPaid } from 
 import * as ledgerRepo from '../../repositories/ledger.repository.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import * as paymentRepo from '../../repositories/payment.repository.js';
+import * as poolRepo from '../../repositories/loan-pool.repository.js';
 import * as scheduleRepo from '../../repositories/loan-schedule.repository.js';
 import { getSettings } from '../settings/service.js';
 
@@ -249,6 +250,23 @@ async function postPayment(
       },
       tx,
     );
+
+    if (activeLoan.loanPoolId) {
+      await poolRepo.appendAllocation(
+        {
+          poolId: activeLoan.loanPoolId,
+          allocationType: 'REPAYMENT',
+          amountPesewas: input.amountPesewas,
+          loanId: loan.id,
+          borrowerId: input.borrowerId,
+          paymentId: payment.id,
+          description: `Repayment week ${weekNumber}`,
+          actorUserId: actorId,
+        },
+        tx,
+      );
+      await poolRepo.refreshPoolAggregates(activeLoan.loanPoolId, tx);
+    }
 
     return payment;
   });

@@ -47,7 +47,9 @@ export function buildReconciliationSnapshot(input: {
     varianceFlagged,
     thresholdPercent: input.thresholdPercent,
     comment: input.comment,
-    status: RECONCILIATION_STATUS.SUBMITTED,
+    status: varianceFlagged
+      ? RECONCILIATION_STATUS.PENDING_REVIEW
+      : RECONCILIATION_STATUS.APPROVED,
     submittedAt: input.submittedAt.toISOString(),
   };
 }

@@ -46,11 +46,11 @@ describe('AuditLogReportPanel', () => {
       </TestAppProviders>,
     );
 
-    expect(await screen.findByRole('table', { name: 'Audit log entries' })).toBeInTheDocument();
-    expect(screen.getAllByText('Payment recorded').length).toBeGreaterThan(0);
+    expect(await screen.findByRole('button', { name: 'Export' })).toBeInTheDocument();
+    expect((await screen.findAllByText('Payment recorded')).length).toBeGreaterThan(0);
     expect(screen.getAllByText('Borrower registered').length).toBeGreaterThan(0);
-    expect(screen.getByRole('button', { name: 'Export' })).toBeInTheDocument();
     expect(screen.getByText('Log Status')).toBeInTheDocument();
     expect(screen.getByText('Immutable')).toBeInTheDocument();
+    expect(screen.getAllByRole('table').length).toBeGreaterThan(0);
   });
 });

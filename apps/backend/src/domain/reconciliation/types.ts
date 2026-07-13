@@ -9,6 +9,11 @@ export type ReconciliationVarianceClass =
 
 export const RECONCILIATION_STATUS = {
   SUBMITTED: 'SUBMITTED',
+  PENDING_REVIEW: 'PENDING_REVIEW',
+  UNDER_INVESTIGATION: 'UNDER_INVESTIGATION',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  REOPENED: 'REOPENED',
 } as const;
 
 export type ReconciliationStatus =
@@ -34,6 +39,7 @@ export interface ReconciliationSnapshot {
 }
 
 export interface ReconciliationSummary {
+  id?: string;
   collectorId: string;
   date: string;
   expectedPesewas: number;
@@ -43,4 +49,9 @@ export interface ReconciliationSummary {
   varianceFlagged?: boolean;
   submitted: boolean;
   submittedAt?: string;
+  status?: ReconciliationStatus;
+  submittedById?: string;
+  reviewedById?: string;
+  reviewedAt?: string;
+  resolutionNotes?: string;
 }

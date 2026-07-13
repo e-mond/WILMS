@@ -3,6 +3,7 @@ export {
   formatBorrowerDisplayId,
   formatCollectorDisplayId,
   formatEntityDisplayId,
+  formatExpenseDisplayId,
   formatGroupDisplayId,
   formatLoanDisplayId,
   formatDisbursementDisplayId,
