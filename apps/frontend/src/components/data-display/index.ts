@@ -7,6 +7,7 @@ export { GroupRiskCard, type GroupRiskCardProps } from './GroupRiskCard';
 export { UtilisationBar, type UtilisationBarProps } from './UtilisationBar';
 export { KpiCard, type KpiCardProps } from './KpiCard';
 export { CurrencyAmount, type CurrencyAmountProps } from './CurrencyAmount';
+export { VarianceAmount, type VarianceAmountProps } from './VarianceAmount';
 export { DataTable, type DataTableColumn, type DataTableProps } from './DataTable';
 export { LoanScheduleTable, type LoanScheduleTableProps } from './LoanScheduleTable';
 export { LoanStatusBadge, type LoanStatusBadgeProps } from './LoanStatusBadge';

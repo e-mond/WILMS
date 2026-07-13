@@ -1,6 +1,8 @@
 'use client';
 
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
+import { attemptChunkRecovery, isChunkLoadError } from '@/lib/chunk-recovery';
 
 export default function RegistrationOfficerError({
   error,
@@ -9,7 +11,13 @@ export default function RegistrationOfficerError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  const isChunkError = error.name === 'ChunkLoadError' || error.message.includes('Loading chunk');
+  const isChunkError = isChunkLoadError(error);
+
+  useEffect(() => {
+    if (isChunkError) {
+      attemptChunkRecovery();
+    }
+  }, [isChunkError]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-wilms-4 bg-background px-wilms-4 text-center">
@@ -18,7 +26,7 @@ export default function RegistrationOfficerError({
       </h1>
       <p className="max-w-md text-body text-text-muted">
         {isChunkError
-          ? 'The registration officer workspace could not load. Try again or refresh the page.'
+          ? 'A newer version of WILMS is available. The page will refresh automatically — or use the button below.'
           : error.message}
       </p>
       <div className="flex flex-wrap justify-center gap-wilms-2">

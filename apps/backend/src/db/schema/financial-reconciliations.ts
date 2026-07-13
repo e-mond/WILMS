@@ -6,7 +6,6 @@
  *
  * Retention: indefinite — financial control records; no soft-delete on submissions.
  */
-import { sql } from 'drizzle-orm';
 import { boolean, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { users } from './users';
 import {
@@ -39,12 +38,16 @@ export const financialReconciliations = pgTable(
     comment: text('comment'),
     status: reconciliationStatusEnum('status').notNull().default('SUBMITTED'),
     submittedAt: timestamp('submitted_at', { withTimezone: true }).notNull(),
+    reviewedByUserId: uuid('reviewed_by_user_id').references(() => users.id),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+    resolutionNotes: text('resolution_notes'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
-    uniqueIndex('financial_reconciliations_collector_date_submitted_uidx')
-      .on(table.collectorUserId, table.reconciliationDate)
-      .where(sql`${table.status} = 'SUBMITTED'`),
+    uniqueIndex('financial_reconciliations_collector_date_uidx').on(
+      table.collectorUserId,
+      table.reconciliationDate,
+    ),
   ],
 );
 

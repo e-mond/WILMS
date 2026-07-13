@@ -31,7 +31,7 @@ import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { DashboardRecentActivity } from '@/features/super-admin-dashboard/components/DashboardRecentActivity';
 import { cn } from '@/utils/cn';
-import { Switch } from '@/components/ui/Switch';
+import { Select } from '@/components/ui/Select';
 
 const KPI_ICON_NAMES: Record<string, DashboardKpiIconName> = {
   pool: 'pool',
@@ -100,7 +100,8 @@ function SuperAdminDashboardContent({
   borrowerTotal: number;
 }) {
   const generatedBy = useWilmsExportActor();
-  const [financialAnalytics, setFinancialAnalytics] = useState(false);
+  const [financialView, setFinancialView] = useState<'cards' | 'charts'>('cards');
+  const [chartType, setChartType] = useState<'bar' | 'line' | 'area' | 'pie'>('bar');
   const exportDocument = useMemo(
     () => buildDashboardExportDocument({ summary: data, generatedBy }),
     [data, generatedBy],
@@ -202,20 +203,62 @@ function SuperAdminDashboardContent({
               Organisation-wide financial health from backend transactional data
             </p>
           </div>
-          <Switch
-            checked={financialAnalytics}
-            onChange={setFinancialAnalytics}
-            label="Analytics view"
-            aria-describedby="dashboard-financial-overview-heading"
-          />
+          <div className="flex flex-col gap-wilms-2 sm:flex-row sm:items-center">
+            <div
+              className="inline-flex rounded-sm border border-border bg-background p-1"
+              role="group"
+              aria-label="Financial overview display mode"
+            >
+              <button
+                type="button"
+                className={cn(
+                  'rounded-sm px-wilms-3 py-wilms-2 text-small font-semibold transition-colors',
+                  financialView === 'cards'
+                    ? 'bg-brand-primary text-card'
+                    : 'text-text-muted hover:text-text-primary',
+                )}
+                onClick={() => setFinancialView('cards')}
+              >
+                Cards
+              </button>
+              <button
+                type="button"
+                className={cn(
+                  'rounded-sm px-wilms-3 py-wilms-2 text-small font-semibold transition-colors',
+                  financialView === 'charts'
+                    ? 'bg-brand-primary text-card'
+                    : 'text-text-muted hover:text-text-primary',
+                )}
+                onClick={() => setFinancialView('charts')}
+              >
+                Charts
+              </button>
+            </div>
+            {financialView === 'charts' ? (
+              <Select
+                aria-label="Chart type"
+                value={chartType}
+                onChange={(event) =>
+                  setChartType(event.target.value as 'bar' | 'line' | 'area' | 'pie')
+                }
+                className="h-10 min-w-[9rem] rounded-sm border border-border bg-card px-wilms-3 text-small"
+              >
+                <option value="bar">Bar</option>
+                <option value="line">Line</option>
+                <option value="area">Area</option>
+                <option value="pie">Pie</option>
+              </Select>
+            ) : null}
+          </div>
         </div>
 
         {data.financialOverview ? (
           <div className="mb-wilms-8">
-            {financialAnalytics ? (
+            {financialView === 'charts' ? (
               <DashboardFinancialAnalyticsPanel
                 overview={data.financialOverview}
-                collectorPerformance={data.collectorPerformance}
+                collectorPerformance={data.collectorPerformance ?? []}
+                chartType={chartType}
               />
             ) : (
               <DashboardFinancialOverviewPanel overview={data.financialOverview} />
@@ -317,7 +360,7 @@ function SuperAdminDashboardContent({
           <h2 className="mb-wilms-4 text-heading-2 font-semibold text-text-primary">
             Collector Performance
           </h2>
-          <DashboardCollectorPerformance rows={data.collectorPerformance} />
+          <DashboardCollectorPerformance rows={data.collectorPerformance ?? []} />
         </section>
 
         <div className="min-w-0 rounded-sm border border-border bg-card p-wilms-5">

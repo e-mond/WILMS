@@ -5,6 +5,7 @@ import {
   formatEntityDisplayId,
   formatLoanDisplayId,
   formatPaymentDisplayId,
+  formatExpenseDisplayId,
   formatPoolDisplayId,
   isReadableWilmsId,
 } from '@wilms/shared-utils';
@@ -39,14 +40,17 @@ describe('display id formatters', () => {
     ).toBe('LOAN-CYCLE1JA-202605-0002');
   });
 
-  it('formats pool ids from region and sequence', () => {
+  it('formats pool ids from year and sequence', () => {
     expect(
       formatPoolDisplayId({
-        region: 'Greater Accra',
-        name: 'Accra Metro Pool',
+        createdAt: '2026-03-01T00:00:00.000Z',
         sequence: 2,
       }),
-    ).toBe('POOL-GRE-002');
+    ).toBe('POOL-2026-002');
+  });
+
+  it('formats expense ids from year and sequence', () => {
+    expect(formatExpenseDisplayId({ expenseDate: '2026-07-04', sequence: 42 })).toBe('EXP-2026-042');
   });
 
   it('formats entity ids and detects readable WILMS ids', () => {

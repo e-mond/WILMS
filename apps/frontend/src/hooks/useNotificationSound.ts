@@ -59,13 +59,29 @@ export function playLogoutSound(): void {
   playTone(440, 120);
 }
 
+export function playMessageSound(): void {
+  playTone(587, 140);
+}
+
+export function playSecurityAlertSound(): void {
+  playTone(330, 220);
+}
+
+export function playLoanDecisionSound(approved: boolean): void {
+  playTone(approved ? 784 : 392, approved ? 160 : 200);
+}
+
 export function useNotificationSound() {
   return {
     playLogin: playLoginSound,
     playLogout: playLogoutSound,
     playApproval: () => playTone(784, 160),
+    playRejection: () => playTone(392, 200),
     playAssignment: () => playTone(523, 140),
     playInvite: () => playTone(698, 140),
+    playMessage: playMessageSound,
+    playSecurityAlert: playSecurityAlertSound,
+    playLoanDecision: playLoanDecisionSound,
     setEnabled: setNotificationSoundsEnabled,
     isEnabled: areNotificationSoundsEnabled,
   };

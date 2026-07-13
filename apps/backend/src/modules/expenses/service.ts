@@ -1,10 +1,12 @@
 import { eq, isNull } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
+import { formatExpenseDisplayId } from '@wilms/shared-utils';
 import { isDatabaseEnabled, getDb } from '../../db/client.js';
 import { expenses } from '../../db/schema/expenses.js';
 
 export interface ExpenseRecord {
   id: string;
+  displayId: string;
   category: string;
   categoryLabel: string;
   amountPesewas: number;
@@ -31,9 +33,18 @@ export interface ExpenseListResponse {
 
 const memoryExpenses: ExpenseRecord[] = [];
 
-function rowToRecord(row: typeof expenses.$inferSelect, recordedByName = 'Collector'): ExpenseRecord {
+function rowToRecord(
+  row: typeof expenses.$inferSelect,
+  recordedByName = 'Collector',
+  sequence = 1,
+): ExpenseRecord {
   return {
     id: row.id,
+    displayId: formatExpenseDisplayId({
+      expenseDate: row.expenseDate,
+      createdAt: row.createdAt.toISOString(),
+      sequence,
+    }),
     category: row.category,
     categoryLabel: row.categoryLabel,
     amountPesewas: row.amountPesewas,
@@ -53,9 +64,7 @@ function buildSummary(items: ExpenseRecord[]): ExpenseListResponse['summary'] {
   const pending = items.filter((entry) => entry.status === 'PENDING');
   return {
     pendingCount: pending.length,
-    approvedTotalPesewas: items
-      .filter((entry) => entry.status === 'APPROVED')
-      .reduce((sum, entry) => sum + entry.amountPesewas, 0),
+    approvedTotalPesewas: items.reduce((sum, entry) => sum + entry.amountPesewas, 0),
     pendingTotalPesewas: pending.reduce((sum, entry) => sum + entry.amountPesewas, 0),
   };
 }
@@ -67,7 +76,13 @@ async function loadExpenses(): Promise<ExpenseRecord[]> {
 
   const db = getDb();
   const rows = await db.select().from(expenses).where(isNull(expenses.deletedAt));
-  return rows.map((row) => rowToRecord(row));
+  const yearCounters = new Map<string, number>();
+  return rows.map((row) => {
+    const year = row.expenseDate.slice(0, 4);
+    const nextSequence = (yearCounters.get(year) ?? 0) + 1;
+    yearCounters.set(year, nextSequence);
+    return rowToRecord(row, 'Collector', nextSequence);
+  });
 }
 
 export async function listExpenses(): Promise<ExpenseListResponse> {
@@ -90,8 +105,10 @@ export async function createExpense(input: {
   recordedById: string;
   recordedByName: string;
 }): Promise<ExpenseRecord> {
+  const now = new Date();
   const created: ExpenseRecord = {
     id: uuidv7(),
+    displayId: formatExpenseDisplayId({ expenseDate: input.expenseDate, createdAt: now.toISOString() }),
     category: input.category,
     categoryLabel: input.category.replace(/_/g, ' '),
     amountPesewas: input.amountPesewas,
@@ -103,8 +120,8 @@ export async function createExpense(input: {
     gpsLabel: input.gpsLabel,
     recordedById: input.recordedById,
     recordedByName: input.recordedByName,
-    status: 'PENDING',
-    createdAt: new Date().toISOString(),
+    status: 'APPROVED',
+    createdAt: now.toISOString(),
   };
 
   if (isDatabaseEnabled()) {
@@ -120,7 +137,9 @@ export async function createExpense(input: {
       receiptUploadId: input.receiptUploadId ?? null,
       gpsLabel: input.gpsLabel ?? null,
       recordedByUserId: input.recordedById,
-      status: 'PENDING',
+      status: 'APPROVED',
+      reviewedByUserId: input.recordedById,
+      reviewedAt: now,
     });
   } else {
     memoryExpenses.unshift(created);
@@ -172,7 +191,7 @@ export async function getExpenseSummary(): Promise<{
   monthPesewas: number;
   yearPesewas: number;
 }> {
-  const items = (await loadExpenses()).filter((entry) => entry.status === 'APPROVED');
+  const items = await loadExpenses();
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const startOfWeek = new Date(startOfDay);

@@ -10,6 +10,7 @@ import {
   type SplashPhase,
 } from '@/components/feedback/PremiumSplashScreen';
 import { WilmsSplashScreen } from '@/components/feedback/WilmsSplashScreen';
+import { clearChunkRecoveryAttempt } from '@/lib/chunk-recovery';
 import { useAppLockStore } from '@/state/appLockStore';
 import { useAuthStore } from '@/state/authStore';
 import { useThemeStore } from '@/state/themeStore';
@@ -54,6 +55,12 @@ export function AppBootstrap({ children }: AppBootstrapProps) {
       window.clearTimeout(fadeTimer);
     };
   }, [splashDone, reduceMotion]);
+
+  useEffect(() => {
+    if (storesReady) {
+      clearChunkRecoveryAttempt();
+    }
+  }, [storesReady]);
 
   useEffect(() => {
     if (!storesReady || splashDone) {

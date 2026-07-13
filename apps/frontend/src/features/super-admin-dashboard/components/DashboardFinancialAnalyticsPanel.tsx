@@ -10,6 +10,7 @@ import { cn } from '@/utils/cn';
 export interface DashboardFinancialAnalyticsPanelProps {
   overview: DashboardFinancialOverview;
   collectorPerformance: DashboardCollectorPerformanceRow[];
+  chartType?: 'bar' | 'line' | 'area' | 'pie';
 }
 
 interface BarChartItem {
@@ -86,9 +87,121 @@ function HorizontalBarChart({
   );
 }
 
+function PieChart({
+  title,
+  description,
+  items,
+}: {
+  title: string;
+  description?: string;
+  items: BarChartItem[];
+}) {
+  const total = items.reduce((sum, item) => sum + item.value, 0) || 1;
+  let cursor = 0;
+
+  const slices = items.map((item) => {
+    const start = cursor;
+    const angle = (item.value / total) * 360;
+    cursor += angle;
+    return { ...item, start, angle };
+  });
+
+  return (
+    <section className="rounded-sm border border-border bg-background p-wilms-5 sm:p-wilms-6">
+      <div className="mb-wilms-5 space-y-wilms-1">
+        <h3 className="text-heading-3 font-semibold text-text-primary">{title}</h3>
+        {description ? <p className="text-small text-text-muted">{description}</p> : null}
+      </div>
+      <div className="flex flex-col gap-wilms-4 sm:flex-row sm:items-center">
+        <svg viewBox="0 0 36 36" className="mx-auto h-36 w-36 shrink-0" role="img" aria-label={title}>
+          {slices.map((slice) => {
+            const radius = 16;
+            const circumference = 2 * Math.PI * radius;
+            const dash = (slice.angle / 360) * circumference;
+            const offset = (slice.start / 360) * circumference;
+            return (
+              <circle
+                key={slice.label}
+                r={radius}
+                cx="18"
+                cy="18"
+                fill="transparent"
+                strokeWidth="4"
+                stroke="currentColor"
+                className={cn('text-brand-primary', slice.tone === 'success' && 'text-status-active', slice.tone === 'danger' && 'text-danger', slice.tone === 'gold' && 'text-executive-gold')}
+                strokeDasharray={`${dash} ${circumference - dash}`}
+                strokeDashoffset={-offset}
+                transform="rotate(-90 18 18)"
+              />
+            );
+          })}
+        </svg>
+        <ul className="min-w-0 flex-1 space-y-wilms-2" role="list">
+          {items.map((item) => (
+            <li key={item.label} className="flex items-center justify-between gap-wilms-2 text-small">
+              <span className="font-medium text-text-primary">{item.label}</span>
+              <CurrencyAmount value={item.value} />
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+function TrendChart({
+  title,
+  description,
+  items,
+  chartType,
+}: {
+  title: string;
+  description?: string;
+  items: BarChartItem[];
+  chartType: 'line' | 'area';
+}) {
+  const max = Math.max(...items.map((item) => item.value), 1);
+  const width = 320;
+  const height = 120;
+  const points = items.map((item, index) => {
+    const x = (index / Math.max(items.length - 1, 1)) * width;
+    const y = height - (item.value / max) * height;
+    return { x, y, item };
+  });
+  const linePath = points.map((point, index) => `${index === 0 ? 'M' : 'L'}${point.x},${point.y}`).join(' ');
+  const areaPath = `${linePath} L${width},${height} L0,${height} Z`;
+
+  return (
+    <section className="rounded-sm border border-border bg-background p-wilms-5 sm:p-wilms-6">
+      <div className="mb-wilms-5 space-y-wilms-1">
+        <h3 className="text-heading-3 font-semibold text-text-primary">{title}</h3>
+        {description ? <p className="text-small text-text-muted">{description}</p> : null}
+      </div>
+      <svg viewBox={`0 0 ${width} ${height}`} className="h-32 w-full" role="img" aria-label={title}>
+        {chartType === 'area' ? (
+          <path d={areaPath} className="fill-brand-primary/20 stroke-none" />
+        ) : null}
+        <path d={linePath} className="fill-none stroke-brand-primary" strokeWidth="2" />
+        {points.map((point) => (
+          <circle key={point.item.label} cx={point.x} cy={point.y} r="3" className="fill-brand-primary" />
+        ))}
+      </svg>
+      <ul className="mt-wilms-4 grid gap-wilms-2 sm:grid-cols-2" role="list">
+        {items.map((item) => (
+          <li key={item.label} className="flex items-center justify-between gap-wilms-2 text-small">
+            <span className="font-medium text-text-primary">{item.label}</span>
+            <CurrencyAmount value={item.value} />
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export function DashboardFinancialAnalyticsPanel({
   overview,
   collectorPerformance,
+  chartType = 'bar',
 }: DashboardFinancialAnalyticsPanelProps) {
   const capitalItems: BarChartItem[] = [
     {
@@ -154,34 +267,40 @@ export function DashboardFinancialAnalyticsPanel({
           : 'gold') as BarChartItem['tone'],
     }));
 
+  const renderChart = (title: string, description: string | undefined, items: BarChartItem[], format?: 'currency' | 'percent' | 'count') => {
+    if (chartType === 'pie') {
+      return <PieChart title={title} description={description} items={items} />;
+    }
+
+    if (chartType === 'line' || chartType === 'area') {
+      return <TrendChart title={title} description={description} items={items} chartType={chartType} />;
+    }
+
+    return (
+      <HorizontalBarChart title={title} description={description} items={items} format={format} />
+    );
+  };
+
   return (
     <div className="space-y-wilms-6">
       <div className="grid grid-cols-1 gap-wilms-6 xl:grid-cols-2">
-        <HorizontalBarChart
-          title="Capital distribution"
-          description="Pool funds and lending capacity"
-          items={capitalItems}
-        />
-        <HorizontalBarChart
-          title="Collections performance"
-          description={`Collection rate ${overview.collections.collectionRatePercent}%`}
-          items={collectionItems}
-        />
+        {renderChart('Capital distribution', 'Pool funds and lending capacity', capitalItems)}
+        {renderChart(
+          'Collections performance',
+          `Collection rate ${overview.collections.collectionRatePercent}%`,
+          collectionItems,
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-wilms-6 xl:grid-cols-2">
-        <HorizontalBarChart
-          title="Cash flow"
-          description="Organisation money in vs money out"
-          items={cashFlowItems}
-        />
+        {renderChart('Cash flow', 'Organisation money in vs money out', cashFlowItems)}
         {topCollectors.length > 0 ? (
-          <HorizontalBarChart
-            title="Collector performance"
-            description="Top collectors by collection rate"
-            items={topCollectors}
-            format="percent"
-          />
+          renderChart(
+            'Collector performance',
+            'Top collectors by collection rate',
+            topCollectors,
+            'percent',
+          )
         ) : (
           <section className="rounded-sm border border-border bg-background p-wilms-5 sm:p-wilms-6">
             <h3 className="text-heading-3 font-semibold text-text-primary">Collector performance</h3>

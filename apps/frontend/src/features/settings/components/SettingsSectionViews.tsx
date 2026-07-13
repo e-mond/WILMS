@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/useToast';
 import { settingsService } from '@/services';
 import type { SystemSettings, UpdateSystemSettingsInput } from '@/types/settings';
 import { CurrencyAmount } from '@/components/data-display';
+import { LOAN_DURATION_WEEK_OPTIONS, formatLoanDurationLabel } from '@/constants/loan-duration';
 import {
   SettingsAuditIcon,
   SettingsIntegrationsIcon,
@@ -508,8 +509,11 @@ export function LoanRulesSectionView({ settings }: { settings: SystemSettings })
             value={defaultLoanDurationWeeks}
             onChange={(event) => setDefaultLoanDurationWeeks(event.target.value)}
           >
-            <option value="12">12 weeks</option>
-            <option value="24">24 weeks</option>
+            {LOAN_DURATION_WEEK_OPTIONS.map((weeks) => (
+              <option key={weeks} value={String(weeks)}>
+                {formatLoanDurationLabel(weeks)}
+              </option>
+            ))}
           </Select>
         }
       />

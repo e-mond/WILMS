@@ -1,6 +1,7 @@
 import type { ReconciliationSummary } from '../../domain/reconciliation/types.js';
 
 export function mapReconciliationRowToSummary(row: {
+  id: string;
   collectorUserId: string;
   reconciliationDate: string;
   expectedDuePesewas: number;
@@ -8,9 +9,14 @@ export function mapReconciliationRowToSummary(row: {
   physicalCashPesewas: number;
   primaryVariancePesewas: number;
   varianceFlagged: boolean;
+  status: string;
   submittedAt: Date;
+  reviewedByUserId?: string | null;
+  reviewedAt?: Date | null;
+  resolutionNotes?: string | null;
 }): ReconciliationSummary {
   return {
+    id: row.id,
     collectorId: row.collectorUserId,
     date: row.reconciliationDate,
     expectedPesewas: row.expectedDuePesewas,
@@ -20,6 +26,11 @@ export function mapReconciliationRowToSummary(row: {
     varianceFlagged: row.varianceFlagged,
     submitted: true,
     submittedAt: row.submittedAt.toISOString(),
+    status: row.status as ReconciliationSummary['status'],
+    submittedById: row.collectorUserId,
+    reviewedById: row.reviewedByUserId ?? undefined,
+    reviewedAt: row.reviewedAt?.toISOString(),
+    resolutionNotes: row.resolutionNotes ?? undefined,
   };
 }
 
@@ -32,6 +43,7 @@ export function mapSnapshotToSummary(
     physicalCashPesewas: number;
     primaryVariancePesewas: number;
     varianceFlagged: boolean;
+    status?: string;
     submittedAt: string;
   },
   submitted: boolean,
@@ -46,5 +58,7 @@ export function mapSnapshotToSummary(
     varianceFlagged: snapshot.varianceFlagged,
     submitted,
     submittedAt: submitted ? snapshot.submittedAt : undefined,
+    status: snapshot.status as ReconciliationSummary['status'],
+    submittedById: snapshot.collectorUserId,
   };
 }

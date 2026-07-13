@@ -163,6 +163,7 @@ export function LoanPortfolioList() {
       </ExecutiveKpiGrid>
 
       <ManagementToolbar
+        className="flex-col gap-wilms-3 lg:flex-row lg:items-end lg:justify-between"
         search={
           <Input
             aria-label="Search loan portfolio"
@@ -200,7 +201,7 @@ export function LoanPortfolioList() {
           </div>
         }
         actions={
-          <>
+          <div className="flex w-full flex-col gap-wilms-2 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-end">
             <ExportCsvButton
               label="Export"
               filename="loan-portfolio.csv"
@@ -221,12 +222,12 @@ export function LoanPortfolioList() {
             <PermissionGate permission={PERMISSION.APPROVE_LOANS}>
               <Link
                 href="/loans/new"
-                className="inline-flex h-10 items-center justify-center rounded-sm border border-brand-primary bg-brand-primary px-wilms-4 text-body font-semibold text-card hover:opacity-90"
+                className="inline-flex h-10 w-full items-center justify-center rounded-sm border border-brand-primary bg-brand-primary px-wilms-4 text-body font-semibold text-card hover:opacity-90 sm:w-auto"
               >
                 Create loan
               </Link>
             </PermissionGate>
-          </>
+          </div>
         }
       />
 
@@ -239,6 +240,7 @@ export function LoanPortfolioList() {
         <>
           <DataTable<LoanPortfolioEntry>
             variant="executive"
+            layout="auto"
             caption="Loan portfolio"
             data={filteredEntries}
             emptyMessage="No loans match your filters."
@@ -247,6 +249,7 @@ export function LoanPortfolioList() {
               {
                 id: 'loanId',
                 header: 'Loan ID',
+                className: 'whitespace-nowrap font-mono text-small tabular-nums',
                 cell: (row) => (
                   <span className="font-semibold text-brand-primary">{resolveLoanDisplayId(row)}</span>
                 ),
@@ -265,11 +268,13 @@ export function LoanPortfolioList() {
               {
                 id: 'amount',
                 header: 'Loan amount',
+                className: 'whitespace-nowrap tabular-nums',
                 cell: (row) => <CurrencyAmount value={row.amountPesewas} />,
               },
               {
                 id: 'outstanding',
                 header: 'Outstanding',
+                className: 'whitespace-nowrap tabular-nums',
                 cell: (row) => (
                   <CurrencyAmount value={row.outstandingPesewas} className="text-danger" />
                 ),
@@ -277,14 +282,16 @@ export function LoanPortfolioList() {
               {
                 id: 'weekly',
                 header: 'Weekly',
+                className: 'whitespace-nowrap tabular-nums',
                 cell: (row) => <CurrencyAmount value={row.weeklyPaymentPesewas} />,
               },
               {
                 id: 'status',
                 header: 'Status',
+                className: 'whitespace-nowrap',
                 cell: (row) => <LoanStatusBadge status={row.status} />,
               },
-              { id: 'cycle', header: 'Cycle', cell: (row) => row.cycleBatch },
+              { id: 'cycle', header: 'Cycle', className: 'whitespace-nowrap', cell: (row) => row.cycleBatch },
               {
                 id: 'action',
                 header: 'Action',
