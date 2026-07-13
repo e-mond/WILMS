@@ -22,24 +22,8 @@ import { useToast } from '@/hooks/useToast';
 import type { ReconciliationSummary } from '@/types/services';
 import { resolveUserDisplayId } from '@/utils/entity-display-id';
 import { formatDisplayDate } from '@/utils/format-date';
+import { needsReconciliationReview } from '@/utils/reconciliation-review';
 import { cn } from '@/utils/cn';
-
-function needsReconciliationReview(row: ReconciliationSummary): boolean {
-  if (!row.submitted) {
-    return false;
-  }
-
-  if (row.status === 'APPROVED' || row.status === 'REJECTED' || row.status === 'LOCKED') {
-    return false;
-  }
-
-  return (
-    row.varianceFlagged ||
-    row.status === 'PENDING_REVIEW' ||
-    row.status === 'UNDER_INVESTIGATION' ||
-    row.status === 'REOPENED'
-  );
-}
 
 function statusTone(status?: string): string {
   switch (status) {

@@ -1,3 +1,34 @@
+# WILMS v1.3.7-rc3 Release Notes
+
+**Release type:** Release Candidate (blocking fixes from manual QA)  
+**Target stable:** v1.3.7  
+**Date:** July 2026
+
+## Overview
+
+v1.3.7-rc3 closes production-blocking gaps found after rc2: loan pool KPI accuracy, financial reconciliation model, chart layout, disbursement toolbar overlap, and reconciliation status handling.
+
+## Highlights
+
+| Area | Change |
+|------|--------|
+| Loan pools | Backfill allocations; active pool count; Total Collected KPI |
+| Financial model | Capital − outstanding; net collections after expenses |
+| Dashboard charts | Overflow-safe labels and values in chart mode |
+| Collections | Aside reconciliation status for selected report date |
+| Reconciliation | Auto-approve balanced; fix false "Under review" |
+| Product tour | Route navigation + highlighted targets per step |
+
+## Verification
+
+- [x] Backend type-check
+- [x] Frontend type-check
+- [x] Backend unit tests (129)
+- [x] Frontend unit tests
+- [ ] Run migrations `0024` + `0025` before production promote
+
+---
+
 # WILMS v1.3.7-rc2 Release Notes
 
 **Release type:** Release Candidate (UI, financial visibility & workflow)  

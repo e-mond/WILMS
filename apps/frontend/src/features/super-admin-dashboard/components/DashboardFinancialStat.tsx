@@ -18,17 +18,17 @@ export function DashboardFinancialStat({
   tone = 'default',
 }: DashboardFinancialStatProps) {
   return (
-    <div className="rounded-sm border border-border bg-card p-wilms-4 sm:p-wilms-5">
-      <p className="text-small font-semibold uppercase tracking-wide text-text-muted">{label}</p>
+    <div className="min-w-0 rounded-sm border border-border bg-card p-wilms-4 sm:p-wilms-5">
+      <p className="truncate text-small font-semibold uppercase tracking-wide text-text-muted">{label}</p>
       <div
         className={cn(
-          'mt-wilms-2 text-heading-3 font-bold',
+          'mt-wilms-2 min-w-0 text-heading-3 font-bold',
           tone === 'success' && 'text-status-active',
           tone === 'danger' && 'text-danger',
           tone === 'default' && 'text-text-primary',
         )}
       >
-        {value}
+        <div className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{value}</div>
       </div>
       {detail ? <p className="mt-wilms-2 text-small leading-relaxed text-text-muted">{detail}</p> : null}
     </div>
@@ -53,5 +53,5 @@ export function formatCollectionDetail(
 }
 
 export function CurrencyStatValue({ pesewas }: { pesewas: number }) {
-  return <CurrencyAmount value={pesewas} />;
+  return <CurrencyAmount value={pesewas} className="whitespace-nowrap tabular-nums" />;
 }

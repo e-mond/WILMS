@@ -13,6 +13,7 @@ import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
 import { WILMS_REPORT_TYPE } from '@/features/export';
 import { CollectionsAsidePanel } from '@/features/reports/components/CollectionsAsidePanel';
 import { ReconciliationReviewQueue } from '@/features/reconciliation/components/ReconciliationReviewQueue';
+import { useReconciliationList } from '@/features/reconciliation/hooks/useReconciliationReview';
 import { useDailyCollectionReport } from '@/features/reports/hooks/useDailyCollectionReport';
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { collectorManagementService } from '@/services';
@@ -20,6 +21,7 @@ import type { CollectorListResponse } from '@/types/collector-management';
 import type { DailyCollectionReportRow } from '@/types/reports';
 import { formatDisplayDate } from '@/utils/format-date';
 import { formatPesewasForCsv } from '@/utils/export-csv';
+import { summarizeReconciliationsForDate } from '@/utils/reconciliation-review';
 
 const CSV_HEADERS = [
   'Borrower',
@@ -61,6 +63,12 @@ export function DailyCollectionReportPanel() {
     date: reportDate,
     collectorId: collectorFilter || undefined,
   });
+  const reconciliationsQuery = useReconciliationList();
+
+  const reconciliationSummary = useMemo(
+    () => summarizeReconciliationsForDate(reconciliationsQuery.data ?? [], reportDate),
+    [reconciliationsQuery.data, reportDate],
+  );
 
   const csvRows = useMemo(
     () =>
@@ -86,9 +94,12 @@ export function DailyCollectionReportPanel() {
           expectedPesewas={data.summary.expectedPesewas}
           collectedPesewas={data.summary.collectedPesewas}
           variancePesewas={data.summary.variancePesewas}
+          reconciliationSubmittedCount={reconciliationSummary.submittedCount}
+          reconciliationApprovedCount={reconciliationSummary.approvedCount}
+          reconciliationUnderReviewCount={reconciliationSummary.underReviewCount}
         />
       ) : null,
-    [data],
+    [data, reconciliationSummary],
   );
 
   useShellAsideContent(asideContent);
@@ -103,6 +114,7 @@ export function DailyCollectionReportPanel() {
     >
       {data ? (
     <div className="space-y-wilms-4">
+      <div data-tour="collection-kpis">
       <ExecutiveKpiGrid>
         <KpiCard variant="executive" label="Borrowers Due" value={data.summary.borrowersDueCount} />
         <KpiCard
@@ -124,6 +136,7 @@ export function DailyCollectionReportPanel() {
           valueClassName="text-status-active"
         />
       </ExecutiveKpiGrid>
+      </div>
 
       <ManagementToolbar
         search={

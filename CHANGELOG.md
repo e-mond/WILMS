@@ -6,6 +6,11 @@ All notable changes to WILMS are documented in this file.
 
 ### Fixed
 - **Financial KPI zeros (production):** Loans now link to loan pools via borrower group membership at creation/disbursement; pool allocations refresh on disbursement; migration backfills `loan_pool_id` on existing loans.
+- **Loan pool KPI zeros:** Migration `0025` backfills historical `DISBURSEMENT`/`REPAYMENT` allocations; active pool count includes funded pools; summary merges portfolio totals; **Total Collected** KPI added.
+- **Financial model:** Available balance = pool capital − outstanding; net collections after expenses; expenses deducted from operating cash.
+- **Dashboard charts:** Labels truncate and currency values stay on one line inside chart cards.
+- **Disbursement toolbar:** Cycle/Status filters separated from Export/Create Loan actions.
+- **Reconciliation false positives:** Balanced submissions auto-approve; no review when zero collections expected; review queue excludes approved items.
 - **Collections variance:** Daily collection summary always recomputes `collected − expected`; aside panel shows expected, collected, and signed variance with contextual notes.
 - **Collector dashboard:** Expected collections filtered by payment day (matches daily collection report).
 - **Expense recorded-by:** Super Admin expense list resolves collector display names from user records (not generic "Collector").
@@ -13,10 +18,11 @@ All notable changes to WILMS are documented in this file.
 - **Reconciliation preview:** Unsubmitted variance reflects system recorded vs expected (not hardcoded zero).
 
 ### Changed
-- **Financial overview:** Cards/charts toggle and chart type persist for the browser session.
+- **Financial overview:** Cards/charts toggle and chart type persist for the browser session; net collections after expenses and net operating cash KPIs.
+- **Collections aside:** Reconciliation status summary for the selected report date (submitted, approved, under review).
 - **Reconciliation lifecycle:** Expanded status labels (Draft, Submitted, Under review, Returned, Approved, Rejected, Locked, Archived) with richer submitted-state messaging.
 - **Registration:** Character counters on business name and type-of-work fields.
-- **Product tour:** Role-specific optional walkthrough with dismiss, keyboard access, and replay from Settings → Profile.
+- **Product tour:** Role-specific walkthrough with route navigation, element highlights, dismiss, and replay from Settings → Profile.
 - Application version bumped to `1.3.7-rc3`.
 
 ---
