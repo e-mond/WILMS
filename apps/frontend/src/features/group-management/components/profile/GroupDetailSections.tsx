@@ -5,6 +5,7 @@ import { Avatar, CurrencyAmount, GroupRiskBadge } from '@/components/data-displa
 import { ProfileFieldGrid, ProfileSection } from '@/components/layout/executive/ProfileSection';
 import type { GroupDetail } from '@/types/group-detail';
 import { formatDisplayDate } from '@/utils/format-date';
+import { resolveCollectorDisplayId } from '@/utils/entity-display-id';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
 
 export interface GroupInformationSectionProps {
@@ -132,7 +133,7 @@ export function GroupCollectorSection({ group }: GroupCollectorSectionProps) {
             columns={3}
             items={[
               { label: 'Full Name', value: collector.fullName },
-              { label: 'Collector ID', value: collector.id },
+              { label: 'Collector ID', value: resolveCollectorDisplayId(collector) },
               { label: 'Phone Number', value: collector.phone },
               { label: 'Email', value: collector.email ?? 'Not provided' },
               { label: 'Assigned Zone', value: collector.zone },

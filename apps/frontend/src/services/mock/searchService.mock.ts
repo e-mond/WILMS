@@ -16,6 +16,7 @@ import {
   getGlobalSearchEntitiesForRole,
   resolveBorrowerSearchHref,
 } from '@/utils/global-search-scope';
+import { resolveCollectorDisplayId, resolveGroupDisplayId, resolvePoolDisplayId } from '@/utils/entity-display-id';
 import { resolveMockPhotoUrl } from '@/services/mock/photo-url.resolver';
 import { resolveRegistrationWorkflowStatus } from '@/utils/registration-workflow.utils';
 import reportServiceMock from '@/services/mock/reportService.mock';
@@ -92,7 +93,7 @@ function searchGroups(query: string, role: GlobalSearchParams['role']): GlobalSe
       id: group.id,
       entityType: GLOBAL_SEARCH_ENTITY.GROUP,
       label: group.name,
-      subtitle: `${group.id} · ${group.community}`,
+      subtitle: `${resolveGroupDisplayId(group)} · ${group.community}`,
       status: 'Active',
       href: role === USER_ROLE.COLLECTOR ? `/collector/groups/${group.id}/collection-sheet` : `/groups/${group.id}`,
       actionLabel: 'Open group',
@@ -116,7 +117,7 @@ function searchCollectors(query: string): GlobalSearchResult[] {
       id: collector.id,
       entityType: GLOBAL_SEARCH_ENTITY.COLLECTOR,
       label: collector.displayName,
-      subtitle: collector.zone,
+      subtitle: `${resolveCollectorDisplayId(collector)} · ${collector.zone}`,
       status: 'Active',
       photoUrl: resolveMockPhotoUrl({ name: collector.displayName, id: collector.id }),
       href: `/collectors/${collector.id}`,
@@ -140,7 +141,7 @@ function searchLoanPools(query: string): GlobalSearchResult[] {
     id: pool.id,
     entityType: GLOBAL_SEARCH_ENTITY.LOAN_POOL,
     label: pool.name,
-    subtitle: `${pool.id} · ${pool.region}`,
+    subtitle: `${resolvePoolDisplayId(pool)} · ${pool.region}`,
     status: pool.status,
     href: '/loan-pools',
     actionLabel: 'Open pools',
