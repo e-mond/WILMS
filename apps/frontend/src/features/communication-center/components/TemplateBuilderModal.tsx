@@ -9,6 +9,7 @@ import { Select } from '@/components/ui/Select';
 import { RichTextEditor } from '@/features/communication-center/components/RichTextEditor';
 import { communicationService } from '@/services';
 import { useToast } from '@/hooks/useToast';
+import { sanitizeHtml } from '@/utils/html-sanitize';
 import type { CommunicationChannel } from '@/types/communication';
 
 const TEMPLATE_VARIABLES = [
@@ -122,7 +123,11 @@ export function TemplateBuilderModal({ isOpen, onClose, onSaved }: TemplateBuild
           <div className="rounded-md border border-border bg-background p-wilms-4">
             <p className="text-small font-semibold text-text-muted">Preview</p>
             <p className="text-body font-semibold">{preview.subject}</p>
-            <div className="prose prose-sm mt-wilms-2" dangerouslySetInnerHTML={{ __html: preview.bodyHtml }} />
+            <div
+              className="prose prose-sm mt-wilms-2"
+              // Security: sanitize preview HTML to avoid stored XSS in template rich text.
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(preview.bodyHtml) }}
+            />
           </div>
         ) : null}
 
