@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { buildHealthReport, healthHttpStatus } from '../../modules/health/health.service.js';
+import {
+  buildHealthReport,
+  healthHttpStatus,
+  resolveMigrationHealthStatus,
+} from '../../modules/health/health.service.js';
 
 vi.mock('../../db/client.js', () => ({
   isDatabaseEnabled: () => false,
@@ -53,5 +57,29 @@ describe('health.service', () => {
       schema: { status: 'degraded' as const, missingTables: ['borrowers'] },
     };
     expect(healthHttpStatus(report as never)).toBe(200);
+  });
+});
+
+describe('resolveMigrationHealthStatus', () => {
+  it('treats watermark catch-up as ok even when row count lags journal length', () => {
+    expect(
+      resolveMigrationHealthStatus({
+        expectedCount: 27,
+        appliedCount: 26,
+        latestAppliedMillis: 1784043200000,
+        latestJournalWhen: 1784043200000,
+      }),
+    ).toBe('ok');
+  });
+
+  it('degrades when applied watermark is behind the journal', () => {
+    expect(
+      resolveMigrationHealthStatus({
+        expectedCount: 27,
+        appliedCount: 26,
+        latestAppliedMillis: 1783956800000,
+        latestJournalWhen: 1784043200000,
+      }),
+    ).toBe('degraded');
   });
 });
