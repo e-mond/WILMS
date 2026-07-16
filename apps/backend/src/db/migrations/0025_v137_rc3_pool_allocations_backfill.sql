@@ -94,9 +94,9 @@ SET
     ELSE 0
   END,
   status = CASE
-    WHEN lp.capital_pesewas > 0 AND ROUND(pt.disbursed_pesewas::numeric / lp.capital_pesewas * 100) >= 95 THEN 'NEAR_FULL'
-    WHEN lp.capital_pesewas > 0 AND ROUND(pt.disbursed_pesewas::numeric / lp.capital_pesewas * 100) < 20 THEN 'LAUNCHING'
-    ELSE 'ACTIVE'
+    WHEN lp.capital_pesewas > 0 AND ROUND(pt.disbursed_pesewas::numeric / lp.capital_pesewas * 100) >= 95 THEN 'NEAR_FULL'::loan_pool_status
+    WHEN lp.capital_pesewas > 0 AND ROUND(pt.disbursed_pesewas::numeric / lp.capital_pesewas * 100) < 20 THEN 'LAUNCHING'::loan_pool_status
+    ELSE 'ACTIVE'::loan_pool_status
   END,
   updated_at = NOW()
 FROM pool_totals AS pt
@@ -104,6 +104,9 @@ WHERE lp.id = pt.pool_id;
 
 -- Balanced reconciliations should not remain in manual review.
 UPDATE financial_reconciliations
-SET status = 'APPROVED'
+SET status = 'APPROVED'::reconciliation_status
 WHERE variance_flagged = FALSE
-  AND status IN ('SUBMITTED', 'PENDING_REVIEW');
+  AND status IN (
+    'SUBMITTED'::reconciliation_status,
+    'PENDING_REVIEW'::reconciliation_status
+  );
