@@ -20,17 +20,56 @@ function readPackageVersion(): string {
   }
 }
 
-function readExpectedMigrationCount(): number {
+interface MigrationJournalSummary {
+  expected: number;
+  /** Max journal `when` (folderMillis). Drizzle applies migrations with when > last DB watermark. */
+  latestWhen: number;
+}
+
+function readMigrationJournal(): MigrationJournalSummary {
   try {
     const raw = readFileSync(
       path.join(packageRoot, 'src/db/migrations/meta/_journal.json'),
       'utf8',
     );
-    const journal = JSON.parse(raw) as { entries?: unknown[] };
-    return journal.entries?.length ?? 0;
+    const journal = JSON.parse(raw) as { entries?: { when?: number }[] };
+    const entries = journal.entries ?? [];
+    const latestWhen = entries.reduce(
+      (max, entry) => Math.max(max, Number(entry.when ?? 0)),
+      0,
+    );
+    return { expected: entries.length, latestWhen };
   } catch {
-    return 0;
+    return { expected: 0, latestWhen: 0 };
   }
+}
+
+/**
+ * Drizzle-kit migrates by watermark (MAX created_at / journal `when`), not by row count.
+ * A historical gap in `__drizzle_migrations` can leave applied_count < journal length
+ * even when every pending migration has already been applied.
+ */
+export function resolveMigrationHealthStatus(input: {
+  expectedCount: number;
+  appliedCount: number | null;
+  latestAppliedMillis: number | null;
+  latestJournalWhen: number;
+}): 'ok' | 'degraded' | 'unknown' {
+  if (input.expectedCount <= 0 || input.latestJournalWhen <= 0) {
+    return 'unknown';
+  }
+  if (input.latestAppliedMillis == null || Number.isNaN(input.latestAppliedMillis)) {
+    return 'unknown';
+  }
+  // Watermark caught up ⇒ migrate has nothing left to apply.
+  if (input.latestAppliedMillis >= input.latestJournalWhen) {
+    return 'ok';
+  }
+  return 'degraded';
+}
+
+function readExpectedMigrationCount(): number {
+  return readMigrationJournal().expected;
 }
 
 export interface HealthReport {
@@ -51,6 +90,7 @@ export interface HealthReport {
     expected: number;
     applied: number | null;
     latestAppliedAt: string | null;
+    latestJournalWhen: number | null;
     status: 'ok' | 'degraded' | 'unknown' | 'disabled';
   };
   uploads: {
@@ -87,10 +127,12 @@ export async function buildHealthReport(): Promise<HealthReport> {
   const uploadReport = validateUploadEnvironment();
   const integrationReport = getIntegrationStatus();
   const schemaReport = await verifyCoreApplicationTables();
-  const expectedMigrations = readExpectedMigrationCount();
+  const migrationJournal = readMigrationJournal();
+  const expectedMigrations = migrationJournal.expected;
   let dbConnected = false;
   let appliedMigrations: number | null = null;
   let latestAppliedAt: string | null = null;
+  let latestAppliedMillis: number | null = null;
   let migrationStatus: HealthReport['migrations']['status'] = 'disabled';
   let databaseStatus: HealthReport['database']['status'] = 'disabled';
 
@@ -109,17 +151,25 @@ export async function buildHealthReport(): Promise<HealthReport> {
           SELECT COUNT(*)::int AS count, MAX(created_at) AS latest
           FROM drizzle.__drizzle_migrations
         `);
-        const rows = result.rows as { count?: number; latest?: string | Date }[];
+        const rows = result.rows as { count?: number; latest?: string | Date | number }[];
         appliedMigrations = Number(rows[0]?.count ?? 0);
         const latest = rows[0]?.latest;
         if (latest instanceof Date) {
+          latestAppliedMillis = latest.getTime();
           latestAppliedAt = latest.toISOString();
         } else if (typeof latest === 'string' || typeof latest === 'number') {
-          const asDate = new Date(latest);
-          latestAppliedAt = Number.isNaN(asDate.getTime()) ? String(latest) : asDate.toISOString();
+          latestAppliedMillis = Number(latest);
+          const asDate = new Date(latestAppliedMillis);
+          latestAppliedAt = Number.isNaN(asDate.getTime())
+            ? String(latest)
+            : asDate.toISOString();
         }
-        migrationStatus =
-          appliedMigrations >= expectedMigrations && expectedMigrations > 0 ? 'ok' : 'degraded';
+        migrationStatus = resolveMigrationHealthStatus({
+          expectedCount: expectedMigrations,
+          appliedCount: appliedMigrations,
+          latestAppliedMillis,
+          latestJournalWhen: migrationJournal.latestWhen,
+        });
       } catch (error) {
         console.error('[health] migration count query failed:', error);
         migrationStatus = 'unknown';
@@ -142,7 +192,7 @@ export async function buildHealthReport(): Promise<HealthReport> {
   }
   if (migrationStatus === 'degraded') {
     degradedReasons.push(
-      `migrations_behind:applied=${appliedMigrations ?? 0},expected=${expectedMigrations}`,
+      `migrations_behind:applied_watermark=${latestAppliedMillis ?? 0},expected_watermark=${migrationJournal.latestWhen},applied_count=${appliedMigrations ?? 0},expected_count=${expectedMigrations}`,
     );
   }
   if (schemaReport.status === 'degraded') {
@@ -174,6 +224,7 @@ export async function buildHealthReport(): Promise<HealthReport> {
       expected: expectedMigrations,
       applied: appliedMigrations,
       latestAppliedAt,
+      latestJournalWhen: migrationJournal.latestWhen || null,
       status: migrationStatus,
     },
     uploads: {

@@ -141,8 +141,8 @@ async function main(): Promise<void> {
   );
   record(
     'api-health-migrations',
-    healthData?.migrations?.status === 'ok' && healthData.migrations.applied === healthData.migrations.expected,
-    `expected=${healthData?.migrations?.expected ?? '?'} applied=${healthData?.migrations?.applied ?? '?'} status=${healthData?.migrations?.status ?? 'unknown'}`,
+    healthData?.migrations?.status === 'ok',
+    `expected=${healthData?.migrations?.expected ?? '?'} applied=${healthData?.migrations?.applied ?? '?'} status=${healthData?.migrations?.status ?? 'unknown'} (drizzle uses watermark, not row count)`,
   );
   record(
     'api-health-runtime',
