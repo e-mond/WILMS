@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/hooks/useAuth';
@@ -125,7 +125,10 @@ export function useProductTour() {
   const { user, isAuthenticated } = useAuth();
   const router = useRouter();
   const role = user?.role;
-  const steps = role ? TOUR_STEPS_BY_ROLE[role] ?? [] : [];
+  const steps = useMemo(
+    () => (role ? TOUR_STEPS_BY_ROLE[role] ?? [] : []),
+    [role],
+  );
   const [active, setActive] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
 
