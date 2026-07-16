@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/utils/cn';
+import { sanitizeHtml } from '@/utils/html-sanitize';
 
 const DRAFT_PREFIX = 'wilms-composer-draft:';
 
@@ -177,7 +178,8 @@ export function RichTextEditor({
       {showPreview ? (
         <div
           className="prose prose-sm max-w-none p-wilms-4 text-text-primary"
-          dangerouslySetInnerHTML={{ __html: value }}
+          // Security: sanitize preview HTML to avoid stored XSS via composed rich text.
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(value) }}
         />
       ) : (
         <div
