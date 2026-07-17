@@ -59,7 +59,7 @@ export function resolveQueryErrorPresentation(error: unknown): QueryErrorPresent
       case API_ERROR_CODE.SERVER:
         return {
           title: 'Server error',
-          description: 'Something went wrong on our side. Please try again shortly.',
+          description: "We couldn't complete this request. Please try again shortly.",
           canRetry: true,
           variant: 'error',
         };

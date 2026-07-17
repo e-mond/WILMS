@@ -60,7 +60,6 @@ export default defineConfig({
         'src/hooks/useOfflineQueueToasts.ts',
         'src/components/forms/PhotoUploadField.tsx',
         'src/utils/*-report.ts',
-        'src/utils/group-list.ts',
         'src/utils/risk-flag-list.ts',
         'src/utils/logger.ts',
       ],

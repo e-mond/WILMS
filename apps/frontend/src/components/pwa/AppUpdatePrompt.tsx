@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { RefreshCw, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { CURRENT_RELEASE_NOTES } from '@/constants/release-notes';
@@ -17,6 +17,9 @@ export function AppUpdatePrompt() {
   const clearUpdate = usePwaUpdateStore((state) => state.clearUpdate);
   const [isDismissed, setIsDismissed] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  const summaryId = useId();
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -48,7 +51,63 @@ export function AppUpdatePrompt() {
     waitingWorker.postMessage({ type: 'SKIP_WAITING' });
   }, [isUpdating, waitingWorker]);
 
-  if (isAuthRoute || !updateAvailable || isDismissed) {
+  const visible = !isAuthRoute && updateAvailable && !isDismissed;
+
+  useEffect(() => {
+    if (!visible) {
+      return;
+    }
+
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const root = dialogRef.current;
+    if (!root) {
+      return;
+    }
+
+    const focusables = () =>
+      Array.from(
+        root.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((el) => !el.hasAttribute('disabled'));
+
+    focusables()[0]?.focus();
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        dismiss();
+        return;
+      }
+
+      if (event.key !== 'Tab') {
+        return;
+      }
+
+      const items = focusables();
+      if (items.length === 0) {
+        return;
+      }
+
+      const first = items[0]!;
+      const last = items[items.length - 1]!;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    root.addEventListener('keydown', onKeyDown);
+    return () => {
+      root.removeEventListener('keydown', onKeyDown);
+      previouslyFocused?.focus?.();
+    };
+  }, [dismiss, visible]);
+
+  if (!visible) {
     return null;
   }
 
@@ -56,9 +115,11 @@ export function AppUpdatePrompt() {
 
   return (
     <div
+      ref={dialogRef}
       role="dialog"
-      aria-labelledby="wilms-update-title"
-      aria-describedby="wilms-update-summary"
+      aria-modal="true"
+      aria-labelledby={titleId}
+      aria-describedby={summaryId}
       className="fixed inset-x-wilms-4 bottom-wilms-4 z-[90] mx-auto max-w-lg rounded-sm border border-border bg-card p-wilms-4 shadow-lg sm:inset-x-auto sm:right-wilms-4"
     >
       <div className="flex items-start justify-between gap-wilms-3">
@@ -67,10 +128,10 @@ export function AppUpdatePrompt() {
             <RefreshCw className="h-5 w-5" aria-hidden="true" />
           </span>
           <div className="min-w-0">
-            <p id="wilms-update-title" className="font-semibold text-text-primary">
+            <p id={titleId} className="font-semibold text-text-primary">
               Update available
             </p>
-            <p id="wilms-update-summary" className="mt-wilms-1 text-small text-text-muted">
+            <p id={summaryId} className="mt-wilms-1 text-small text-text-muted">
               {CURRENT_RELEASE_NOTES.summary}
             </p>
             <p className="mt-wilms-1 text-[11px] font-semibold uppercase tracking-wide text-executive-gold">
@@ -80,7 +141,7 @@ export function AppUpdatePrompt() {
         </div>
         <button
           type="button"
-          className="shrink-0 rounded-sm p-wilms-1 text-text-muted hover:bg-background hover:text-text-primary"
+          className="min-h-[44px] min-w-[44px] shrink-0 rounded-sm p-wilms-1 text-text-muted hover:bg-background hover:text-text-primary"
           aria-label="Dismiss update notification"
           onClick={dismiss}
         >
