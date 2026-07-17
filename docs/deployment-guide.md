@@ -1,6 +1,15 @@
 # WILMS Deployment Guide
 
-**Last updated:** 2026-07-12 (v1.3.6)
+**Last updated:** 2026-07-17 (v1.3.8)
+
+## Runtime versions
+
+| Surface | Node version |
+|---------|----------------|
+| Local / CI type-check & tests | Node **22** (see root engines / CI) |
+| API Docker image / some deploy workflows | Historically Node **20** — **unify on Node 22 in v1.4** (Phase 17 DO-01) |
+
+Prefer matching local Node to CI (22) when developing.
 
 ## Deployment model
 

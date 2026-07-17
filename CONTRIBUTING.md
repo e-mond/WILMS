@@ -1,21 +1,25 @@
 # Contributing to WILMS
 
-Thank you for contributing to the WILMS financial platform. This document defines the standards required for all P14.3B and subsequent work.
+Thank you for contributing to the WILMS financial platform.
 
 ## Development workflow
 
-1. Branch from the current release line (`release/p14.3a` or active phase branch).
+1. Branch from `main` using the team branch prefix policy (Cloud agents: `cursor/<descriptive-name>-####`).
 2. Implement with validation gates after each major block.
-3. Update documentation before opening a PR.
-4. Push, open PR, apply labels, assign milestone.
+3. Update documentation when behaviour or architecture changes.
+4. Push and open a PR against `main`.
 
 See [docs/engineering/branching-strategy.md](docs/engineering/branching-strategy.md) for branch naming and merge policy.
 
+**Architecture SSoT:** [docs/certification/v1.3.8/enterprise-architecture/SYSTEM_ARCHITECTURE.md](docs/certification/v1.3.8/enterprise-architecture/SYSTEM_ARCHITECTURE.md)
+
+**Permission matrix:** [docs/permission-matrix.md](docs/permission-matrix.md)
+
 ## Code quality
 
-Every new backend file must include:
+Every new backend file should include:
 
-- **File header** — module purpose and phase reference.
+- **File header** — module purpose.
 - **Architectural comments** — persistence boundaries, transaction scope, RBAC expectations.
 - **Business-rule comments** — financial calculations, state transitions, invariants.
 - **Transaction comments** — what is atomic and what rolls back together.
@@ -40,25 +44,30 @@ Backend domain verification (when applicable):
 npm run verify:financial -w @wilms/api
 npm run verify:pools -w @wilms/api
 npm run verify:adjustments -w @wilms/api
-npm run perf:baseline -w @wilms/api
+```
+
+Backend unit tests:
+
+```bash
+npm run test -w @wilms/api
 ```
 
 If any gate fails: stop, fix, re-run, then continue.
 
 ## Documentation
 
-After every phase, update:
+When merging financially or architecturally significant work, update:
 
-- `README.md` — current phase, domain coverage, production readiness, validation status.
-- `docs/releases/P14.3B-Phase-X.md` — features, validation, known issues, next phase.
-- `docs/archive/page-validation/` — certification, implementation reports, git reports.
+- `docs/financial-calculations.md` — if formulas change
+- `docs/certification/v1.3.8/enterprise-architecture/` — for architecture decisions
+- `docs/certification/v1.3.8/enterprise-financial/` — for control remediations
+- Root `README.md` / `CHANGELOG.md` when user-facing
 
 ## Git and PR standards
 
-- **Never commit directly to** `main` or `release/p14.3a`.
-- **PR title:** `[P14.3B-Phase-X] <phase title>`
-- **Labels:** `enhancement`, `backend`, `financial`, `phase-x`, `documentation` (+ `performance`, `security`, `database` when applicable).
-- **Milestone:** `P14.3B Financial Controls`
+- **Never commit directly to** `main`.
+- Prefer clear conventional titles: `fix:`, `feat:`, `docs:`, `security:`.
+- Include test plan for money-moving changes.
 
 ## Financial safety
 
@@ -66,9 +75,9 @@ All financial mutations must:
 
 - Generate audit records.
 - Generate ledger records (where applicable).
-- Record actor, timestamp, reason, before/after values, and delta.
+- Record actor, timestamp, reason, before/after values, and delta where relevant.
 - Execute atomically inside a database transaction.
-- Use P14.3A idempotency and optimistic locking — do not introduce a second concurrency model.
+- Use existing idempotency and optimistic locking — do not introduce a second concurrency model.
 
 ## API contracts
 

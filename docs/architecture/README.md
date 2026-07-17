@@ -1,33 +1,42 @@
-# WILMS Context Documentation
+# WILMS Architecture Documentation
 
-This folder contains project context files referenced by `AGENTS.md` and
-`production-frontend-prompt.md`.
+This folder contains frontend-oriented architecture context (UI shell, code standards, ADRs linkage).
 
-## v1.3.0 Field Operations Docs
+For **current system architecture** (API + DB + auth + financial flow), use:
 
-Top-level guides (repository `docs/`):
+- [`docs/certification/v1.3.8/enterprise-architecture/SYSTEM_ARCHITECTURE.md`](../certification/v1.3.8/enterprise-architecture/SYSTEM_ARCHITECTURE.md)
+- Phase 17 recommendations: [`../certification/v1.3.8/enterprise-architecture/INDEX.md`](../certification/v1.3.8/enterprise-architecture/INDEX.md)
+
+## Field operations docs (repository `docs/`)
 
 - `offline-architecture.md` — offline mode, PWA shell, queues
 - `synchronization-guide.md` — sync API, conflict resolution
 - `device-management.md` — battery, storage, compression
 - `mobile-guide.md` — PWA install, camera, scanning
 - `advanced-lending.md` — cadences, grace, fees, penalties
-- `api-overview.md` — REST API reference
+- `api-overview.md` — REST API narrative overview
+- `permission-matrix.md` — role × permission table
 
 ## Source of Truth
 
 `WILMS_BRD_v1.0.pdf` at the project root is the authoritative business source.
-Place or update it there when a new BRD version is issued.
 
-Until the BRD PDF is available, use:
+Supporting product docs in this folder:
 
 - `project-overview.md` — product summary, personas, journeys
 - `requirements-traceability.md` — requirement-to-implementation mapping
+- `architecture.md` — UI/dashboard shell architecture
+- `ui-context.md`, `code-standards.md`, `ai-workflow-rules.md`
 
-## Folder Layout
+## ADRs
+
+Canonical ADRs live in [`docs/adr/`](../adr/) (not under a legacy `context/` path).
+
+## Folder layout
 
 ```text
-context/
+docs/architecture/
+├── README.md                 ← this file
 ├── project-overview.md
 ├── architecture.md
 ├── ui-context.md
@@ -35,17 +44,9 @@ context/
 ├── ai-workflow-rules.md
 ├── progress-tracker.md
 ├── requirements-traceability.md
-├── design-references/     ← Approved dashboard JPEGs (binding visual requirements)
 ├── design-reference-analysis.md
 ├── gap-analysis-report.md
-└── adrs/
-    ├── ADR-001-state-management.md
-    ├── ADR-002-routing-strategy.md
-    ├── ADR-003-api-layer-design.md
-    ├── ADR-004-component-architecture.md
-    └── ADR-005-dashboard-shell-architecture.md
+├── accessibility-audit.md
+├── export-strategy.md
+└── design-references/        ← approved dashboard visuals (if present)
 ```
-
-## Reading Order
-
-See `AGENTS.md` at the project root for the mandatory pre-session reading order.
