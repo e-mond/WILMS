@@ -1,0 +1,6 @@
+check,url,http_code,time_total,notes
+health,https://wilms-production.up.railway.app/health,200,0.309638,json
+ops_metrics_anon,https://wilms-production.up.railway.app/ops/metrics,401,0.109742,expect_401
+login,https://wilms.vercel.app/login,200,0.201097,html
+csrf,https://wilms.vercel.app/api/auth/csrf,200,0.171810,json
+ops_ui,https://wilms.vercel.app/ops,307,0.073342,may_redirect

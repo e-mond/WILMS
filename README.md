@@ -307,6 +307,7 @@ See `CHANGELOG.md`, `PROJECT_STATUS.md`, and `docs/version-history.md`.
 | Production ops pack (v1.3.8) | `docs/certification/v1.3.8/production-operations/` |
 | Product acceptance (v1.3.8) | `docs/certification/v1.3.8/product-acceptance/` |
 | Go-live / production certification (v1.3.8) | `docs/certification/v1.3.8/go-live/` |
+| Production cutover (v1.3.8) | `docs/certification/v1.3.8/production-cutover/` |
 
 Historical certification evidence is preserved under `docs/archive/`.
 
