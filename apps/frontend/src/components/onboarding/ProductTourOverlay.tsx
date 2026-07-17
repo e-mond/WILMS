@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
@@ -377,8 +377,54 @@ function TourDialogShell({
   children: ReactNode;
   onKeyDown?: (event: KeyboardEvent) => void;
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const root = dialogRef.current;
+    if (!root) {
+      return;
+    }
+
+    const focusables = () =>
+      Array.from(
+        root.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((el) => !el.hasAttribute('disabled'));
+
+    const first = focusables()[0];
+    first?.focus();
+
+    function handleKeyDown(event: globalThis.KeyboardEvent) {
+      if (event.key !== 'Tab') {
+        return;
+      }
+      const items = focusables();
+      if (items.length === 0) {
+        return;
+      }
+      const firstItem = items[0]!;
+      const lastItem = items[items.length - 1]!;
+      if (event.shiftKey && document.activeElement === firstItem) {
+        event.preventDefault();
+        lastItem.focus();
+      } else if (!event.shiftKey && document.activeElement === lastItem) {
+        event.preventDefault();
+        firstItem.focus();
+      }
+    }
+
+    root.addEventListener('keydown', handleKeyDown);
+    return () => {
+      root.removeEventListener('keydown', handleKeyDown);
+      previouslyFocused?.focus?.();
+    };
+  }, []);
+
   return (
     <div
+      ref={dialogRef}
       className="fixed inset-0 z-[120] flex items-end justify-center bg-black/40 p-wilms-4 sm:items-center"
       role="dialog"
       aria-modal="true"

@@ -36,7 +36,6 @@ export function OperationalBottomNavigation({ navItems, ariaLabel }: Operational
       )}
     >
       <ul
-        role="tablist"
         className={cn(
           'pointer-events-auto mx-auto flex max-w-lg items-center justify-between',
           'rounded-full border border-white/10',

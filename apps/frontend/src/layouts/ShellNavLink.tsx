@@ -174,8 +174,6 @@ export function ShellNavLink({
       <Link
         prefetch
         href={href}
-        role="tab"
-        aria-selected={isActive}
         aria-current={isActive ? 'page' : undefined}
         title={label}
         className={cn(
@@ -215,8 +213,6 @@ export function ShellNavLink({
       <Link
         prefetch
       href={href}
-        role="tab"
-        aria-selected={isActive}
         aria-current={isActive ? 'page' : undefined}
         className={cn(
           // Layout — icon above label

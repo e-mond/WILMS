@@ -99,7 +99,10 @@ borrowersRouter.get(
   '/borrowers/reviewed',
   requirePermission(PERMISSION.REVIEW_APPLICATIONS),
   asyncHandler(async (req, res) => {
-    const approverId = String(req.query.approverId ?? req.session!.userId);
+    const approverId = resolveOfficerIdForList(
+      req.session!,
+      typeof req.query.approverId === 'string' ? req.query.approverId : undefined,
+    );
     sendData(res, await borrowerService.listReviewedApplications(approverId));
   }),
 );
@@ -304,7 +307,11 @@ borrowersRouter.delete(
   requirePermission(PERMISSION.EDIT_PENDING_REGISTRATIONS),
   asyncHandler(async (req, res) => {
     try {
-      await borrowerService.deleteRegistration(req.params.id!, String(req.query.officerId ?? req.session!.userId));
+      const officerId = resolveOfficerIdForList(
+        req.session!,
+        typeof req.query.officerId === 'string' ? req.query.officerId : undefined,
+      );
+      await borrowerService.deleteRegistration(req.params.id!, officerId);
       res.status(204).end();
     } catch (error) {
       mapError(error);
