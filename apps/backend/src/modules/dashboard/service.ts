@@ -3,64 +3,15 @@ import { BORROWER_STATUS } from '@wilms/shared-contracts';
 import { listBorrowers, listPayments } from '../../db/persistence.js';
 import { isDatabaseEnabled } from '../../db/client.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
+import * as paymentRepo from '../../repositories/payment.repository.js';
 import * as userRepo from '../../repositories/user.repository.js';
 import { listGroupsResponse } from '../groups/service.js';
-import { buildDashboardFinancialOverview } from './financial-overview.js';
+import {
+  buildDashboardFinancialOverview,
+  type DashboardFinancialOverview,
+} from './financial-overview.js';
 
-export interface DashboardFinancialOverview {
-  capital: {
-    totalCapitalAvailablePesewas: number;
-    totalCapitalInjectedPesewas: number;
-    currentAvailableBalancePesewas: number;
-  };
-  lending: {
-    totalLoanAmountDisbursedPesewas: number;
-    totalActiveLoans: number;
-    totalClosedLoans: number;
-  };
-  collections: {
-    totalAmountCollectedPesewas: number;
-    outstandingBalancePesewas: number;
-    amountDueThisWeekPesewas: number;
-    overdueAmountPesewas: number;
-    collectionRatePercent: number;
-  };
-  adminFees: {
-    totalAdminFeesExpectedPesewas: number;
-    totalAdminFeesCollectedPesewas: number;
-    outstandingAdminFeesPesewas: number;
-  };
-  expenses: {
-    totalExpensesPesewas: number;
-    operationalCostsPesewas: number;
-    cashOutflowPesewas: number;
-  };
-  cashFlow: {
-    moneyIn: {
-      loanCollectionsPesewas: number;
-      adminFeesPesewas: number;
-      capitalDepositsPesewas: number;
-      otherIncomePesewas: number;
-      totalPesewas: number;
-    };
-    moneyOut: {
-      loanDisbursementsPesewas: number;
-      operationalExpensesPesewas: number;
-      refundsPesewas: number;
-      adjustmentsPesewas: number;
-      totalPesewas: number;
-    };
-    netPositionPesewas: number;
-    netOperatingCashPesewas?: number;
-  };
-  ledgerSource?: {
-    pools: string;
-    collections: string;
-    expenses: string;
-    adminFees: string;
-    note: string;
-  };
-}
+export type { DashboardFinancialOverview };
 
 export interface DashboardSummary {
   generatedAt: string;
@@ -109,9 +60,8 @@ export interface DashboardSummary {
 }
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {
-  const [borrowers, payments, groupsResponse, financialOverview] = await Promise.all([
+  const [borrowers, groupsResponse, financialOverview] = await Promise.all([
     listBorrowers(),
-    listPayments(),
     listGroupsResponse(),
     buildDashboardFinancialOverview(),
   ]);
@@ -151,52 +101,55 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     },
   ];
 
-  const paymentsByCollector = new Map<string, number>();
-  for (const payment of payments) {
-    paymentsByCollector.set(
-      payment.collectorId,
-      (paymentsByCollector.get(payment.collectorId) ?? 0) + payment.amountPesewas,
-    );
-  }
-
+  let paymentsByCollector = new Map<string, number>();
   let collectorPerformance: DashboardSummary['collectorPerformance'] = [];
+
   if (isDatabaseEnabled()) {
-    const collectors = await userRepo.listCollectors();
-    collectorPerformance = await Promise.all(
-      collectors.map(async ({ user }, index) => {
-        const actualPesewas = paymentsByCollector.get(user.id) ?? 0;
-        const dueLoans = await loanRepo.listPortfolioLoansForCollector(user.id);
-        const expectedPesewas = dueLoans.reduce(
-          (sum, loan) => sum + loan.weeklyPaymentPesewas,
-          0,
-        );
-        const collectionRatePercent =
-          expectedPesewas === 0
-            ? actualPesewas > 0
-              ? 100
-              : 0
-            : Math.min(100, Math.round((actualPesewas / expectedPesewas) * 100));
-        return {
-          collectorId: user.id,
-          collectorDisplayId: formatUserDisplayId({ id: user.id }),
-          name: user.displayName,
-          expectedPesewas,
-          actualPesewas,
-          collectionRatePercent,
-          variancePesewas: actualPesewas - expectedPesewas,
-        };
+    const [collectors, expectedByCollector, actualByCollector] = await Promise.all([
+      userRepo.listCollectors(),
+      loanRepo.sumExpectedWeeklyByCollector(),
+      paymentRepo.sumConfirmedPaymentsByCollector(),
+    ]);
+    paymentsByCollector = actualByCollector;
+
+    collectorPerformance = collectors.map(({ user }) => {
+      const actualPesewas = paymentsByCollector.get(user.id) ?? 0;
+      const expectedPesewas = expectedByCollector.get(user.id) ?? 0;
+      const collectionRatePercent =
+        expectedPesewas === 0
+          ? actualPesewas > 0
+            ? 100
+            : 0
+          : Math.min(100, Math.round((actualPesewas / expectedPesewas) * 100));
+      return {
+        collectorId: user.id,
+        collectorDisplayId: formatUserDisplayId({ id: user.id }),
+        name: user.displayName,
+        expectedPesewas,
+        actualPesewas,
+        collectionRatePercent,
+        variancePesewas: actualPesewas - expectedPesewas,
+      };
+    });
+  } else {
+    const payments = await listPayments();
+    for (const payment of payments) {
+      paymentsByCollector.set(
+        payment.collectorId,
+        (paymentsByCollector.get(payment.collectorId) ?? 0) + payment.amountPesewas,
+      );
+    }
+    collectorPerformance = Array.from(paymentsByCollector.entries()).map(
+      ([collectorId, actualPesewas], index) => ({
+        collectorId,
+        collectorDisplayId: formatUserDisplayId({ id: collectorId, sequence: index + 1 }),
+        name: 'Collector',
+        expectedPesewas: actualPesewas,
+        actualPesewas,
+        collectionRatePercent: actualPesewas > 0 ? 100 : 0,
+        variancePesewas: 0,
       }),
     );
-  } else {
-    collectorPerformance = Array.from(paymentsByCollector.entries()).map(([collectorId, actualPesewas], index) => ({
-      collectorId,
-      collectorDisplayId: formatUserDisplayId({ id: collectorId, sequence: index + 1 }),
-      name: 'Collector',
-      expectedPesewas: actualPesewas,
-      actualPesewas,
-      collectionRatePercent: actualPesewas > 0 ? 100 : 0,
-      variancePesewas: 0,
-    }));
   }
 
   const totalGroups = groups.length;
@@ -228,34 +181,37 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     },
   ];
 
+  const fo = financialOverview;
+  const kpis: DashboardSummary['kpis'] = [
+    {
+      id: 'pool',
+      label: 'Total Pool Funds',
+      amountPesewas: fo.capital.totalCapitalAvailablePesewas,
+      valueTone: 'gold',
+    },
+    {
+      id: 'disbursed',
+      label: 'Total Disbursed',
+      amountPesewas: fo.lending.totalLoanAmountDisbursedPesewas,
+      valueTone: 'default',
+    },
+    {
+      id: 'collected',
+      label: 'Total Collected',
+      amountPesewas: fo.collections.totalAmountCollectedPesewas,
+      valueTone: 'success',
+    },
+    {
+      id: 'outstanding',
+      label: 'Total Outstanding',
+      amountPesewas: fo.collections.outstandingBalancePesewas,
+      valueTone: 'default',
+    },
+  ];
+
   return {
     generatedAt: new Date().toISOString(),
-    kpis: [
-      {
-        id: 'pool',
-        label: 'Total Pool Funds',
-        amountPesewas: financialOverview.capital.totalCapitalAvailablePesewas,
-        valueTone: 'gold',
-      },
-      {
-        id: 'disbursed',
-        label: 'Total Disbursed',
-        amountPesewas: financialOverview.lending.totalLoanAmountDisbursedPesewas,
-        valueTone: 'default',
-      },
-      {
-        id: 'collected',
-        label: 'Total Collected',
-        amountPesewas: financialOverview.collections.totalAmountCollectedPesewas,
-        valueTone: 'success',
-      },
-      {
-        id: 'outstanding',
-        label: 'Total Outstanding',
-        amountPesewas: financialOverview.collections.outstandingBalancePesewas,
-        valueTone: 'default',
-      },
-    ],
+    kpis,
     borrowerSegments,
     collectorPerformance,
     groupRisk,
@@ -263,7 +219,11 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     cycleMetrics: [
       { label: 'Active groups', value: String(totalGroups) },
       { label: 'Registered borrowers', value: String(borrowers.length) },
-      { label: 'Payments recorded', value: String(payments.length) },
+      { label: 'Active loans', value: String(fo.lending.totalActiveLoans) },
+      {
+        label: 'Collection rate (this week)',
+        value: `${fo.collections.collectionRatePercent}%`,
+      },
     ],
     recentAlerts: [],
     financialOverview,

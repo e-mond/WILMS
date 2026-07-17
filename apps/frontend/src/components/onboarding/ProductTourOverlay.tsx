@@ -11,6 +11,8 @@ import { cn } from '@/utils/cn';
 const TOUR_COMPLETED_PREFIX = 'wilms-product-tour-completed';
 const TOUR_WELCOME_PREFIX = 'wilms-product-tour-welcome';
 const TOUR_NEVER_SHOW_KEY = 'wilms-product-tour-never-show';
+const TOUR_PROGRESS_PREFIX = 'wilms-product-tour-progress';
+const TOUR_ANALYTICS_PREFIX = 'wilms-product-tour-analytics';
 
 export interface ProductTourStep {
   id: string;
@@ -51,7 +53,7 @@ const TOUR_STEPS_BY_ROLE: Partial<Record<UserRole, ProductTourStep[]>> = {
     {
       id: 'expenses',
       title: 'Expenses',
-      body: 'Approve field expenses and monitor operational spend.',
+      body: 'Record and review field operating expenses. Expenses reduce operating cash, not loan principal.',
       href: '/expenses',
       targetSelector: '[data-tour-nav="/expenses"]',
     },
@@ -100,7 +102,7 @@ const TOUR_STEPS_BY_ROLE: Partial<Record<UserRole, ProductTourStep[]>> = {
     {
       id: 'expenses',
       title: 'Expenses',
-      body: 'Submit field expenses for supervisor approval.',
+      body: 'Record field expenses with receipts. Operating spend never changes loan principal.',
       href: '/collector/expenses',
       targetSelector: '[data-tour-nav="/collector/expenses"]',
     },
@@ -129,7 +131,7 @@ const TOUR_STEPS_BY_ROLE: Partial<Record<UserRole, ProductTourStep[]>> = {
     {
       id: 'intro',
       title: 'Quick Tour',
-      body: 'This short tour will show you where to find key menus, tools, and pages in the WILMS portal.',
+      body: 'This short tour highlights registration, document capture, and tracking your submissions.',
     },
     {
       id: 'register',
@@ -141,56 +143,21 @@ const TOUR_STEPS_BY_ROLE: Partial<Record<UserRole, ProductTourStep[]>> = {
     {
       id: 'my-registrations',
       title: 'My Registrations',
-      body: 'Monitor pending, approved, and rejected registrations you have submitted.',
+      body: 'Monitor pending, approved, and rejected registrations. Follow up when an approver returns an application.',
       href: '/officer/my-registrations',
       targetSelector: '[data-tour-nav="/officer/my-registrations"]',
-    },
-    {
-      id: 'review-status',
-      title: 'Review Status',
-      body: 'Track approver decisions and follow up on returned applications.',
-      href: '/officer/my-registrations',
-      targetSelector: '[data-tour-nav="/officer/my-registrations"]',
-    },
-    {
-      id: 'documents',
-      title: 'Document Uploads',
-      body: 'Capture and upload borrower ID documents and signatures during registration.',
-      href: '/officer/register',
-      targetSelector: '[data-tour-nav="/officer/register"]',
     },
   ],
   [USER_ROLE.APPROVER]: [
     {
       id: 'intro',
       title: 'Quick Tour',
-      body: 'This short tour will show you where to find key menus, tools, and pages in the WILMS portal.',
+      body: 'This short tour covers your approval queue and how to make documented decisions.',
     },
     {
       id: 'pending-queue',
       title: 'Pending Reviews',
-      body: 'Review borrower applications awaiting your decision.',
-      href: '/approver/pending',
-      targetSelector: '[data-tour-nav="/approver/pending"]',
-    },
-    {
-      id: 'borrower-details',
-      title: 'Borrower Details',
-      body: 'Inspect borrower profiles, guarantors, and registration history.',
-      href: '/approver/pending',
-      targetSelector: '[data-tour-nav="/approver/pending"]',
-    },
-    {
-      id: 'document-preview',
-      title: 'Document Preview',
-      body: 'Open ID and signature previews before approving applications.',
-      href: '/approver/pending',
-      targetSelector: '[data-tour-nav="/approver/pending"]',
-    },
-    {
-      id: 'decision-actions',
-      title: 'Decision Actions',
-      body: 'Approve or reject applications with documented reasons.',
+      body: 'Open the queue to inspect borrower profiles, documents, and guarantors — then approve or reject with a reason.',
       href: '/approver/pending',
       targetSelector: '[data-tour-nav="/approver/pending"]',
     },
@@ -238,6 +205,29 @@ function completedKey(role: UserRole): string {
 
 function welcomeKey(userId: string): string {
   return `${TOUR_WELCOME_PREFIX}:${userId}`;
+}
+
+function progressKey(role: UserRole): string {
+  return `${TOUR_PROGRESS_PREFIX}:${role}`;
+}
+
+function analyticsKey(role: UserRole): string {
+  return `${TOUR_ANALYTICS_PREFIX}:${role}`;
+}
+
+function recordTourAnalytics(role: UserRole, event: string, stepId?: string) {
+  try {
+    const raw = localStorage.getItem(analyticsKey(role));
+    const existing = raw ? (JSON.parse(raw) as Array<Record<string, string>>) : [];
+    existing.push({
+      event,
+      stepId: stepId ?? '',
+      at: new Date().toISOString(),
+    });
+    localStorage.setItem(analyticsKey(role), JSON.stringify(existing.slice(-50)));
+  } catch {
+    // Analytics must never break the tour.
+  }
 }
 
 const HIGHLIGHT_CLASSES = [
@@ -307,16 +297,43 @@ export function useProductTour() {
   }, [steps.length]);
 
   const startTour = useCallback(() => {
-    setStepIndex(0);
+    let resumeAt = 0;
+    if (role) {
+      const saved = Number(localStorage.getItem(progressKey(role)) ?? '0');
+      if (Number.isFinite(saved) && saved > 0 && saved < steps.length) {
+        resumeAt = saved;
+      }
+      recordTourAnalytics(role, resumeAt > 0 ? 'tour_resumed' : 'tour_started', steps[resumeAt]?.id);
+    }
+    setStepIndex(resumeAt);
     setPhase('tour');
-  }, []);
+  }, [role, steps]);
 
   const closeTour = useCallback(() => {
     clearTourHighlights();
+    if (role) {
+      localStorage.removeItem(progressKey(role));
+      recordTourAnalytics(role, 'tour_completed_or_exited', steps[stepIndex]?.id);
+    }
     persistDismissal();
     setPhase('idle');
     setIsNavigating(false);
-  }, [persistDismissal]);
+  }, [persistDismissal, role, stepIndex, steps]);
+
+  const pauseTourForLater = useCallback(() => {
+    clearTourHighlights();
+    if (role) {
+      localStorage.setItem(progressKey(role), String(stepIndex));
+      // Allow resume: clear completed/welcome dismissal without "never show"
+      localStorage.removeItem(completedKey(role));
+      if (userId) {
+        localStorage.removeItem(welcomeKey(userId));
+      }
+      recordTourAnalytics(role, 'tour_paused', steps[stepIndex]?.id);
+    }
+    setPhase('idle');
+    setIsNavigating(false);
+  }, [role, stepIndex, steps, userId]);
 
   const requestExit = useCallback(() => {
     setPhase('exit-confirm');
@@ -408,6 +425,7 @@ export function useProductTour() {
     openWelcome,
     startTour,
     closeTour,
+    pauseTourForLater,
     requestExit,
     resumeTour: () => setPhase('tour'),
     nextStep: () => {
@@ -415,9 +433,20 @@ export function useProductTour() {
         closeTour();
         return;
       }
-      setStepIndex((current) => current + 1);
+      const next = stepIndex + 1;
+      setStepIndex(next);
+      if (role) {
+        localStorage.setItem(progressKey(role), String(next));
+        recordTourAnalytics(role, 'tour_step', steps[next]?.id);
+      }
     },
-    previousStep: () => setStepIndex((current) => Math.max(0, current - 1)),
+    previousStep: () => {
+      const prev = Math.max(0, stepIndex - 1);
+      setStepIndex(prev);
+      if (role) {
+        localStorage.setItem(progressKey(role), String(prev));
+      }
+    },
   };
 }
 
@@ -618,6 +647,9 @@ export function ProductTourOverlay() {
         Tip: use ← → keys to move, Esc to exit.
       </p>
       <div className="mt-wilms-5 flex flex-wrap justify-end gap-wilms-2">
+        <Button type="button" variant="ghost" onClick={tour.pauseTourForLater}>
+          Resume later
+        </Button>
         <Button type="button" variant="ghost" onClick={tour.requestExit}>
           Exit
         </Button>
@@ -644,12 +676,7 @@ export function useReplayProductTour() {
     localStorage.removeItem(completedKey(user.role));
     localStorage.removeItem(welcomeKey(user.id));
     localStorage.removeItem(TOUR_NEVER_SHOW_KEY);
+    localStorage.removeItem(progressKey(user.role));
     window.location.reload();
   }, [user?.id, user?.role]);
-}
-
-export function clearProductTourPreferences(userId: string, role: UserRole): void {
-  localStorage.removeItem(completedKey(role));
-  localStorage.removeItem(welcomeKey(userId));
-  localStorage.removeItem(TOUR_NEVER_SHOW_KEY);
 }

@@ -129,6 +129,47 @@ export async function sumPaymentsByBorrowerIds(
   return new Map(rows.map((row) => [row.borrowerId, Number(row.total)]));
 }
 
+/** Confirmed (non-reversed) collection totals — avoids listPayments 2000-row cap. */
+export async function sumConfirmedPaymentsPesewas(tx: WilmsDb = getDb()): Promise<number> {
+  const [row] = await tx
+    .select({
+      total: sql<number>`COALESCE(SUM(${payments.amountPesewas}), 0)::int`,
+    })
+    .from(payments)
+    .where(ne(payments.status, 'REVERSED'));
+  return Number(row?.total ?? 0);
+}
+
+export async function sumConfirmedPaymentsSincePesewas(
+  paymentDateFromInclusive: string,
+  tx: WilmsDb = getDb(),
+): Promise<number> {
+  const [row] = await tx
+    .select({
+      total: sql<number>`COALESCE(SUM(${payments.amountPesewas}), 0)::int`,
+    })
+    .from(payments)
+    .where(
+      and(ne(payments.status, 'REVERSED'), sql`${payments.paymentDate} >= ${paymentDateFromInclusive}`),
+    );
+  return Number(row?.total ?? 0);
+}
+
+export async function sumConfirmedPaymentsByCollector(
+  tx: WilmsDb = getDb(),
+): Promise<Map<string, number>> {
+  const rows = await tx
+    .select({
+      collectorId: payments.collectorUserId,
+      total: sql<number>`COALESCE(SUM(${payments.amountPesewas}), 0)::int`,
+    })
+    .from(payments)
+    .where(ne(payments.status, 'REVERSED'))
+    .groupBy(payments.collectorUserId);
+
+  return new Map(rows.map((row) => [row.collectorId, Number(row.total)]));
+}
+
 export async function appendPayment(
   record: PaymentInsertRecord,
   tx: WilmsDb = getDb(),
