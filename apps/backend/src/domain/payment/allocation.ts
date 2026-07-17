@@ -34,18 +34,29 @@ export function validatePaymentSubmission(input: {
     return 'Overpayment is not allowed. Pay exactly the weekly amount.';
   }
 
-  const weekdayMatches =
-    input.paymentDay ===
-    new Intl.DateTimeFormat('en-US', { weekday: 'long', timeZone: 'UTC' }).format(
-      new Date(`${input.referenceDate}T00:00:00.000Z`),
-    );
+  const referenceWeekday = new Intl.DateTimeFormat('en-US', {
+    weekday: 'long',
+    timeZone: 'UTC',
+  }).format(new Date(`${input.referenceDate}T00:00:00.000Z`));
 
-  if (!weekdayMatches) {
-    return `Payments can only be recorded on the assigned payment day (${input.paymentDay}).`;
+  const oldestPayable = getOldestPayableWeek(input.scheduleWeeks, input.referenceDate);
+  if (!oldestPayable) {
+    return 'No outstanding obligation is due. Advance payments are not allowed.';
   }
 
-  if (!getOldestPayableWeek(input.scheduleWeeks, input.referenceDate)) {
-    return 'No outstanding obligation is due. Advance payments are not allowed.';
+  // Allow payment on the loan's assigned weekday OR on a holiday-shifted due date.
+  const dueWeekday = new Intl.DateTimeFormat('en-US', {
+    weekday: 'long',
+    timeZone: 'UTC',
+  }).format(new Date(`${oldestPayable.dueDate}T00:00:00.000Z`));
+
+  const weekdayAllowed =
+    referenceWeekday === input.paymentDay ||
+    referenceWeekday === dueWeekday ||
+    input.referenceDate === oldestPayable.dueDate;
+
+  if (!weekdayAllowed) {
+    return `Payments can only be recorded on the assigned payment day (${input.paymentDay}) or the scheduled due date after holiday adjustment (${oldestPayable.dueDate}).`;
   }
 
   return undefined;

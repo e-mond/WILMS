@@ -63,7 +63,7 @@ describe('PaymentEditSection', () => {
     );
   });
 
-  it('shows Super Admin adjustment request form when the payment day has ended', async () => {
+  it('shows immutable ledger guidance and Super Admin adjustment request form', async () => {
     render(
       <TestQueryProvider>
         <PaymentEditSection
@@ -75,7 +75,7 @@ describe('PaymentEditSection', () => {
       </TestQueryProvider>,
     );
 
-    expect(screen.getByText(/Correction locked/i)).toBeInTheDocument();
+    expect(screen.getByText(/Immutable ledger/i)).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /Request Super Admin payment adjustment/i }),
     ).toBeInTheDocument();

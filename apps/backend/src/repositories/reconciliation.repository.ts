@@ -54,6 +54,43 @@ export async function insertReconciliation(
   }
 }
 
+/**
+ * Resubmit after REJECTED / REOPENED — overwrite snapshot values, preserve id + history trail.
+ */
+export async function supersedeReconciliation(
+  reconciliationId: string,
+  snapshot: ReconciliationSnapshot,
+  tx: WilmsDb = getDb(),
+) {
+  const submittedAt = new Date(snapshot.submittedAt);
+  const [row] = await tx
+    .update(financialReconciliations)
+    .set({
+      expectedDuePesewas: snapshot.expectedDuePesewas,
+      systemRecordedPesewas: snapshot.systemRecordedPesewas,
+      physicalCashPesewas: snapshot.physicalCashPesewas,
+      primaryVariancePesewas: snapshot.primaryVariancePesewas,
+      collectionDeltaPesewas: snapshot.collectionDeltaPesewas,
+      varianceClass: snapshot.varianceClass,
+      varianceFlagged: snapshot.varianceFlagged,
+      thresholdPercent: snapshot.thresholdPercent,
+      comment: snapshot.comment,
+      status: snapshot.status,
+      submittedAt,
+      reviewedByUserId: null,
+      reviewedAt: null,
+      resolutionNotes: null,
+    })
+    .where(eq(financialReconciliations.id, reconciliationId))
+    .returning();
+
+  if (!row) {
+    throw new Error('NOT_FOUND');
+  }
+
+  return row;
+}
+
 export async function findReconciliationById(id: string, tx: WilmsDb = getDb()) {
   const [row] = await tx
     .select()

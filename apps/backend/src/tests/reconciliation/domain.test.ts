@@ -42,9 +42,10 @@ describe('variance', () => {
     expect(classifyVariance(100)).toBe(RECONCILIATION_VARIANCE_CLASS.OVERAGE);
   });
 
-  it('flags variance above threshold', () => {
+  it('flags variance above threshold and never auto-approves zero-expected cash', () => {
     expect(isVarianceFlagged(-25, 200, 10)).toBe(true);
-    expect(isVarianceFlagged(500, 0, 10)).toBe(false);
+    expect(isVarianceFlagged(500, 0, 10)).toBe(true);
+    expect(isVarianceFlagged(0, 200, 10, 50)).toBe(true);
     expect(calculateVariancePercentage(-25, 200)).toBe(12.5);
     expect(calculatePrimaryVariancePesewas(175, 200)).toBe(-25);
   });

@@ -29,8 +29,8 @@ export async function insertLoan(input: CreateLoanRecordInput, tx: WilmsDb = get
     .values({
       id,
       borrowerId: input.borrowerId,
-      lifecycleStatus: LOAN_LIFECYCLE.PENDING_DISBURSEMENT,
-      externalStatus: toExternalStatus(LOAN_LIFECYCLE.PENDING_DISBURSEMENT),
+      lifecycleStatus: LOAN_LIFECYCLE.PENDING_APPROVAL,
+      externalStatus: toExternalStatus(LOAN_LIFECYCLE.PENDING_APPROVAL),
       principalAmount: principal,
       approvedAmount: principal,
       disbursedAmount: '0',

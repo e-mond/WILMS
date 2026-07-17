@@ -43,13 +43,27 @@ export function classifyVariance(primaryVariancePesewas: number): Reconciliation
   return RECONCILIATION_VARIANCE_CLASS.OVERAGE;
 }
 
+/** Absolute floor (1 GHS) — any non-trivial mismatch must not auto-approve. */
+export const ABSOLUTE_VARIANCE_FLOOR_PESEWAS = 100;
+
 export function isVarianceFlagged(
   primaryVariancePesewas: number,
   expectedDuePesewas: number,
   thresholdPercent: number = DEFAULT_RECONCILIATION_THRESHOLD_PERCENT,
+  collectionDeltaPesewas = 0,
 ): boolean {
+  // Physical cash must match system-recorded collections — never auto-approve a mismatch.
+  if (collectionDeltaPesewas !== 0) {
+    return true;
+  }
+
+  // Zero expected due with any physical cash claim must never auto-approve.
   if (expectedDuePesewas === 0) {
-    return false;
+    return primaryVariancePesewas !== 0;
+  }
+
+  if (Math.abs(primaryVariancePesewas) >= ABSOLUTE_VARIANCE_FLOOR_PESEWAS) {
+    return true;
   }
 
   return calculateVariancePercentage(primaryVariancePesewas, expectedDuePesewas) > thresholdPercent;

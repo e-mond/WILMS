@@ -95,15 +95,15 @@ export async function listPayments(
       ? Math.min(options.limit, MAX_LIST_PAGE_SIZE)
       : MAX_UNPAGINATED_LIST_ROWS;
   const offset = options.offset ?? 0;
-  const where =
-    options.borrowerIds && options.borrowerIds.length > 0
-      ? inArray(payments.borrowerId, options.borrowerIds)
-      : undefined;
 
   const rows = await tx
     .select()
     .from(payments)
-    .where(where)
+    .where(
+      options.borrowerIds && options.borrowerIds.length > 0
+        ? and(inArray(payments.borrowerId, options.borrowerIds), ne(payments.status, 'REVERSED'))
+        : ne(payments.status, 'REVERSED'),
+    )
     .limit(limit)
     .offset(offset);
   return rows.map(rowToRecord);
