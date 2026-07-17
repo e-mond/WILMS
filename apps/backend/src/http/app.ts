@@ -37,6 +37,8 @@ import { communicationsRouter } from '../modules/communications/routes.js';
 import { trackingRouter } from '../modules/tracking/routes.js';
 import { webhooksRouter } from '../modules/webhooks/routes.js';
 import { organizationHolidaysRouter } from '../modules/organization-holidays/routes.js';
+import { opsRouter } from '../modules/ops/routes.js';
+import { requestIdMiddleware } from '../middleware/request-id.js';
 
 function mountBusinessRoutes(app: express.Application, basePath = '') {
   const prefix = basePath.replace(/\/$/, '');
@@ -73,6 +75,7 @@ function mountBusinessRoutes(app: express.Application, basePath = '') {
   app.use(`${prefix}`, syncRouter);
   app.use(`${prefix}`, uploadsRouter);
   app.use(`${prefix}`, organizationHolidaysRouter);
+  app.use(`${prefix}`, opsRouter);
 }
 
 export function createApp() {
@@ -81,6 +84,9 @@ export function createApp() {
   if (env.trustProxy) {
     app.set('trust proxy', env.trustProxyHops);
   }
+
+  // Correlation ID must run first so all subsequent logs include requestId.
+  app.use(requestIdMiddleware);
 
   app.use(
     helmet({

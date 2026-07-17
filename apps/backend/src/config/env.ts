@@ -42,6 +42,8 @@ export const env = {
   trustProxyHops: Number(process.env.WILMS_TRUST_PROXY_HOPS ?? 1),
   gitCommit: resolveGitCommit(),
   appUrl: process.env.WILMS_APP_URL?.trim() || process.env.WILMS_CORS_ORIGIN?.trim() || undefined,
+  /** Optional bearer token for Prometheus scrapes of GET /ops/metrics */
+  metricsScrapeToken: process.env.WILMS_METRICS_TOKEN?.trim() || undefined,
 };
 
 function resolveGitCommit(): string | undefined {
