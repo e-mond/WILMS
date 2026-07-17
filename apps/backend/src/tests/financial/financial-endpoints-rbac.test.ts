@@ -76,10 +76,18 @@ describe('financial endpoints RBAC audit', () => {
     ).toBe(403);
   });
 
-  it('blocks collectors from executive dashboard and expense management', async () => {
+  it('blocks collectors from executive dashboard but allows their expense history', async () => {
     expect(await requestStatus('/dashboard/summary', { token: collectorToken })).toBe(403);
-    expect(await requestStatus('/expenses', { token: collectorToken })).toBe(403);
-    expect(await requestStatus('/expenses/summary', { token: collectorToken })).toBe(403);
+    // Collectors with RECORD_EXPENSES may list/summary their own expenses (scoped server-side).
+    expect(await requestStatus('/expenses', { token: collectorToken })).not.toBe(403);
+    expect(await requestStatus('/expenses/summary', { token: collectorToken })).not.toBe(403);
+    // Expense review/management remains Super Admin only.
+    expect(
+      await requestStatus('/expenses/expense-audit', {
+        method: 'PATCH',
+        token: collectorToken,
+      }),
+    ).toBe(403);
   });
 
   it('allows super admins to access executive financial dashboard', async () => {
