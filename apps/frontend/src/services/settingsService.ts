@@ -111,6 +111,21 @@ const settingsService: ISettingsService = {
   getRegistrationLegalConfig() {
     return apiClient.get('/settings/registration-legal');
   },
+
+  listUserPermissionOverrides(userId) {
+    return apiClient.get(`/settings/users/${userId}/permission-overrides`);
+  },
+
+  upsertUserPermissionOverrides(userId, overrides) {
+    return apiClient.put(`/settings/users/${userId}/permission-overrides`, { overrides });
+  },
+
+  deleteUserPermissionOverride(userId, permissionId) {
+    return apiClient.post(
+      `/settings/users/${userId}/permission-overrides/${permissionId}/delete`,
+      {},
+    );
+  },
 };
 
 export default settingsService;

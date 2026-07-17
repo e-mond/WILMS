@@ -7,6 +7,11 @@ import {
 import {
   MOCK_REGISTRATION_LEGAL_CONFIG,
 } from '@/mocks/registration-legal';
+import {
+  deleteUserPermissionOverride as removeUserPermissionOverride,
+  getUserPermissionOverrides,
+  setUserPermissionOverride,
+} from '@/lib/rbac/user-permission-overrides';
 import type { ISettingsService } from '@/types/services';
 import { simulateDelay } from '@/services/mock/delay';
 import {
@@ -211,6 +216,31 @@ const settingsServiceMock: ISettingsService = {
   async getRegistrationLegalConfig() {
     await simulateDelay();
     return { ...MOCK_REGISTRATION_LEGAL_CONFIG };
+  },
+
+  async listUserPermissionOverrides(userId) {
+    await simulateDelay();
+    return getUserPermissionOverrides(userId);
+  },
+
+  async upsertUserPermissionOverrides(userId, overrides) {
+    await simulateDelay();
+    for (const override of overrides) {
+      setUserPermissionOverride({
+        userId,
+        permissionId: override.permissionId,
+        granted: override.granted,
+        reason: override.reason,
+        grantedAt: new Date().toISOString(),
+      });
+    }
+    return getUserPermissionOverrides(userId);
+  },
+
+  async deleteUserPermissionOverride(userId, permissionId) {
+    await simulateDelay();
+    removeUserPermissionOverride(userId, permissionId);
+    return getUserPermissionOverrides(userId);
   },
 };
 

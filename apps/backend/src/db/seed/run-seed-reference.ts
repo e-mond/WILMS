@@ -1,8 +1,8 @@
 import '../../config/load-env.js';
 import { eq } from 'drizzle-orm';
-import { PERMISSION, USER_ROLE } from '@wilms/shared-rbac';
+import { PERMISSION, USER_ROLE, getPermissionsForRole } from '@wilms/shared-rbac';
 import { isDatabaseEnabled, getDb } from '../client.js';
-import { permissions, roles, userRoles } from '../schema/rbac.js';
+import { permissions, rolePermissions, roles, userRoles } from '../schema/rbac.js';
 import { collectors, users as usersTable } from '../schema/users.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
 import { hashPassword } from '../../lib/password.js';
@@ -45,6 +45,19 @@ async function seedRbac(): Promise<void> {
         isSystem: true,
       })
       .onConflictDoNothing();
+
+    const permissionIds = [...getPermissionsForRole(roleSeed.role)];
+    if (permissionIds.length > 0) {
+      await db
+        .insert(rolePermissions)
+        .values(
+          permissionIds.map((permissionId) => ({
+            roleId: roleSeed.id,
+            permissionId,
+          })),
+        )
+        .onConflictDoNothing();
+    }
   }
 
   for (const user of DEMO_USERS) {

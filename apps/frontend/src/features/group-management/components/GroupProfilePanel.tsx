@@ -11,7 +11,7 @@ import {
 import { Alert } from '@/components/feedback/Alert';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { resolveQueryErrorPresentation } from '@/utils/query-error-presentation';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { ExecutiveKpiGrid } from '@/components/layout/executive';
 import { ProfileSection } from '@/components/layout/executive/ProfileSection';
 import { CurrencyAmount } from '@/components/data-display';
@@ -53,7 +53,7 @@ export function GroupProfilePanel({ groupId }: GroupProfilePanelProps) {
   useShellAsideContent(asideContent);
 
   if (isLoading) {
-    return <LoadingSpinner label="Loading group profile" className="py-wilms-8" />;
+    return <InlinePanelSkeleton />;
   }
 
   if (isError) {

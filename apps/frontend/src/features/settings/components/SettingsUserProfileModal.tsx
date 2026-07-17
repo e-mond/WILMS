@@ -3,7 +3,8 @@
 import { Avatar, CurrencyAmount } from '@/components/data-display';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { QueryErrorState } from '@/components/feedback/QueryErrorState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
+import { SettingsUserPermissionOverrides } from '@/features/settings/components/SettingsUserPermissionOverrides';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { PERMISSION } from '@/constants/permissions';
@@ -44,7 +45,7 @@ export function SettingsUserProfileModal({ userId, onClose }: SettingsUserProfil
   return (
     <Modal isOpen={Boolean(userId)} onClose={onClose} title="User Profile">
       {isLoading ? (
-        <LoadingSpinner label="Loading user profile" className="py-wilms-6" />
+        <InlinePanelSkeleton />
       ) : isError ? (
         <QueryErrorState
           title="Unable to load user profile"
@@ -249,6 +250,7 @@ export function SettingsUserProfileModal({ userId, onClose }: SettingsUserProfil
               ) : null}
             </div>
           </section>
+          <SettingsUserPermissionOverrides userId={data.id} />
         </div>
       )}
     </Modal>

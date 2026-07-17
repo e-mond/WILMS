@@ -11,7 +11,7 @@ import {
 import { DetailSidebarCard, ExecutiveKpiGrid } from '@/components/layout/executive';
 import { ExecutiveDetailLayout } from '@/components/layout/ExecutiveDetailLayout';
 import { EmptyState } from '@/components/feedback/EmptyState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { Button } from '@/components/ui/Button';
 import { LoanPaymentLogTable } from '@/features/loan-management/components/LoanPaymentLogTable';
@@ -61,7 +61,7 @@ export function LoanDetailPanel({ loanId }: LoanDetailPanelProps) {
   const disburseLoan = useDisburseLoan(loanId);
 
   if (isLoanLoading || isScheduleLoading || isProgressLoading || isPaymentLogLoading) {
-    return <LoadingSpinner label="Loading loan details" className="py-wilms-8" />;
+    return <InlinePanelSkeleton />;
   }
 
   if (

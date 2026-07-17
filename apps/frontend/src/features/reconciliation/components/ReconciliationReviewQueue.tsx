@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import { CurrencyAmount, DataTable, VarianceAmount } from '@/components/data-display';
 import { Alert } from '@/components/feedback/Alert';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
 import { Input } from '@/components/ui/Input';
@@ -154,7 +154,7 @@ export function ReconciliationReviewQueue() {
   );
 
   if (isLoading) {
-    return <LoadingSpinner label="Loading reconciliation queue" className="py-wilms-4" />;
+    return <InlinePanelSkeleton />;
   }
 
   if (!pendingReview.length) {

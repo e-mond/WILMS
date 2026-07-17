@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { useMessageCollector } from '@/features/collector-management/hooks/useMessageCollector';
 import { messageService } from '@/services';
@@ -37,7 +37,7 @@ export function CollectorMessagesPanel() {
   const activeThread = threadQuery.data;
 
   if (threadsQuery.isLoading) {
-    return <LoadingSpinner label="Loading messages" className="py-wilms-6" />;
+    return <InlinePanelSkeleton />;
   }
 
   if (!threads.length) {
