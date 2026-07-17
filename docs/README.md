@@ -30,6 +30,7 @@ Start here. Prefer certification packs for current system truth; older guides re
 | RC validation | [`certification/v1.3.8/rc-validation/`](./certification/v1.3.8/rc-validation/) |
 | Production operations | [`certification/v1.3.8/production-operations/`](./certification/v1.3.8/production-operations/) |
 | Product acceptance (Phase 21) | [`certification/v1.3.8/product-acceptance/`](./certification/v1.3.8/product-acceptance/) |
+| Go-live closure (Phase 22) | [`certification/v1.3.8/go-live/`](./certification/v1.3.8/go-live/) |
 
 ## Field / product guides
 
