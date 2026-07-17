@@ -1,32 +1,33 @@
 # Agent Instructions — WILMS
 > Women's Interest-Free Loan Management System
 
+**Version:** v1.3.8  
+**Last updated:** 2026-07-17
+
 Before any implementation or architectural decision, read these files **in order**:
 
-1. `context/project-overview.md`
-2. `context/architecture.md`
-3. `context/ui-context.md`
-4. `context/code-standards.md`
-5. `context/ai-workflow-rules.md`
-6. `context/progress-tracker.md`
-7. `context/requirements-traceability.md`
-8. `context/adrs/ADR-001-state-management.md`
-9. `context/adrs/ADR-002-routing-strategy.md`
-10. `context/adrs/ADR-003-api-layer-design.md`
-11. `context/adrs/ADR-004-component-architecture.md`
-12. `production-frontend-prompt.md`
+1. [`architecture/project-overview.md`](./architecture/project-overview.md)
+2. [`certification/v1.3.8/enterprise-architecture/SYSTEM_ARCHITECTURE.md`](./certification/v1.3.8/enterprise-architecture/SYSTEM_ARCHITECTURE.md) (current SSoT)
+3. [`architecture/architecture.md`](./architecture/architecture.md) (legacy index / ADRs context)
+4. [`architecture/ui-context.md`](./architecture/ui-context.md)
+5. [`architecture/code-standards.md`](./architecture/code-standards.md)
+6. [`architecture/ai-workflow-rules.md`](./architecture/ai-workflow-rules.md)
+7. [`architecture/progress-tracker.md`](./architecture/progress-tracker.md)
+8. [`architecture/requirements-traceability.md`](./architecture/requirements-traceability.md)
+9. [`adr/ADR-001-state-management.md`](./adr/ADR-001-state-management.md) (and sibling ADRs as needed)
+10. Root [`AGENTS.md`](../AGENTS.md) for Cursor Cloud monorepo commands
+11. Frontend prompt (if UI work): [`../apps/frontend/production-frontend-prompt.md`](../apps/frontend/production-frontend-prompt.md)
+
+> Paths formerly under `docs/context/` now live under `docs/architecture/` and `docs/adr/`.
 
 ---
 
 ## Rules
 
-- For implementation tasks, follow the response format defined in `production-frontend-prompt.md` Section 21 (Final Response Format).
-- Update `context/progress-tracker.md` after every meaningful implementation change.
-- Update `context/requirements-traceability.md` as features are completed — mark each row's Status field.
-- If any context file is outdated relative to the implementation, update it before continuing development.
-- If the current project state cannot be determined from these files, ask before implementing anything.
-- Never make architectural decisions without creating or updating the relevant ADR in `context/adrs/`.
-- Every new session begins by reading all context files — no exceptions.
+- Prefer certification packs under `docs/certification/v1.3.8/` for current operational and architectural truth.
+- Update `architecture/progress-tracker.md` after meaningful implementation changes when that tracker is still in use for the task.
+- Never make architectural decisions without creating or updating the relevant ADR in `docs/adr/`.
+- Do not invent production failures or claim vendor APM (Sentry/OTel) is wired unless code shows it.
 
 ---
 
@@ -56,26 +57,10 @@ These come from the BRD and represent non-negotiable system behaviour:
 
 ## Ambiguities (Resolved)
 
-See `context/ai-workflow-rules.md` §5 for the full list of BRD ambiguities and their resolutions. Do not re-open resolved ambiguities without a stakeholder directive.
+See [`architecture/ai-workflow-rules.md`](./architecture/ai-workflow-rules.md) for BRD ambiguity resolutions. Do not re-open resolved ambiguities without a stakeholder directive.
 
 ---
 
-## Definition of Done
+## Product boundary: Borrower portal
 
-A feature unit is complete **only** when ALL of the following are true:
-
-- [ ] All BRD requirements for this unit are implemented (traceable in requirements-traceability.md)
-- [ ] Unit tests written and passing
-- [ ] Integration tests written and passing
-- [ ] UI (Playwright) tests written and passing
-- [ ] Coverage thresholds met (80% statements, 75% branches, 80% functions, 80% lines)
-- [ ] Accessibility verified (WCAG 2.1 AA) for all UI added
-- [ ] Security reviewed (no banned patterns from code-standards.md)
-- [ ] `npm run lint` passes — zero errors
-- [ ] `npm run type-check` passes — zero errors
-- [ ] `npm run build` succeeds
-- [ ] `context/progress-tracker.md` updated
-- [ ] `context/requirements-traceability.md` rows updated to ✅ Complete
-- [ ] Relevant ADR created or updated if an architectural decision was made
-
-If any item is unchecked, the unit is **not complete**.
+WILMS v1.3.8 has **five staff portals** (Super Admin, Registration Officer, Approver, Collector, Auditor). There is **no borrower self-service login role**. Borrowers are domain entities managed by staff. A future borrower portal is a product roadmap item, not an acceptance defect.
