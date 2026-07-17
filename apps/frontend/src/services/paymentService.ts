@@ -2,7 +2,7 @@ import { captureGps } from '@/utils/captureGps';
 import { apiClient } from '@/utils/apiClient';
 import type { IPaymentService } from '@/types/services';
 import type { PaymentEntryContext } from '@/types/payment-entry';
-import type { EditPaymentInput, PaymentTransaction, RecordPaymentInput } from '@/types/payment';
+import type { PaymentTransaction, RecordPaymentInput } from '@/types/payment';
 
 const paymentService: IPaymentService = {
   getPaymentEntryContext(borrowerId: string, referenceDate?: string): Promise<PaymentEntryContext> {
@@ -28,7 +28,7 @@ const paymentService: IPaymentService = {
     return apiClient.get<PaymentTransaction>(`/payments/${paymentId}`);
   },
 
-  async editPayment(_paymentId: string, _input: EditPaymentInput): Promise<PaymentTransaction> {
+  async editPayment(): Promise<PaymentTransaction> {
     // Posted payments are immutable on the API (PATCH returns 409).
     // Corrections require Super Admin reverse + re-record, or an adjustment request.
     const { ApiError, API_ERROR_CODE } = await import('@/types/api');
