@@ -51,6 +51,14 @@ export interface DashboardFinancialOverview {
       totalPesewas: number;
     };
     netPositionPesewas: number;
+    netOperatingCashPesewas?: number;
+  };
+  ledgerSource?: {
+    pools: string;
+    collections: string;
+    expenses: string;
+    adminFees: string;
+    note: string;
   };
 }
 

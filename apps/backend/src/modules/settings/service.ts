@@ -7,6 +7,7 @@ import { auditEntries } from '../../db/schema/audit.js';
 import { permissions, rolePermissions, roles, userPermissionOverrides, userRoles } from '../../db/schema/rbac.js';
 import { users } from '../../db/schema/users.js';
 import { hashPassword } from '../../lib/password.js';
+import { generateInvitePassword } from '../../lib/invite-password.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
 import * as userRepo from '../../repositories/user.repository.js';
 import * as systemSettingsRepo from '../../repositories/system-settings.repository.js';
@@ -912,7 +913,6 @@ function resolveUniqueRoleCloneName(sourceName: string, existingRoles: RoleDefin
   return `${baseName} ${suffix}`;
 }
 
-const DEFAULT_INVITE_PASSWORD = 'ChangeMe1!';
 const INVITATION_EXPIRY_DAYS = 7;
 
 function invitationExpiresAt(): Date {
@@ -958,10 +958,11 @@ export async function createUser(
   }
 
   if (!isDatabaseEnabled()) {
+    const temporaryPassword = generateInvitePassword();
     const created = mapDemoUserToSettingsRecord({
       id: `user-${uuidv7().slice(0, 8)}`,
       email,
-      password: DEFAULT_INVITE_PASSWORD,
+      password: temporaryPassword,
       role: role as (typeof DEMO_USERS)[number]['role'],
       displayName,
       status: 'INVITED',
@@ -974,7 +975,8 @@ export async function createUser(
   }
 
   const db = getDb();
-  const passwordHash = await hashPassword(DEFAULT_INVITE_PASSWORD);
+  const temporaryPassword = generateInvitePassword();
+  const passwordHash = await hashPassword(temporaryPassword);
   const userId = uuidv7();
   const expiresAt = invitationExpiresAt();
   const invitedAt = new Date();
@@ -1023,7 +1025,7 @@ export async function createUser(
     const delivery = await notifyUserInvitation({
       email,
       displayName,
-      temporaryPassword: DEFAULT_INVITE_PASSWORD,
+      temporaryPassword,
       userId,
       phone: input.phone?.trim(),
       expiresAt,
@@ -1076,11 +1078,18 @@ export async function resendInvitation(
   }
 
   const expiresAt = invitationExpiresAt();
+  const temporaryPassword = generateInvitePassword();
+  const passwordHash = await hashPassword(temporaryPassword);
+  const db = getDb();
+  await db
+    .update(users)
+    .set({ passwordHash, updatedAt: new Date() })
+    .where(eq(users.id, userId));
 
   const delivery = await notifyUserInvitation({
     email: row.email,
     displayName: row.displayName,
-    temporaryPassword: DEFAULT_INVITE_PASSWORD,
+    temporaryPassword,
     userId: row.id,
     phone: row.phone ?? undefined,
     expiresAt,

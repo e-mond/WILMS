@@ -148,6 +148,16 @@ async function postPayment(
   input: z.infer<typeof recordPaymentSchema>,
   actorId: string,
 ) {
+  if (
+    !input.gps ||
+    typeof input.gps.latitude !== 'number' ||
+    typeof input.gps.longitude !== 'number' ||
+    !Number.isFinite(input.gps.latitude) ||
+    !Number.isFinite(input.gps.longitude)
+  ) {
+    throw new Error('VALIDATION:GPS coordinates are required to record a collection.');
+  }
+
   const duplicate = await paymentRepo.findDuplicatePayment({
     borrowerId: input.borrowerId,
     paymentDate: input.paymentDate,

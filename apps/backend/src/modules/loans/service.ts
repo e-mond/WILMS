@@ -30,6 +30,13 @@ import * as poolRepo from '../../repositories/loan-pool.repository.js';
 import { groups } from '../../db/schema/groups.js';
 import { getSettings } from '../settings/service.js';
 import { decimalToPesewas } from '../../domain/money.js';
+import { hasAdminFee } from '../../db/persistence.js';
+
+async function assertAdminFeeRecorded(borrowerId: string): Promise<void> {
+  if (!(await hasAdminFee(borrowerId))) {
+    throw new Error('VALIDATION:Admin fee must be recorded before this loan operation.');
+  }
+}
 
 async function resolveCollectorUserIdForBorrower(borrowerId: string): Promise<string | undefined> {
   const borrower = await borrowerRepo.getBorrower(borrowerId);
@@ -175,6 +182,8 @@ export async function createLoan(input: CreateLoanBody, actorId: string): Promis
     throw new Error('VALIDATION:This borrower already has an active or pending loan.');
   }
 
+  await assertAdminFeeRecorded(input.borrowerId);
+
   if (!isValidPaymentDay(input.paymentDay)) {
     throw new Error('VALIDATION:Payment day must be a valid weekday (Sunday through Saturday).');
   }
@@ -225,11 +234,11 @@ export async function createLoan(input: CreateLoanBody, actorId: string): Promis
       await scheduleRepo.insertScheduleWeeks(row.id, scheduleWeeks, tx);
       await ledgerRepo.appendLedgerEntry(
         {
-          entryType: 'INTEREST_CHARGE',
+          entryType: 'ADJUSTMENT',
           loanId: row.id,
           borrowerId: input.borrowerId,
           amountDecimal: '0.00',
-          description: 'Loan created pending disbursement',
+          description: 'Loan created — pending approval (interest-free; no interest accrued)',
           actorUserId: actorId,
         },
         tx,
@@ -271,6 +280,8 @@ export async function approveLoan(loanId: string, actorId: string): Promise<Loan
     throw new Error(`VALIDATION:Loan cannot be approved from status ${loan.lifecycleStatus}.`);
   }
 
+  await assertAdminFeeRecorded(loan.borrowerId);
+
   const updated = await runInTransaction(async (tx) => {
     const approved = await loanRepo.updateLoanLifecycle(
       {
@@ -284,11 +295,11 @@ export async function approveLoan(loanId: string, actorId: string): Promise<Loan
 
     await ledgerRepo.appendLedgerEntry(
       {
-        entryType: 'INTEREST_CHARGE',
+        entryType: 'ADJUSTMENT',
         loanId,
         borrowerId: loan.borrowerId,
         amountDecimal: '0.00',
-        description: 'Loan approved',
+        description: 'Loan approved — pending disbursement (interest-free)',
         actorUserId: actorId,
       },
       tx,
@@ -384,9 +395,13 @@ export async function disburseLoan(
       if (!loan) {
         throw new Error('NOT_FOUND');
       }
-      if (loan.externalStatus !== 'PENDING_DISBURSEMENT') {
-        throw new Error('VALIDATION:Only loans pending disbursement can be disbursed.');
+      if (loan.lifecycleStatus !== LOAN_LIFECYCLE.PENDING_DISBURSEMENT) {
+        throw new Error(
+          'VALIDATION:Only approved loans pending disbursement can be disbursed. Complete approval first.',
+        );
       }
+
+      await assertAdminFeeRecorded(loan.borrowerId);
 
       const amountDecimal = loan.principalAmount;
 
@@ -399,6 +414,20 @@ export async function disburseLoan(
           if (pools.length > 0) {
             throw new Error(
               'VALIDATION:This loan is not linked to a funding pool. Assign the borrower group to a pool, then disburse again.',
+            );
+          }
+        }
+
+        if (resolvedPoolId) {
+          const pool = await poolRepo.findPoolById(resolvedPoolId, tx);
+          if (!pool) {
+            throw new Error('VALIDATION:Selected loan pool was not found.');
+          }
+          const amountPesewas = decimalToPesewas(amountDecimal);
+          const availablePesewas = Math.max(0, pool.capitalPesewas - pool.outstandingPesewas);
+          if (amountPesewas > availablePesewas) {
+            throw new Error(
+              `VALIDATION:Insufficient pool capital for disbursement. Available ${availablePesewas} pesewas, requested ${amountPesewas}.`,
             );
           }
         }
@@ -676,15 +705,23 @@ export async function getDisbursementEligibility(borrowerId: string) {
     return { borrowerId, canDisburse: false, reason: 'Borrower not found.' };
   }
 
+  if (!(await hasAdminFee(borrowerId))) {
+    return {
+      borrowerId,
+      canDisburse: false,
+      reason: 'Admin fee must be recorded before loan disbursement.',
+    };
+  }
+
   const pendingLoan = (await loanRepo.listBorrowerLoans(borrowerId)).find(
-    (row) => row.externalStatus === 'PENDING_DISBURSEMENT',
+    (row) => row.lifecycleStatus === LOAN_LIFECYCLE.PENDING_DISBURSEMENT,
   );
 
   if (!pendingLoan) {
     return {
       borrowerId,
       canDisburse: false,
-      reason: 'No loan pending disbursement for this borrower.',
+      reason: 'No approved loan pending disbursement for this borrower.',
     };
   }
 

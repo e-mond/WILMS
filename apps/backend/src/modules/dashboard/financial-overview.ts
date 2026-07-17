@@ -57,6 +57,13 @@ export interface DashboardFinancialOverview {
     netPositionPesewas: number;
     netOperatingCashPesewas: number;
   };
+  ledgerSource: {
+    pools: 'loan_pools';
+    collections: 'payments_confirmed_excluding_reversed';
+    expenses: 'expenses_approved';
+    adminFees: 'borrower_admin_fees';
+    note: string;
+  };
 }
 
 async function sumAdminFeesCollected(): Promise<number> {
@@ -80,6 +87,13 @@ async function sumAdminFeesCollected(): Promise<number> {
   }
 }
 
+/**
+ * Single source of truth for executive KPIs:
+ * - Pool capital / outstanding / disbursed / collected come from loan_pools aggregates
+ * - Collections exclude reversed payments
+ * - Expenses reduce operating cash only (never loan principal or pool capital)
+ * - Collection rate compares this-week due vs this-week confirmed collections
+ */
 export async function buildDashboardFinancialOverview(): Promise<DashboardFinancialOverview> {
   const payments = await listPayments();
   const totalCollectedPesewas = payments.reduce((sum, payment) => sum + payment.amountPesewas, 0);
@@ -94,6 +108,14 @@ export async function buildDashboardFinancialOverview(): Promise<DashboardFinanc
   let closedLoans = 0;
   let amountDueThisWeekPesewas = 0;
   let overdueAmountPesewas = 0;
+  let collectedThisWeekPesewas = 0;
+
+  const today = new Date();
+  const startOfWeek = new Date(
+    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
+  );
+  startOfWeek.setUTCDate(startOfWeek.getUTCDate() - startOfWeek.getUTCDay());
+  const weekStart = startOfWeek.toISOString().slice(0, 10);
 
   if (isDatabaseEnabled()) {
     try {
@@ -129,28 +151,36 @@ export async function buildDashboardFinancialOverview(): Promise<DashboardFinanc
     }
   }
 
+  // Prefer pool aggregates; fall back to loan portfolio only when pools are empty.
   const loanTotals = isDatabaseEnabled()
     ? await computeLoanPortfolioTotals()
     : { totalDisbursedPesewas: 0, totalCollectedPesewas: 0, totalOutstandingPesewas: 0 };
 
-  poolSummary = {
-    ...poolSummary,
-    totalDisbursedPesewas: Math.max(poolSummary.totalDisbursedPesewas, loanTotals.totalDisbursedPesewas),
-    totalCollectedPesewas: Math.max(poolSummary.totalCollectedPesewas, loanTotals.totalCollectedPesewas),
-    totalOutstandingPesewas: Math.max(
-      poolSummary.totalOutstandingPesewas,
-      loanTotals.totalOutstandingPesewas,
-    ),
-  };
+  const poolsHaveCapital = poolSummary.totalPoolFundsPesewas > 0 || poolSummary.totalDisbursedPesewas > 0;
+  if (!poolsHaveCapital) {
+    poolSummary = {
+      ...poolSummary,
+      totalDisbursedPesewas: loanTotals.totalDisbursedPesewas,
+      totalCollectedPesewas: loanTotals.totalCollectedPesewas,
+      totalOutstandingPesewas: loanTotals.totalOutstandingPesewas,
+    };
+  }
+
+  // Prefer confirmed payment ledger for collected (excludes reversals via listPayments filter).
+  const collectionsPesewas =
+    poolSummary.totalCollectedPesewas > 0 ? poolSummary.totalCollectedPesewas : totalCollectedPesewas;
+
+  collectedThisWeekPesewas = payments
+    .filter((payment) => payment.paymentDate >= weekStart)
+    .reduce((sum, payment) => sum + payment.amountPesewas, 0);
 
   const outstandingBalancePesewas = poolSummary.totalOutstandingPesewas;
-  const expectedCollectionsPesewas = amountDueThisWeekPesewas;
   const collectionRatePercent =
-    expectedCollectionsPesewas === 0
-      ? totalCollectedPesewas > 0
+    amountDueThisWeekPesewas === 0
+      ? collectedThisWeekPesewas > 0
         ? 100
         : 0
-      : Math.min(100, Math.round((totalCollectedPesewas / expectedCollectionsPesewas) * 100));
+      : Math.min(100, Math.round((collectedThisWeekPesewas / amountDueThisWeekPesewas) * 100));
 
   const settings = await getSettings();
   const approvedBorrowerCount = await countBorrowers(BORROWER_STATUS.APPROVED);
@@ -160,9 +190,12 @@ export async function buildDashboardFinancialOverview(): Promise<DashboardFinanc
 
   const expenseSummary = await getExpenseSummary();
   const totalExpensesPesewas = expenseSummary.yearPesewas;
-  const netCollectionsAfterExpensesPesewas = Math.max(0, totalCollectedPesewas - totalExpensesPesewas);
+  // Operating cash only — expenses never reduce loan principal or pool capital.
+  const netOperatingCashPesewas =
+    collectionsPesewas + adminFeesCollectedPesewas - totalExpensesPesewas;
+  const netCollectionsAfterExpensesPesewas = Math.max(0, collectionsPesewas - totalExpensesPesewas);
 
-  const moneyInCollections = totalCollectedPesewas;
+  const moneyInCollections = collectionsPesewas;
   const moneyInAdminFees = adminFeesCollectedPesewas;
   const moneyInCapital = poolSummary.totalPoolFundsPesewas;
   const moneyInTotal = moneyInCollections + moneyInAdminFees + moneyInCapital;
@@ -170,12 +203,12 @@ export async function buildDashboardFinancialOverview(): Promise<DashboardFinanc
   const moneyOutDisbursements = poolSummary.totalDisbursedPesewas;
   const moneyOutExpenses = totalExpensesPesewas;
   const moneyOutTotal = moneyOutDisbursements + moneyOutExpenses;
-  const netOperatingCashPesewas = moneyInCollections + moneyInAdminFees - moneyOutExpenses;
 
   return {
     capital: {
       totalCapitalAvailablePesewas: poolSummary.totalPoolFundsPesewas,
-      totalCapitalInjectedPesewas: poolSummary.totalPoolFundsPesewas + poolSummary.totalDisbursedPesewas,
+      // Capital injected = funded pool capital (not capital + disbursed double-count).
+      totalCapitalInjectedPesewas: poolSummary.totalPoolFundsPesewas,
       currentAvailableBalancePesewas: Math.max(
         0,
         poolSummary.totalPoolFundsPesewas - poolSummary.totalOutstandingPesewas,
@@ -187,7 +220,7 @@ export async function buildDashboardFinancialOverview(): Promise<DashboardFinanc
       totalClosedLoans: closedLoans,
     },
     collections: {
-      totalAmountCollectedPesewas: totalCollectedPesewas,
+      totalAmountCollectedPesewas: collectionsPesewas,
       netCollectionsAfterExpensesPesewas,
       outstandingBalancePesewas,
       amountDueThisWeekPesewas,
@@ -221,6 +254,13 @@ export async function buildDashboardFinancialOverview(): Promise<DashboardFinanc
       },
       netPositionPesewas: moneyInTotal - moneyOutTotal,
       netOperatingCashPesewas,
+    },
+    ledgerSource: {
+      pools: 'loan_pools',
+      collections: 'payments_confirmed_excluding_reversed',
+      expenses: 'expenses_approved',
+      adminFees: 'borrower_admin_fees',
+      note: 'Expenses reduce netOperatingCash only; pool capital and loan principal are unaffected.',
     },
   };
 }

@@ -92,6 +92,8 @@ export interface HealthReport {
     latestAppliedAt: string | null;
     latestJournalWhen: number | null;
     status: 'ok' | 'degraded' | 'unknown' | 'disabled';
+    /** True when applied row count ≠ journal length (historical gap; watermark may still be current). */
+    countGap: boolean;
   };
   uploads: {
     requestedProvider: string;
@@ -180,9 +182,12 @@ export async function buildHealthReport(): Promise<HealthReport> {
     }
   }
 
+  // Also degrade when migration status cannot be determined with a live database —
+  // unknown health must never look like a clean bill of health.
   const degraded =
     (isDatabaseEnabled() && !dbConnected) ||
     migrationStatus === 'degraded' ||
+    migrationStatus === 'unknown' ||
     schemaReport.status === 'degraded' ||
     (env.nodeEnv === 'production' && !uploadReport.valid);
 
@@ -195,6 +200,13 @@ export async function buildHealthReport(): Promise<HealthReport> {
       `migrations_behind:applied_watermark=${latestAppliedMillis ?? 0},expected_watermark=${migrationJournal.latestWhen},applied_count=${appliedMigrations ?? 0},expected_count=${expectedMigrations}`,
     );
   }
+  if (migrationStatus === 'unknown') {
+    degradedReasons.push('migrations_status_unknown');
+  }
+  const migrationCountGap =
+    appliedMigrations != null &&
+    expectedMigrations > 0 &&
+    appliedMigrations !== expectedMigrations;
   if (schemaReport.status === 'degraded') {
     degradedReasons.push(
       schemaReport.missingTables.length > 0
@@ -226,6 +238,7 @@ export async function buildHealthReport(): Promise<HealthReport> {
       latestAppliedAt,
       latestJournalWhen: migrationJournal.latestWhen || null,
       status: migrationStatus,
+      countGap: migrationCountGap,
     },
     uploads: {
       requestedProvider: uploadReport.provider,
