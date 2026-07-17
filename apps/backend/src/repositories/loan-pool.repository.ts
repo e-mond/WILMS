@@ -1,8 +1,9 @@
-import { and, eq, sql, asc } from 'drizzle-orm';
+import { and, eq, sql, asc, notInArray } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
 import type { WilmsDb } from '../db/client.js';
 import { getDb } from '../db/client.js';
 import { loanPools, poolAllocations, poolMemberships } from '../db/schema/loan-pools.js';
+import { groups } from '../db/schema/groups.js';
 import { loans } from '../db/schema/loans.js';
 import { payments } from '../db/schema/payments.js';
 import type { PoolAllocationTotals } from '../domain/loan-pool/balance.js';
@@ -135,11 +136,61 @@ export async function insertMembership(
   input: { poolId: string; groupId: string; assignedAt?: Date },
   tx: WilmsDb = getDb(),
 ) {
-  await tx.insert(poolMemberships).values({
-    poolId: input.poolId,
-    groupId: input.groupId,
-    assignedAt: input.assignedAt ?? new Date(),
-  });
+  await tx
+    .insert(poolMemberships)
+    .values({
+      poolId: input.poolId,
+      groupId: input.groupId,
+      assignedAt: input.assignedAt ?? new Date(),
+    })
+    .onConflictDoNothing();
+}
+
+export async function listMembershipGroupIds(poolId: string, tx: WilmsDb = getDb()): Promise<string[]> {
+  const rows = await tx
+    .select({ groupId: poolMemberships.groupId })
+    .from(poolMemberships)
+    .where(eq(poolMemberships.poolId, poolId));
+  return rows.map((row) => row.groupId);
+}
+
+export async function listUnassignedGroupOptions(
+  tx: WilmsDb = getDb(),
+): Promise<{ id: string; name: string; community: string }[]> {
+  const assigned = await tx.select({ groupId: poolMemberships.groupId }).from(poolMemberships);
+  const assignedIds = assigned.map((row) => row.groupId);
+
+  const rows =
+    assignedIds.length === 0
+      ? await tx
+          .select({
+            id: groups.id,
+            name: groups.displayName,
+            community: groups.community,
+          })
+          .from(groups)
+          .where(sql`${groups.deletedAt} IS NULL`)
+          .orderBy(asc(groups.displayName))
+      : await tx
+          .select({
+            id: groups.id,
+            name: groups.displayName,
+            community: groups.community,
+          })
+          .from(groups)
+          .where(and(sql`${groups.deletedAt} IS NULL`, notInArray(groups.id, assignedIds)))
+          .orderBy(asc(groups.displayName));
+
+  return rows;
+}
+
+export async function groupExists(groupId: string, tx: WilmsDb = getDb()): Promise<boolean> {
+  const [row] = await tx
+    .select({ id: groups.id })
+    .from(groups)
+    .where(and(eq(groups.id, groupId), sql`${groups.deletedAt} IS NULL`))
+    .limit(1);
+  return Boolean(row);
 }
 
 export async function appendAllocation(

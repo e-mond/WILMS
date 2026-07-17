@@ -22,13 +22,14 @@ export function VerifyOtpForm({ challengeId, message, onBack }: VerifyOtpFormPro
   const router = useRouter();
   const searchParams = useSearchParams();
   const setSession = useAuthStore((state) => state.setSession);
-  const { playLogin } = useNotificationSound();
+  const { playLogin, warm } = useNotificationSound();
   const [code, setCode] = useState('');
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleVerify(event: React.FormEvent) {
     event.preventDefault();
+    warm();
     setSubmitError(null);
     setIsSubmitting(true);
 

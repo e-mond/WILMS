@@ -18,6 +18,7 @@ const createLoanSchema = z.object({
   paymentDay: z.enum(PAYMENT_DAY_OPTIONS),
   cycleBatch: z.string().trim().min(1).max(120),
   startDate: z.string().min(1),
+  loanPoolId: z.string().uuid().optional(),
 });
 
 const rejectSchema = z.object({

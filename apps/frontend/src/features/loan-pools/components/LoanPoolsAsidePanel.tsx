@@ -1,7 +1,13 @@
 'use client';
 
+import { useState } from 'react';
 import { ActivityFeed, CurrencyAmount, UtilisationBar } from '@/components/data-display';
 import { DetailSidebarCard } from '@/components/layout/executive';
+import { FormField } from '@/components/forms';
+import { Button } from '@/components/ui/Button';
+import { Select } from '@/components/ui/Select';
+import { useAssignPoolGroup } from '@/features/loan-pools/hooks/useAssignPoolGroup';
+import { useUnassignedPoolGroups } from '@/features/loan-pools/hooks/useUnassignedPoolGroups';
 import type { GroupActivity } from '@/types/group';
 import type { LoanPoolAllocationSegment, LoanPoolSummary } from '@/types/loan-pool';
 import { resolvePoolDisplayId } from '@/utils/entity-display-id';
@@ -17,6 +23,10 @@ export function LoanPoolsAsidePanel({
   allocation,
   recentActivity,
 }: LoanPoolsAsidePanelProps) {
+  const { data: unassignedGroups = [] } = useUnassignedPoolGroups(Boolean(selected));
+  const assignGroup = useAssignPoolGroup(selected?.id ?? null);
+  const [groupId, setGroupId] = useState('');
+
   return (
     <>
       {selected ? (
@@ -55,6 +65,41 @@ export function LoanPoolsAsidePanel({
               <dd className="font-semibold">{selected.repaymentRatePercent}%</dd>
             </div>
           </dl>
+
+          <div className="mt-wilms-4 space-y-wilms-3 border-t border-border pt-wilms-4">
+            <p className="text-small font-semibold text-text-primary">Assign group</p>
+            <p className="text-small text-text-muted">
+              Groups must be linked to a pool before disbursements update utilisation.
+            </p>
+            <FormField label="Unassigned group" htmlFor="assign-pool-group">
+              <Select
+                id="assign-pool-group"
+                value={groupId}
+                onChange={(event) => setGroupId(event.target.value)}
+                disabled={assignGroup.isPending || unassignedGroups.length === 0}
+              >
+                <option value="">
+                  {unassignedGroups.length === 0 ? 'No unassigned groups' : 'Select group'}
+                </option>
+                {unassignedGroups.map((group) => (
+                  <option key={group.id} value={group.id}>
+                    {group.name} — {group.community}
+                  </option>
+                ))}
+              </Select>
+            </FormField>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              disabled={!groupId || assignGroup.isPending}
+              onClick={() => {
+                void assignGroup.mutateAsync({ groupId }).then(() => setGroupId(''));
+              }}
+            >
+              {assignGroup.isPending ? 'Assigning…' : 'Assign to pool'}
+            </Button>
+          </div>
         </DetailSidebarCard>
       ) : null}
       <DetailSidebarCard title="Fund Allocation by Pool">

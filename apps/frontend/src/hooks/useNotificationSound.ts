@@ -2,6 +2,8 @@
 
 const STORAGE_KEY = 'wilms-notification-sounds-enabled';
 
+let sharedAudioContext: AudioContext | null = null;
+
 function readPreference(): boolean {
   if (typeof window === 'undefined') {
     return true;
@@ -19,13 +21,44 @@ function readPreference(): boolean {
   return true;
 }
 
+/** Unlock AudioContext during a user gesture so post-login tones can play. */
+export function warmAudioContext(): void {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    const AudioContextCtor =
+      window.AudioContext ??
+      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextCtor) {
+      return;
+    }
+
+    if (!sharedAudioContext || sharedAudioContext.state === 'closed') {
+      sharedAudioContext = new AudioContextCtor();
+    }
+
+    if (sharedAudioContext.state === 'suspended') {
+      void sharedAudioContext.resume();
+    }
+  } catch {
+    // Audio unavailable — ignore.
+  }
+}
+
 function playTone(frequency: number, durationMs: number): void {
   if (typeof window === 'undefined' || !readPreference()) {
     return;
   }
 
   try {
-    const context = new AudioContext();
+    warmAudioContext();
+    const context = sharedAudioContext;
+    if (!context) {
+      return;
+    }
+
     const oscillator = context.createOscillator();
     const gain = context.createGain();
     oscillator.type = 'sine';
@@ -33,9 +66,9 @@ function playTone(frequency: number, durationMs: number): void {
     gain.gain.value = 0.03;
     oscillator.connect(gain);
     gain.connect(context.destination);
-    oscillator.start();
-    oscillator.stop(context.currentTime + durationMs / 1000);
-    window.setTimeout(() => void context.close(), durationMs + 50);
+    const startAt = context.currentTime;
+    oscillator.start(startAt);
+    oscillator.stop(startAt + durationMs / 1000);
   } catch {
     // Audio unavailable — ignore.
   }
@@ -53,6 +86,7 @@ export function areNotificationSoundsEnabled(): boolean {
 
 export function playLoginSound(): void {
   playTone(660, 120);
+  window.setTimeout(() => playTone(880, 100), 110);
 }
 
 export function playLogoutSound(): void {
@@ -61,6 +95,10 @@ export function playLogoutSound(): void {
 
 export function playMessageSound(): void {
   playTone(587, 140);
+}
+
+export function playNotificationSound(): void {
+  playTone(523, 120);
 }
 
 export function playSecurityAlertSound(): void {
@@ -73,6 +111,7 @@ export function playLoanDecisionSound(approved: boolean): void {
 
 export function useNotificationSound() {
   return {
+    warm: warmAudioContext,
     playLogin: playLoginSound,
     playLogout: playLogoutSound,
     playApproval: () => playTone(784, 160),
@@ -80,6 +119,7 @@ export function useNotificationSound() {
     playAssignment: () => playTone(523, 140),
     playInvite: () => playTone(698, 140),
     playMessage: playMessageSound,
+    playNotification: playNotificationSound,
     playSecurityAlert: playSecurityAlertSound,
     playLoanDecision: playLoanDecisionSound,
     setEnabled: setNotificationSoundsEnabled,

@@ -56,11 +56,44 @@ loanPoolsRouter.post(
 );
 
 loanPoolsRouter.get(
+  '/loan-pools/unassigned-groups',
+  requirePermission(PERMISSION.VIEW_FINANCIAL_REPORTS, PERMISSION.MANAGE_SYSTEM_SETTINGS),
+  asyncHandler(async (_req, res) => {
+    try {
+      sendData(res, await poolService.listUnassignedGroupsForPools());
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+loanPoolsRouter.get(
   '/loan-pools/:id',
   requirePermission(PERMISSION.VIEW_FINANCIAL_REPORTS),
   asyncHandler(async (req, res) => {
     try {
       sendData(res, await poolService.getLoanPool(req.params.id!));
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+loanPoolsRouter.post(
+  '/loan-pools/:id/memberships',
+  requirePermission(PERMISSION.VIEW_FINANCIAL_REPORTS, PERMISSION.MANAGE_SYSTEM_SETTINGS),
+  validateBody(poolService.assignPoolMembershipSchema),
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(
+        res,
+        await poolService.assignPoolMembership(
+          req.params.id!,
+          req.body,
+          req.session!.userId,
+          req.session!.displayName,
+        ),
+      );
     } catch (error) {
       mapError(error);
     }
