@@ -34,6 +34,13 @@ export const useUiStore = create<UiState>()((set, get) => ({
   isNotificationPanelOpen: false,
 
   addToast: (input) => {
+    if (input.dedupeKey) {
+      const existing = get().toasts.find((toast) => toast.dedupeKey === input.dedupeKey);
+      if (existing) {
+        return existing.id;
+      }
+    }
+
     const id = createToastId();
     const toast: ToastItem = {
       ...input,

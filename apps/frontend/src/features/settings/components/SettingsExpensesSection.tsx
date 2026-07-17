@@ -1,7 +1,7 @@
 'use client';
 
 import { CurrencyAmount, DataTable } from '@/components/data-display';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { SettingsSectionCard } from '@/features/settings/components/SettingsSectionCard';
 import { useExpenses } from '@/features/expenses/hooks/useExpenses';
 import type { ExpenseRecord } from '@/types/expense';
@@ -13,7 +13,7 @@ export function SettingsExpensesSection() {
   const { data, isLoading } = useExpenses();
 
   if (isLoading || !data) {
-    return <LoadingSpinner label="Loading expenses" className="py-wilms-6" />;
+    return <InlinePanelSkeleton />;
   }
 
   return (

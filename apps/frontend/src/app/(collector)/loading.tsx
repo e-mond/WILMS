@@ -1,5 +1,5 @@
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { DashboardPageSkeleton } from '@/components/feedback/PageSkeletons';
 
 export default function CollectorLoading() {
-  return <LoadingSpinner label="Loading collector workspace" className="min-h-screen py-wilms-8" />;
+  return <DashboardPageSkeleton />;
 }

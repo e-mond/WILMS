@@ -6,7 +6,7 @@ import { ExecutiveKpiGrid, ManagementToolbar } from '@/components/layout/executi
 import { GuidedEmptyState } from '@/components/feedback/GuidedEmptyState';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { CONNECTION_ERROR_COPY, EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { Input } from '@/components/ui/Input';
 import {
   REVIEWED_DECISION_BADGE_CLASS,
@@ -45,7 +45,7 @@ export function ReviewedApplicationsPanel() {
   );
 
   if (isLoading) {
-    return <LoadingSpinner label="Loading reviewed applications" className="py-wilms-8" />;
+    return <InlinePanelSkeleton />;
   }
 
   if (isError) {

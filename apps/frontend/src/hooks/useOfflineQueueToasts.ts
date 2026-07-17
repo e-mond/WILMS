@@ -47,7 +47,10 @@ export function useOfflineQueueToasts() {
         toast.dismiss(offlineToastIdRef.current);
         offlineToastIdRef.current = null;
       }
-      toast.info('Back online', { message: 'Connection restored.' });
+      toast.info('Back online', {
+        message: 'Connection restored.',
+        dedupeKey: 'connectivity:back-online',
+      });
     }
 
     wasOfflineRef.current = isOffline;

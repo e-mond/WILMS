@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { QueryErrorState } from '@/components/feedback/QueryErrorState';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { PageShell } from '@/components/layout/PageShell';
 import { BorrowerReviewProfile } from '@/features/approval-workflow/components/BorrowerReviewProfile';
 import { useBorrowerReview } from '@/features/approval-workflow/hooks/useBorrowerReview';
@@ -64,7 +64,7 @@ export default function OfficerRegistrationDetailPage() {
                     formats={[...REGISTRATION_AGREEMENT_EXPORT_FORMATS]}
                   />
                 ) : (
-                  <LoadingSpinner label="Preparing export" className="py-0" />
+                  <InlinePanelSkeleton />
                 )}
               </div>
             </div>

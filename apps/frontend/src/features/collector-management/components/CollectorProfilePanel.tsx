@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { CurrencyAmount, DataTable, KpiCard, Avatar } from '@/components/data-display';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { QueryErrorState } from '@/components/feedback/QueryErrorState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { DetailSidebarCard, ExecutiveKpiGrid } from '@/components/layout/executive';
 import { ExecutiveDetailLayout } from '@/components/layout/ExecutiveDetailLayout';
 import { useCollector } from '@/features/collector-management/hooks/useCollector';
@@ -21,7 +21,7 @@ export function CollectorProfilePanel({ collectorId }: CollectorProfilePanelProp
   const { data, isLoading, isError, error, refetch } = useCollector(collectorId);
 
   if (isLoading) {
-    return <LoadingSpinner label="Loading collector profile" className="py-wilms-8" />;
+    return <InlinePanelSkeleton />;
   }
 
   if (isError) {

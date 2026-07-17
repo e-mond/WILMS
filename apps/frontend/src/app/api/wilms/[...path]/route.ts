@@ -100,6 +100,13 @@ export async function PATCH(
   return proxyRequest(request, context.params.path);
 }
 
+export async function PUT(
+  request: Request,
+  context: { params: { path: string[] } },
+): Promise<Response> {
+  return proxyRequest(request, context.params.path);
+}
+
 export async function DELETE(
   request: Request,
   context: { params: { path: string[] } },

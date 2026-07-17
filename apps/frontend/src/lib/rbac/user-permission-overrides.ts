@@ -18,3 +18,13 @@ export function setUserPermissionOverride(override: UserPermissionOverride): voi
 
   OVERRIDE_STORE.push(override);
 }
+
+export function deleteUserPermissionOverride(userId: string, permissionId: string): void {
+  const index = OVERRIDE_STORE.findIndex(
+    (entry) => entry.userId === userId && entry.permissionId === permissionId,
+  );
+
+  if (index >= 0) {
+    OVERRIDE_STORE.splice(index, 1);
+  }
+}

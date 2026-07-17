@@ -404,6 +404,12 @@ export interface ISettingsService {
   activateUser(id: string): Promise<SettingsUserRecord>;
   deleteUser(id: string): Promise<void>;
   getRegistrationLegalConfig(): Promise<RegistrationLegalConfig>;
+  listUserPermissionOverrides(userId: string): Promise<import('@/types/rbac').UserPermissionOverride[]>;
+  upsertUserPermissionOverrides(
+    userId: string,
+    overrides: Array<{ permissionId: string; granted: boolean; reason?: string }>,
+  ): Promise<import('@/types/rbac').UserPermissionOverride[]>;
+  deleteUserPermissionOverride(userId: string, permissionId: string): Promise<import('@/types/rbac').UserPermissionOverride[]>;
 }
 
 export interface ICollectionMetricsService {

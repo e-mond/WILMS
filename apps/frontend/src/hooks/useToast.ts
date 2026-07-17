@@ -8,6 +8,7 @@ import { TOAST_VARIANT, type ToastInput, type ToastVariant } from '@/types/toast
 interface ToastOptions {
   message?: string;
   durationMs?: number;
+  dedupeKey?: string;
 }
 
 function buildToastInput(
@@ -20,6 +21,7 @@ function buildToastInput(
     title,
     message: options?.message,
     durationMs: options?.durationMs ?? DEFAULT_TOAST_DURATION_MS,
+    dedupeKey: options?.dedupeKey,
   };
 }
 
