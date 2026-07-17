@@ -9,7 +9,7 @@ import { Alert } from '@/components/feedback/Alert';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { GuidedEmptyState } from '@/components/feedback/GuidedEmptyState';
 import { QueryErrorState } from '@/components/feedback/QueryErrorState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import { FormField, MultiStepForm } from '@/components/forms';
 import { Button } from '@/components/ui/Button';
@@ -189,7 +189,7 @@ export function CreateLoanWizard() {
   });
 
   if (isLoading) {
-    return <LoadingSpinner label="Loading eligible borrowers" className="py-wilms-8" />;
+    return <InlinePanelSkeleton />;
   }
 
   if (isError) {

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { Avatar, DataTable } from '@/components/data-display';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { TableSkeleton } from '@/components/feedback/PageSkeletons';
 import {
   SettingsSectionCard,
   SETTINGS_SECTION_ICONS,
@@ -195,7 +195,7 @@ export function SettingsUsersSection() {
         </div>
 
         {isLoading || !users ? (
-          <LoadingSpinner label="Loading users" className="py-wilms-4" />
+          <TableSkeleton rows={8} columns={6} />
         ) : (
           <DataTable
             variant="executive"

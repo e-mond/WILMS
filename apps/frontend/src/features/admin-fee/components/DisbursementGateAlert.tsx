@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Alert } from '@/components/feedback/Alert';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { Button } from '@/components/ui/Button';
 import { useDisbursementEligibility } from '@/features/admin-fee/hooks/useDisbursementEligibility';
 
@@ -14,7 +14,7 @@ export function DisbursementGateAlert({ borrowerId }: DisbursementGateAlertProps
   const { data, isLoading } = useDisbursementEligibility(borrowerId);
 
   if (isLoading) {
-    return <LoadingSpinner label="Checking disbursement eligibility" className="py-wilms-4" />;
+    return <InlinePanelSkeleton />;
   }
 
   if (!data) {

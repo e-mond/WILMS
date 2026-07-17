@@ -10,7 +10,7 @@ import {
   LoanStatusBadge,
 } from '@/components/data-display';
 import { EmptyState } from '@/components/feedback/EmptyState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { LoanPaymentLogTable } from '@/features/loan-management/components/LoanPaymentLogTable';
 import { LoanProgressMetrics } from '@/features/loan-management/components/LoanProgressMetrics';
 import { useLoanPaymentLog } from '@/features/loan-management/hooks/useLoanPaymentLog';
@@ -73,7 +73,7 @@ export function BorrowerLoanDetailPanel({ borrowerId, loanId }: BorrowerLoanDeta
   } = useLoanPaymentLog(resolvedLoanId ?? '');
 
   if (isLoansLoading) {
-    return <LoadingSpinner label="Loading borrower loans" className="py-wilms-8" />;
+    return <InlinePanelSkeleton />;
   }
 
   if (isLoansError || !loans?.length || !resolvedLoanId) {
@@ -99,7 +99,7 @@ export function BorrowerLoanDetailPanel({ borrowerId, loanId }: BorrowerLoanDeta
     isProgressLoading ||
     isPaymentLogLoading
   ) {
-    return <LoadingSpinner label="Loading loan details" className="py-wilms-8" />;
+    return <InlinePanelSkeleton />;
   }
 
   if (

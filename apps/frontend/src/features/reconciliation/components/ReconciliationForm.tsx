@@ -6,7 +6,7 @@ import { ExecutiveKpiGrid } from '@/components/layout/executive';
 import { Alert } from '@/components/feedback/Alert';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { QueryErrorState } from '@/components/feedback/QueryErrorState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { PERMISSION } from '@/constants/permissions';
 import { Button } from '@/components/ui/Button';
@@ -84,7 +84,7 @@ export function ReconciliationForm() {
   }
 
   if (isLoading) {
-    return <LoadingSpinner label="Loading reconciliation summary" className="py-wilms-8" />;
+    return <InlinePanelSkeleton />;
   }
 
   if (isError) {

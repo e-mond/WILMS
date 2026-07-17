@@ -2,7 +2,7 @@
 
 import { Avatar } from '@/components/data-display';
 import { DetailSidebarCard } from '@/components/layout/executive';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { useSettingsActivity } from '@/features/settings/hooks/useSettingsActivity';
 import { useSystemStatus } from '@/hooks/useSystemStatus';
 import { isDemoMode } from '@/data-provider/types';
@@ -94,7 +94,7 @@ export function SettingsAsidePanel({ updatedAt, activeSectionLabel }: SettingsAs
       </DetailSidebarCard>
       <DetailSidebarCard title="Recent Changes">
         {isLoading || !activity ? (
-          <LoadingSpinner label="Loading recent changes" className="mt-wilms-3 py-wilms-2" />
+          <InlinePanelSkeleton />
         ) : (
           <ul className="mt-wilms-3 space-y-wilms-2 text-small">
             {activity.map((entry) => (

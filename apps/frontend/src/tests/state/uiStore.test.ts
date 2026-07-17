@@ -24,6 +24,22 @@ describe('uiStore', () => {
     expect(useUiStore.getState().toasts).toHaveLength(0);
   });
 
+  it('deduplicates toasts by dedupeKey', () => {
+    const firstId = useUiStore.getState().addToast({
+      variant: TOAST_VARIANT.INFO,
+      title: 'Message',
+      dedupeKey: 'notification:abc',
+    });
+    const secondId = useUiStore.getState().addToast({
+      variant: TOAST_VARIANT.INFO,
+      title: 'Message duplicate',
+      dedupeKey: 'notification:abc',
+    });
+
+    expect(firstId).toBe(secondId);
+    expect(useUiStore.getState().toasts).toHaveLength(1);
+  });
+
   it('caps visible toasts at TOAST_MAX_VISIBLE', () => {
     for (let index = 0; index < TOAST_MAX_VISIBLE + 2; index += 1) {
       useUiStore.getState().addToast({

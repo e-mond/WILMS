@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { CurrencyAmount, DataTable, KpiCard } from '@/components/data-display';
 import { GuidedEmptyState } from '@/components/feedback/GuidedEmptyState';
 import { QueryErrorState } from '@/components/feedback/QueryErrorState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import { ExecutiveKpiGrid, ManagementToolbar } from '@/components/layout/executive';
 import { Input } from '@/components/ui/Input';
@@ -40,7 +40,7 @@ export function AwaitingAdminFeeList() {
   );
 
   if (isLoading) {
-    return <LoadingSpinner label="Loading borrowers awaiting admin fee" className="py-wilms-8" />;
+    return <InlinePanelSkeleton />;
   }
 
   if (isError) {

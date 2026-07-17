@@ -10,7 +10,7 @@ import {
 } from '@/components/data-display';
 import { GuidedEmptyState } from '@/components/feedback/GuidedEmptyState';
 import { QueryErrorState } from '@/components/feedback/QueryErrorState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { Button } from '@/components/ui/Button';
 import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import { QrBarcodeScanner } from '@/features/mobile/components/QrBarcodeScanner';
@@ -75,7 +75,7 @@ export function CollectorMyBorrowersPanel() {
   );
 
   if (isLoading) {
-    return <LoadingSpinner label="Loading assigned borrowers" className="py-wilms-8" />;
+    return <InlinePanelSkeleton />;
   }
 
   if (isError) {

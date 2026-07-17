@@ -11,7 +11,7 @@ import {
 } from '@/components/data-display';
 import { Alert } from '@/components/feedback/Alert';
 import { EmptyState } from '@/components/feedback/EmptyState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { DetailSidebarCard, ExecutiveKpiGrid } from '@/components/layout/executive';
 import { ExecutiveDetailLayout } from '@/components/layout/ExecutiveDetailLayout';
 import { useCollectorDashboard } from '@/features/payment-collection/hooks/useCollectorDashboard';
@@ -153,7 +153,7 @@ export function CollectorDashboardPanel() {
   const { data, isLoading, isError, error, refetch, isFetching } = useCollectorDashboard(user?.id);
 
   if (isLoading) {
-    return <LoadingSpinner label="Loading collector dashboard" className="py-wilms-8" />;
+    return <InlinePanelSkeleton />;
   }
 
   if (isError) {
@@ -188,7 +188,7 @@ export function CollectorDashboardPanel() {
   }
 
   if (!data) {
-    return <LoadingSpinner label="Loading collector dashboard" className="py-wilms-8" />;
+    return <InlinePanelSkeleton />;
   }
 
   const { summary, hero, alerts, todayGroups, recentPayments, stats, borrowers } = data;

@@ -285,6 +285,59 @@ settingsRouter.post(
 );
 
 settingsRouter.get(
+  '/settings/users/:id/permission-overrides',
+  requirePermission(PERMISSION.ASSIGN_PERMISSIONS),
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(res, await settingsService.listUserPermissionOverrides(req.params.id!));
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+settingsRouter.put(
+  '/settings/users/:id/permission-overrides',
+  requirePermission(PERMISSION.ASSIGN_PERMISSIONS),
+  asyncHandler(async (req, res) => {
+    try {
+      const overrides = Array.isArray(req.body?.overrides) ? req.body.overrides : req.body;
+      sendData(
+        res,
+        await settingsService.upsertUserPermissionOverrides(
+          req.params.id!,
+          overrides ?? [],
+          req.session!.userId,
+          req.session!.displayName,
+        ),
+      );
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+settingsRouter.post(
+  '/settings/users/:id/permission-overrides/:permissionId/delete',
+  requirePermission(PERMISSION.ASSIGN_PERMISSIONS),
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(
+        res,
+        await settingsService.deleteUserPermissionOverride(
+          req.params.id!,
+          req.params.permissionId!,
+          req.session!.userId,
+          req.session!.displayName,
+        ),
+      );
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+settingsRouter.get(
   '/settings/registration-legal',
   asyncHandler(async (_req, res) => {
     sendData(res, settingsService.getRegistrationLegalConfig());
