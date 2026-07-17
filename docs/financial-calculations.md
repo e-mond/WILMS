@@ -1,6 +1,9 @@
-# WILMS Financial Calculations (v1.3.7)
+# WILMS Financial Calculations (v1.3.8)
 
-Single source of truth for organisation-wide and pool-level metrics.
+Single source of truth for organisation-wide and pool-level **operational** metrics.
+
+> **Statutory GL:** WILMS does not yet implement double-entry general ledger / trial balance.
+> See [enterprise-architecture/DOUBLE_ENTRY_LEDGER_MIGRATION_ROADMAP.md](certification/v1.3.8/enterprise-architecture/DOUBLE_ENTRY_LEDGER_MIGRATION_ROADMAP.md).
 
 ## Loan pool ledger
 
@@ -52,17 +55,27 @@ Expected is the sum of weekly instalments for borrowers due on the report date (
 
 ```
 primary_variance = physical_cash − expected_due
+collection_delta = physical_cash − system_recorded
 ```
 
-Balanced submissions (`variance_flagged = false`) auto-approve. Review is required only when variance exceeds the configured threshold and expected due > 0.
+Variance is **flagged** (no auto-approve) when any of:
+
+- `collection_delta ≠ 0` (physical ≠ system-recorded)
+- `expected_due = 0` and physical cash ≠ 0
+- absolute primary variance ≥ 100 pesewas (1 GHS floor)
+- percentage variance exceeds configured threshold (default 10%)
+
+Review requires `access-admin-portal` (Super Admin). Collectors are bound to their own `collectorId`. REJECTED/REOPENED rows may be resubmitted (history preserved).
 
 ## Data integrity workflow
 
 ```
 Pool created → Capital (REPLENISHMENT)
-            → Loan created (loan_pool_id from group membership)
-            → Disbursement (DISBURSEMENT allocation)
-            → Collection (REPAYMENT allocation)
-            → Expense (deducted from operating cash, audited)
-            → Dashboard / Reports / Exports (same aggregates)
+            → Loan created PENDING_APPROVAL (admin fee required)
+            → Approve → PENDING_DISBURSEMENT
+            → Disbursement (DISBURSEMENT allocation; capital hard stop)
+            → Collection (REPAYMENT allocation; GPS required)
+            → Reversal (negative REPAYMENT allocation + ledger REVERSAL)
+            → Expense (operating cash ledger ADJUSTMENT; never principal)
+            → Dashboard / Reports / Exports (pool + confirmed payments + expenses)
 ```
