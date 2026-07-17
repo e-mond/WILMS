@@ -1,22 +1,30 @@
 # Project Status
 
-**Last updated:** 2026-07-17 (v1.3.8 Phase 23 production cutover)  
-**Package version:** `1.3.8`
+**Last updated:** 2026-07-17 (Phase 24 v1.4 planning)  
+**Package version:** `1.3.8` (frozen — new work targets **v1.4** on `main`)
 
 ## Current state
 
 | Track | Status |
 |-------|--------|
-| Software / architecture / security / financial / docs | **CLOSED** |
-| Public production deployment (v1.3.8) | **Verified** — health `ok`, commit `866d72ed…`, deployed `2026-07-17T19:12:38Z` |
-| Operator cutover (authenticated smoke, Neon restore, human sign-offs) | **OPEN** |
+| v1.3.8 software / architecture / security / financial / docs | **CLOSED** |
+| v1.3.8 operator certification | **OPEN** (outside software dev) |
+| **v1.4 planning (Phase 24)** | **COMPLETE** — [`docs/planning/v1.4/`](docs/planning/v1.4/INDEX.md) |
 
-**Verdict:** ⚠ **Ready with Conditions**  
-**Certificate:** **NOT ISSUED** — see [`docs/certification/v1.3.8/production-cutover/FINAL_PRODUCTION_CERTIFICATE.md`](docs/certification/v1.3.8/production-cutover/FINAL_PRODUCTION_CERTIFICATE.md).
+**v1.3.8 verdict:** ⚠ **Ready with Conditions** — certificate **NOT ISSUED**.  
+**v1.4:** All new features and architecture changes belong on `main` (or `feature/v1.4-*`); **do not patch v1.3.x** except hotfixes after `maintenance/v1.3.8` exists.
 
-Tag `v1.3.8-production-certified` and branch `maintenance/v1.3.x` are **not** created until operator gates close. Procedure: [`MAINTENANCE_BRANCH_PLAN.md`](docs/certification/v1.3.8/production-cutover/MAINTENANCE_BRANCH_PLAN.md).
+## v1.4 planning hub
 
-## Certification trail (v1.3.8)
+| Document | Path |
+|----------|------|
+| Index | `docs/planning/v1.4/INDEX.md` |
+| v1.3.x maintenance strategy | `docs/planning/v1.4/V13_MAINTENANCE_STRATEGY.md` |
+| v1.4 roadmap | `docs/planning/v1.4/WILMS_V14_ROADMAP.md` |
+| Master timeline | `docs/planning/v1.4/MASTER_ROADMAP.md` |
+| Executive strategy | `docs/planning/v1.4/EXECUTIVE_STRATEGY.md` |
+
+## v1.3.8 certification trail
 
 | Pack | Path |
 |------|------|

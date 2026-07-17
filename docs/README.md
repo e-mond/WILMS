@@ -33,6 +33,16 @@ Start here. Prefer certification packs for current system truth; older guides re
 | Go-live closure (Phase 22) | [`certification/v1.3.8/go-live/`](./certification/v1.3.8/go-live/) |
 | Production cutover (Phase 23) | [`certification/v1.3.8/production-cutover/`](./certification/v1.3.8/production-cutover/) |
 
+## v1.4 planning (Phase 24 — active development)
+
+| Topic | Path |
+|-------|------|
+| Planning hub | [`planning/v1.4/INDEX.md`](./planning/v1.4/INDEX.md) |
+| v1.3.x maintenance strategy | [`planning/v1.4/V13_MAINTENANCE_STRATEGY.md`](./planning/v1.4/V13_MAINTENANCE_STRATEGY.md) |
+| v1.4 roadmap | [`planning/v1.4/WILMS_V14_ROADMAP.md`](./planning/v1.4/WILMS_V14_ROADMAP.md) |
+| Long-term architecture | [`planning/v1.4/LONG_TERM_ARCHITECTURE.md`](./planning/v1.4/LONG_TERM_ARCHITECTURE.md) |
+| Master roadmap | [`planning/v1.4/MASTER_ROADMAP.md`](./planning/v1.4/MASTER_ROADMAP.md) |
+
 ## Field / product guides
 
 | Topic | Path |
