@@ -201,21 +201,26 @@ export function buildEmailHtml(input: EmailLayoutInput): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>WILMS</title>
-  ${input.preheader ? `<span style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${escapeHtml(input.preheader)}</span>` : ''}
   <style type="text/css">
+    html, body { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+    .wilms-email-outer { width: 100% !important; }
+    .wilms-email-shell { width: 100% !important; max-width: 600px !important; }
     @media only screen and (max-width: 620px) {
-      .wilms-email-shell { width: 100% !important; }
-      .wilms-email-body { padding: 24px 20px 28px !important; }
+      .wilms-email-outer { padding: 16px 12px !important; }
+      .wilms-email-shell { width: 100% !important; max-width: 100% !important; }
+      .wilms-email-body { padding: 16px 20px 24px !important; }
+      .wilms-email-header { padding-left: 20px !important; padding-right: 20px !important; }
     }
   </style>
 </head>
-<body style="margin:0;padding:0;background:#F1F5F9;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F1F5F9;padding:40px 24px;">
+<body style="margin:0;padding:0;background:#F1F5F9;width:100%;">
+  ${input.preheader ? `<div style="display:none;font-size:1px;color:#F1F5F9;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${escapeHtml(input.preheader)}</div>` : ''}
+  <table role="presentation" class="wilms-email-outer" width="100%" cellpadding="0" cellspacing="0" style="background:#F1F5F9;padding:40px 24px;width:100%;">
     <tr>
-      <td align="center">
-        <table role="presentation" class="wilms-email-shell" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;min-width:320px;background:#ffffff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08);overflow:hidden;">
+      <td align="center" style="width:100%;">
+        <table role="presentation" class="wilms-email-shell" width="100%" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;background:#ffffff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08);overflow:hidden;">
           <tr>
-            <td style="padding:0;">
+            <td class="wilms-email-header" style="padding:0;">
               ${emailHeader(theme, input.logoUrl)}
             </td>
           </tr>

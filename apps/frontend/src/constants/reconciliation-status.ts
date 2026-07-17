@@ -18,9 +18,9 @@ export type ReconciliationWorkflowStatus =
 export const RECONCILIATION_STATUS_LABELS: Record<string, string> = {
   DRAFT: 'Draft',
   SUBMITTED: 'Submitted',
-  PENDING_REVIEW: 'Under review',
+  PENDING_REVIEW: 'Pending',
   UNDER_INVESTIGATION: 'Under investigation',
-  UNDER_REVIEW: 'Under review',
+  UNDER_REVIEW: 'Pending',
   RETURNED: 'Returned',
   APPROVED: 'Approved',
   REJECTED: 'Rejected',
@@ -33,7 +33,7 @@ export const RECONCILIATION_REVIEW_OPTIONS: Array<{
   value: 'PENDING_REVIEW' | 'UNDER_INVESTIGATION' | 'APPROVED' | 'REJECTED' | 'REOPENED';
   label: string;
 }> = [
-  { value: 'PENDING_REVIEW', label: 'Under review' },
+  { value: 'PENDING_REVIEW', label: 'Pending' },
   { value: 'UNDER_INVESTIGATION', label: 'Under investigation' },
   { value: 'APPROVED', label: 'Approved' },
   { value: 'REJECTED', label: 'Rejected' },

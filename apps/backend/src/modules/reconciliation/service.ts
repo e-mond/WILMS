@@ -210,7 +210,9 @@ export async function submitReconciliation(
           : undefined,
       });
 
-      void notifySuperAdminsOfReconciliation(summary, input.actorDisplayName);
+      if (summary.varianceFlagged) {
+        void notifySuperAdminsOfReconciliation(summary, input.actorDisplayName);
+      }
 
       return summary;
     },
@@ -221,12 +223,8 @@ async function notifySuperAdminsOfReconciliation(
   summary: ReconciliationSummary,
   actorDisplayName?: string,
 ): Promise<void> {
-  const title = summary.varianceFlagged
-    ? 'Reconciliation requires review'
-    : 'Reconciliation submitted';
-  const body = `${actorDisplayName ?? 'Collector'} submitted reconciliation for ${summary.date}${
-    summary.varianceFlagged ? ' — variance exceeds threshold.' : '.'
-  }`;
+  const title = 'Reconciliation pending';
+  const body = `${actorDisplayName ?? 'Collector'} submitted reconciliation for ${summary.date} — variance exceeds threshold and needs approval.`;
 
   if (!isDatabaseEnabled()) {
     return;

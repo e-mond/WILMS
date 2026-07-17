@@ -38,7 +38,7 @@ export function CollectionsAsidePanel({
     reconciliationSubmittedCount === 0
       ? 'No submissions yet'
       : reconciliationUnderReviewCount > 0
-        ? `${reconciliationUnderReviewCount} under review`
+        ? `${reconciliationUnderReviewCount} pending`
         : `${reconciliationApprovedCount} approved`;
 
   return (
