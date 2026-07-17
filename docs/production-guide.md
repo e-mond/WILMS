@@ -1,6 +1,8 @@
 # WILMS Production Guide
 
-**Last updated:** 2026-07-08 (v1.3.0)
+**Last updated:** 2026-07-17 (v1.3.8)
+
+> **Canonical ops docs:** [`operations/`](./operations/) and [`certification/v1.3.8/production-operations/`](./certification/v1.3.8/production-operations/). This guide retains field-operations narrative; prefer the ops pack for deploy/monitor/IR.
 
 ## Live services
 

@@ -1,6 +1,8 @@
 # WILMS Security Guide
 
-**Last updated:** 2026-07-11 (v1.3.5)
+**Last updated:** 2026-07-17 (v1.3.8)
+
+> Prefer current ops/security procedures in [`certification/v1.3.8/production-operations/`](./certification/v1.3.8/production-operations/) and [`permission-matrix.md`](./permission-matrix.md). This guide retains field-security detail; version stamp aligned to v1.3.8.
 
 ## Current controls
 

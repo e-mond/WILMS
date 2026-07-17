@@ -272,6 +272,8 @@ Full procedures: `docs/deployment-guide.md`, `docs/production-guide.md`.
 
 | Version | Highlights |
 |---------|------------|
+| **v1.3.8** | Final hardening, enterprise certification packs, ops dashboard, request IDs / Prometheus metrics |
+| **v1.3.7** | Stable release: financial KPI integrity, recon lifecycle, display IDs, dashboard polish |
 | **v1.3.6** | Production stabilisation, messaging memory fallback, health diagnostics, UI filter/toolbar polish |
 | **v1.3.5** | Premium splash, branded OTP email, notification center refresh |
 | **v1.3.4** | Mobile photo capture routes, session invalidation on password reset |
@@ -286,18 +288,24 @@ See `CHANGELOG.md`, `PROJECT_STATUS.md`, and `docs/version-history.md`.
 
 | Topic | Path |
 |-------|------|
+| Docs hub | `docs/README.md` |
 | Project status | `PROJECT_STATUS.md` |
 | Changelog | `CHANGELOG.md` |
-| System architecture | `docs/architecture/architecture.md` |
+| System architecture (SSoT) | `docs/certification/v1.3.8/enterprise-architecture/SYSTEM_ARCHITECTURE.md` |
+| Architecture (legacy index) | `docs/architecture/architecture.md` |
 | API overview | `docs/api-overview.md` |
 | Authentication | `docs/authentication.md` |
+| Permission matrix | `docs/permission-matrix.md` |
 | Security | `docs/security-guide.md` |
 | Offline / PWA | `docs/offline-architecture.md` |
 | Sync & conflicts | `docs/synchronization-guide.md` |
 | Mobile / field ops | `docs/mobile-guide.md` |
 | Advanced lending | `docs/advanced-lending.md` |
+| Financial calculations | `docs/financial-calculations.md` |
 | Deployment | `docs/deployment-guide.md` |
-| Production ops | `docs/production-guide.md` |
+| Production ops (day-to-day) | `docs/operations/` |
+| Production ops pack (v1.3.8) | `docs/certification/v1.3.8/production-operations/` |
+| Product acceptance (v1.3.8) | `docs/certification/v1.3.8/product-acceptance/` |
 
 Historical certification evidence is preserved under `docs/archive/`.
 
