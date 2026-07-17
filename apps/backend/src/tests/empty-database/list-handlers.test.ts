@@ -67,6 +67,14 @@ vi.mock('../../db/client.js', () => ({
 
 vi.mock('../../repositories/loan.repository.js', () => ({
   listLoans: vi.fn(async () => []),
+  listPortfolioLoansForCollector: vi.fn(async () => []),
+  sumExpectedWeeklyByCollector: vi.fn(async () => new Map()),
+}));
+
+vi.mock('../../repositories/payment.repository.js', () => ({
+  sumConfirmedPaymentsPesewas: vi.fn(async () => 0),
+  sumConfirmedPaymentsSincePesewas: vi.fn(async () => 0),
+  sumConfirmedPaymentsByCollector: vi.fn(async () => new Map()),
 }));
 
 vi.mock('../../repositories/loan-pool.repository.js', () => ({
