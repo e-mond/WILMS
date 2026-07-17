@@ -1,0 +1,11 @@
+endpoint,http_code,time_total
+GET /health,200,0.323562
+GET /health,200,0.316720
+GET /health,200,0.344818
+GET /health,200,0.319808
+GET /health,200,0.314005
+GET /login,200,0.164327
+GET /login,200,0.110099
+GET /login,200,0.138924
+GET /api/auth/csrf,200,0.033265
+GET /ops/metrics (anon),401,0.102655
