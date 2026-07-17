@@ -27,6 +27,7 @@ import {
   notifyMutationSuccess,
 } from '@/utils/mutation-feedback';
 import { useEligibleBorrowers } from '@/features/loan-management/hooks/useEligibleBorrowers';
+import { useLoanPools } from '@/features/loan-pools/hooks/useLoanPools';
 import {
   createLoanSchema,
   LOAN_STEP_FIELD_NAMES,
@@ -82,6 +83,8 @@ export function CreateLoanWizard() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { data: eligibleBorrowers, isLoading, isError, error, refetch } = useEligibleBorrowers();
+  const { data: loanPoolsData } = useLoanPools();
+  const availablePools = loanPoolsData?.pools ?? [];
   const [currentStep, setCurrentStep] = useState(0);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [createdLoanId, setCreatedLoanId] = useState<string | null>(null);
@@ -137,6 +140,11 @@ export function CreateLoanWizard() {
       return false;
     }
 
+    if (currentStep === 0 && availablePools.length > 0 && !getValues('loanPoolId')?.trim()) {
+      setError('loanPoolId', { type: 'manual', message: 'Select a funding pool.' });
+      return false;
+    }
+
     return true;
   };
 
@@ -169,7 +177,17 @@ export function CreateLoanWizard() {
       return;
     }
 
-    const payload = toCreateLoanInput(parsed.data);
+    if (availablePools.length > 0 && !parsed.data.loanPoolId?.trim()) {
+      setError('loanPoolId', { type: 'manual', message: 'Select a funding pool.' });
+      setCurrentStep(0);
+      setSubmitError('Select a funding pool for this loan.');
+      return;
+    }
+
+    const payload = toCreateLoanInput({
+      ...parsed.data,
+      loanPoolId: parsed.data.loanPoolId ?? '',
+    });
 
     if (!payload) {
       setSubmitError('Enter a valid loan amount in GHS.');
@@ -257,7 +275,7 @@ export function CreateLoanWizard() {
       ) : null}
 
       {currentStep === 0 ? (
-        <section>
+        <section className="space-y-wilms-4">
           <FormField
             label="Borrower"
             htmlFor="borrowerId"
@@ -277,6 +295,30 @@ export function CreateLoanWizard() {
               ))}
             </Select>
           </FormField>
+          {availablePools.length > 0 ? (
+            <FormField
+              label="Funding pool"
+              htmlFor="loanPoolId"
+              required
+              error={errors.loanPoolId?.message}
+              hint="Disbursements from this loan update the selected pool’s utilisation."
+            >
+              <Select
+                id="loanPoolId"
+                hasError={Boolean(errors.loanPoolId)}
+                {...register('loanPoolId', {
+                  required: availablePools.length > 0 ? 'Select a funding pool.' : false,
+                })}
+              >
+                <option value="">Select funding pool</option>
+                {availablePools.map((pool) => (
+                  <option key={pool.id} value={pool.id}>
+                    {pool.name} — {pool.region}
+                  </option>
+                ))}
+              </Select>
+            </FormField>
+          ) : null}
         </section>
       ) : null}
 

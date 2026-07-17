@@ -168,12 +168,15 @@ export function ShellNavLink({
     'hover:bg-background hover:border-border/30 hover:text-text-primary',
   );
 
+  const tourNavPath = splitNavHref(href).pathname;
+
   // ─── PILL MODE (Instagram-style floating nav) ────────────────────────────
   if (pillMode) {
     return (
       <Link
         prefetch
         href={href}
+        data-tour-nav={tourNavPath}
         aria-current={isActive ? 'page' : undefined}
         title={label}
         className={cn(
@@ -212,7 +215,8 @@ export function ShellNavLink({
     return (
       <Link
         prefetch
-      href={href}
+        href={href}
+        data-tour-nav={tourNavPath}
         aria-current={isActive ? 'page' : undefined}
         className={cn(
           // Layout — icon above label
@@ -263,6 +267,7 @@ export function ShellNavLink({
     <Link
       prefetch
       href={href}
+      data-tour-nav={tourNavPath}
       aria-current={isActive ? 'page' : undefined}
       // In collapsed state the label is visually hidden; put it in aria-label
       // and include the badge count so screen readers get the full picture.

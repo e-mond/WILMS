@@ -31,6 +31,7 @@ export function toCreateLoanInput(values: CreateLoanFormValues): CreateLoanInput
     paymentDay: values.paymentDay,
     cycleBatch: values.cycleBatch,
     startDate: values.startDate,
+    ...(values.loanPoolId ? { loanPoolId: values.loanPoolId } : {}),
   };
 }
 
@@ -41,4 +42,5 @@ export const DEFAULT_LOAN_FORM_VALUES: CreateLoanFormValues = {
   paymentDay: '',
   cycleBatch: '',
   startDate: '',
+  loanPoolId: '',
 };

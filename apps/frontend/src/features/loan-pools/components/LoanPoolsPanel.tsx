@@ -21,6 +21,7 @@ import { LoanPoolsAsidePanel } from '@/features/loan-pools/components/LoanPoolsA
 import { LoanPoolsMobileCardList } from '@/features/loan-pools/components/LoanPoolsMobileCardList';
 import { useLoanPools } from '@/features/loan-pools/hooks/useLoanPools';
 import { useCreateLoanPool } from '@/features/loan-pools/hooks/useCreateLoanPool';
+import { useUnassignedPoolGroups } from '@/features/loan-pools/hooks/useUnassignedPoolGroups';
 import { usePaginatedRows } from '@/hooks/usePaginatedRows';
 import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
@@ -28,6 +29,7 @@ import { LOAN_POOL_STATUS, type LoanPoolSummary } from '@/types/loan-pool';
 import { ghsInputToPesewas } from '@/utils/reconciliation.schema';
 import { formatPesewasForCsv } from '@/utils/export-csv';
 import { resolvePoolDisplayId } from '@/utils/entity-display-id';
+import { cn } from '@/utils/cn';
 
 const POOL_STATUS_FILTERS = [
   { value: '', label: 'All' },
@@ -40,6 +42,7 @@ export function LoanPoolsPanel() {
   const { data, isLoading, isError, error, refetch } = useLoanPools();
   const { showLoading, isTimedOut, isForbidden } = useQueryLoadingPolicy({ isLoading, isError, error });
   const createLoanPool = useCreateLoanPool();
+  const { data: unassignedGroups = [] } = useUnassignedPoolGroups();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -49,9 +52,18 @@ export function LoanPoolsPanel() {
   const [poolSource, setPoolSource] = useState('');
   const [capitalGhs, setCapitalGhs] = useState('');
   const [cycleLabel, setCycleLabel] = useState('');
+  const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
 
   const closeCreateModal = useCallback(() => {
     setCreateModalOpen(false);
+  }, []);
+
+  const toggleGroupId = useCallback((groupId: string) => {
+    setSelectedGroupIds((current) =>
+      current.includes(groupId)
+        ? current.filter((id) => id !== groupId)
+        : [...current, groupId],
+    );
   }, []);
 
   const filteredPools = useMemo(() => {
@@ -146,8 +158,9 @@ export function LoanPoolsPanel() {
       <div className="rounded-sm border border-border bg-muted/40 p-wilms-4">
         <h2 className="text-body font-semibold text-text-primary">What is a Loan Pool?</h2>
         <p className="mt-wilms-2 text-small text-text-muted">
-          A loan pool is a fund allocated for issuing loans. Every loan issued is drawn from a pool,
-          allowing administrators to monitor capital allocation, repayments, and utilization.
+          A loan pool is a fund allocated for issuing loans. Assign borrower groups to a pool, then
+          create and disburse loans against that pool so utilisation, disbursed capital, and
+          outstanding balances update automatically.
         </p>
       </div>
       <div data-tour="loan-pool-kpis">
@@ -364,6 +377,7 @@ export function LoanPoolsPanel() {
                 source: poolSource.trim(),
                 capitalPesewas: ghsInputToPesewas(capitalGhs),
                 cycleLabel: cycleLabel.trim(),
+                groupIds: selectedGroupIds.length > 0 ? selectedGroupIds : undefined,
               })
               .then(() => {
                 closeCreateModal();
@@ -372,6 +386,7 @@ export function LoanPoolsPanel() {
                 setPoolSource('');
                 setCapitalGhs('');
                 setCycleLabel('');
+                setSelectedGroupIds([]);
               });
           }}
         >
@@ -416,6 +431,44 @@ export function LoanPoolsPanel() {
               onChange={(event) => setCycleLabel(event.target.value)}
               placeholder="Jul 2026"
             />
+          </FormField>
+          <FormField
+            label="Assign groups (optional)"
+            htmlFor="pool-groups"
+            hint="Link groups now so loans from those groups update this pool’s utilisation."
+          >
+            <div
+              id="pool-groups"
+              className="max-h-40 space-y-wilms-2 overflow-y-auto rounded-sm border border-border p-wilms-3"
+            >
+              {unassignedGroups.length === 0 ? (
+                <p className="text-small text-text-muted">No unassigned groups available.</p>
+              ) : (
+                unassignedGroups.map((group) => {
+                  const checked = selectedGroupIds.includes(group.id);
+                  return (
+                    <label
+                      key={group.id}
+                      className={cn(
+                        'flex cursor-pointer items-start gap-wilms-2 text-small',
+                        checked ? 'text-text-primary' : 'text-text-muted',
+                      )}
+                    >
+                      <input
+                        type="checkbox"
+                        className="mt-0.5"
+                        checked={checked}
+                        onChange={() => toggleGroupId(group.id)}
+                      />
+                      <span>
+                        <span className="font-semibold text-text-primary">{group.name}</span>
+                        <span className="block text-text-muted">{group.community}</span>
+                      </span>
+                    </label>
+                  );
+                })
+              )}
+            </div>
           </FormField>
         </form>
       </Modal>

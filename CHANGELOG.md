@@ -11,6 +11,9 @@ All notable changes to WILMS are documented in this file.
 Production-quality hardening: toast deduplication, skeleton loading, mandatory guided tour, user permission overrides, friendly error boundaries, and security IDOR/webhook/upload fixes.
 
 ### Fixed
+- Product tour Expenses step linked to removed `/settings/expenses` (404); tour routes corrected per role.
+- Loan pool utilisation stayed at 0% after create + disburse when groups were not linked to a pool.
+- Login chime blocked by browser autoplay after async auth; notification sounds now cover all inbox events.
 - Duplicate notification toasts on login, refresh, and remount.
 - Role clone unique-name conflicts (422) and delete confirmation UX.
 - Messaging thread adminId IDOR; registration delete officerId IDOR; approver reviewed-list IDOR.
@@ -19,6 +22,11 @@ Production-quality hardening: toast deduplication, skeleton loading, mandatory g
 - Unauthenticated generic mail webhook; Resend webhook fail-open when secret missing.
 - Gmail SMTP test route trusted unsigned session cookies.
 - Payment reversal/edit actor spoofing; collector payment collectorId attribution.
+
+### Changed
+- Guided tour UI: progress bar, step dots, nav highlights, keyboard tips, corrected deep-links.
+- Loan create requires a funding pool when pools exist; pool create/aside can assign groups.
+- Disburse invalidates loan-pool queries so utilisation refreshes immediately.
 
 ### Added
 - Mandatory product tour welcome flow and Help FAB.
