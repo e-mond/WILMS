@@ -1,0 +1,12 @@
+HTTP/2 200 
+age: 0
+cache-control: private, no-cache, no-store, max-age=0, must-revalidate
+content-type: text/html; charset=utf-8
+date: Fri, 17 Jul 2026 17:02:28 GMT
+server: Vercel
+strict-transport-security: max-age=63072000; includeSubDomains; preload
+vary: RSC, Next-Router-State-Tree, Next-Router-Prefetch
+x-matched-path: /login
+x-vercel-cache: MISS
+x-vercel-id: iad1::iad1::b9qfh-1784307748268-ccd5134a341b
+

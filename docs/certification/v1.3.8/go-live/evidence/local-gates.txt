@@ -1,0 +1,11 @@
+Phase 22 local gates — 2026-07-17T17:12:00Z (UTC)
+
+verify:migrations: PASS (journal 28/28; DB skipped — DATABASE_URL unset)
+type-check: PASS (frontend + api)
+API unit tests: PASS 150/150 (43 files)
+Money/security subset: PASS 36/36
+verify:version: PASS 1.3.8
+bundle:budget-check: PASS JS gzip 168.4 KB / CSS 9.4 KB
+verify:mock-guard + apiClient↔route integrity: PASS
+
+Production public probes (same session): see prod-health-*.json, latency-samples.csv, *-response-headers.txt

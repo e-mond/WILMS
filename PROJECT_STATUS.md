@@ -1,15 +1,16 @@
 # Project Status
 
-**Last updated:** 2026-07-17 (v1.3.8 Phase 21 product acceptance)  
+**Last updated:** 2026-07-17 (v1.3.8 Phase 22 go-live closure)  
 **Package version:** `1.3.8`
 
 ## Current state
 
-v1.3.8 is the product-acceptance candidate for daily organisational use by five staff roles.
+v1.3.8 software readiness is **closed**. Public production health reports `version: 1.3.8` with migration watermark including `0027`.
 
-**Verdict:** ⚠ **Ready with Conditions** — see [`docs/certification/v1.3.8/product-acceptance/FINAL_PRODUCT_CERTIFICATION.md`](docs/certification/v1.3.8/product-acceptance/FINAL_PRODUCT_CERTIFICATION.md).
+**Verdict:** ⚠ **Ready with Conditions** — software closed; operator evidence still open.  
+Canonical decision: [`docs/certification/v1.3.8/go-live/FINAL_CERTIFICATION_DECISION.md`](docs/certification/v1.3.8/go-live/FINAL_CERTIFICATION_DECISION.md).
 
-Feature development for 1.3.8 is frozen. Remaining conditions are operational evidence (migrations on env, staging smoke, Neon restore drill), not open Critical product defects.
+Feature development for 1.3.8 remains frozen. Remaining conditions are operator-only (authenticated smoke, Neon restore drill, formal sign-offs).
 
 ## Certification trail (v1.3.8)
 
