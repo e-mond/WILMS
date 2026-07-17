@@ -41,6 +41,7 @@ export const SUPER_ADMIN_NAV: ShellNavItem[] = [
   { href: '/expenses', label: 'Expense Management', icon: 'expenses' },
   { href: '/communication-center', label: 'Communication Center', icon: 'reports' },
   { href: '/reports/audit-log', label: 'Audit Log', exact: true, icon: 'audit' },
+  { href: '/ops', label: 'Operations', exact: true, icon: 'risk' },
   { href: '/reports', label: 'Reports', exact: true, icon: 'reports' },
   { href: '/settings', label: 'Settings', exact: true, icon: 'settings' },
 ];

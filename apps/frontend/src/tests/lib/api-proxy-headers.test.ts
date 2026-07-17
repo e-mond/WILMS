@@ -39,5 +39,16 @@ describe('sanitizeProxyRequestHeaders', () => {
     expect(sanitized.get('connection')).toBeNull();
     expect(sanitized.get('accept-encoding')).toBe('identity');
     expect(sanitized.get('accept')).toBe('application/json');
+    expect(sanitized.get('x-request-id')).toBeTruthy();
+  });
+
+  it('preserves a valid incoming x-request-id', () => {
+    const incoming = new Headers({
+      'x-request-id': 'bff-correlation-abc',
+      accept: 'application/json',
+    });
+
+    const sanitized = sanitizeProxyRequestHeaders(incoming);
+    expect(sanitized.get('x-request-id')).toBe('bff-correlation-abc');
   });
 });

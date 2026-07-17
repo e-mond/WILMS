@@ -23,6 +23,8 @@ const EXACT_DESCRIPTIONS: Record<string, string> = {
     'Approve or reject ledger adjustments that require supervisory review.',
   '/settings':
     'Configure organisation settings, users, security policy, and integrations.',
+  '/ops':
+    'Monitor system health, workers, integrations, financial alerts, and deployment version.',
   '/reports':
     'Generate operational and financial reports for audits, collections, and portfolio review.',
   '/reports/loan-portfolio':
