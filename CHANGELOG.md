@@ -2,6 +2,33 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.3.8] — Final Hardening
+
+**Release date:** July 2026
+
+### Summary
+
+Production-quality hardening: toast deduplication, skeleton loading, mandatory guided tour, user permission overrides, friendly error boundaries, and security IDOR/webhook/upload fixes.
+
+### Fixed
+- Duplicate notification toasts on login, refresh, and remount.
+- Role clone unique-name conflicts (422) and delete confirmation UX.
+- Messaging thread adminId IDOR; registration delete officerId IDOR; approver reviewed-list IDOR.
+- Notification outbound send without permission gate.
+- Upload size enforced on decoded buffer length.
+- Unauthenticated generic mail webhook; Resend webhook fail-open when secret missing.
+- Gmail SMTP test route trusted unsigned session cookies.
+- Payment reversal/edit actor spoofing; collector payment collectorId attribution.
+
+### Added
+- Mandatory product tour welcome flow and Help FAB.
+- User-level permission override API and settings UI.
+- Route-level error boundaries for key Super Admin modules.
+- Skeleton loading system for pages and panels.
+
+### Security
+- See `FINAL_SECURITY_AUDIT.md` for full certification findings.
+
 ## [1.3.7] — Stable Release
 
 **Release date:** July 2026

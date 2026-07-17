@@ -2,30 +2,30 @@
 
 | Field | Value |
 |-------|-------|
-| **Current release** | `v1.3.7` |
-| **Release type** | Stable |
-| **Previous release** | `v1.3.7-rc3` |
+| **Current release** | `v1.3.8` |
+| **Release type** | Final Hardening / Certification candidate |
+| **Previous release** | `v1.3.7` |
 | **Date** | July 2026 |
 
 ## Package versions
 
 | Package | Version |
 |---------|---------|
-| `wilms` (root) | `1.3.7` |
-| `@wilms/frontend` | `1.3.7` |
-| `@wilms/api` | `1.3.7` |
+| `wilms` (root) | `1.3.8` |
+| `@wilms/frontend` | `1.3.8` |
+| `@wilms/api` | `1.3.8` |
 
-## Promotion criteria (met for v1.3.7 stable)
+## Promotion criteria (v1.3.8)
 
 1. Type-check, lint, build, and unit tests pass.
-2. Production database migrations `0024` (pool loan linkage) and `0025` (allocation backfill) applied before deploy.
-3. `/health` reports `schema.status: ok`.
-4. Super Admin dashboard KPIs reconcile with backend transactional data and loan portfolio totals.
-5. Human-readable display IDs across pools, groups, loans, expenses, and collectors in UI and exports.
+2. Critical and high security findings from certification audit resolved or documented as external blockers.
+3. `/health` reports `status: ok`, `schema.status: ok`, `migrations.status: ok`.
+4. Production smoke + RBAC smoke with live credentials.
+5. Toast dedupe, skeleton loading, guided tour, and permission overrides from hardening sprint.
 
 ## References
 
+- [FINAL_HARDENING_REPORT.md](./FINAL_HARDENING_REPORT.md)
+- [FINAL_RELEASE_READINESS_v1.3.8.md](./FINAL_RELEASE_READINESS_v1.3.8.md)
+- [FINAL_PRODUCTION_CERTIFICATION.md](./FINAL_PRODUCTION_CERTIFICATION.md)
 - [CHANGELOG.md](./CHANGELOG.md)
-- [RELEASE_NOTES_v1.3.7.md](./RELEASE_NOTES_v1.3.7.md)
-- [docs/financial-calculations.md](./docs/financial-calculations.md)
-- [docs/version-history.md](./docs/version-history.md)

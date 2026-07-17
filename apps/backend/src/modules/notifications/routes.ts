@@ -77,6 +77,7 @@ notificationsRouter.delete(
 
 notificationsRouter.post(
   '/notifications',
+  requirePermission(PERMISSION.MANAGE_COMMUNICATIONS, PERMISSION.MANAGE_USERS),
   asyncHandler(async (req, res) => {
     sendData(
       res,

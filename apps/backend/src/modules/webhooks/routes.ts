@@ -8,7 +8,7 @@ export const webhooksRouter = Router();
 
 function verifyResendSignature(rawBody: string, signature: string | undefined): boolean {
   const secret = process.env.RESEND_WEBHOOK_SECRET?.trim();
-  if (!secret || !signature) return !secret;
+  if (!secret || !signature) return false;
   const expected = createHmac('sha256', secret).update(rawBody).digest('hex');
   try {
     return timingSafeEqual(Buffer.from(expected), Buffer.from(signature.replace('sha256=', '')));
@@ -39,8 +39,14 @@ webhooksRouter.post(
   asyncHandler(async (req, res) => {
     const rawBody = JSON.stringify(req.body);
     const signature = req.get('resend-signature') ?? req.get('x-resend-signature') ?? undefined;
+    const secret = process.env.RESEND_WEBHOOK_SECRET?.trim();
 
-    if (process.env.RESEND_WEBHOOK_SECRET && !verifyResendSignature(rawBody, signature)) {
+    if (!secret) {
+      res.status(503).json({ error: 'Resend webhook is not configured.' });
+      return;
+    }
+
+    if (!verifyResendSignature(rawBody, signature)) {
       res.status(401).json({ error: 'Invalid signature' });
       return;
     }
@@ -66,6 +72,22 @@ webhooksRouter.post(
 webhooksRouter.post(
   '/webhooks/mail/generic',
   asyncHandler(async (req, res) => {
+    const secret = process.env.MAIL_WEBHOOK_SECRET?.trim();
+    if (!secret) {
+      res.status(503).json({ error: 'Generic mail webhook is not configured.' });
+      return;
+    }
+
+    const provided =
+      req.get('x-wilms-webhook-secret') ??
+      req.get('authorization')?.replace(/^Bearer\s+/i, '') ??
+      '';
+
+    if (!provided || provided !== secret) {
+      res.status(401).json({ error: 'Invalid webhook secret' });
+      return;
+    }
+
     const payload = req.body as {
       provider?: string;
       messageId?: string;
