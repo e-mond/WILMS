@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNull } from 'drizzle-orm';
+import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
 import type { WilmsDb } from '../db/client.js';
 import { getDb } from '../db/client.js';
@@ -179,4 +179,36 @@ export async function listPortfolioLoansForCollector(
     weeklyPaymentPesewas: decimalToPesewas(row.installmentAmount),
     externalStatus: row.externalStatus,
   }));
+}
+
+/**
+ * One-query expected weekly collection totals per collector (active loans in assigned groups).
+ * Replaces N× listPortfolioLoansForCollector for dashboard performance.
+ */
+export async function sumExpectedWeeklyByCollector(
+  tx: WilmsDb = getDb(),
+): Promise<Map<string, number>> {
+  const result = await tx.execute(sql`
+    SELECT
+      g.collector_user_id AS collector_id,
+      COALESCE(SUM(ROUND(l.installment_amount::numeric * 100))::int, 0) AS expected_pesewas
+    FROM groups g
+    INNER JOIN group_members gm
+      ON gm.group_id = g.id AND gm.removed_at IS NULL
+    INNER JOIN loans l
+      ON l.borrower_id = gm.borrower_id
+      AND l.deleted_at IS NULL
+      AND l.external_status = 'ACTIVE'
+    WHERE g.deleted_at IS NULL
+      AND g.collector_user_id IS NOT NULL
+    GROUP BY g.collector_user_id
+  `);
+
+  const map = new Map<string, number>();
+  for (const row of result.rows as { collector_id?: string; expected_pesewas?: number }[]) {
+    if (row.collector_id) {
+      map.set(row.collector_id, Number(row.expected_pesewas ?? 0));
+    }
+  }
+  return map;
 }

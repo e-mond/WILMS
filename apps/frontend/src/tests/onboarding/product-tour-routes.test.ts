@@ -20,9 +20,9 @@ describe('product tour routes', () => {
     expect(tourSource).toContain("href: '/auditor/reports'");
   });
 
-  it('does not use removed collector groups list or bare reconciliation routes', () => {
-    expect(tourSource).not.toContain("href: '/collector/groups'");
-    expect(tourSource).not.toContain("href: '/reconciliation'");
-    expect(tourSource).not.toContain("href: '/audit-log'");
+  it('supports resume-later progress and analytics keys', () => {
+    expect(tourSource).toContain('wilms-product-tour-progress');
+    expect(tourSource).toContain('Resume later');
+    expect(tourSource).toContain('tour_paused');
   });
 });

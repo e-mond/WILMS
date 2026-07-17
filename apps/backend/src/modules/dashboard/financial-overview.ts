@@ -8,6 +8,7 @@ import { listLoanPools } from '../loan-pools/service.js';
 import { getExpenseSummary } from '../expenses/service.js';
 import { getSettings } from '../settings/service.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
+import * as paymentRepo from '../../repositories/payment.repository.js';
 import { decimalToPesewas } from '../../domain/money.js';
 
 export interface DashboardFinancialOverview {
@@ -95,8 +96,29 @@ async function sumAdminFeesCollected(): Promise<number> {
  * - Collection rate compares this-week due vs this-week confirmed collections
  */
 export async function buildDashboardFinancialOverview(): Promise<DashboardFinancialOverview> {
-  const payments = await listPayments();
-  const totalCollectedPesewas = payments.reduce((sum, payment) => sum + payment.amountPesewas, 0);
+  const today = new Date();
+  const startOfWeek = new Date(
+    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
+  );
+  startOfWeek.setUTCDate(startOfWeek.getUTCDate() - startOfWeek.getUTCDay());
+  const weekStart = startOfWeek.toISOString().slice(0, 10);
+
+  let totalCollectedPesewas = 0;
+  let collectedThisWeekPesewas = 0;
+
+  if (isDatabaseEnabled()) {
+    // SQL aggregates — never truncate via listPayments 2000-row default.
+    [totalCollectedPesewas, collectedThisWeekPesewas] = await Promise.all([
+      paymentRepo.sumConfirmedPaymentsPesewas(),
+      paymentRepo.sumConfirmedPaymentsSincePesewas(weekStart),
+    ]);
+  } else {
+    const payments = await listPayments();
+    totalCollectedPesewas = payments.reduce((sum, payment) => sum + payment.amountPesewas, 0);
+    collectedThisWeekPesewas = payments
+      .filter((payment) => payment.paymentDate >= weekStart)
+      .reduce((sum, payment) => sum + payment.amountPesewas, 0);
+  }
 
   let poolSummary = {
     totalPoolFundsPesewas: 0,
@@ -108,14 +130,6 @@ export async function buildDashboardFinancialOverview(): Promise<DashboardFinanc
   let closedLoans = 0;
   let amountDueThisWeekPesewas = 0;
   let overdueAmountPesewas = 0;
-  let collectedThisWeekPesewas = 0;
-
-  const today = new Date();
-  const startOfWeek = new Date(
-    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
-  );
-  startOfWeek.setUTCDate(startOfWeek.getUTCDate() - startOfWeek.getUTCDay());
-  const weekStart = startOfWeek.toISOString().slice(0, 10);
 
   if (isDatabaseEnabled()) {
     try {
@@ -166,13 +180,9 @@ export async function buildDashboardFinancialOverview(): Promise<DashboardFinanc
     };
   }
 
-  // Prefer confirmed payment ledger for collected (excludes reversals via listPayments filter).
+  // Prefer pool collected when present; otherwise confirmed payment SQL sum.
   const collectionsPesewas =
     poolSummary.totalCollectedPesewas > 0 ? poolSummary.totalCollectedPesewas : totalCollectedPesewas;
-
-  collectedThisWeekPesewas = payments
-    .filter((payment) => payment.paymentDate >= weekStart)
-    .reduce((sum, payment) => sum + payment.amountPesewas, 0);
 
   const outstandingBalancePesewas = poolSummary.totalOutstandingPesewas;
   const collectionRatePercent =
