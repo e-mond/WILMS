@@ -36,6 +36,9 @@ Production-quality hardening: toast deduplication, skeleton loading, mandatory g
 - User-level permission override API and settings UI.
 - Route-level error boundaries for key Super Admin modules.
 - Skeleton loading system for pages and panels.
+- Super Admin Operations dashboard (`/ops`) with `GET /ops/status` and Prometheus `GET /ops/metrics`.
+- Request correlation via `X-Request-Id` (BFF → API → structured logs).
+- Production operations certification pack and product acceptance pack under `docs/certification/v1.3.8/`.
 
 ### Security
 - See `FINAL_SECURITY_AUDIT.md` for full certification findings.
