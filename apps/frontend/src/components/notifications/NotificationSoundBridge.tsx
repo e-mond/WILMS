@@ -6,6 +6,7 @@ import {
   areNotificationSoundsEnabled,
   playLoanDecisionSound,
   playMessageSound,
+  playNotificationSound,
   playSecurityAlertSound,
 } from '@/hooks/useNotificationSound';
 import { useAuth } from '@/hooks/useAuth';
@@ -33,7 +34,11 @@ function playForEvent(event: string): void {
 
   if (/LOGIN|PASSWORD|SECURITY|SUPERVISOR|DISABLED|BLACKLIST/i.test(event)) {
     playSecurityAlertSound();
+    return;
   }
+
+  // All other in-app notifications (expenses, reconciliation, assignments, etc.)
+  playNotificationSound();
 }
 
 export function NotificationSoundBridge() {

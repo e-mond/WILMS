@@ -21,6 +21,10 @@ vi.mock('../../repositories/loan-pool.repository.js', () => ({
   hasLoansMissingPoolAllocations: vi.fn().mockResolvedValue(false),
   reconcilePoolAllocationsFromLoans: vi.fn().mockResolvedValue(undefined),
   listPools: vi.fn(),
+  insertMembership: vi.fn().mockResolvedValue(undefined),
+  groupExists: vi.fn().mockResolvedValue(true),
+  findPoolIdForGroup: vi.fn().mockResolvedValue(undefined),
+  listUnassignedGroupOptions: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock('../../infrastructure/audit/audit-log.js', () => ({

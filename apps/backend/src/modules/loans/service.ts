@@ -29,13 +29,56 @@ import * as poolRepo from '../../repositories/loan-pool.repository.js';
 import { getSettings } from '../settings/service.js';
 import { decimalToPesewas } from '../../domain/money.js';
 
-async function resolveLoanPoolIdForBorrower(borrowerId: string): Promise<string | undefined> {
+async function resolveLoanPoolIdForBorrower(
+  borrowerId: string,
+  preferredPoolId?: string,
+): Promise<string | undefined> {
   const borrower = await borrowerRepo.getBorrower(borrowerId);
-  if (!borrower?.groupId) {
-    return undefined;
+
+  if (preferredPoolId) {
+    const pool = await poolRepo.findPoolById(preferredPoolId);
+    if (!pool) {
+      throw new Error('VALIDATION:Selected loan pool was not found.');
+    }
+
+    if (borrower?.groupId) {
+      const existingPoolId = await poolRepo.findPoolIdForGroup(borrower.groupId);
+      if (existingPoolId && existingPoolId !== preferredPoolId) {
+        throw new Error(
+          "VALIDATION:This borrower's group is already assigned to a different loan pool.",
+        );
+      }
+      if (!existingPoolId) {
+        await poolRepo.insertMembership({
+          poolId: preferredPoolId,
+          groupId: borrower.groupId,
+        });
+      }
+    }
+
+    return preferredPoolId;
   }
 
-  return poolRepo.findPoolIdForGroup(borrower.groupId);
+  if (borrower?.groupId) {
+    const fromMembership = await poolRepo.findPoolIdForGroup(borrower.groupId);
+    if (fromMembership) {
+      return fromMembership;
+    }
+  }
+
+  const pools = await poolRepo.listPools();
+  if (pools.length === 1) {
+    const onlyPoolId = pools[0]!.id;
+    if (borrower?.groupId) {
+      await poolRepo.insertMembership({
+        poolId: onlyPoolId,
+        groupId: borrower.groupId,
+      });
+    }
+    return onlyPoolId;
+  }
+
+  return undefined;
 }
 
 export interface CreateLoanBody {
@@ -45,6 +88,7 @@ export interface CreateLoanBody {
   paymentDay: string;
   cycleBatch: string;
   startDate: string;
+  loanPoolId?: string;
 }
 
 function mapServiceError(error: unknown): never {
@@ -53,7 +97,8 @@ function mapServiceError(error: unknown): never {
       throw new Error('NOT_FOUND');
     }
     if (error.message.startsWith('VALIDATION')) {
-      throw new Error('VALIDATION');
+      // Preserve detailed validation copy for HTTP mapping.
+      throw error;
     }
     if (error.message.startsWith('CONFLICT')) {
       throw new Error('CONFLICT');
@@ -133,7 +178,15 @@ export async function createLoan(input: CreateLoanBody, actorId: string): Promis
   });
 
   try {
-    const loanPoolId = await resolveLoanPoolIdForBorrower(input.borrowerId);
+    const loanPoolId = await resolveLoanPoolIdForBorrower(input.borrowerId, input.loanPoolId);
+    if (!loanPoolId) {
+      const pools = await poolRepo.listPools();
+      if (pools.length > 0) {
+        throw new Error(
+          'VALIDATION:Select a funding pool for this loan so pool utilisation can be tracked.',
+        );
+      }
+    }
 
     const loan = await runInTransaction(async (tx) => {
       const row = await loanRepo.insertLoan(
@@ -320,7 +373,17 @@ export async function disburseLoan(
       const amountDecimal = loan.principalAmount;
 
       const updated = await runInTransaction(async (tx) => {
-        const resolvedPoolId = loan.loanPoolId ?? (await resolveLoanPoolIdForBorrower(loan.borrowerId));
+        const resolvedPoolId =
+          loan.loanPoolId ?? (await resolveLoanPoolIdForBorrower(loan.borrowerId));
+
+        if (!resolvedPoolId) {
+          const pools = await poolRepo.listPools(tx);
+          if (pools.length > 0) {
+            throw new Error(
+              'VALIDATION:This loan is not linked to a funding pool. Assign the borrower group to a pool, then disburse again.',
+            );
+          }
+        }
 
         const disbursed = await loanRepo.updateLoanLifecycle(
           {

@@ -61,4 +61,15 @@ export interface CreateLoanPoolInput {
   source: string;
   capitalPesewas: number;
   cycleLabel: string;
+  groupIds?: string[];
+}
+
+export interface LoanPoolGroupOption {
+  id: string;
+  name: string;
+  community: string;
+}
+
+export interface AssignLoanPoolMembershipInput {
+  groupId: string;
 }

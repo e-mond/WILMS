@@ -15,6 +15,7 @@ export function useDisburseLoan(loanId: string) {
       void queryClient.invalidateQueries({ queryKey: ['loans'] });
       void queryClient.invalidateQueries({ queryKey: ['loans', loanId] });
       void queryClient.invalidateQueries({ queryKey: ['loan-portfolio'] });
+      void queryClient.invalidateQueries({ queryKey: ['loan-pools'] });
       void queryClient.invalidateQueries({ queryKey: ['audit-log'] });
     },
     onError: (error) => {

@@ -6,6 +6,7 @@ import { parseGhsToPesewas } from '@/features/loan-management/loan.utils';
 
 export const borrowerSelectionSchema = z.object({
   borrowerId: z.string().trim().min(1, 'Select a borrower.'),
+  loanPoolId: z.string().trim().optional().or(z.literal('')),
 });
 
 export const loanAmountSchema = z.object({

@@ -32,57 +32,49 @@ const TOUR_STEPS_BY_ROLE: Partial<Record<UserRole, ProductTourStep[]>> = {
       title: 'Dashboard',
       body: 'Review pool funds, disbursements, collections, and outstanding balances from your executive dashboard.',
       href: '/dashboard',
-      targetSelector: '[data-tour="financial-overview"]',
+      targetSelector: '[data-tour="financial-overview"], [data-tour-nav="/dashboard"]',
     },
     {
       id: 'loan-pools',
       title: 'Loan Pools',
-      body: 'Monitor capital utilisation, disbursements, and repayment rates for each regional pool.',
+      body: 'Monitor capital utilisation, disbursements, and repayment rates for each regional pool. Assign groups when you create a pool so disbursements update utilisation.',
       href: '/loan-pools',
-      targetSelector: '[data-tour="loan-pool-kpis"]',
+      targetSelector: '[data-tour="loan-pool-kpis"], [data-tour-nav="/loan-pools"]',
     },
     {
       id: 'collections',
       title: 'Collections',
-      body: 'Track daily collection performance and variance across assigned groups.',
+      body: 'Track daily collection performance and review reconciliations across assigned groups.',
       href: '/reports/daily-collection',
-      targetSelector: '[data-tour="collection-kpis"]',
-    },
-    {
-      id: 'reconciliation',
-      title: 'Reconciliation',
-      body: 'Review flagged reconciliations and approve or escalate cash variances.',
-      href: '/reconciliation',
+      targetSelector: '[data-tour="collection-kpis"], [data-tour-nav="/reports/daily-collection"]',
     },
     {
       id: 'expenses',
       title: 'Expenses',
       body: 'Approve field expenses and monitor operational spend.',
-      href: '/settings/expenses',
+      href: '/expenses',
+      targetSelector: '[data-tour-nav="/expenses"]',
     },
     {
       id: 'reports',
       title: 'Reports',
       body: 'Open financial and operational reports for leadership reviews.',
-      href: '/reports/daily-collection',
+      href: '/reports',
+      targetSelector: '[data-tour-nav="/reports"]',
     },
     {
       id: 'communication',
       title: 'Communication Center',
       body: 'Send announcements, SMS, and email campaigns to staff and borrowers.',
       href: '/communication-center',
+      targetSelector: '[data-tour-nav="/communication-center"]',
     },
     {
       id: 'settings',
       title: 'Settings',
-      body: 'Configure integrations, users, and organisation preferences.',
-      href: '/settings',
-    },
-    {
-      id: 'roles',
-      title: 'Roles & Permissions',
-      body: 'Manage staff roles and assign granular permissions.',
-      href: '/settings/roles',
+      body: 'Configure integrations, users, roles, and organisation preferences.',
+      href: '/settings?section=roles',
+      targetSelector: '[data-tour-nav="/settings"]',
     },
   ],
   [USER_ROLE.COLLECTOR]: [
@@ -96,30 +88,35 @@ const TOUR_STEPS_BY_ROLE: Partial<Record<UserRole, ProductTourStep[]>> = {
       title: 'Dashboard',
       body: 'See today’s groups, expected collections, and record payments from assigned borrowers.',
       href: '/collector/dashboard',
+      targetSelector: '[data-tour-nav="/collector/dashboard"]',
     },
     {
       id: 'collections',
-      title: 'Collections',
-      body: 'Record payments and review your daily collection progress.',
-      href: '/collector/dashboard',
-    },
-    {
-      id: 'groups',
-      title: 'Groups',
-      body: 'View assigned groups and borrower membership details.',
-      href: '/collector/groups',
+      title: 'Borrowers',
+      body: 'Open assigned borrowers and jump into collection sheets for today’s groups.',
+      href: '/collector/my-borrowers',
+      targetSelector: '[data-tour-nav="/collector/my-borrowers"]',
     },
     {
       id: 'expenses',
       title: 'Expenses',
       body: 'Submit field expenses for supervisor approval.',
       href: '/collector/expenses',
+      targetSelector: '[data-tour-nav="/collector/expenses"]',
+    },
+    {
+      id: 'reconciliation',
+      title: 'Reconcile',
+      body: 'Submit daily cash reconciliation and flag variances when needed.',
+      href: '/collector/reconciliation',
+      targetSelector: '[data-tour-nav="/collector/reconciliation"]',
     },
     {
       id: 'messages',
       title: 'Messages',
       body: 'Read and reply to supervisor messages from the inbox.',
       href: '/collector/messages',
+      targetSelector: '[data-tour-nav="/collector/messages"]',
     },
     {
       id: 'notifications',
@@ -138,25 +135,29 @@ const TOUR_STEPS_BY_ROLE: Partial<Record<UserRole, ProductTourStep[]>> = {
       id: 'register',
       title: 'New Registration',
       body: 'Complete the guided registration wizard with photos, ID documents, and GPS verification.',
-      href: '/register',
+      href: '/officer/register',
+      targetSelector: '[data-tour-nav="/officer/register"]',
     },
     {
       id: 'my-registrations',
       title: 'My Registrations',
       body: 'Monitor pending, approved, and rejected registrations you have submitted.',
-      href: '/my-registrations',
+      href: '/officer/my-registrations',
+      targetSelector: '[data-tour-nav="/officer/my-registrations"]',
     },
     {
       id: 'review-status',
       title: 'Review Status',
       body: 'Track approver decisions and follow up on returned applications.',
-      href: '/my-registrations',
+      href: '/officer/my-registrations',
+      targetSelector: '[data-tour-nav="/officer/my-registrations"]',
     },
     {
       id: 'documents',
       title: 'Document Uploads',
       body: 'Capture and upload borrower ID documents and signatures during registration.',
-      href: '/register',
+      href: '/officer/register',
+      targetSelector: '[data-tour-nav="/officer/register"]',
     },
   ],
   [USER_ROLE.APPROVER]: [
@@ -170,24 +171,28 @@ const TOUR_STEPS_BY_ROLE: Partial<Record<UserRole, ProductTourStep[]>> = {
       title: 'Pending Reviews',
       body: 'Review borrower applications awaiting your decision.',
       href: '/approver/pending',
+      targetSelector: '[data-tour-nav="/approver/pending"]',
     },
     {
       id: 'borrower-details',
       title: 'Borrower Details',
       body: 'Inspect borrower profiles, guarantors, and registration history.',
       href: '/approver/pending',
+      targetSelector: '[data-tour-nav="/approver/pending"]',
     },
     {
       id: 'document-preview',
       title: 'Document Preview',
       body: 'Open ID and signature previews before approving applications.',
       href: '/approver/pending',
+      targetSelector: '[data-tour-nav="/approver/pending"]',
     },
     {
       id: 'decision-actions',
       title: 'Decision Actions',
       body: 'Approve or reject applications with documented reasons.',
       href: '/approver/pending',
+      targetSelector: '[data-tour-nav="/approver/pending"]',
     },
   ],
   [USER_ROLE.AUDITOR]: [
@@ -200,25 +205,29 @@ const TOUR_STEPS_BY_ROLE: Partial<Record<UserRole, ProductTourStep[]>> = {
       id: 'audit-logs',
       title: 'Audit Logs',
       body: 'Review immutable audit entries for sensitive platform actions.',
-      href: '/audit-log',
+      href: '/auditor/audit-log',
+      targetSelector: '[data-tour-nav="/auditor/audit-log"]',
     },
     {
       id: 'reports',
       title: 'Reports',
       body: 'Access read-only financial and operational reports.',
-      href: '/reports/daily-collection',
+      href: '/auditor/reports',
+      targetSelector: '[data-tour-nav="/auditor/reports"]',
     },
     {
       id: 'exports',
       title: 'Financial Exports',
       body: 'Export report data for external compliance reviews.',
-      href: '/reports/daily-collection',
+      href: '/auditor/reports',
+      targetSelector: '[data-tour-nav="/auditor/reports"]',
     },
     {
-      id: 'reconciliation-history',
-      title: 'Reconciliation History',
-      body: 'Inspect historical reconciliation decisions and variance notes.',
-      href: '/reconciliation',
+      id: 'settings',
+      title: 'Settings',
+      body: 'Adjust audit preferences and account security options.',
+      href: '/auditor/settings',
+      targetSelector: '[data-tour-nav="/auditor/settings"]',
     },
   ],
 };
@@ -231,7 +240,23 @@ function welcomeKey(userId: string): string {
   return `${TOUR_WELCOME_PREFIX}:${userId}`;
 }
 
+const HIGHLIGHT_CLASSES = [
+  'ring-2',
+  'ring-brand-primary',
+  'ring-offset-2',
+  'relative',
+  'z-[121]',
+  'tour-highlight-pulse',
+] as const;
+
+function clearTourHighlights() {
+  document.querySelectorAll('.tour-highlight-pulse').forEach((element) => {
+    element.classList.remove(...HIGHLIGHT_CLASSES);
+  });
+}
+
 function highlightTourTarget(selector?: string) {
+  clearTourHighlights();
   if (!selector) {
     return;
   }
@@ -242,11 +267,7 @@ function highlightTourTarget(selector?: string) {
   }
 
   element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  element.classList.add('ring-2', 'ring-brand-primary', 'ring-offset-2', 'relative', 'z-[121]');
-
-  window.setTimeout(() => {
-    element.classList.remove('ring-2', 'ring-brand-primary', 'ring-offset-2', 'relative', 'z-[121]');
-  }, 2400);
+  element.classList.add(...HIGHLIGHT_CLASSES);
 }
 
 type TourPhase = 'welcome' | 'tour' | 'exit-confirm' | 'idle';
@@ -263,6 +284,7 @@ export function useProductTour() {
   const [phase, setPhase] = useState<TourPhase>('idle');
   const [stepIndex, setStepIndex] = useState(0);
   const [neverShowAgain, setNeverShowAgain] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const persistDismissal = useCallback(() => {
     if (neverShowAgain) {
@@ -290,8 +312,10 @@ export function useProductTour() {
   }, []);
 
   const closeTour = useCallback(() => {
+    clearTourHighlights();
     persistDismissal();
     setPhase('idle');
+    setIsNavigating(false);
   }, [persistDismissal]);
 
   const requestExit = useCallback(() => {
@@ -332,18 +356,45 @@ export function useProductTour() {
       return;
     }
 
+    let cancelled = false;
+    let highlightTimer: number | undefined;
+    let navigateTimer: number | undefined;
+
+    const runHighlight = () => {
+      if (cancelled) {
+        return;
+      }
+      highlightTourTarget(step.targetSelector);
+      setIsNavigating(false);
+    };
+
     if (step.href) {
+      setIsNavigating(true);
       router.push(step.href);
+      navigateTimer = window.setTimeout(runHighlight, 700);
+    } else {
+      highlightTimer = window.setTimeout(runHighlight, 120);
     }
 
-    const timer = window.setTimeout(() => {
-      highlightTourTarget(step.targetSelector);
-    }, step.href ? 500 : 100);
-
-    return () => window.clearTimeout(timer);
+    return () => {
+      cancelled = true;
+      if (highlightTimer) {
+        window.clearTimeout(highlightTimer);
+      }
+      if (navigateTimer) {
+        window.clearTimeout(navigateTimer);
+      }
+    };
   }, [phase, router, stepIndex, steps]);
 
+  useEffect(() => {
+    return () => {
+      clearTourHighlights();
+    };
+  }, []);
+
   const step = steps[stepIndex];
+  const progressPercent = steps.length > 0 ? Math.round(((stepIndex + 1) / steps.length) * 100) : 0;
 
   return {
     steps,
@@ -352,6 +403,8 @@ export function useProductTour() {
     phase,
     neverShowAgain,
     setNeverShowAgain,
+    isNavigating,
+    progressPercent,
     openWelcome,
     startTour,
     closeTour,
@@ -372,10 +425,12 @@ function TourDialogShell({
   title,
   children,
   onKeyDown,
+  progressPercent,
 }: {
   title: string;
   children: ReactNode;
   onKeyDown?: (event: KeyboardEvent) => void;
+  progressPercent?: number;
 }) {
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -425,17 +480,34 @@ function TourDialogShell({
   return (
     <div
       ref={dialogRef}
-      className="fixed inset-0 z-[120] flex items-end justify-center bg-black/40 p-wilms-4 sm:items-center"
+      className="fixed inset-0 z-[120] flex items-end justify-center bg-black/45 p-wilms-4 backdrop-blur-[1px] sm:items-center"
       role="dialog"
       aria-modal="true"
       aria-labelledby="product-tour-title"
       onKeyDown={onKeyDown}
     >
-      <div className="w-full max-w-lg rounded-sm border border-border bg-card p-wilms-5 shadow-lg">
-        <h2 id="product-tour-title" className="text-heading-2 font-semibold text-text-primary">
-          {title}
-        </h2>
-        {children}
+      <div className="tour-dialog-panel w-full max-w-lg overflow-hidden rounded-sm border border-border bg-card shadow-lg">
+        {typeof progressPercent === 'number' ? (
+          <div
+            className="h-1 bg-border"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progressPercent}
+            aria-label="Tour progress"
+          >
+            <div
+              className="h-full bg-brand-primary transition-[width] duration-300 ease-out"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+        ) : null}
+        <div className="p-wilms-5">
+          <h2 id="product-tour-title" className="text-heading-2 font-semibold text-text-primary">
+            {title}
+          </h2>
+          {children}
+        </div>
       </div>
     </div>
   );
@@ -487,7 +559,7 @@ export function ProductTourOverlay() {
 
   if (tour.phase === 'exit-confirm') {
     return (
-      <TourDialogShell title="Exit guided tour?">
+      <TourDialogShell title="Exit guided tour?" progressPercent={tour.progressPercent}>
         <p className="mt-wilms-3 text-body text-text-muted">
           You are leaving the guided tour. You can open it again anytime using the help button at
           the bottom right of your screen.
@@ -507,6 +579,7 @@ export function ProductTourOverlay() {
   return (
     <TourDialogShell
       title={tour.step.title}
+      progressPercent={tour.progressPercent}
       onKeyDown={(event) => {
         if (event.key === 'Escape') {
           tour.requestExit();
@@ -519,10 +592,31 @@ export function ProductTourOverlay() {
         }
       }}
     >
-      <p className="mt-wilms-2 text-small font-semibold text-brand-primary">
-        Step {tour.stepIndex + 1} of {tour.steps.length}
-      </p>
+      <div className="mt-wilms-2 flex items-center justify-between gap-wilms-3">
+        <p className="text-small font-semibold text-brand-primary">
+          Step {tour.stepIndex + 1} of {tour.steps.length}
+        </p>
+        {tour.isNavigating ? (
+          <p className="text-small text-text-muted" aria-live="polite">
+            Opening page…
+          </p>
+        ) : null}
+      </div>
+      <div className="mt-wilms-2 flex flex-wrap gap-1" aria-hidden="true">
+        {tour.steps.map((entry, index) => (
+          <span
+            key={entry.id}
+            className={cn(
+              'h-1.5 w-1.5 rounded-full transition-colors',
+              index <= tour.stepIndex ? 'bg-brand-primary' : 'bg-border',
+            )}
+          />
+        ))}
+      </div>
       <p className="mt-wilms-3 text-body text-text-muted">{tour.step.body}</p>
+      <p className="mt-wilms-2 text-small text-text-muted">
+        Tip: use ← → keys to move, Esc to exit.
+      </p>
       <div className="mt-wilms-5 flex flex-wrap justify-end gap-wilms-2">
         <Button type="button" variant="ghost" onClick={tour.requestExit}>
           Exit

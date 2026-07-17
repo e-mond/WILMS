@@ -39,15 +39,31 @@ export function LoginForm() {
   const [otpChallenge, setOtpChallenge] = useState<{ challengeId: string; message?: string } | null>(
     null,
   );
-  const { playLogin } = useNotificationSound();
+  const { playLogin, warm } = useNotificationSound();
   const { capsLockOn, handleKeyEvent, handleBlur } = useCapsLockWarning();
   const [hasMounted, setHasMounted] = useState(false);
   const isFormReady = hasMounted && isPreferencesHydrated;
   const invitedEmail = searchParams.get('email')?.trim() ?? '';
+  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     setHasMounted(true);
   }, []);
+
+  useEffect(() => {
+    const form = formRef.current;
+    if (!form) {
+      return;
+    }
+
+    const unlockAudio = () => warm();
+    form.addEventListener('pointerdown', unlockAudio);
+    form.addEventListener('keydown', unlockAudio);
+    return () => {
+      form.removeEventListener('pointerdown', unlockAudio);
+      form.removeEventListener('keydown', unlockAudio);
+    };
+  }, [warm, isFormReady]);
 
   const {
     register,
@@ -168,12 +184,14 @@ export function LoginForm() {
           />
         ) : (
           <form
+            ref={formRef}
             className="space-y-wilms-4"
             data-login-ready="true"
             noValidate
             aria-describedby={submitError ? 'login-submit-error' : undefined}
             onSubmit={(event) => {
               event.preventDefault();
+              warm();
               void onSubmit(event);
             }}
           >

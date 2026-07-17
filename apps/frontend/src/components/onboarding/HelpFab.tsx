@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { useAuth } from '@/hooks/useAuth';
 import { useReplayProductTour } from '@/components/onboarding/ProductTourOverlay';
+import { USER_ROLE } from '@/constants/roles';
 import { cn } from '@/utils/cn';
 
 export function HelpFab() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const replayTour = useReplayProductTour();
   const [open, setOpen] = useState(false);
 
@@ -19,6 +20,9 @@ export function HelpFab() {
     return null;
   }
 
+  const rolesGuideHref =
+    user?.role === USER_ROLE.SUPER_ADMIN ? '/settings?section=roles' : '/settings';
+
   return (
     <>
       <button
@@ -27,6 +31,7 @@ export function HelpFab() {
         className={cn(
           'fixed bottom-wilms-5 right-wilms-5 z-[90] inline-flex h-12 w-12 items-center justify-center rounded-full',
           'border border-border bg-card text-brand-primary shadow-lg transition hover:bg-background',
+          'motion-safe:hover:scale-105 motion-safe:active:scale-95',
         )}
         onClick={() => setOpen(true)}
       >
@@ -53,7 +58,7 @@ export function HelpFab() {
             className="w-full justify-start gap-wilms-2"
             onClick={() => {
               close();
-              window.open('/settings/roles', '_self');
+              window.open(rolesGuideHref, '_self');
             }}
           >
             <BookOpen className="h-4 w-4" aria-hidden="true" />
@@ -77,11 +82,11 @@ export function HelpFab() {
             className="w-full justify-start gap-wilms-2"
             onClick={() => {
               close();
-              window.open('https://wilms.vercel.app/help', '_blank', 'noopener,noreferrer');
+              window.open('/settings', '_self');
             }}
           >
             <HelpCircle className="h-4 w-4" aria-hidden="true" />
-            Open Help Center
+            Open Settings Help
           </Button>
         </div>
       </Modal>

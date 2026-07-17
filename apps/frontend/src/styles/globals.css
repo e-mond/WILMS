@@ -29,3 +29,41 @@
     scroll-behavior: auto !important;
   }
 }
+
+@layer utilities {
+  .tour-dialog-panel {
+    animation: tour-dialog-enter 180ms ease-out;
+  }
+
+  .tour-highlight-pulse {
+    animation: tour-highlight-pulse 1.6s ease-in-out 2;
+  }
+}
+
+@keyframes tour-dialog-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes tour-highlight-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-brand-primary) 35%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-brand-primary) 18%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tour-dialog-panel,
+  .tour-highlight-pulse {
+    animation: none !important;
+  }
+}
