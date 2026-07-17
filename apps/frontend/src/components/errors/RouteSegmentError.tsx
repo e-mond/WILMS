@@ -14,7 +14,7 @@ interface RouteSegmentErrorProps {
 export default function RouteSegmentError({
   error,
   reset,
-  title = 'Something went wrong',
+  title = "This section isn't available right now",
 }: RouteSegmentErrorProps) {
   useEffect(() => {
     errorTracking.captureException(error, { boundary: 'route-segment' });
