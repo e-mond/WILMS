@@ -84,8 +84,18 @@ export function cloneRoleDefinition(id: string): RoleDefinition {
     throw new Error('Role not found');
   }
 
+  const baseName = `${current.name} Copy`;
+  const takenNames = new Set(roles.map((role) => role.name.trim().toLowerCase()));
+  let cloneName = baseName;
+  let suffix = 2;
+
+  while (takenNames.has(cloneName.toLowerCase())) {
+    cloneName = `${baseName} ${suffix}`;
+    suffix += 1;
+  }
+
   return createRoleDefinition({
-    name: `${current.name} Copy`,
+    name: cloneName,
     description: current.description,
     permissionIds: current.permissionIds,
   });

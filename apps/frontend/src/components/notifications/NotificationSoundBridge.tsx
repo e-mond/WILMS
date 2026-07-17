@@ -10,6 +10,11 @@ import {
 } from '@/hooks/useNotificationSound';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
+import {
+  clearSeenNotificationIds,
+  loadSeenNotificationIds,
+  persistSeenNotificationIds,
+} from '@/utils/notification-toast-tracker';
 
 function playForEvent(event: string): void {
   if (!areNotificationSoundsEnabled()) {
@@ -33,16 +38,44 @@ function playForEvent(event: string): void {
 
 export function NotificationSoundBridge() {
   const toast = useToast();
-  const { isAuthenticated, isHydrated } = useAuth();
+  const { user, isAuthenticated, isHydrated } = useAuth();
   const enabled = isHydrated && isAuthenticated;
+  const userId = user?.id;
   const pollInterval = enabled ? 15_000 : undefined;
-  const { data: unreadCount = 0 } = useNotificationUnreadCount(enabled, pollInterval);
+  useNotificationUnreadCount(enabled, pollInterval);
   const { data: inbox = [] } = useNotificationInbox(enabled, pollInterval);
-  const previousCountRef = useRef<number | null>(null);
+  const baselineReadyRef = useRef(false);
   const seenIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    if (!inbox.length) {
+    baselineReadyRef.current = false;
+    seenIdsRef.current = new Set();
+
+    if (userId) {
+      seenIdsRef.current = loadSeenNotificationIds(userId);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    if (!enabled) {
+      baselineReadyRef.current = false;
+      if (userId) {
+        clearSeenNotificationIds(userId);
+      }
+    }
+  }, [enabled, userId]);
+
+  useEffect(() => {
+    if (!enabled || !userId || inbox.length === 0) {
+      return;
+    }
+
+    if (!baselineReadyRef.current) {
+      for (const item of inbox) {
+        seenIdsRef.current.add(item.id);
+      }
+      persistSeenNotificationIds(userId, seenIdsRef.current);
+      baselineReadyRef.current = true;
       return;
     }
 
@@ -52,26 +85,17 @@ export function NotificationSoundBridge() {
       }
 
       seenIdsRef.current.add(item.id);
-
-      if (previousCountRef.current === null) {
-        continue;
-      }
+      persistSeenNotificationIds(userId, seenIdsRef.current);
 
       playForEvent(item.event);
       if (/COMMUNICATION|MESSAGE/i.test(item.event)) {
-        toast.info(item.title, { message: item.body });
+        toast.info(item.title, {
+          message: item.body,
+          dedupeKey: `notification:${item.id}`,
+        });
       }
     }
-  }, [inbox, toast]);
-
-  useEffect(() => {
-    if (previousCountRef.current === null) {
-      previousCountRef.current = unreadCount;
-      return;
-    }
-
-    previousCountRef.current = unreadCount;
-  }, [unreadCount]);
+  }, [enabled, inbox, toast, userId]);
 
   return null;
 }

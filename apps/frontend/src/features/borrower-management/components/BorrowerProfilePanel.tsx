@@ -13,7 +13,7 @@ import {
 } from '@/components/data-display';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { QueryErrorState } from '@/components/feedback/QueryErrorState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { ExecutiveKpiGrid } from '@/components/layout/executive';
 import { ProfileFieldGrid, ProfileSection } from '@/components/layout/executive/ProfileSection';
 import { DetailSidebarCard } from '@/components/layout/executive';
@@ -145,7 +145,7 @@ export function BorrowerProfilePanel({ borrowerId }: BorrowerProfilePanelProps) 
   useShellAsideContent(asideContent);
 
   if (isLoading || isLoansLoading) {
-    return <LoadingSpinner label="Loading borrower profile" className="py-wilms-8" />;
+    return <InlinePanelSkeleton />;
   }
 
   if (isError) {

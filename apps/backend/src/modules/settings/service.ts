@@ -1,10 +1,10 @@
 import { and, eq, isNull, sql } from 'drizzle-orm';
-import { PERMISSION, USER_ROLE, type UserRole } from '@wilms/shared-rbac';
+import { PERMISSION, USER_ROLE, getPermissionsForRole, type UserRole } from '@wilms/shared-rbac';
 import { formatUserDisplayId } from '@wilms/shared-utils';
 import { uuidv7 } from 'uuidv7';
 import { isDatabaseEnabled, getDb } from '../../db/client.js';
 import { auditEntries } from '../../db/schema/audit.js';
-import { permissions, rolePermissions, roles, userRoles } from '../../db/schema/rbac.js';
+import { permissions, rolePermissions, roles, userPermissionOverrides, userRoles } from '../../db/schema/rbac.js';
 import { users } from '../../db/schema/users.js';
 import { hashPassword } from '../../lib/password.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
@@ -881,16 +881,35 @@ export async function deleteRole(id: string): Promise<void> {
 }
 
 export async function cloneRole(id: string): Promise<RoleDefinition> {
-  const source = (await listRoles()).find((role) => role.id === id);
+  const existingRoles = await listRoles();
+  const source = existingRoles.find((role) => role.id === id);
   if (!source) {
     throw new Error('NOT_FOUND');
   }
 
+  const cloneName = resolveUniqueRoleCloneName(source.name, existingRoles);
+
   return createRole({
-    name: `${source.name} Copy`,
+    name: cloneName,
     description: source.description,
     permissionIds: [...source.permissionIds],
   });
+}
+
+function resolveUniqueRoleCloneName(sourceName: string, existingRoles: RoleDefinition[]): string {
+  const takenNames = new Set(existingRoles.map((role) => role.name.trim().toLowerCase()));
+  const baseName = `${sourceName.trim()} Copy`;
+
+  if (!takenNames.has(baseName.toLowerCase())) {
+    return baseName;
+  }
+
+  let suffix = 2;
+  while (takenNames.has(`${baseName} ${suffix}`.toLowerCase())) {
+    suffix += 1;
+  }
+
+  return `${baseName} ${suffix}`;
 }
 
 const DEFAULT_INVITE_PASSWORD = 'ChangeMe1!';
@@ -1229,6 +1248,208 @@ export async function deleteUser(id: string, currentUserId?: string): Promise<vo
   }
 
   await permanentlyDeleteUser(id, currentUserId);
+}
+
+export interface UserPermissionOverrideRecord {
+  userId: string;
+  permissionId: string;
+  granted: boolean;
+  reason?: string;
+  grantedBy?: string;
+  grantedAt: string;
+}
+
+export interface UpsertUserPermissionOverrideInput {
+  permissionId: string;
+  granted: boolean;
+  reason?: string;
+}
+
+const memoryPermissionOverrides: UserPermissionOverrideRecord[] = [];
+
+export async function listUserPermissionOverrides(
+  userId: string,
+): Promise<UserPermissionOverrideRecord[]> {
+  if (!isDatabaseEnabled()) {
+    return memoryPermissionOverrides
+      .filter((entry) => entry.userId === userId)
+      .map((entry) => ({ ...entry }));
+  }
+
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(userPermissionOverrides)
+    .where(eq(userPermissionOverrides.userId, userId));
+
+  return rows.map((row) => ({
+    userId: row.userId,
+    permissionId: row.permissionId,
+    granted: row.granted,
+    grantedAt: new Date().toISOString(),
+  }));
+}
+
+export async function upsertUserPermissionOverrides(
+  userId: string,
+  overrides: UpsertUserPermissionOverrideInput[],
+  actorUserId: string,
+  actorDisplayName?: string,
+): Promise<UserPermissionOverrideRecord[]> {
+  let userRole: UserRole | undefined;
+
+  if (!isDatabaseEnabled()) {
+    const demoUser = DEMO_USERS.find((entry) => entry.id === userId);
+    if (!demoUser) {
+      throw new Error('NOT_FOUND');
+    }
+    userRole = demoUser.role;
+  } else {
+    const user = await userRepo.getUserById(userId);
+    if (!user) {
+      throw new Error('NOT_FOUND');
+    }
+    userRole = user.role as UserRole;
+  }
+
+  const rolePermissionsSet = getPermissionsForRole(userRole);
+
+  for (const override of overrides) {
+    if (!Object.values(PERMISSION).includes(override.permissionId as (typeof PERMISSION)[keyof typeof PERMISSION])) {
+      throw new Error('VALIDATION:One or more permission identifiers are invalid.');
+    }
+
+    const alreadyGrantedByRole = rolePermissionsSet.has(
+      override.permissionId as (typeof PERMISSION)[keyof typeof PERMISSION],
+    );
+
+    if (override.granted && alreadyGrantedByRole) {
+      throw new Error(
+        'VALIDATION:Cannot grant a permission the user already has through their role.',
+      );
+    }
+
+    if (!override.granted && !alreadyGrantedByRole) {
+      continue;
+    }
+  }
+
+  if (!isDatabaseEnabled()) {
+    for (const override of overrides) {
+      const index = memoryPermissionOverrides.findIndex(
+        (entry) => entry.userId === userId && entry.permissionId === override.permissionId,
+      );
+      const record: UserPermissionOverrideRecord = {
+        userId,
+        permissionId: override.permissionId,
+        granted: override.granted,
+        reason: override.reason?.trim() || undefined,
+        grantedBy: actorUserId,
+        grantedAt: new Date().toISOString(),
+      };
+
+      if (index >= 0) {
+        memoryPermissionOverrides[index] = record;
+      } else {
+        memoryPermissionOverrides.push(record);
+      }
+
+      appendAuditEntry({
+        action: override.granted ? 'PERMISSION_OVERRIDE_GRANTED' : 'PERMISSION_OVERRIDE_REVOKED',
+        actorId: actorUserId,
+        actorDisplayName,
+        targetEntityId: userId,
+        targetEntityType: 'user',
+        reason: override.reason?.trim() || override.permissionId,
+      });
+    }
+
+    return listUserPermissionOverrides(userId);
+  }
+
+  const db = getDb();
+
+  for (const override of overrides) {
+    await db
+      .insert(userPermissionOverrides)
+      .values({
+        userId,
+        permissionId: override.permissionId,
+        granted: override.granted,
+      })
+      .onConflictDoUpdate({
+        target: [userPermissionOverrides.userId, userPermissionOverrides.permissionId],
+        set: { granted: override.granted },
+      });
+
+    appendAuditEntry({
+      action: override.granted ? 'PERMISSION_OVERRIDE_GRANTED' : 'PERMISSION_OVERRIDE_REVOKED',
+      actorId: actorUserId,
+      actorDisplayName,
+      targetEntityId: userId,
+      targetEntityType: 'user',
+      reason: override.reason?.trim() || override.permissionId,
+    });
+  }
+
+  return listUserPermissionOverrides(userId);
+}
+
+export async function deleteUserPermissionOverride(
+  userId: string,
+  permissionId: string,
+  actorUserId: string,
+  actorDisplayName?: string,
+): Promise<UserPermissionOverrideRecord[]> {
+  if (!isDatabaseEnabled()) {
+    if (!DEMO_USERS.some((entry) => entry.id === userId)) {
+      throw new Error('NOT_FOUND');
+    }
+  } else {
+    const user = await userRepo.getUserById(userId);
+    if (!user) {
+      throw new Error('NOT_FOUND');
+    }
+  }
+
+  if (!isDatabaseEnabled()) {
+    const index = memoryPermissionOverrides.findIndex(
+      (entry) => entry.userId === userId && entry.permissionId === permissionId,
+    );
+    if (index >= 0) {
+      memoryPermissionOverrides.splice(index, 1);
+      appendAuditEntry({
+        action: 'PERMISSION_OVERRIDE_REMOVED',
+        actorId: actorUserId,
+        actorDisplayName,
+        targetEntityId: userId,
+        targetEntityType: 'user',
+        reason: permissionId,
+      });
+    }
+    return listUserPermissionOverrides(userId);
+  }
+
+  const db = getDb();
+  await db
+    .delete(userPermissionOverrides)
+    .where(
+      and(
+        eq(userPermissionOverrides.userId, userId),
+        eq(userPermissionOverrides.permissionId, permissionId),
+      ),
+    );
+
+  appendAuditEntry({
+    action: 'PERMISSION_OVERRIDE_REMOVED',
+    actorId: actorUserId,
+    actorDisplayName,
+    targetEntityId: userId,
+    targetEntityType: 'user',
+    reason: permissionId,
+  });
+
+  return listUserPermissionOverrides(userId);
 }
 
 export function getRegistrationLegalConfig(): RegistrationLegalConfig {

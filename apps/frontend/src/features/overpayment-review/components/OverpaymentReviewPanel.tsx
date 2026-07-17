@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { CurrencyAmount, DataTable, KpiCard } from '@/components/data-display';
 import { GuidedEmptyState } from '@/components/feedback/GuidedEmptyState';
 import { QueryErrorState } from '@/components/feedback/QueryErrorState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import { ExecutiveKpiGrid } from '@/components/layout/executive';
 import { PermissionGate } from '@/components/auth/PermissionGate';
@@ -48,7 +48,7 @@ export function OverpaymentReviewPanel() {
   };
 
   if (isLoading) {
-    return <LoadingSpinner label="Loading overpayment review queue" className="py-wilms-8" />;
+    return <InlinePanelSkeleton />;
   }
 
   if (isError) {

@@ -9,7 +9,7 @@ import { ExecutiveDetailLayout } from '@/components/layout/ExecutiveDetailLayout
 import { Alert } from '@/components/feedback/Alert';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { QueryErrorState } from '@/components/feedback/QueryErrorState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { Button } from '@/components/ui/Button';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { PERMISSION } from '@/constants/permissions';
@@ -111,7 +111,7 @@ export function PaymentEntryPanel({ borrowerId }: PaymentEntryPanelProps) {
   };
 
   if (isLoading) {
-    return <LoadingSpinner label="Loading payment details" className="py-wilms-8" />;
+    return <InlinePanelSkeleton />;
   }
 
   if (isError) {

@@ -11,7 +11,7 @@ import { settingsService } from '@/services';
 import type { BorrowerRegistrationFormValues } from '@/types/borrower-registration';
 import type { GuarantorEligibilityResult } from '@/types/guarantor-eligibility';
 import type { RegistrationLegalConfig } from '@/types/registration-legal';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import {
   buildRegistrationAgreementContent,
   type RegistrationAgreementMedia,
@@ -87,7 +87,7 @@ export function RegistrationReviewPanel({
   }, [generatedBy, legalConfig, officerName, resolvedMedia, values]);
 
   if (isLoading || !legalConfig || !agreementContent || !exportDocument) {
-    return <LoadingSpinner label="Loading registration review" className="py-wilms-4" />;
+    return <InlinePanelSkeleton />;
   }
 
   return (

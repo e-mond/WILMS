@@ -1,9 +1,9 @@
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { DashboardPageSkeleton } from '@/components/feedback/PageSkeletons';
 
 export interface PageLoadingFallbackProps {
   label?: string;
 }
 
 export function PageLoadingFallback({ label = 'Loading page' }: PageLoadingFallbackProps) {
-  return <LoadingSpinner label={label} className="min-h-[40vh] py-wilms-8" />;
+  return <DashboardPageSkeleton aria-label={label} />;
 }

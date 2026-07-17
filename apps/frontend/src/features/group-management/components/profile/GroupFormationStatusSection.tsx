@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { QueryErrorState } from '@/components/feedback/QueryErrorState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { ProfileFieldGrid, ProfileSection } from '@/components/layout/executive/ProfileSection';
 import { groupFormationService } from '@/services';
 import type { GroupDetail } from '@/types/group-detail';
@@ -27,7 +27,7 @@ export function GroupFormationStatusSection({ group }: GroupFormationStatusSecti
         Approved borrowers waiting for automatic group assignment in {group.community}.
       </p>
       {isLoading ? (
-        <LoadingSpinner label="Loading formation status" className="py-wilms-4" />
+        <InlinePanelSkeleton />
       ) : null}
       {isError ? (
         <div className="mt-wilms-3">

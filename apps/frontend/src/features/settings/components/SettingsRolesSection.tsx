@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { DataTable } from '@/components/data-display';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { TableSkeleton } from '@/components/feedback/TableSkeleton';
 import { SettingsSectionCard } from '@/features/settings/components/SettingsSectionCard';
 import { useSettingsPermissions, useSettingsRoles } from '@/features/settings/hooks/useSettingsRoles';
 import { PermissionGate } from '@/components/auth/PermissionGate';
@@ -49,6 +49,7 @@ export function SettingsRolesSection() {
       void queryClient.invalidateQueries({ queryKey: ['settings', 'roles'] });
       toast.success('Role cloned');
     },
+    onError: () => toast.error('Unable to clone role'),
   });
 
   const deleteRole = useMutation({
@@ -60,8 +61,26 @@ export function SettingsRolesSection() {
     onError: () => toast.error('Unable to delete role'),
   });
 
+  function handleDeleteRole(role: RoleDefinition) {
+    if (role.isSystem) {
+      return;
+    }
+
+    const confirmed = window.confirm(`Delete role "${role.name}"? This cannot be undone.`);
+    if (!confirmed) {
+      return;
+    }
+
+    deleteRole.mutate(role.id);
+  }
+
   if (rolesLoading || permissionsLoading) {
-    return <LoadingSpinner label="Loading roles and permissions" className="py-wilms-6" />;
+    return (
+      <div className="space-y-wilms-5">
+        <TableSkeleton rows={5} columns={5} />
+        <TableSkeleton rows={4} columns={3} />
+      </div>
+    );
   }
 
   return (
@@ -135,7 +154,7 @@ export function SettingsRolesSection() {
                         type="button"
                         size="sm"
                         variant="ghost"
-                        onClick={() => deleteRole.mutate(row.id)}
+                        onClick={() => handleDeleteRole(row)}
                       >
                         Delete
                       </Button>

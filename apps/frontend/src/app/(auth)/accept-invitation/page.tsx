@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { AcceptInvitationRedirect } from '@/features/authentication/components/AcceptInvitationRedirect';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { FormPanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 export default function AcceptInvitationPage() {
@@ -16,7 +16,7 @@ export default function AcceptInvitationPage() {
       <Suspense
         fallback={
           <div className="flex min-h-[200px] w-full max-w-md items-center justify-center rounded-sm border border-border bg-card">
-            <LoadingSpinner label="Loading invitation" />
+            <FormPanelSkeleton fields={3} />
           </div>
         }
       >

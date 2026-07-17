@@ -21,6 +21,8 @@ import { AppUpdatePrompt } from '@/components/pwa/AppUpdatePrompt';
 import { ChunkRecoveryHandler } from '@/components/pwa/ChunkRecoveryHandler';
 import { NotificationSoundBridge } from '@/components/notifications/NotificationSoundBridge';
 import { ProductTourOverlay } from '@/components/onboarding/ProductTourOverlay';
+import { HelpFab } from '@/components/onboarding/HelpFab';
+import { ConsoleExtensionNoiseFilter } from '@/components/dev/ConsoleExtensionNoiseFilter';
 import { ServiceWorkerRegistrar } from '@/components/pwa/ServiceWorkerRegistrar';
 import { getServerSession } from '@/lib/auth/server-session';
 import '@/styles/globals.css';
@@ -79,8 +81,10 @@ export default function RootLayout({
                 <AppLockHandler />
                 <ToastContainer />
                 <ConnectionStatusBar />
+                <ConsoleExtensionNoiseFilter />
                 <NotificationSoundBridge />
                 <ProductTourOverlay />
+                <HelpFab />
                 {children}
               </AppBootstrap>
               </PermissionProvider>

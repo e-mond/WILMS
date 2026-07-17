@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { CardSkeleton } from '@/components/feedback/CardSkeleton';
 import { TableSkeleton } from '@/components/feedback/TableSkeleton';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { Button } from '@/components/ui/Button';
 import { LOADING_TIMEOUT_MESSAGE } from '@/constants/loading-policy';
 import { resolveQueryErrorPresentation } from '@/utils/query-error-presentation';
@@ -80,11 +80,7 @@ export function QueryStatePanel({
       );
     }
     if (variant === 'inline') {
-      return (
-        <div className="flex items-center justify-center py-12">
-          <LoadingSpinner label="Loading…" />
-        </div>
-      );
+      return <InlinePanelSkeleton />;
     }
     return <TableSkeleton />;
   }
