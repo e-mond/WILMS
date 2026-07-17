@@ -7,6 +7,7 @@ import { users } from '../../db/schema/users.js';
 import { getSettings } from '../settings/service.js';
 import { getMailProvider } from '../../infrastructure/mail/index.js';
 import { getSmsProvider } from '../../infrastructure/sms/index.js';
+import { normalizeGhanaPhone } from '../../infrastructure/sms/normalize-phone.js';
 import {
   archiveNotification as archiveInAppNotification,
   markAllNotificationsRead,
@@ -78,17 +79,6 @@ function resolveSeverity(event: string): 'INFO' | 'WARNING' | 'CRITICAL' {
     return 'WARNING';
   }
   return 'INFO';
-}
-
-function normalizeGhanaPhone(phone: string): string {
-  const digits = phone.replace(/\D/g, '');
-  if (digits.startsWith('233')) {
-    return digits;
-  }
-  if (digits.startsWith('0')) {
-    return `233${digits.slice(1)}`;
-  }
-  return digits;
 }
 
 async function maybeSendSmsNotification(phone: string, message: string): Promise<void> {

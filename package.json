@@ -38,8 +38,5 @@
     "generate:pwa-icons": "node scripts/generate-pwa-icons.mjs",
     "verify:empty-db": "npm run verify:empty-db -w @wilms/api",
     "verify:migrations": "npm run verify:migrations -w @wilms/api"
-  },
-  "devDependencies": {
-    "vitest": "3.2.6"
   }
 }

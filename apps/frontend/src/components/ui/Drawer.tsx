@@ -138,7 +138,6 @@ export function Drawer({
     <div
       className="fixed inset-0 z-50 flex"
       role="presentation"
-      aria-hidden={!isOpen}
     >
       {/* Backdrop */}
       <button

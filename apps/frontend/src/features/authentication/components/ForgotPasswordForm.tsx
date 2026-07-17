@@ -36,7 +36,7 @@ function resolveForgotPasswordError(error: unknown): string {
     return 'You appear to be offline. Check your connection and try again.';
   }
 
-  return 'Something went wrong. Please try again.';
+  return "Unable to send the reset link right now. Please try again.";
 }
 
 export function ForgotPasswordForm() {
