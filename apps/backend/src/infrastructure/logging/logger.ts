@@ -1,3 +1,5 @@
+import { getRequestId } from '../../middleware/request-id.js';
+
 type LogLevel = 'info' | 'warn' | 'error';
 
 interface LogPayload {
@@ -9,11 +11,13 @@ interface LogPayload {
 }
 
 function emit(level: LogLevel, message: string, meta: Record<string, unknown> = {}): void {
+  const requestId = getRequestId();
   const payload: LogPayload = {
     level,
     message,
     timestamp: new Date().toISOString(),
     service: 'wilms-api',
+    ...(requestId ? { requestId } : {}),
     ...meta,
   };
 

@@ -32,5 +32,11 @@ export function sanitizeProxyRequestHeaders(incoming: Headers): Headers {
   headers.delete('connection');
   headers.delete('accept-encoding');
   headers.set('accept-encoding', 'identity');
+
+  const existing = headers.get('x-request-id')?.trim();
+  if (!existing || existing.length === 0 || existing.length > 128) {
+    headers.set('x-request-id', crypto.randomUUID());
+  }
+
   return headers;
 }

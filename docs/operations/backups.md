@@ -1,7 +1,10 @@
 # WILMS Backup & Recovery
 
-**Version:** v1.3.5  
-**Last updated:** 2026-07-12
+**Version:** v1.3.8  
+**Last updated:** 2026-07-17
+
+> **Full plan:** [BACKUP_AND_RECOVERY_PLAN.md](../certification/v1.3.8/production-operations/BACKUP_AND_RECOVERY_PLAN.md)  
+> **Rollback:** [ROLLBACK_RUNBOOK.md](../certification/v1.3.8/production-operations/ROLLBACK_RUNBOOK.md)
 
 ## Database (Neon PostgreSQL)
 
@@ -11,6 +14,7 @@ WILMS production data lives in Neon PostgreSQL, managed through Railway environm
 
 - Enable **point-in-time recovery (PITR)** on the Neon project (recommended for production).
 - Retention: align with organizational policy (minimum 7 days recommended).
+- **RPO target:** ≤ 15 minutes with PITR (organizational target, not measured SLA).
 - Verify restore procedure quarterly on a branch database.
 
 ### Manual export (pre-migration)
@@ -29,7 +33,12 @@ npm run db:migrate -w @wilms/api
 curl -fsS "${WILMS_API_URL}/health" | jq '.data.migrations'
 ```
 
-Confirm `applied` equals `expected` (26 migrations through `0025_v137_rc3_pool_allocations_backfill` for v1.3.7).
+Confirm `migrations.status: ok` (Drizzle watermark current). v1.3.8 journal has **28 entries** through `0027_hot_query_indexes`:
+
+```bash
+npm run verify:migrations -w @wilms/api
+# apps/backend/src/db/migrations/meta/_journal.json
+```
 
 ## File uploads (Cloudinary)
 
@@ -43,24 +52,28 @@ Confirm `applied` equals `expected` (26 migrations through `0025_v137_rc3_pool_a
 |-------|----------|---------------|
 | Railway env | API secrets, `DATABASE_URL`, SMS, mail | Railway env export / secret manager |
 | Vercel env | BFF proxy, `NEXT_PUBLIC_*`, mail relay | Vercel project env export |
-| Git repository | Code, migrations, docs | GitHub (tag releases e.g. `v1.3.5`) |
+| Git repository | Code, migrations, docs | GitHub (tag releases e.g. `v1.3.8`) |
 
 ## Release artifacts
 
 Tag each production release:
 
 ```bash
-git tag -a v1.3.5 -m "WILMS v1.3.5"
-git push origin v1.3.5
+git tag -a v1.3.8 -m "WILMS v1.3.8"
+git push origin v1.3.8
 ```
 
-Retain `RELEASE_NOTES_v1.3.5.md` and audit reports in the repository for compliance traceability.
+Retain release notes and certification reports under `docs/certification/v1.3.8/` for compliance traceability.
 
 ## Recovery runbook (summary)
 
-1. **API down:** Redeploy from last known good tag via Railway; verify `/health`.
-2. **Bad migration:** Restore Neon branch to pre-migration point; redeploy previous API image.
-3. **Frontend regression:** Vercel instant rollback to previous deployment.
-4. **Data corruption:** Restore Neon backup; run `npm run db:migrate` only if schema drift exists.
+| Scenario | Action | RTO target |
+|----------|--------|------------|
+| API down | Redeploy from last good tag via Railway; verify `/health` | 1–4 h |
+| Bad migration | Neon PITR branch to pre-migration point; redeploy previous API | 2–4 h |
+| Frontend regression | Vercel instant rollback | &lt; 30 min |
+| Data corruption | Neon PITR restore; `db:migrate` only if schema drift | 2–4 h |
 
-See [production-runbook.md](./production-runbook.md) for step-by-step deploy and rollback.
+Ops dashboard (`/ops`) reports `backups.status: external_managed` (Neon) — confirm PITR in Neon Console.
+
+See [production-runbook.md](./production-runbook.md) and the [full backup plan](../certification/v1.3.8/production-operations/BACKUP_AND_RECOVERY_PLAN.md) for step-by-step procedures.
