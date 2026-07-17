@@ -190,6 +190,13 @@
       "when": 1784043200000,
       "tag": "0026_v137_prod_schema_repair",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1784296800000,
+      "tag": "0027_hot_query_indexes",
+      "breakpoints": true
     }
   ]
 }
