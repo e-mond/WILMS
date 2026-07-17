@@ -1,9 +1,12 @@
 import { eq, inArray, isNull } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
 import { formatExpenseDisplayId } from '@wilms/shared-utils';
-import { isDatabaseEnabled, getDb } from '../../db/client.js';
+import { isDatabaseEnabled, getDb, runInTransaction } from '../../db/client.js';
 import { expenses } from '../../db/schema/expenses.js';
 import { users } from '../../db/schema/users.js';
+import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
+import * as ledgerRepo from '../../repositories/ledger.repository.js';
+import { pesewasToDecimal } from '../../domain/money.js';
 
 export interface ExpenseRecord {
   id: string;
@@ -146,25 +149,54 @@ export async function createExpense(input: {
   };
 
   if (isDatabaseEnabled()) {
-    const db = getDb();
-    await db.insert(expenses).values({
-      id: created.id,
-      category: input.category as typeof expenses.$inferInsert.category,
-      categoryLabel: created.categoryLabel,
-      amountPesewas: input.amountPesewas,
-      expenseDate: input.expenseDate,
-      reason: input.reason,
-      notes: input.notes ?? null,
-      receiptUploadId: input.receiptUploadId ?? null,
-      gpsLabel: input.gpsLabel ?? null,
-      recordedByUserId: input.recordedById,
-      status: 'APPROVED',
-      reviewedByUserId: input.recordedById,
-      reviewedAt: now,
+    await runInTransaction(async (tx) => {
+      await tx.insert(expenses).values({
+        id: created.id,
+        category: input.category as typeof expenses.$inferInsert.category,
+        categoryLabel: created.categoryLabel,
+        amountPesewas: input.amountPesewas,
+        expenseDate: input.expenseDate,
+        reason: input.reason,
+        notes: input.notes ?? null,
+        receiptUploadId: input.receiptUploadId ?? null,
+        gpsLabel: input.gpsLabel ?? null,
+        recordedByUserId: input.recordedById,
+        status: 'APPROVED',
+        reviewedByUserId: input.recordedById,
+        reviewedAt: now,
+      });
+
+      // Operating-cash ledger entry — never touches loan principal or pool capital.
+      await ledgerRepo.appendLedgerEntry(
+        {
+          entryType: 'ADJUSTMENT',
+          amountDecimal: pesewasToDecimal(input.amountPesewas),
+          description: `Operating expense: ${created.categoryLabel} (${created.displayId})`,
+          actorUserId: input.recordedById,
+          metadata: {
+            kind: 'OPERATING_EXPENSE',
+            expenseId: created.id,
+            category: input.category,
+            expenseDate: input.expenseDate,
+            affectsLoanPrincipal: false,
+            affectsPoolCapital: false,
+          },
+        },
+        tx,
+      );
     });
   } else {
     memoryExpenses.unshift(created);
   }
+
+  appendAuditEntry({
+    action: 'expense.recorded',
+    actorId: input.recordedById,
+    actorDisplayName: input.recordedByName,
+    targetEntityId: created.id,
+    targetEntityType: 'expense',
+    reason: `${created.categoryLabel} ${input.amountPesewas} pesewas`,
+  });
 
   return { ...created };
 }

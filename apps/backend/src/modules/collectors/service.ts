@@ -8,6 +8,7 @@ import { collectors, users } from '../../db/schema/users.js';
 import { listPayments } from '../../db/persistence.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
 import { hashPassword } from '../../lib/password.js';
+import { generateInvitePassword } from '../../lib/invite-password.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import * as userRepo from '../../repositories/user.repository.js';
 import { formatCollectorDisplayId } from '@wilms/shared-utils';
@@ -331,8 +332,6 @@ export async function getCollector(id: string): Promise<CollectorDetail> {
   };
 }
 
-const DEFAULT_INVITE_PASSWORD = 'ChangeMe1!';
-
 async function nextCollectorCode(): Promise<string> {
   const db = getDb();
   const rows = await db.select({ collectorCode: collectors.collectorCode }).from(collectors);
@@ -385,7 +384,8 @@ export async function onboardCollector(
   const userId = uuidv7();
   const collectorId = uuidv7();
   const collectorCode = await nextCollectorCode();
-  const passwordHash = await hashPassword(DEFAULT_INVITE_PASSWORD);
+  const temporaryPassword = generateInvitePassword();
+  const passwordHash = await hashPassword(temporaryPassword);
   const now = new Date();
 
   const db = getDb();

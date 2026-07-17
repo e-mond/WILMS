@@ -150,7 +150,11 @@ export async function submitReconciliation(
         input.reconciliationDate,
       );
 
-      if (existing) {
+      const canResubmit =
+        existing &&
+        (existing.status === 'REJECTED' || existing.status === 'REOPENED');
+
+      if (existing && !canResubmit) {
         throw new Error('VALIDATION:Reconciliation already submitted for this date.');
       }
 
@@ -181,16 +185,31 @@ export async function submitReconciliation(
       }
 
       const summary = await runInTransaction(async (tx) => {
-        const row = await reconciliationRepo.insertReconciliation(snapshot, tx);
+        const beforeSnapshot = existing
+          ? ({
+              status: existing.status,
+              physicalCashPesewas: existing.physicalCashPesewas,
+              primaryVariancePesewas: existing.primaryVariancePesewas,
+              resolutionNotes: existing.resolutionNotes,
+            } as Record<string, unknown>)
+          : null;
+
+        const row = existing
+          ? await reconciliationRepo.supersedeReconciliation(existing.id, snapshot, tx)
+          : await reconciliationRepo.insertReconciliation(snapshot, tx);
 
         await reconciliationHistoryRepo.appendReconciliationHistory(
           {
             reconciliationId: row.id,
             eventType: 'SUBMITTED',
             actorUserId: input.actorId,
-            beforeSnapshot: null,
+            beforeSnapshot,
             afterSnapshot: snapshot as unknown as Record<string, unknown>,
-            reason: snapshot.varianceFlagged ? snapshot.comment ?? undefined : undefined,
+            reason: existing
+              ? `Resubmit after ${existing.status}${snapshot.varianceFlagged && snapshot.comment ? `: ${snapshot.comment}` : ''}`
+              : snapshot.varianceFlagged
+                ? snapshot.comment ?? undefined
+                : undefined,
             createdAt: submittedAt,
           },
           tx,

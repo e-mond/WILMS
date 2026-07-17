@@ -110,7 +110,14 @@ export function calculateLoanProgress(input: {
 export function sumRepaymentLedgerAmounts(
   rows: Array<{ entryType: string; amount: string | null }>,
 ): number {
-  return rows
-    .filter((row) => row.entryType === 'REPAYMENT')
-    .reduce((total, row) => total + decimalToPesewas(parseDecimal(row.amount)), 0);
+  return rows.reduce((total, row) => {
+    const amountPesewas = decimalToPesewas(parseDecimal(row.amount));
+    if (row.entryType === 'REPAYMENT') {
+      return total + amountPesewas;
+    }
+    if (row.entryType === 'REVERSAL') {
+      return total - amountPesewas;
+    }
+    return total;
+  }, 0);
 }

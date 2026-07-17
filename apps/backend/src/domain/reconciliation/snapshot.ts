@@ -33,6 +33,7 @@ export function buildReconciliationSnapshot(input: {
     primaryVariancePesewas,
     expectedDuePesewas,
     input.thresholdPercent,
+    collectionDeltaPesewas,
   );
 
   return {
