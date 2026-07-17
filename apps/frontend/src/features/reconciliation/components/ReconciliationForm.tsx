@@ -230,18 +230,18 @@ export function ReconciliationForm() {
             : data.status === 'REJECTED'
               ? `Reconciliation for ${formatDisplayDate(date)} was rejected. Contact your supervisor.`
               : data.varianceFlagged
-                ? `Submitted for ${formatDisplayDate(date)} — variance exceeds threshold. Super Admin review is in progress.`
+                ? `Submitted for ${formatDisplayDate(date)} — variance exceeds threshold. Status is Pending until a Super Admin approves or rejects it.`
                 : data.variancePesewas === 0
-                  ? `Submitted for ${formatDisplayDate(date)}. Physical cash matches expected collections.`
-                  : `Submitted for ${formatDisplayDate(date)} with minor variance recorded.`}
+                  ? `Submitted for ${formatDisplayDate(date)}. Physical cash matches expected collections — auto-approved.`
+                  : `Submitted for ${formatDisplayDate(date)} with minor variance recorded — auto-approved.`}
           {data.resolutionNotes ? ` Notes: ${data.resolutionNotes}` : ''}
         </Alert>
       ) : null}
 
       {!data.submitted && previewVarianceFlagged ? (
-        <Alert title="Variance review required" variant="warning">
+        <Alert title="Variance will stay pending" variant="warning">
           Variance exceeds {RECONCILIATION_VARIANCE_THRESHOLD_PERCENT}% of expected collections.
-          Submitting will alert Super Admin for review.
+          Submitting will mark this reconciliation as Pending for Super Admin approval.
         </Alert>
       ) : null}
 

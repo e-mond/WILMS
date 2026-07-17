@@ -18,7 +18,7 @@ export function SettingsExpensesSection() {
 
   return (
     <div className="space-y-wilms-4">
-      <div className="grid gap-wilms-3 sm:grid-cols-3">
+      <div className="grid gap-wilms-3 sm:grid-cols-2">
         <div className="rounded-sm border border-border bg-card p-wilms-4">
           <p className="text-small text-text-muted">Total expenses</p>
           <p className="text-heading-3 font-bold text-text-primary">{data.expenses.length}</p>
@@ -28,10 +28,6 @@ export function SettingsExpensesSection() {
           <p className="text-heading-3 font-bold text-status-active">
             <CurrencyAmount value={data.summary.approvedTotalPesewas} />
           </p>
-        </div>
-        <div className="rounded-sm border border-border bg-card p-wilms-4">
-          <p className="text-small text-text-muted">Pending legacy items</p>
-          <p className="text-heading-3 font-bold text-text-primary">{data.summary.pendingCount}</p>
         </div>
       </div>
 
@@ -82,12 +78,6 @@ export function SettingsExpensesSection() {
               header: 'Recorded by',
               className: 'whitespace-nowrap align-middle min-w-[9rem]',
               cell: (row) => row.recordedByName,
-            },
-            {
-              id: 'status',
-              header: 'Status',
-              className: 'whitespace-nowrap align-middle',
-              cell: (row) => row.status,
             },
           ]}
         />

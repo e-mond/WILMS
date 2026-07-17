@@ -21,7 +21,9 @@ describe('email layout engine', () => {
     expect(html).toContain('Test User');
     expect(html).toContain('<!DOCTYPE html>');
     expect(html).toContain('https://wilms.vercel.app/icons/icon-192.png');
-    expect(html).toContain('width:600px');
+    expect(html).toContain('max-width:600px');
+    expect(html).toContain('@media only screen');
+    expect(html).toContain('<style type="text/css">');
   });
 
   it('resolves default logo URL from app base', () => {
