@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { expenseService } from '@/services';
 import { useOfflineQueueStore } from '@/state/offlineQueueStore';
 import type { CreateExpenseInput } from '@/types/expense';
@@ -21,6 +21,7 @@ export interface RecordExpenseOrQueueResult {
 
 export function useRecordExpenseOrQueue() {
   const enqueueExpense = useOfflineQueueStore((state) => state.enqueueExpense);
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({
@@ -41,10 +42,11 @@ export function useRecordExpenseOrQueue() {
         return;
       }
 
-      notifyMutationSuccess('Expense submitted', 'Your expense is pending admin approval.');
+      void queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      notifyMutationSuccess('Expense recorded', 'Your expense was saved and appears in history.');
     },
     onError: (error) => {
-      notifyMutationError('Expense submission failed', error, 'Unable to record expense.');
+      notifyMutationError('Expense recording failed', error, 'Unable to record expense.');
     },
   });
 }

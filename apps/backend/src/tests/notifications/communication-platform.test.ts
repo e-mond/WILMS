@@ -11,6 +11,15 @@ describe('html-sanitize', () => {
     expect(result).toContain('<p>Hello</p>');
     expect(result).not.toContain('script');
   });
+
+  it('keeps email style media queries inside style tags', () => {
+    const html = `<!DOCTYPE html><html><head><style type="text/css">@media only screen and (max-width: 620px) { .wilms-email-shell { width: 100% !important; } }</style></head><body><p>Hello</p></body></html>`;
+    const result = sanitizeHtml(html);
+    expect(result).toContain('<style type="text/css">');
+    expect(result).toContain('@media only screen');
+    expect(result).toContain('.wilms-email-shell');
+    expect(result).toContain('<p>Hello</p>');
+  });
 });
 
 describe('template-variables', () => {

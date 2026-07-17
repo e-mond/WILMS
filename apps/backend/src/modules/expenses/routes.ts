@@ -3,7 +3,9 @@ import { asyncHandler } from '../../http/async-handler.js';
 import { AppError, ERROR_CODE } from '../../http/errors.js';
 import { sendData } from '../../http/response.js';
 import { PERMISSION } from '../../infrastructure/permissions/matrix.js';
+import { permissionSetHasAny } from '../../infrastructure/permissions/resolve-user-permissions.js';
 import { requireAuth } from '../../middleware/authenticate.js';
+import { getRequestPermissions } from '../../middleware/request-permissions.js';
 import { requirePermission } from '../../middleware/require-permission.js';
 import * as expenseService from './service.js';
 
@@ -20,9 +22,16 @@ expensesRouter.use(requireAuth);
 
 expensesRouter.get(
   '/expenses',
-  requirePermission(PERMISSION.MANAGE_EXPENSES),
-  asyncHandler(async (_req, res) => {
-    sendData(res, await expenseService.listExpenses());
+  requirePermission(PERMISSION.MANAGE_EXPENSES, PERMISSION.RECORD_EXPENSES),
+  asyncHandler(async (req, res) => {
+    const permissions = await getRequestPermissions(req);
+    const canManageAll = permissionSetHasAny(permissions, [PERMISSION.MANAGE_EXPENSES]);
+    sendData(
+      res,
+      await expenseService.listExpenses(
+        canManageAll ? undefined : { recordedByUserId: req.session!.userId },
+      ),
+    );
   }),
 );
 
@@ -30,15 +39,30 @@ expensesRouter.post(
   '/expenses',
   requirePermission(PERMISSION.RECORD_EXPENSES),
   asyncHandler(async (req, res) => {
-    sendData(res, await expenseService.createExpense(req.body), 201);
+    sendData(
+      res,
+      await expenseService.createExpense({
+        ...req.body,
+        recordedById: req.session!.userId,
+        recordedByName: req.session!.displayName ?? req.body.recordedByName ?? 'Staff',
+      }),
+      201,
+    );
   }),
 );
 
 expensesRouter.get(
   '/expenses/summary',
-  requirePermission(PERMISSION.MANAGE_EXPENSES),
-  asyncHandler(async (_req, res) => {
-    sendData(res, await expenseService.getExpenseSummary());
+  requirePermission(PERMISSION.MANAGE_EXPENSES, PERMISSION.RECORD_EXPENSES),
+  asyncHandler(async (req, res) => {
+    const permissions = await getRequestPermissions(req);
+    const canManageAll = permissionSetHasAny(permissions, [PERMISSION.MANAGE_EXPENSES]);
+    sendData(
+      res,
+      await expenseService.getExpenseSummary(
+        canManageAll ? undefined : { recordedByUserId: req.session!.userId },
+      ),
+    );
   }),
 );
 

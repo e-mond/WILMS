@@ -62,11 +62,12 @@ function rowToRecord(
 }
 
 function buildSummary(items: ExpenseRecord[]): ExpenseListResponse['summary'] {
-  const pending = items.filter((entry) => entry.status === 'PENDING');
+  // Expenses are recorded as APPROVED immediately — no approval workflow.
+  const recordedTotal = items.reduce((sum, entry) => sum + entry.amountPesewas, 0);
   return {
-    pendingCount: pending.length,
-    approvedTotalPesewas: items.reduce((sum, entry) => sum + entry.amountPesewas, 0),
-    pendingTotalPesewas: pending.reduce((sum, entry) => sum + entry.amountPesewas, 0),
+    pendingCount: 0,
+    approvedTotalPesewas: recordedTotal,
+    pendingTotalPesewas: 0,
   };
 }
 
@@ -100,11 +101,16 @@ async function loadExpenses(): Promise<ExpenseRecord[]> {
   });
 }
 
-export async function listExpenses(): Promise<ExpenseListResponse> {
+export async function listExpenses(filter?: {
+  recordedByUserId?: string;
+}): Promise<ExpenseListResponse> {
   const items = await loadExpenses();
+  const scoped = filter?.recordedByUserId
+    ? items.filter((entry) => entry.recordedById === filter.recordedByUserId)
+    : items;
   return {
-    expenses: items,
-    summary: buildSummary(items),
+    expenses: scoped,
+    summary: buildSummary(scoped),
   };
 }
 
@@ -200,13 +206,15 @@ export async function reviewExpense(
   return { ...updated };
 }
 
-export async function getExpenseSummary(): Promise<{
+export async function getExpenseSummary(filter?: {
+  recordedByUserId?: string;
+}): Promise<{
   todayPesewas: number;
   weekPesewas: number;
   monthPesewas: number;
   yearPesewas: number;
 }> {
-  const items = await loadExpenses();
+  const { expenses: items } = await listExpenses(filter);
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const startOfWeek = new Date(startOfDay);
