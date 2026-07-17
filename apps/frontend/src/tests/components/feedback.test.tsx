@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { Alert } from '@/components/feedback/Alert';
 import { EmptyState } from '@/components/feedback/EmptyState';
-import { LoadingSpinner } from '@/components/feedback/LoadingSpinner';
+import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 
 describe('feedback components', () => {
   it('renders Alert with alert role', () => {
@@ -10,9 +10,9 @@ describe('feedback components', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('Reconciliation mismatch');
   });
 
-  it('renders LoadingSpinner with status role', () => {
-    render(<LoadingSpinner label="Loading borrowers" />);
-    expect(screen.getByRole('status', { name: 'Loading borrowers' })).toBeInTheDocument();
+  it('renders InlinePanelSkeleton with busy state', () => {
+    const { container } = render(<InlinePanelSkeleton />);
+    expect(container.querySelector('[aria-busy="true"]')).toBeInTheDocument();
   });
 
   it('renders EmptyState with title and description', () => {

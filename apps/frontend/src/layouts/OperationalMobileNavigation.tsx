@@ -5,10 +5,6 @@ import { OfficeShellMobileBar } from '@/layouts/OfficeShellMobileBar';
 import { ShellNavLink } from '@/layouts/ShellNavLink';
 import { cn } from '@/utils/cn';
 
-export function filterOperationalBottomNavItems(navItems: ShellNavItem[]): ShellNavItem[] {
-  return navItems;
-}
-
 export interface OperationalMobileHeaderProps {
   brandTitle: string;
   isExecutive?: boolean;
@@ -24,8 +20,6 @@ export interface OperationalBottomNavigationProps {
 }
 
 export function OperationalBottomNavigation({ navItems, ariaLabel }: OperationalBottomNavigationProps) {
-  const bottomItems = filterOperationalBottomNavItems(navItems);
-
   return (
     <nav
       aria-label={ariaLabel}
@@ -43,7 +37,7 @@ export function OperationalBottomNavigation({ navItems, ariaLabel }: Operational
           'px-1.5 py-1.5 shadow-2xl shadow-black/35',
         )}
       >
-        {bottomItems.map((item) => (
+        {navItems.map((item) => (
           <li key={item.href} role="presentation" className="flex flex-1 justify-center">
             <ShellNavLink {...item} pillMode variant="executive" />
           </li>

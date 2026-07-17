@@ -31,7 +31,7 @@ export default function GlobalError({
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-wilms-4 bg-background px-wilms-4 text-center">
       <h1 className="text-heading-1 font-semibold text-text-primary">
-        {isChunkError ? 'Page failed to load' : 'Something went wrong'}
+        {isChunkError ? 'Page failed to load' : "This page isn't available right now"}
       </h1>
       <p className="max-w-md text-body text-text-muted">{message}</p>
       <div className="flex flex-wrap justify-center gap-wilms-2">
