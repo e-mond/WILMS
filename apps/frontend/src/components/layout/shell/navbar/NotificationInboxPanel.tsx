@@ -389,7 +389,7 @@ export function NotificationInboxTrigger() {
           aria-hidden
           className={cn(
             'absolute -right-1.5 -top-1.5 flex min-h-[18px] min-w-[18px] items-center justify-center',
-            'rounded-full bg-danger px-1 text-[10px] font-bold leading-none text-white',
+            'rounded-full bg-danger px-1 text-[10px] font-bold leading-none text-card',
             'ring-2 ring-card',
           )}
         >

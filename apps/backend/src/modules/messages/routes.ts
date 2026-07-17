@@ -3,13 +3,14 @@ import { z } from 'zod';
 import { asyncHandler } from '../../http/async-handler.js';
 import { AppError, ERROR_CODE } from '../../http/errors.js';
 import { sendData } from '../../http/response.js';
+import { PERMISSION } from '../../infrastructure/permissions/matrix.js';
 import { requireAuth } from '../../middleware/authenticate.js';
+import { requirePermission } from '../../middleware/require-permission.js';
 import { validateBody } from '../../middleware/validate-body.js';
 import * as messageService from './service.js';
 
 const createThreadSchema = z.object({
   collectorId: z.string().trim().min(1).max(128),
-  adminId: z.string().trim().min(1).max(128).optional(),
 });
 
 const sendMessageSchema = z.object({
@@ -48,15 +49,22 @@ messagesRouter.get(
 
 messagesRouter.post(
   '/messages/threads',
+  requirePermission(PERMISSION.MANAGE_USERS, PERMISSION.ACCESS_ADMIN_PORTAL),
   validateBody(createThreadSchema),
   asyncHandler(async (req, res) => {
     try {
-      const adminId = req.body.adminId ?? req.session!.userId;
-      sendData(
-        res,
-        await messageService.getOrCreateThread(adminId, req.body.collectorId),
-        201,
-      );
+      const adminId = req.session!.userId;
+      const collectorId = req.body.collectorId as string;
+
+      if (collectorId === adminId) {
+        throw new AppError(
+          'Cannot create a message thread with yourself.',
+          ERROR_CODE.VALIDATION,
+          422,
+        );
+      }
+
+      sendData(res, await messageService.getOrCreateThread(adminId, collectorId), 201);
     } catch (error) {
       mapError(error);
     }

@@ -6,12 +6,13 @@ export interface ReleaseNotes {
 }
 
 export const CURRENT_RELEASE_NOTES: ReleaseNotes = {
-  version: '1.3.7-rc1',
-  summary: 'Production stabilisation RC — bug fixes, mock guard, and health diagnostics.',
+  version: '1.3.8',
+  summary: 'Final hardening — toast reliability, guided tour, skeleton loaders, permission overrides, and security fixes.',
   highlights: [
-    'Collector settings consolidated to a single App Lock section.',
-    'Admin collector messaging opens conversations reliably.',
-    'Health endpoint reports explicit degradedReasons for pending migrations.',
-    'Production builds always use live API services (no mock data).',
+    'Notification toasts no longer duplicate on login, refresh, or tab focus.',
+    'Mandatory first-login product tour with Help FAB for replay.',
+    'Skeleton loaders replace page-level spinners to reduce layout shift.',
+    'Individual permission overrides for Super Admins without changing roles.',
+    'Security hardening for messaging IDOR, notification send, uploads, and webhooks.',
   ],
 };
