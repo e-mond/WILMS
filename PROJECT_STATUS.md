@@ -1,16 +1,20 @@
 # Project Status
 
-**Last updated:** 2026-07-17 (v1.3.8 Phase 22 go-live closure)  
+**Last updated:** 2026-07-17 (v1.3.8 Phase 23 production cutover)  
 **Package version:** `1.3.8`
 
 ## Current state
 
-v1.3.8 software readiness is **closed**. Public production health reports `version: 1.3.8` with migration watermark including `0027`.
+| Track | Status |
+|-------|--------|
+| Software / architecture / security / financial / docs | **CLOSED** |
+| Public production deployment (v1.3.8) | **Verified** — health `ok`, commit `866d72ed…`, deployed `2026-07-17T19:12:38Z` |
+| Operator cutover (authenticated smoke, Neon restore, human sign-offs) | **OPEN** |
 
-**Verdict:** ⚠ **Ready with Conditions** — software closed; operator evidence still open.  
-Canonical decision: [`docs/certification/v1.3.8/go-live/FINAL_CERTIFICATION_DECISION.md`](docs/certification/v1.3.8/go-live/FINAL_CERTIFICATION_DECISION.md).
+**Verdict:** ⚠ **Ready with Conditions**  
+**Certificate:** **NOT ISSUED** — see [`docs/certification/v1.3.8/production-cutover/FINAL_PRODUCTION_CERTIFICATE.md`](docs/certification/v1.3.8/production-cutover/FINAL_PRODUCTION_CERTIFICATE.md).
 
-Feature development for 1.3.8 remains frozen. Remaining conditions are operator-only (authenticated smoke, Neon restore drill, formal sign-offs).
+Tag `v1.3.8-production-certified` and branch `maintenance/v1.3.x` are **not** created until operator gates close. Procedure: [`MAINTENANCE_BRANCH_PLAN.md`](docs/certification/v1.3.8/production-cutover/MAINTENANCE_BRANCH_PLAN.md).
 
 ## Certification trail (v1.3.8)
 
@@ -21,18 +25,18 @@ Feature development for 1.3.8 remains frozen. Remaining conditions are operator-
 | Enterprise excellence | `docs/certification/v1.3.8/enterprise-excellence/` |
 | RC validation | `docs/certification/v1.3.8/rc-validation/` |
 | Production operations | `docs/certification/v1.3.8/production-operations/` |
-| **Product acceptance (Phase 21)** | `docs/certification/v1.3.8/product-acceptance/` |
+| Product acceptance | `docs/certification/v1.3.8/product-acceptance/` |
+| Go-live closure | `docs/certification/v1.3.8/go-live/` |
+| **Production cutover (Phase 23)** | `docs/certification/v1.3.8/production-cutover/` |
 
-## Local gates
+## Remaining operator actions
 
-| Gate | Status |
-|------|--------|
-| type-check / lint | Expected pass on `main` |
-| Unit tests (API + frontend) | Expected pass |
-| Production smoke | Requires `WILMS_SMOKE_*` credentials |
-| Migration `0027` on production | Ops evidence required |
-| Neon PITR restore drill | Ops evidence required |
+1. Provide `WILMS_SMOKE_*` and run `smoke:production` + `smoke:rbac` against live  
+2. Neon PITR restore drill with RTO/RPO log  
+3. Authenticated financial reconcile against live DB  
+4. Collect real human sign-offs (do not fabricate)  
+5. Then issue certificate, tag, and create `maintenance/v1.3.x`
 
 ## Role of this file
 
-Pointer to canonical readiness. Prefer the Phase 21 acceptance pack over older root `FINAL_*` drafts when they conflict.
+Pointer to canonical readiness. Prefer the Phase 23 cutover pack over older root `FINAL_*` drafts when they conflict.

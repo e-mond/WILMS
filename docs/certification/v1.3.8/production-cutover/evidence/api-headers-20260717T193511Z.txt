@@ -1,0 +1,27 @@
+HTTP/2 200 
+access-control-allow-credentials: true
+access-control-allow-origin: https://wilms.vercel.app
+content-security-policy: default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests
+content-type: application/json; charset=utf-8
+cross-origin-opener-policy: same-origin
+cross-origin-resource-policy: same-origin
+date: Fri, 17 Jul 2026 19:35:13 GMT
+etag: W/"42b-K/X3SkuoauwuvN5cokLimfpv4Vs"
+origin-agent-cluster: ?1
+referrer-policy: no-referrer
+server: railway-hikari
+strict-transport-security: max-age=31536000; includeSubDomains
+vary: Origin
+x-content-type-options: nosniff
+x-dns-prefetch-control: off
+x-download-options: noopen
+x-frame-options: SAMEORIGIN
+x-permitted-cross-domain-policies: none
+x-railway-request-id: UTIJHbfWRAyZ8-Be2h0iww
+x-request-id: c3e974d2-e573-42f7-939f-d27274b7fa90
+x-xss-protection: 0
+content-length: 1067
+x-cache: DYNAMIC
+x-hikari-trace: jfk1.57w5,jfk1.pqzh
+x-railway-edge: jfk1
+
