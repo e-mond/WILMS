@@ -114,9 +114,23 @@ reconciliationRouter.get(
 
 reconciliationRouter.get(
   '/reconciliations/:id/history',
-  requirePermission(PERMISSION.RECORD_COLLECTIONS),
+  requirePermission(PERMISSION.RECORD_COLLECTIONS, PERMISSION.VIEW_REPORTS),
   asyncHandler(async (req, res) => {
     try {
+      const summary = await reconciliationService.getReconciliationById(req.params.id!);
+      if (!summary) {
+        throw new AppError('Reconciliation not found.', ERROR_CODE.NOT_FOUND, 404);
+      }
+      if (
+        req.session!.role === 'COLLECTOR' &&
+        summary.collectorId !== req.session!.userId
+      ) {
+        throw new AppError(
+          'Collectors may only access their own reconciliation history.',
+          ERROR_CODE.UNAUTHORIZED,
+          403,
+        );
+      }
       sendData(res, await reconciliationService.getReconciliationHistory(req.params.id!));
     } catch (error) {
       mapError(error);
