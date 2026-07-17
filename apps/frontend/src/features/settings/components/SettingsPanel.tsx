@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import {
   buildSettingsExportDocument,
@@ -29,10 +30,22 @@ import { useSettings } from '@/features/settings/hooks/useSettings';
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { cn } from '@/utils/cn';
 
+function resolveSettingsSection(value: string | null): SettingsSection {
+  const match = SETTINGS_SECTIONS.find((section) => section.id === value);
+  return match?.id ?? SETTINGS_SECTION.ORGANISATION;
+}
+
 export function SettingsPanel() {
   const { data, isLoading, isError, error, refetch } = useSettings();
   const generatedBy = useWilmsExportActor();
-  const [activeSection, setActiveSection] = useState<SettingsSection>(SETTINGS_SECTION.ORGANISATION);
+  const searchParams = useSearchParams();
+  const [activeSection, setActiveSection] = useState<SettingsSection>(() =>
+    resolveSettingsSection(searchParams.get('section')),
+  );
+
+  useEffect(() => {
+    setActiveSection(resolveSettingsSection(searchParams.get('section')));
+  }, [searchParams]);
 
   const activeSectionLabel =
     SETTINGS_SECTIONS.find((section) => section.id === activeSection)?.label ?? 'Settings';

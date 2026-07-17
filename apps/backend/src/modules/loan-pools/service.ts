@@ -85,9 +85,16 @@ export const createLoanPoolSchema = z.object({
   source: z.string().min(1),
   capitalPesewas: z.number().int().positive(),
   cycleLabel: z.string().min(1),
+  groupIds: z.array(z.string().uuid()).max(200).optional(),
 });
 
 export type CreateLoanPoolInput = z.infer<typeof createLoanPoolSchema>;
+
+export const assignPoolMembershipSchema = z.object({
+  groupId: z.string().uuid(),
+});
+
+export type AssignPoolMembershipInput = z.infer<typeof assignPoolMembershipSchema>;
 
 /**
  * Creates a new loan pool with initial capital recorded as a REPLENISHMENT allocation.
@@ -101,6 +108,17 @@ export async function createLoanPool(
 
   const poolId = uuidv7();
   const now = new Date();
+  const groupIds = [...new Set(input.groupIds ?? [])];
+
+  for (const groupId of groupIds) {
+    if (!(await poolRepo.groupExists(groupId))) {
+      throw new Error('VALIDATION:One or more selected groups were not found.');
+    }
+    const existingPoolId = await poolRepo.findPoolIdForGroup(groupId);
+    if (existingPoolId) {
+      throw new Error('VALIDATION:A selected group is already assigned to another loan pool.');
+    }
+  }
 
   await poolRepo.insertPool({
     id: poolId,
@@ -128,6 +146,10 @@ export async function createLoanPool(
     recordedAt: now,
   });
 
+  for (const groupId of groupIds) {
+    await poolRepo.insertMembership({ poolId, groupId, assignedAt: now });
+  }
+
   await poolRepo.refreshPoolAggregates(poolId);
 
   appendAuditEntry({
@@ -140,4 +162,53 @@ export async function createLoanPool(
   });
 
   return getLoanPool(poolId);
+}
+
+/**
+ * Assigns a borrower group to a loan pool so subsequent loans update utilisation.
+ */
+export async function assignPoolMembership(
+  poolId: string,
+  input: AssignPoolMembershipInput,
+  actorId: string,
+  actorDisplayName?: string,
+): Promise<LoanPoolDetailDto> {
+  requireDatabase();
+
+  const pool = await poolRepo.findPoolById(poolId);
+  if (!pool) {
+    throw new Error('NOT_FOUND');
+  }
+
+  if (!(await poolRepo.groupExists(input.groupId))) {
+    throw new Error('VALIDATION:Group not found.');
+  }
+
+  const existingPoolId = await poolRepo.findPoolIdForGroup(input.groupId);
+  if (existingPoolId && existingPoolId !== poolId) {
+    throw new Error('VALIDATION:This group is already assigned to another loan pool.');
+  }
+
+  if (!existingPoolId) {
+    await poolRepo.insertMembership({ poolId, groupId: input.groupId });
+    await poolRepo.refreshPoolAggregates(poolId);
+
+    appendAuditEntry({
+      action: 'loan-pool.group-assigned',
+      actorId,
+      actorDisplayName,
+      targetEntityId: poolId,
+      targetEntityType: 'loan-pool',
+      reason: `Assigned group ${input.groupId}`,
+    });
+  }
+
+  return getLoanPool(poolId);
+}
+
+export async function listUnassignedGroupsForPools(): Promise<
+  { id: string; name: string; community: string }[]
+> {
+  requireDatabase();
+  return poolRepo.listUnassignedGroupOptions();
 }

@@ -31,7 +31,10 @@ import {
 import { calculateWeeklyPaymentPesewas } from '@/utils/loan-calculations';
 import { generateLoanSchedule } from '@/utils/loan-schedule';
 import { notifyLoanDisbursed } from '@/services/mock/loan-notifications.sync';
+import { applyMockPoolDisbursement } from '@/services/mock/loanPoolService.mock';
 import { simulateDelay } from '@/services/mock/delay';
+
+const mockLoanPoolLinks = new Map<string, string>();
 
 let mockLoans: LoanDetail[] = [
   {
@@ -378,6 +381,9 @@ const loanServiceMock: ILoanService = {
 
     nextLoanId += 1;
     mockLoans = [...mockLoans, loan];
+    if (input.loanPoolId) {
+      mockLoanPoolLinks.set(loan.id, input.loanPoolId);
+    }
     saveLoanSchedule(loan.id, schedule);
     return loan;
   },
@@ -444,6 +450,10 @@ const loanServiceMock: ILoanService = {
     };
 
     mockLoans = mockLoans.map((entry) => (entry.id === loanId ? disbursedLoan : entry));
+    const linkedPoolId = mockLoanPoolLinks.get(loanId);
+    if (linkedPoolId) {
+      applyMockPoolDisbursement(linkedPoolId, loan.amountPesewas);
+    }
     await notifyLoanDisbursed(disbursedLoan);
     return disbursedLoan;
   },
@@ -496,6 +506,7 @@ export function updateLoanStatusInMock(loanId: string, status: LoanDetail['statu
 }
 
 export function resetMockLoans(): void {
+  mockLoanPoolLinks.clear();
   resetLoanSchedules();
   mockLoans = [
     {

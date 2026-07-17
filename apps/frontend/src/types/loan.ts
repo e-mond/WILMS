@@ -40,6 +40,7 @@ export interface CreateLoanInput {
   paymentDay: string;
   cycleBatch: string;
   startDate: string;
+  loanPoolId?: string;
 }
 
 export interface RejectLoanInput {
@@ -77,6 +78,7 @@ export interface CreateLoanFormValues {
   paymentDay: string;
   cycleBatch: string;
   startDate: string;
+  loanPoolId: string;
 }
 
 export interface BorrowerLoanHistoryEntry {

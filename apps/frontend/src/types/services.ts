@@ -75,7 +75,13 @@ import type {
   TransferGroupMemberInput,
   UpdateGroupDisplayNameInput,
 } from '@/types/group-detail';
-import type { LoanPoolDetail, LoanPoolListResponse, CreateLoanPoolInput } from '@/types/loan-pool';
+import type {
+  AssignLoanPoolMembershipInput,
+  CreateLoanPoolInput,
+  LoanPoolDetail,
+  LoanPoolGroupOption,
+  LoanPoolListResponse,
+} from '@/types/loan-pool';
 import type {
   AdjustmentCatalogResponse,
   AdjustmentListResponse,
@@ -244,6 +250,11 @@ export interface ILoanPoolService {
   listLoanPools(): Promise<LoanPoolListResponse>;
   getLoanPool(id: string): Promise<LoanPoolDetail>;
   createLoanPool(input: CreateLoanPoolInput): Promise<LoanPoolDetail>;
+  listUnassignedGroups(): Promise<LoanPoolGroupOption[]>;
+  assignGroupMembership(
+    poolId: string,
+    input: AssignLoanPoolMembershipInput,
+  ): Promise<LoanPoolDetail>;
 }
 
 export interface IGroupService {
