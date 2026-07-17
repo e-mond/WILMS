@@ -1,0 +1,17 @@
+captured_file=prod-health-20260717T193511Z.json
+version=1.3.8
+status=ok
+gitCommit=866d72ed0fb417f9dd05d87956a9c564a80f9c85
+environment=production
+deployedAt=2026-07-17T19:12:38.100Z
+buildId=14bae007-c667-41b9-b59a-59784dd1b75f
+nodeVersion=v20.20.2
+uptimeSeconds=1353
+migrations.expected=28 applied=27 status=ok countGap=True
+migrations.latestAppliedAt=2026-07-17T14:00:00.000Z latestJournalWhen=1784296800000
+database={'configured': True, 'connected': True, 'status': 'connected'}
+schema={'status': 'ok', 'missingTables': []}
+uploads={'requestedProvider': 'cloudinary', 'activeProvider': 'cloudinary', 'valid': True, 'cloudinaryConfigured': True}
+mail={'provider': 'gmail', 'configured': True}
+sms={'provider': 'smsnotifygh', 'configured': True}
+workers={'redis': 'not_used', 'queue': 'in_process', 'scheduler': 'http_triggered'}

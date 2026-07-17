@@ -31,6 +31,7 @@ Start here. Prefer certification packs for current system truth; older guides re
 | Production operations | [`certification/v1.3.8/production-operations/`](./certification/v1.3.8/production-operations/) |
 | Product acceptance (Phase 21) | [`certification/v1.3.8/product-acceptance/`](./certification/v1.3.8/product-acceptance/) |
 | Go-live closure (Phase 22) | [`certification/v1.3.8/go-live/`](./certification/v1.3.8/go-live/) |
+| Production cutover (Phase 23) | [`certification/v1.3.8/production-cutover/`](./certification/v1.3.8/production-cutover/) |
 
 ## Field / product guides
 

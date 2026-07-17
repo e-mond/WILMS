@@ -40,6 +40,7 @@ Production-quality hardening: toast deduplication, skeleton loading, mandatory g
 - Request correlation via `X-Request-Id` (BFF → API → structured logs).
 - Production operations certification pack and product acceptance pack under `docs/certification/v1.3.8/`.
 - Go-live closure pack (`docs/certification/v1.3.8/go-live/`) with production health evidence and operator closure checklist.
+- Production cutover pack (`docs/certification/v1.3.8/production-cutover/`) — public deploy evidence captured; certificate held until operator gates close.
 
 ### Security
 - See `FINAL_SECURITY_AUDIT.md` for full certification findings.
