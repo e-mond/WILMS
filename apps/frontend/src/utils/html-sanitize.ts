@@ -49,8 +49,14 @@ const ALLOWED_ATTRS: Record<string, Set<string>> = {
 };
 
 function stripDangerousProtocols(value: string): string {
-  const trimmed = value.trim().toLowerCase();
-  if (trimmed.startsWith('javascript:') || trimmed.startsWith('data:text/html')) {
+  const trimmed = value.trim().toLowerCase().replace(/[\u0000-\u001f\s]/g, '');
+  if (
+    trimmed.startsWith('javascript:') ||
+    trimmed.startsWith('vbscript:') ||
+    trimmed.startsWith('data:text/html') ||
+    trimmed.startsWith('data:image/svg') ||
+    trimmed.startsWith('data:text/javascript')
+  ) {
     return '#';
   }
   return value;

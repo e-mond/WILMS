@@ -14,6 +14,7 @@ import {
   toUploadRecord,
   validateUploadInput,
 } from '../../infrastructure/uploads/index.js';
+import { getUploadConfig } from '../../infrastructure/uploads/config.js';
 import { PERMISSION, roleHasPermission } from '../../infrastructure/permissions/matrix.js';
 import type { SessionUser } from '../../middleware/authenticate.js';
 import { requireAuth } from '../../middleware/authenticate.js';
@@ -119,19 +120,28 @@ uploadsRouter.post(
       throw new AppError('Upload payload requires dataUrl until multipart is enabled.', ERROR_CODE.VALIDATION, 422);
     }
 
+    const buffer = decodeDataUrl(input.dataUrl);
+    const maxSizeBytes = getUploadConfig().maxSizeBytes;
+    if (buffer.length > maxSizeBytes) {
+      throw new AppError(
+        `File exceeds maximum size of ${maxSizeBytes} bytes.`,
+        ERROR_CODE.VALIDATION,
+        422,
+      );
+    }
+
     try {
-      validateUploadInput({ mimeType: input.mimeType, sizeBytes: input.sizeBytes });
+      validateUploadInput({ mimeType: input.mimeType, sizeBytes: buffer.length });
     } catch (error) {
       const message = error instanceof Error ? error.message.replace(/^VALIDATION:/, '') : 'Invalid upload.';
       throw new AppError(message, ERROR_CODE.VALIDATION, 422);
     }
 
-    const buffer = decodeDataUrl(input.dataUrl);
     const stored = await saveUpload({
       purpose: input.purpose,
       fileName: input.fileName,
       mimeType: input.mimeType,
-      sizeBytes: input.sizeBytes,
+      sizeBytes: buffer.length,
       entityId: input.entityId,
       buffer,
       ownerUserId: req.session?.userId,

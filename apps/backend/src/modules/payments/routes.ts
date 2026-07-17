@@ -139,7 +139,12 @@ paymentsRouter.post(
   requirePermission(PERMISSION.RECORD_COLLECTIONS),
   validateBody(legacyRecordPaymentSchema),
   asyncHandler(async (req, res) => {
-    const input = req.body as z.infer<typeof legacyRecordPaymentSchema>;
+    const raw = req.body as z.infer<typeof legacyRecordPaymentSchema>;
+    const input = {
+      ...raw,
+      collectorId:
+        req.session!.role === 'COLLECTOR' ? req.session!.userId : raw.collectorId,
+    };
     const idempotencyKey = req.header('Idempotency-Key') ?? undefined;
 
     if (isDatabaseEnabled()) {
@@ -183,7 +188,7 @@ paymentsRouter.post(
 
     appendAuditEntry({
       action: 'payment.recorded',
-      actorId: input.collectorId,
+      actorId: req.session!.userId,
       targetEntityId: payment.id,
       targetEntityType: 'payment',
     });
@@ -220,11 +225,16 @@ paymentsRouter.post(
 
     try {
       const idempotencyKey = req.header('Idempotency-Key') ?? undefined;
+      const body = req.body as z.infer<typeof paymentReversalService.reversePaymentSchema>;
       sendData(
         res,
         await paymentReversalService.reversePayment(
           req.params.paymentId!,
-          req.body as z.infer<typeof paymentReversalService.reversePaymentSchema>,
+          {
+            ...body,
+            actorId: req.session!.userId,
+            actorDisplayName: req.session!.displayName ?? body.actorDisplayName,
+          },
           idempotencyKey,
         ),
       );
@@ -246,7 +256,7 @@ paymentsRouter.patch(
 
     appendAuditEntry({
       action: 'payment.edited',
-      actorId: String(req.body?.collectorId ?? req.session!.userId),
+      actorId: req.session!.userId,
       targetEntityId: payment.id,
       targetEntityType: 'payment',
       reason: String(req.body?.reason ?? ''),

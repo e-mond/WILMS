@@ -12,11 +12,13 @@ export function WilmsSplashScreen({ message = 'Loading' }: WilmsSplashScreenProp
       aria-live="polite"
       aria-label={message}
     >
-      <Skeleton className="h-12 w-12 rounded-full" />
-      <div className="space-y-wilms-2 text-center">
-        <Skeleton className="mx-auto h-4 w-40" />
+      <p className="text-heading-1 font-semibold tracking-tight text-brand-primary">WILMS</p>
+      <p className="text-small text-text-muted">Women&apos;s Interest-Free Loan Management</p>
+      <div className="mt-wilms-2 w-full max-w-xs space-y-wilms-2" aria-hidden="true">
+        <Skeleton className="mx-auto h-3 w-40" />
         <Skeleton className="mx-auto h-3 w-56" />
       </div>
+      <p className="sr-only">{message}</p>
     </div>
   );
 }
