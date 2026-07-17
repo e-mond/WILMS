@@ -14,7 +14,10 @@ Production-quality hardening: toast deduplication, skeleton loading, mandatory g
 - Product tour Expenses step linked to removed `/settings/expenses` (404); tour routes corrected per role.
 - Loan pool utilisation stayed at 0% after create + disburse when groups were not linked to a pool.
 - Login chime blocked by browser autoplay after async auth; notification sounds now cover all inbox events.
-- Duplicate notification toasts on login, refresh, and remount.
+- Reconciliation status labeled “Under review”; now shows **Pending** until Super Admin approves/rejects flagged variance.
+- Collector expense history 403 (list required manage permission); recorders can view their history; expenses need no approval.
+- Outbound email leaked `@media` CSS as visible body text; responsive shell preserved and fluid on small screens.
+- Collectors were not notified when assigned borrowers’ loans were disbursed.
 - Role clone unique-name conflicts (422) and delete confirmation UX.
 - Messaging thread adminId IDOR; registration delete officerId IDOR; approver reviewed-list IDOR.
 - Notification outbound send without permission gate.

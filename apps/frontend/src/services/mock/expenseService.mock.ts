@@ -8,14 +8,12 @@ let expenses: ExpenseRecord[] = MOCK_EXPENSES.map((entry) => ({ ...entry }));
 let nextExpenseSequence = expenses.length + 1;
 
 function buildSummary() {
-  const pending = expenses.filter((entry) => entry.status === EXPENSE_STATUS.PENDING);
+  const recordedTotal = expenses.reduce((sum, entry) => sum + entry.amountPesewas, 0);
 
   return {
-    pendingCount: pending.length,
-    approvedTotalPesewas: expenses
-      .filter((entry) => entry.status === EXPENSE_STATUS.APPROVED)
-      .reduce((sum, entry) => sum + entry.amountPesewas, 0),
-    pendingTotalPesewas: pending.reduce((sum, entry) => sum + entry.amountPesewas, 0),
+    pendingCount: 0,
+    approvedTotalPesewas: recordedTotal,
+    pendingTotalPesewas: 0,
   };
 }
 
@@ -42,7 +40,7 @@ const expenseServiceMock: IExpenseService = {
       gpsLabel: input.gpsLabel,
       recordedById: input.recordedById,
       recordedByName: input.recordedByName,
-      status: EXPENSE_STATUS.PENDING,
+      status: EXPENSE_STATUS.APPROVED,
       createdAt: new Date().toISOString(),
     };
 

@@ -1,5 +1,6 @@
-import { isDatabaseEnabled, runInTransaction } from '../../db/client.js';
+import { isDatabaseEnabled, runInTransaction, getDb } from '../../db/client.js';
 import { BORROWER_STATUS } from '@wilms/shared-contracts';
+import { and, eq, isNull } from 'drizzle-orm';
 import {
   assertDivisibleLoanAmount,
   calculateWeeklyPaymentPesewas,
@@ -26,8 +27,25 @@ import * as ledgerRepo from '../../repositories/ledger.repository.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import * as scheduleRepo from '../../repositories/loan-schedule.repository.js';
 import * as poolRepo from '../../repositories/loan-pool.repository.js';
+import { groups } from '../../db/schema/groups.js';
 import { getSettings } from '../settings/service.js';
 import { decimalToPesewas } from '../../domain/money.js';
+
+async function resolveCollectorUserIdForBorrower(borrowerId: string): Promise<string | undefined> {
+  const borrower = await borrowerRepo.getBorrower(borrowerId);
+  if (!borrower?.groupId || !isDatabaseEnabled()) {
+    return undefined;
+  }
+
+  const db = getDb();
+  const [row] = await db
+    .select({ collectorUserId: groups.collectorUserId })
+    .from(groups)
+    .where(and(eq(groups.id, borrower.groupId), isNull(groups.deletedAt)))
+    .limit(1);
+
+  return row?.collectorUserId ?? undefined;
+}
 
 async function resolveLoanPoolIdForBorrower(
   borrowerId: string,
@@ -467,15 +485,18 @@ export async function disburseLoan(
       });
 
       const borrower = await borrowerRepo.getBorrower(loan.borrowerId);
-      if (borrower?.phone) {
+      if (borrower) {
         const amountPesewas = Math.round(Number(amountDecimal) * 100);
+        const collectorUserId = await resolveCollectorUserIdForBorrower(loan.borrowerId);
         void notifyLoanDisbursed({
           borrowerId: borrower.id,
           borrowerName: borrower.fullName,
           borrowerPhone: borrower.phone,
+          borrowerEmail: borrower.profile?.email,
           loanId,
           loanDisplayId: dto.displayId ?? loanId,
           amountPesewas,
+          collectorUserId,
         });
       }
 

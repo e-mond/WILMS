@@ -59,18 +59,18 @@ export function DashboardReconciliationSummary({ compact = false }: { compact?: 
         <div className="flex flex-wrap items-end justify-between gap-wilms-2">
           <div>
             <h3 className="text-heading-3 font-semibold text-text-primary">Reconciliation</h3>
-            <p className="text-small text-text-muted">Collector cash submissions and review queue</p>
+            <p className="text-small text-text-muted">Collector cash submissions and pending queue</p>
           </div>
           <Link
             href="/reports/daily-collection"
             className="text-small font-semibold text-brand-primary hover:underline"
           >
-            Review queue
+            Pending queue
           </Link>
         </div>
         <dl className="grid grid-cols-2 gap-wilms-3 text-small sm:grid-cols-4">
           <div className="rounded-sm border border-border bg-background p-wilms-3">
-            <dt className="text-text-muted">Awaiting review</dt>
+            <dt className="text-text-muted">Pending</dt>
             <dd className="mt-wilms-1 text-heading-3 font-bold tabular-nums text-status-at-risk">
               {summary.awaitingReviewCount}
             </dd>
@@ -104,7 +104,7 @@ export function DashboardReconciliationSummary({ compact = false }: { compact?: 
       <ExecutiveKpiGrid className="sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           variant="executive"
-          label="Awaiting review"
+          label="Pending"
           value={summary.awaitingReviewCount}
           valueClassName="text-status-at-risk tabular-nums"
         />

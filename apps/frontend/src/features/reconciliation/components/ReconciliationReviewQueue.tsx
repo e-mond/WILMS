@@ -159,8 +159,8 @@ export function ReconciliationReviewQueue() {
 
   if (!pendingReview.length) {
     return (
-      <Alert title="No reconciliations awaiting review" variant="success">
-        Submitted reconciliations with balanced cash will auto-approve. Flagged submissions appear here.
+      <Alert title="No reconciliations pending" variant="success">
+        Balanced cash submissions auto-approve. Flagged variance submissions appear here as Pending.
       </Alert>
     );
   }
@@ -168,16 +168,16 @@ export function ReconciliationReviewQueue() {
   return (
     <div className="space-y-wilms-4">
       <div>
-        <h2 className="text-heading-2 font-semibold text-text-primary">Reconciliation review queue</h2>
+        <h2 className="text-heading-2 font-semibold text-text-primary">Pending reconciliations</h2>
         <p className="text-small text-text-muted">
-          Track submitted, pending review, investigation, approval, rejection, and reopening.
+          Approve, reject, investigate, or return reconciliations with flagged variance.
         </p>
       </div>
 
       <DataTable<ReconciliationSummary>
         variant="executive"
         layout="auto"
-        caption="Reconciliations awaiting review"
+        caption="Pending reconciliations"
         data={pendingReview}
         getRowId={(row) => row.id ?? `${row.collectorId}-${row.date}`}
         columns={[

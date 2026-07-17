@@ -798,10 +798,22 @@ export async function notifyLoanDisbursed(input: {
       event: 'LOAN_DISBURSED',
       title: 'Loan disbursed',
       body: `Loan ${input.loanDisplayId} for ${input.borrowerName} has been disbursed.`,
-      href: `/loans`,
+      href: `/collector/my-borrowers`,
       borrowerId: input.borrowerId,
       loanId: input.loanId,
     });
+
+    try {
+      const { sendPushToUser } = await import('../../modules/notifications/push.service.js');
+      void sendPushToUser(input.collectorUserId, {
+        title: 'Loan disbursed',
+        body: `Loan ${input.loanDisplayId} for ${input.borrowerName} has been disbursed.`,
+        url: '/collector/my-borrowers',
+        category: 'LOAN',
+      });
+    } catch {
+      // Push is best-effort.
+    }
   }
 }
 
