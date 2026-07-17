@@ -37,14 +37,28 @@ reconciliationRouter.get(
   '/reconciliation',
   requirePermission(PERMISSION.RECORD_COLLECTIONS),
   asyncHandler(async (req, res) => {
-    const collectorId = String(req.query.collectorId ?? '');
+    const requestedCollectorId = String(req.query.collectorId ?? '');
     const date = String(req.query.date ?? '');
+    const collectorId =
+      req.session!.role === 'COLLECTOR' ? req.session!.userId : requestedCollectorId;
 
     if (!collectorId || !date) {
       throw new AppError(
         'collectorId and date query parameters are required.',
         ERROR_CODE.VALIDATION,
         422,
+      );
+    }
+
+    if (
+      req.session!.role === 'COLLECTOR' &&
+      requestedCollectorId &&
+      requestedCollectorId !== req.session!.userId
+    ) {
+      throw new AppError(
+        'Collectors may only access their own reconciliation.',
+        ERROR_CODE.UNAUTHORIZED,
+        403,
       );
     }
 
@@ -60,7 +74,9 @@ reconciliationRouter.get(
   '/reconciliations',
   requirePermission(PERMISSION.RECORD_COLLECTIONS, PERMISSION.VIEW_REPORTS),
   asyncHandler(async (req, res) => {
-    const collectorId = req.query.collectorId ? String(req.query.collectorId) : undefined;
+    const requestedCollectorId = req.query.collectorId ? String(req.query.collectorId) : undefined;
+    const collectorId =
+      req.session!.role === 'COLLECTOR' ? req.session!.userId : requestedCollectorId;
 
     try {
       sendData(res, await reconciliationService.listReconciliations({ collectorId }));
@@ -72,12 +88,22 @@ reconciliationRouter.get(
 
 reconciliationRouter.get(
   '/reconciliations/:id',
-  requirePermission(PERMISSION.RECORD_COLLECTIONS),
+  requirePermission(PERMISSION.RECORD_COLLECTIONS, PERMISSION.VIEW_REPORTS),
   asyncHandler(async (req, res) => {
     try {
       const summary = await reconciliationService.getReconciliationById(req.params.id!);
       if (!summary) {
         throw new AppError('Reconciliation not found.', ERROR_CODE.NOT_FOUND, 404);
+      }
+      if (
+        req.session!.role === 'COLLECTOR' &&
+        summary.collectorId !== req.session!.userId
+      ) {
+        throw new AppError(
+          'Collectors may only access their own reconciliation.',
+          ERROR_CODE.UNAUTHORIZED,
+          403,
+        );
       }
       sendData(res, summary);
     } catch (error) {
@@ -103,7 +129,22 @@ reconciliationRouter.post(
   requirePermission(PERMISSION.RECORD_COLLECTIONS),
   validateBody(submitReconciliationBodySchema),
   asyncHandler(async (req, res) => {
-    const { collectorId, date, physicalCashPesewas, comment } = req.body;
+    const { collectorId: requestedCollectorId, date, physicalCashPesewas, comment } = req.body;
+    const collectorId =
+      req.session!.role === 'COLLECTOR' ? req.session!.userId : requestedCollectorId;
+
+    if (
+      req.session!.role === 'COLLECTOR' &&
+      requestedCollectorId &&
+      requestedCollectorId !== req.session!.userId
+    ) {
+      throw new AppError(
+        'Collectors may only submit their own reconciliation.',
+        ERROR_CODE.UNAUTHORIZED,
+        403,
+      );
+    }
+
     const idempotencyKey = req.header('Idempotency-Key') ?? req.header('idempotency-key') ?? undefined;
 
     try {
@@ -141,7 +182,7 @@ const reviewReconciliationBodySchema = z.object({
 
 reconciliationRouter.patch(
   '/reconciliations/:id/review',
-  requirePermission(PERMISSION.VIEW_REPORTS),
+  requirePermission(PERMISSION.ACCESS_ADMIN_PORTAL),
   validateBody(reviewReconciliationBodySchema),
   asyncHandler(async (req, res) => {
     try {

@@ -2,8 +2,8 @@
  * P14.3B Phase 3C.1 — Payment reversal service.
  *
  * Atomic transaction (per approved architecture):
- * reversal row → payment REVERSED → schedule revert → loan balance credit → ledger REVERSAL → history.
- * Pool allocation reversal explicitly out of scope for 3C.1 MVP.
+ * reversal row → payment REVERSED → schedule revert → loan balance credit → ledger REVERSAL
+ * → pool REPAYMENT allocation unwind → history.
  */
 import { z } from 'zod';
 import { isDatabaseEnabled, runInTransaction } from '../../db/client.js';
@@ -20,6 +20,7 @@ import * as paymentRepo from '../../repositories/payment.repository.js';
 import * as scheduleRepo from '../../repositories/loan-schedule.repository.js';
 import * as reversalRepo from '../../repositories/reversal.repository.js';
 import * as borrowerRepo from '../../repositories/borrower.repository.js';
+import * as poolRepo from '../../repositories/loan-pool.repository.js';
 
 const AUDIT_ACTION = {
   REVERSAL_REQUESTED: 'reversal.requested',
@@ -238,6 +239,25 @@ async function executePaymentReversal(
       },
       tx,
     );
+
+    const activeLoan = await loanRepo.findLoanById(payment.loanId!, tx);
+    if (activeLoan?.loanPoolId) {
+      await poolRepo.appendAllocation(
+        {
+          poolId: activeLoan.loanPoolId,
+          // Negative repayment reduces collected totals in sumAllocationTotals.
+          allocationType: 'REPAYMENT',
+          amountPesewas: -payment.amountPesewas,
+          loanId: payment.loanId!,
+          borrowerId: payment.borrowerId,
+          paymentId,
+          description: `Reversal of payment ${paymentId.slice(-8)}`,
+          actorUserId: input.actorId,
+        },
+        tx,
+      );
+      await poolRepo.refreshPoolAggregates(activeLoan.loanPoolId, tx);
+    }
 
     return completed;
   });

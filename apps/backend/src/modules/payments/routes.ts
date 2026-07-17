@@ -18,6 +18,7 @@ import { PERMISSION } from '../../infrastructure/permissions/matrix.js';
 import { requireAuth } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/require-permission.js';
 import { validateBody } from '../../middleware/validate-body.js';
+import { assertBorrowerReadAccess } from '../borrowers/access.js';
 import * as paymentReversalService from './payment-reversal.service.js';
 import * as paymentService from './service.js';
 
@@ -147,6 +148,21 @@ paymentsRouter.post(
     };
     const idempotencyKey = req.header('Idempotency-Key') ?? undefined;
 
+    if (req.session!.role === 'COLLECTOR') {
+      try {
+        await assertBorrowerReadAccess(req.session!, input.borrowerId);
+      } catch (error) {
+        if (error instanceof Error && error.message === 'FORBIDDEN') {
+          throw new AppError(
+            'You may only record payments for assigned borrowers.',
+            ERROR_CODE.UNAUTHORIZED,
+            403,
+          );
+        }
+        throw error;
+      }
+    }
+
     if (isDatabaseEnabled()) {
       try {
         sendData(
@@ -244,27 +260,26 @@ paymentsRouter.post(
   }),
 );
 
+/**
+ * Posted payments are immutable. Corrections must use reverse + re-record.
+ * Returning 409 (not a fake EDITED payload) prevents silent bookkeeping errors.
+ */
 paymentsRouter.patch(
   '/payments/:paymentId',
-  requirePermission(PERMISSION.RECORD_COLLECTIONS),
+  requirePermission(PERMISSION.RECORD_COLLECTIONS, PERMISSION.ACCESS_ADMIN_PORTAL),
   asyncHandler(async (req, res) => {
-    const payment = (await listPayments()).find((entry) => entry.id === req.params.paymentId);
-
-    if (!payment) {
-      throw new AppError('Payment not found.', ERROR_CODE.NOT_FOUND, 404);
-    }
-
     appendAuditEntry({
-      action: 'payment.edited',
+      action: 'payment.edit_rejected',
       actorId: req.session!.userId,
-      targetEntityId: payment.id,
+      targetEntityId: req.params.paymentId!,
       targetEntityType: 'payment',
-      reason: String(req.body?.reason ?? ''),
+      reason: 'immutable_ledger',
     });
 
-    sendData(res, {
-      ...payment,
-      status: 'EDITED',
-    });
+    throw new AppError(
+      'Posted payments cannot be edited. Reverse the payment and record a corrected collection.',
+      ERROR_CODE.CONFLICT,
+      409,
+    );
   }),
 );
