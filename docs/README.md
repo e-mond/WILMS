@@ -1,7 +1,7 @@
 # WILMS Documentation Hub
 
-**Current version:** v1.3.8  
-**Last updated:** 2026-07-17
+**Current version:** v1.4.0  
+**Last updated:** 2026-07-18
 
 Start here. Prefer certification packs for current system truth; older guides remain for depth but may lag version stamps.
 
@@ -10,7 +10,7 @@ Start here. Prefer certification packs for current system truth; older guides re
 | Topic | Path |
 |-------|------|
 | Contributing | [`../CONTRIBUTING.md`](../CONTRIBUTING.md) |
-| Agent / Cursor rules | [`../AGENTS.md`](../AGENTS.md), [`AGENTS.md`](./AGENTS.md) |
+| Agent environment notes | [`../AGENTS.md`](../AGENTS.md), [`AGENTS.md`](./AGENTS.md) |
 | Architecture index | [`architecture/README.md`](./architecture/README.md) |
 | System architecture (SSoT) | [`certification/v1.3.8/enterprise-architecture/SYSTEM_ARCHITECTURE.md`](./certification/v1.3.8/enterprise-architecture/SYSTEM_ARCHITECTURE.md) |
 | API overview | [`api-overview.md`](./api-overview.md) |
@@ -39,6 +39,7 @@ Start here. Prefer certification packs for current system truth; older guides re
 |-------|------|
 | Planning hub | [`planning/v1.4/INDEX.md`](./planning/v1.4/INDEX.md) |
 | Phase 25 platform foundation | [`certification/v1.4/phase-25/`](./certification/v1.4/phase-25/INDEX.md) |
+| UX / UI modernisation audit pack | [`certification/v1.4/ux-modernisation/FULL_AUDIT_INDEX.md`](./certification/v1.4/ux-modernisation/FULL_AUDIT_INDEX.md) |
 | v1.3.x maintenance strategy | [`planning/v1.4/V13_MAINTENANCE_STRATEGY.md`](./planning/v1.4/V13_MAINTENANCE_STRATEGY.md) |
 | v1.4 roadmap | [`planning/v1.4/WILMS_V14_ROADMAP.md`](./planning/v1.4/WILMS_V14_ROADMAP.md) |
 | Long-term architecture | [`planning/v1.4/LONG_TERM_ARCHITECTURE.md`](./planning/v1.4/LONG_TERM_ARCHITECTURE.md) |

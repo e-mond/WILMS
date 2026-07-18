@@ -38,6 +38,21 @@
   .tour-highlight-pulse {
     animation: tour-highlight-pulse 1.6s ease-in-out 2;
   }
+
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-border) 35%, transparent) 0%,
+      color-mix(in srgb, var(--color-border) 55%, transparent) 45%,
+      color-mix(in srgb, var(--color-border) 35%, transparent) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.4s ease-in-out infinite;
+  }
+
+  .motion-enter-fade {
+    animation: motion-enter-fade 160ms ease-out;
+  }
 }
 
 @keyframes tour-dialog-enter {
@@ -61,9 +76,33 @@
   }
 }
 
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+@keyframes motion-enter-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tour-dialog-panel,
-  .tour-highlight-pulse {
+  .tour-highlight-pulse,
+  .skeleton-shimmer,
+  .motion-enter-fade {
     animation: none !important;
+  }
+
+  .skeleton-shimmer {
+    background: color-mix(in srgb, var(--color-border) 40%, transparent);
   }
 }

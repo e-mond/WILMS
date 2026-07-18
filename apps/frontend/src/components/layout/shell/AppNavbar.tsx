@@ -2,9 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { PageBreadcrumbs } from '@/components/layout/PageBreadcrumbs';
-import {
-  GlobalSearchTrigger,
-} from '@/components/layout/shell/navbar/GlobalSearchPanel';
+import { GlobalSearchTrigger } from '@/components/layout/shell/navbar/GlobalSearchPanel';
 import { ShellNavbarActions } from '@/components/layout/shell/navbar/ShellNavbarActions';
 import type { ShellProfile } from '@/constants/shell-profiles';
 import { useAuth } from '@/hooks/useAuth';
@@ -31,40 +29,48 @@ export function AppNavbar({
   const { user } = useAuth();
 
   const isExecutive = variant === 'executive';
+  const pageTitle =
+    breadcrumbs.length > 0 ? breadcrumbs[breadcrumbs.length - 1]?.label : 'Overview';
 
   return (
     <header
       data-navbar="app"
       className={cn(
-        'hidden border-b border-border bg-card px-4 py-3 md:block lg:px-6',
+        'hidden border-b border-border/80 bg-card/95 px-3 backdrop-blur-sm md:block lg:px-5',
+        'supports-[backdrop-filter]:bg-card/90',
         className,
       )}
     >
-      <div className="grid h-11 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
-        <div className="flex min-w-0 items-center gap-3">
+      <div className="mx-auto flex h-12 max-w-[1600px] items-center gap-3 lg:gap-4">
+        <div className="flex min-w-0 flex-1 items-center gap-2.5">
           {showMobileNavTrigger ? (
             <button
+              type="button"
               onClick={openMobileNav}
-              className="flex h-11 w-11 items-center justify-center rounded-md text-text-primary hover:bg-accent md:hidden"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-text-primary transition-colors hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary md:hidden"
               aria-label="Open navigation menu"
             >
               <Menu className="h-5 w-5" />
             </button>
           ) : null}
 
-          {isExecutive ? (
-            <PageBreadcrumbs items={breadcrumbs} />
-          ) : (
-            <h1 className="truncate text-xl font-semibold tracking-tight text-text-primary">
-              {breadcrumbs.length > 0 ? breadcrumbs[breadcrumbs.length - 1]?.label : 'Overview'}
-            </h1>
-          )}
+          <div className="min-w-0">
+            {isExecutive ? (
+              <PageBreadcrumbs items={breadcrumbs} />
+            ) : (
+              <h1 className="truncate text-base font-semibold tracking-tight text-text-primary">
+                {pageTitle}
+              </h1>
+            )}
+          </div>
         </div>
 
-        <div className="hidden justify-self-center md:block">{user ? <GlobalSearchTrigger variant="desktop" /> : null}</div>
+        <div className="hidden shrink-0 justify-center md:flex md:w-[min(28rem,40vw)] lg:w-[min(32rem,42vw)]">
+          {user ? <GlobalSearchTrigger variant="desktop" className="w-full" /> : null}
+        </div>
 
-        <div className="flex min-w-0 justify-self-end">
-          <ShellNavbarActions hideSearch />
+        <div className="flex min-w-0 shrink-0 justify-end">
+          <ShellNavbarActions hideSearch showDateTime={false} />
         </div>
       </div>
     </header>
