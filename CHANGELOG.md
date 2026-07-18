@@ -14,6 +14,10 @@ Shell, navigation, search, and permission-catalog hardening on top of v1.4.0. Fi
 - `/ops` missing from route permission matrix redirected Super Admins to `/dashboard` (nav collision)
 - Help FAB overlapping connectivity/health chip (shared `FloatingActionStack`)
 - Permission Catalog broken wrapping for technical keys
+- Shell page title test expected obsolete “Super Admin Dashboard” label (CI unblock)
+- Navbar overflow when sidebar expanded; search keyboard ↑/↓/Enter on the input
+- Officer/Approver settings shell no longer shows unused app aside
+- Collector product tour no longer targets removed Messages inbox
 
 ### Changed
 - Sticky header in content column; full-height sticky sidebar
@@ -22,10 +26,13 @@ Shell, navigation, search, and permission-catalog hardening on top of v1.4.0. Fi
 - Global search command palette: keyboard navigation, navigation destinations, error/empty states
 - Permission Catalog searchable category rows with copyable keys and “Used by” roles
 - Product tour includes Operations as a distinct Super Admin step
+- Help menu: role guide, shortcuts, my settings, restart tour (distinct panes)
+- Collector Messages removed from navigation (route redirects to collector dashboard)
 
 ### Documentation
 - README / docs hub / PROJECT_STATUS stamped to **1.4.1**
 - UX audit pack expanded (`UX_SHELL_AUDIT.md`, `NAVIGATION_AUDIT.md`, …)
+- `ROLES_AND_PERMISSIONS_GUIDE.md` — role defaults vs per-user overrides
 
 ## [1.4.0] — Platform Foundation (Phase 25)
 

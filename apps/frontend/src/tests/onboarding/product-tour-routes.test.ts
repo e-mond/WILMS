@@ -39,5 +39,10 @@ describe('product tour routes', () => {
     expect(tourSource).toContain("href: '/ops'");
     expect(tourSource).toContain('separate from the executive Dashboard');
   });
+
+  it('does not tour the removed collector Messages inbox', () => {
+    expect(tourSource).not.toContain("href: '/collector/messages'");
+    expect(tourSource).not.toContain('data-tour-nav="/collector/messages"');
+  });
 });
 
