@@ -33,5 +33,11 @@ describe('product tour routes', () => {
     expect(tourSource).toContain('Start Tour');
     expect(tourSource).toContain('neverShowAgain: true');
   });
+
+  it('distinguishes Super Admin Dashboard from Operations in the tour', () => {
+    expect(tourSource).toContain("href: '/dashboard'");
+    expect(tourSource).toContain("href: '/ops'");
+    expect(tourSource).toContain('separate from the executive Dashboard');
+  });
 });
 

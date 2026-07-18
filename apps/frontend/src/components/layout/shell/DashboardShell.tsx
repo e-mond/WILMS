@@ -106,96 +106,85 @@ export function DashboardShell({
         data-shell={shellId}
         data-shell-profile={profile}
         className={cn(
-          'flex min-h-screen flex-col bg-background text-text-primary',
+          'flex min-h-screen bg-background text-text-primary',
           className,
         )}
       >
-        {/* Office Top Navbar */}
-        {isOffice && (
-          <AppNavbar
-            profile={profile}
-            variant={isExecutive ? 'executive' : 'standard'}
-            showMobileNavTrigger={showMobileDrawer}
-          />
-        )}
+        {/* Desktop Sidebar — full-height sticky column */}
+        <aside
+          data-sidebar={isExecutive ? 'executive' : 'standard'}
+          data-sidebar-collapsed={isSidebarCollapsed ? 'true' : undefined}
+          aria-hidden={isMobileNavOpen}
+          className={cn(
+            'sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-border transition-[width] duration-200 md:flex',
+            'motion-reduce:transition-none',
+            isExecutive ? 'bg-executive-sidebar' : 'bg-card',
+            isSidebarCollapsed ? 'w-16' : 'w-60',
+          )}
+        >
+          {sidebarContent}
+        </aside>
 
-        <div className="flex min-h-0 flex-1">
-          {/* Desktop Sidebar */}
-          <aside
-            data-sidebar={isExecutive ? 'executive' : 'standard'}
-            data-sidebar-collapsed={isSidebarCollapsed ? 'true' : undefined}
-            aria-hidden={isMobileNavOpen}
-            className={cn(
-              'hidden shrink-0 flex-col border-r border-border transition-[width] duration-200 md:flex',
-              isExecutive ? 'bg-executive-sidebar' : 'bg-card',
-              isSidebarCollapsed ? 'w-16' : 'w-60',
-            )}
+        {/* Mobile Navigation Drawer */}
+        {showMobileDrawer ? (
+          <Drawer
+            isOpen={isMobileNavOpen}
+            onClose={closeMobileNav}
+            title={mobileNavDrawerTitle ?? resolveMobileNavDrawerTitle(navAriaLabel)}
+            sidebarVariant={isExecutive ? 'executive' : 'standard'}
+            hideHeader={isExecutive}
           >
-            {sidebarContent}
-          </aside>
+            <div className="flex h-full flex-col">{sidebarContent}</div>
+          </Drawer>
+        ) : null}
 
-          {/* Mobile Navigation Drawer */}
-          {showMobileDrawer ? (
-            <Drawer
-              isOpen={isMobileNavOpen}
-              onClose={closeMobileNav}
-              title={mobileNavDrawerTitle ?? resolveMobileNavDrawerTitle(navAriaLabel)}
-              sidebarVariant={isExecutive ? 'executive' : 'standard'}
-              hideHeader={isExecutive}
-            >
-              <div className="flex h-full flex-col">
-                {sidebarContent}
-              </div>
-            </Drawer>
+        {/* Main column: sticky header + scrollable content */}
+        <div className="flex min-w-0 flex-1 flex-col">
+          {isOffice ? (
+            <AppNavbar
+              profile={profile}
+              variant={isExecutive ? 'executive' : 'standard'}
+              showMobileNavTrigger={showMobileDrawer}
+            />
           ) : null}
 
-          {/* Main Content Area */}
-          <div className="flex min-w-0 flex-1 flex-col">
-            {showMobileDrawer ? <MobileSidebarTrigger /> : null}
-            {mobileHeader}
+          {showMobileDrawer ? <MobileSidebarTrigger /> : null}
+          {mobileHeader}
 
-            {/* Mobile bar — skip when a custom mobileHeader is supplied */}
-            {isOffice && !mobileHeader ? (
-              <OfficeShellMobileBar
-                brandTitle={brandTitle}
-                isExecutive={isExecutive}
+          {isOffice && !mobileHeader ? (
+            <OfficeShellMobileBar brandTitle={brandTitle} isExecutive={isExecutive} />
+          ) : !isOffice ? (
+            <div className="hidden md:block">
+              <AppNavbar
+                profile={profile}
+                variant="executive"
+                showMobileNavTrigger={showMobileDrawer}
               />
-            ) : !isOffice ? (
-              <div className="hidden md:block">
-                <AppNavbar
-                  profile={profile}
-                  variant="executive"
-                  showMobileNavTrigger={showMobileDrawer}
-                />
-              </div>
-            ) : null}
+            </div>
+          ) : null}
 
-            <div className="flex min-h-0 flex-1">
-              <ShellMainLandmark
-                className={cn(
-                  'min-w-0 flex-1 bg-background',
-                  Boolean(bottomNavigation) && 'pb-24 md:pb-0',
-                  mainClassName,
-                )}
-                data-executive-content={isExecutive ? 'true' : undefined}
-              >
-                {children}
-              </ShellMainLandmark>
-
-              {showAppAside && (
-                <AppAside
-                  profile={profile}
-                  fallback={<AppAsidePlaceholder />}
-                />
+          <div className="flex min-h-0 flex-1">
+            <ShellMainLandmark
+              className={cn(
+                'min-w-0 flex-1 bg-background',
+                Boolean(bottomNavigation) && 'pb-24 md:pb-0',
+                mainClassName,
               )}
-            </div>
+              data-executive-content={isExecutive ? 'true' : undefined}
+            >
+              {children}
+            </ShellMainLandmark>
 
-            <div className={cn(Boolean(bottomNavigation) && 'hidden md:block')}>
-              <OfficeShellFooter />
-            </div>
-
-            {bottomNavigation}
+            {showAppAside && (
+              <AppAside profile={profile} fallback={<AppAsidePlaceholder />} />
+            )}
           </div>
+
+          <div className={cn(Boolean(bottomNavigation) && 'hidden md:block')}>
+            <OfficeShellFooter />
+          </div>
+
+          {bottomNavigation}
         </div>
 
         {showAppAside && isOffice && <ShellAsideDrawer />}

@@ -34,7 +34,8 @@ export type ShellNavGroupId =
 
 export const SHELL_NAV_GROUP_LABELS: Record<ShellNavGroupId, string> = {
   overview: 'Overview',
-  operations: 'Operations',
+  /** Lending workflow — not the /ops platform control centre. */
+  operations: 'Daily Operations',
   financial: 'Financial Management',
   people: 'People & Groups',
   reports: 'Reports & Analytics',
@@ -92,7 +93,13 @@ export const SUPER_ADMIN_NAV: ShellNavItem[] = [
     group: 'communication',
   },
   { href: '/reports/audit-log', label: 'Audit Log', exact: true, icon: 'audit', group: 'reports' },
-  { href: '/ops', label: 'Operations', exact: true, icon: 'risk', group: 'system' },
+  {
+    href: '/ops',
+    label: 'Operations',
+    exact: true,
+    icon: 'risk',
+    group: 'system',
+  },
   { href: '/reports', label: 'Reports', exact: true, icon: 'reports', group: 'reports' },
   { href: '/settings', label: 'Settings', exact: true, icon: 'settings', group: 'administration' },
 ];
