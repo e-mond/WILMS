@@ -24,11 +24,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Node 22 consistency
+        run: npm run verify:node
+
       - name: Type check
         run: npm run type-check
 
       - name: Lint
         run: npm run lint
+
+      - name: Migration journal integrity
+        run: npm run verify:migrations
+
+      - name: Version consistency
+        run: npm run verify:version
 
       - name: API integrity
         run: npm run verify:api-integrity

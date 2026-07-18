@@ -2,6 +2,34 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.4.0] — Platform Foundation (Phase 25)
+
+**Release date:** July 2026
+
+### Summary
+
+v1.4 platform foundation: Node 22 standardization, optional Redis/BullMQ durable jobs with in-process fallback, mandatory idempotency controls (production default), cursor pagination helpers + borrowers keyset API, transactional outbox table, feature flags, extended ops/Prometheus queue metrics, and backup/restore drill script.
+
+### Added
+- BullMQ + ioredis optional queue layer (`REDIS_URL`); graceful in-process fallback
+- Feature flags (`WILMS_FLAG_*`) for queues, idempotency, cursor pagination, outbox, tracing, GL dual-write stub
+- Transactional `domain_outbox` table (migration `0028_v140_platform_foundation`)
+- Cursor/keyset pagination helpers; borrowers list supports `pagination=cursor`
+- OpenTelemetry-compatible span logging (structured JSON; no collector required)
+- Queue gauges on `/ops/metrics`; ops status reports queue mode + feature flags
+- `npm run verify:node` and `npm run drill:backup-restore`
+- CI gates: Node 22 check, migration journal, version consistency
+
+### Changed
+- Package version **1.4.0**; engines `node >= 22`; Dockerfile `node:22`
+- Idempotency: request payload hash conflict detection; production requires `Idempotency-Key` when flag enabled
+- Health/ops worker topology reflects Redis configuration
+
+### Not in this release
+- Statutory double-entry GL (v1.5)
+- Full OpenTelemetry collector export
+- Authenticated production smoke / Neon restore evidence (operator-gated)
+
 ## [1.3.8] — Final Hardening
 
 **Release date:** July 2026

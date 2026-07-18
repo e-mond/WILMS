@@ -1,5 +1,5 @@
 # WILMS API production image — build context: monorepo root
-FROM node:20-bookworm-slim
+FROM node:22-bookworm-slim
 
 WORKDIR /app
 

@@ -139,6 +139,7 @@ export async function recordPayment(
     scope: 'PAYMENT_POST',
     actorUserId: actorId,
     idempotencyKey,
+    requestPayload: input,
     responseStatus: 201,
     execute: async () => postPayment(input, actorId),
   });

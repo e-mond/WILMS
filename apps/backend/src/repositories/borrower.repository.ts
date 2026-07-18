@@ -1,4 +1,4 @@
-import { and, count, eq, inArray, isNull, notExists } from 'drizzle-orm';
+import { and, count, desc, eq, inArray, isNull, lt, or, notExists } from 'drizzle-orm';
 import { BORROWER_STATUS } from '@wilms/shared-contracts';
 import { uuidv7 } from 'uuidv7';
 import type { WilmsDb } from '../db/client.js';
@@ -7,11 +7,13 @@ import { borrowerAdminFees } from '../db/schema/borrower-admin-fees.js';
 import { borrowers } from '../db/schema/borrowers.js';
 import type { BorrowerRecord, BorrowerStatus } from '../db/store.js';
 import { MAX_LIST_PAGE_SIZE, MAX_UNPAGINATED_LIST_ROWS } from '../http/list-pagination.js';
+import type { CursorPayload } from '../http/cursor-pagination.js';
 
 export interface BorrowerListOptions {
   limit?: number;
   offset?: number;
   status?: BorrowerStatus;
+  cursor?: CursorPayload | null;
 }
 
 type BorrowerProfile = BorrowerRecord['profile'];
@@ -86,11 +88,32 @@ export async function listBorrowers(options: BorrowerListOptions = {}): Promise<
     options.limit !== undefined
       ? Math.min(options.limit, MAX_LIST_PAGE_SIZE)
       : MAX_UNPAGINATED_LIST_ROWS;
+
+  if (options.cursor) {
+    const cursorDate = new Date(options.cursor.v);
+    const rows = await db
+      .select()
+      .from(borrowers)
+      .where(
+        and(
+          borrowerListWhere(options.status),
+          or(
+            lt(borrowers.registeredAt, cursorDate),
+            and(eq(borrowers.registeredAt, cursorDate), lt(borrowers.id, options.cursor.id)),
+          ),
+        ),
+      )
+      .orderBy(desc(borrowers.registeredAt), desc(borrowers.id))
+      .limit(limit);
+    return rows.map(rowToRecord);
+  }
+
   const offset = options.offset ?? 0;
   const rows = await db
     .select()
     .from(borrowers)
     .where(borrowerListWhere(options.status))
+    .orderBy(desc(borrowers.registeredAt), desc(borrowers.id))
     .limit(limit)
     .offset(offset);
 

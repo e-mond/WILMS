@@ -1,0 +1,7 @@
+Phase 25 verification — 2026-07-18T09:51:56Z
+type-check: PASS
+api tests: 158/158 PASS (47 files)
+verify:node: PASS
+verify:migrations: PASS (29 journal entries through 0028)
+verify:version: PASS 1.4.0
+drill:backup-restore: SKIPPED (no DB URLs — expected)
