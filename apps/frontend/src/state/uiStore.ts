@@ -8,6 +8,7 @@ interface UiState {
   isAsideDrawerOpen: boolean;
   isGlobalSearchOpen: boolean;
   isNotificationPanelOpen: boolean;
+  isHelpMenuOpen: boolean;
   addToast: (input: ToastInput) => string;
   dismissToast: (id: string) => void;
   clearToasts: () => void;
@@ -20,6 +21,8 @@ interface UiState {
   closeGlobalSearch: () => void;
   openNotificationPanel: () => void;
   closeNotificationPanel: () => void;
+  openHelpMenu: () => void;
+  closeHelpMenu: () => void;
 }
 
 function createToastId(): string {
@@ -32,6 +35,7 @@ export const useUiStore = create<UiState>()((set, get) => ({
   isAsideDrawerOpen: false,
   isGlobalSearchOpen: false,
   isNotificationPanelOpen: false,
+  isHelpMenuOpen: false,
 
   addToast: (input) => {
     if (input.dedupeKey) {
@@ -87,7 +91,7 @@ export const useUiStore = create<UiState>()((set, get) => ({
   },
 
   openGlobalSearch: () => {
-    set({ isGlobalSearchOpen: true, isNotificationPanelOpen: false });
+    set({ isGlobalSearchOpen: true, isNotificationPanelOpen: false, isHelpMenuOpen: false });
   },
 
   closeGlobalSearch: () => {
@@ -95,10 +99,18 @@ export const useUiStore = create<UiState>()((set, get) => ({
   },
 
   openNotificationPanel: () => {
-    set({ isNotificationPanelOpen: true, isGlobalSearchOpen: false });
+    set({ isNotificationPanelOpen: true, isGlobalSearchOpen: false, isHelpMenuOpen: false });
   },
 
   closeNotificationPanel: () => {
     set({ isNotificationPanelOpen: false });
+  },
+
+  openHelpMenu: () => {
+    set({ isHelpMenuOpen: true, isGlobalSearchOpen: false, isNotificationPanelOpen: false });
+  },
+
+  closeHelpMenu: () => {
+    set({ isHelpMenuOpen: false });
   },
 }));

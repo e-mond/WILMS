@@ -10,6 +10,7 @@ describe('uiStore', () => {
       isMobileNavOpen: false,
       isGlobalSearchOpen: false,
       isNotificationPanelOpen: false,
+      isHelpMenuOpen: false,
     });
   });
 
@@ -68,4 +69,15 @@ describe('uiStore', () => {
     useUiStore.getState().closeGlobalSearch();
     expect(useUiStore.getState().isGlobalSearchOpen).toBe(false);
   });
+
+  it('opens help menu and closes other overlays', () => {
+    useUiStore.getState().openGlobalSearch();
+    useUiStore.getState().openHelpMenu();
+
+    expect(useUiStore.getState().isHelpMenuOpen).toBe(true);
+    expect(useUiStore.getState().isGlobalSearchOpen).toBe(false);
+    useUiStore.getState().closeHelpMenu();
+    expect(useUiStore.getState().isHelpMenuOpen).toBe(false);
+  });
 });
+
