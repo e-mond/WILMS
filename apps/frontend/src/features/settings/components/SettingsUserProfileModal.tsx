@@ -250,7 +250,11 @@ export function SettingsUserProfileModal({ userId, onClose }: SettingsUserProfil
               ) : null}
             </div>
           </section>
-          <SettingsUserPermissionOverrides userId={data.id} />
+          <SettingsUserPermissionOverrides
+            userId={data.id}
+            rolePermissionIds={data.assignedPermissionIds}
+            roleLabel={data.roleLabel}
+          />
         </div>
       )}
     </Modal>
