@@ -1,0 +1,90 @@
+=== BASELINE 2026-07-18T09:46:25Z ===
+node: v22.14.0
+
+> @wilms/frontend@1.3.8 type-check
+> tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json
+
+
+> @wilms/api@1.3.8 type-check
+> tsc --noEmit
+
+--- lint ---
+> wilms@1.3.8 lint
+> npm run lint -w @wilms/frontend
+
+
+> @wilms/frontend@1.3.8 lint
+> next lint
+
+✔ No ESLint warnings or errors
+--- verify migrations ---
+  ✓ 17 0017_auth_otp_challenges
+  ✓ 18 0018_v122_security_user_lifecycle
+  ✓ 19 0019_v123_platform_stabilization
+  ✓ 20 0020_v130_field_operations
+  ✓ 21 0021_list_query_indexes
+  ✓ 22 0022_v135_notification_events
+  ✓ 23 0023_v137_rc2_reconciliation_lifecycle
+  ✓ 24 0024_v137_rc3_pool_loan_linkage
+  ✓ 25 0025_v137_rc3_pool_allocations_backfill
+  ✓ 26 0026_v137_prod_schema_repair
+  ✓ 27 0027_hot_query_indexes
+
+Journal integrity: PASS
+
+Database: skipped (DATABASE_URL not set)
+--- verify version ---
+> wilms@1.3.8 verify:version
+> node scripts/verify-version-consistency.mjs
+
+  ✓ package.json: 1.3.8
+  ✓ apps/frontend/package.json: 1.3.8
+  ✓ apps/backend/package.json: 1.3.8
+  ✓ CHANGELOG.md: contains [1.3.8]
+  ✓ /health version: 1.3.8
+  ✓ login page label: WILMS v1.3.8
+PASS: all versions match 1.3.8
+--- mock guard ---
+
+> wilms@1.3.8 verify:mock-guard
+> node scripts/rc1-mock-import-guard.mjs
+
+RC1.1 Mock Import Guard
+PASS: no forbidden mock imports in features/
+--- api integrity ---
+  GET /borrowers/check-name — borrowers
+  GET /borrowers/check-active-loan — borrowers
+  GET /borrowers/check-blacklist — borrowers
+  GET /borrowers/drafts/:id — borrowers
+  DELETE /borrowers/:id/registration — borrowers
+  GET /collectors/:id — collectors
+  PATCH /communications/templates/:id — communications
+  GET /communications/templates/:id/versions — communications
+  GET /communications/messages/:id/attachments — communications
+  POST /communications/scheduler/run — communications
+  GET /groups/:id — groups
+  GET /loan-pools/:id — loan-pools
+  GET /borrowers/loan-eligible — loans
+
+PASS: all frontend apiClient paths have backend routes
+--- api tests ---
+
+ ✓ src/tests/lending/organization-holidays-fallback.test.ts (1 test) 3ms
+ ✓ src/tests/borrowers/guarantor-eligibility.test.ts (4 tests) 3ms
+ ✓ src/tests/auth/session-invalidation.test.ts (2 tests) 2ms
+ ✓ src/tests/settings/invitation.test.ts (3 tests) 2ms
+ ✓ src/tests/ops/request-id.test.ts (2 tests) 2ms
+ ✓ src/tests/lending/payment-day.test.ts (3 tests) 2ms
+ ✓ src/tests/lending/holiday-schedule.test.ts (3 tests) 2ms
+ ✓ src/tests/settings/invitation-lifecycle.test.ts (3 tests) 2ms
+ ✓ src/tests/lending/advanced-lending.test.ts (4 tests) 2ms
+ ✓ src/tests/communications/template-preview.test.ts (2 tests) 2ms
+ ✓ src/tests/sync/sync.constants.test.ts (1 test) 2ms
+ ✓ src/tests/transactions/admin-fee-workflow.test.ts (2 tests) 2ms
+ ✓ src/tests/users/user-purge.test.ts (1 test) 2ms
+
+ Test Files  43 passed (43)
+      Tests  150 passed (150)
+   Start at  09:46:38
+   Duration  7.36s (transform 1.09s, setup 0ms, collect 13.78s, tests 1.80s, environment 5ms, prepare 2.39s)
+
