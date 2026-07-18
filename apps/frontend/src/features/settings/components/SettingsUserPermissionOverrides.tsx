@@ -8,15 +8,27 @@ import { Select } from '@/components/ui/Select';
 import { PERMISSION } from '@/constants/permissions';
 import { useSettingsPermissions } from '@/features/settings/hooks/useSettingsRoles';
 import { useToast } from '@/hooks/useToast';
+import { presentUserFacingError } from '@/lib/errors/user-friendly-error';
 import { settingsService } from '@/services';
 import type { PermissionDefinition } from '@/types/user-management';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 function permissionOverridesKey(userId: string) {
   return ['settings', 'users', userId, 'permission-overrides'] as const;
 }
 
-export function SettingsUserPermissionOverrides({ userId }: { userId: string }) {
+export interface SettingsUserPermissionOverridesProps {
+  userId: string;
+  /** Role-default permission ids for this user (from profile). */
+  rolePermissionIds: string[];
+  roleLabel?: string;
+}
+
+export function SettingsUserPermissionOverrides({
+  userId,
+  rolePermissionIds,
+  roleLabel,
+}: SettingsUserPermissionOverridesProps) {
   const toast = useToast();
   const queryClient = useQueryClient();
   const { data: permissions = [], isLoading: permissionsLoading } = useSettingsPermissions();
@@ -25,16 +37,45 @@ export function SettingsUserPermissionOverrides({ userId }: { userId: string }) 
     queryFn: () => settingsService.listUserPermissionOverrides(userId),
   });
 
-  const [selectedPermissionId, setSelectedPermissionId] = useState('');
-  const [grantMode, setGrantMode] = useState<'grant' | 'revoke'>('grant');
+  const rolePermissionSet = useMemo(() => new Set(rolePermissionIds), [rolePermissionIds]);
+  const defaultMode: 'grant' | 'revoke' =
+    rolePermissionIds.length > 0 &&
+    permissions.length > 0 &&
+    permissions.every((permission) => rolePermissionSet.has(permission.id))
+      ? 'revoke'
+      : 'grant';
 
-  const availablePermissions = useMemo(
-    () =>
-      permissions.filter(
-        (permission) => !overrides.some((override) => override.permissionId === permission.id),
-      ),
-    [overrides, permissions],
-  );
+  const [selectedPermissionId, setSelectedPermissionId] = useState('');
+  const [grantMode, setGrantMode] = useState<'grant' | 'revoke'>(defaultMode);
+
+  useEffect(() => {
+    setGrantMode(defaultMode);
+    setSelectedPermissionId('');
+  }, [defaultMode, userId]);
+
+  const availablePermissions = useMemo(() => {
+    const notAlreadyOverridden = (permission: PermissionDefinition) =>
+      !overrides.some((override) => override.permissionId === permission.id);
+
+    if (grantMode === 'grant') {
+      return permissions.filter(
+        (permission) => notAlreadyOverridden(permission) && !rolePermissionSet.has(permission.id),
+      );
+    }
+
+    return permissions.filter(
+      (permission) => notAlreadyOverridden(permission) && rolePermissionSet.has(permission.id),
+    );
+  }, [grantMode, overrides, permissions, rolePermissionSet]);
+
+  useEffect(() => {
+    if (
+      selectedPermissionId &&
+      !availablePermissions.some((permission) => permission.id === selectedPermissionId)
+    ) {
+      setSelectedPermissionId('');
+    }
+  }, [availablePermissions, selectedPermissionId]);
 
   const saveOverride = useMutation({
     mutationFn: () =>
@@ -49,7 +90,13 @@ export function SettingsUserPermissionOverrides({ userId }: { userId: string }) 
       setSelectedPermissionId('');
       toast.success('Permission override saved');
     },
-    onError: () => toast.error('Unable to save permission override'),
+    onError: (error) =>
+      toast.error('Unable to save permission override', {
+        message: presentUserFacingError(
+          error,
+          'Choose a permission that matches Grant or Revoke for this role.',
+        ),
+      }),
   });
 
   const removeOverride = useMutation({
@@ -59,12 +106,22 @@ export function SettingsUserPermissionOverrides({ userId }: { userId: string }) 
       await queryClient.invalidateQueries({ queryKey: permissionOverridesKey(userId) });
       toast.success('Permission override removed');
     },
-    onError: () => toast.error('Unable to remove permission override'),
+    onError: (error) =>
+      toast.error('Unable to remove permission override', {
+        message: presentUserFacingError(error, 'Try again shortly.'),
+      }),
   });
 
   if (permissionsLoading || overridesLoading) {
     return <InlinePanelSkeleton />;
   }
+
+  const emptyHint =
+    grantMode === 'grant'
+      ? roleLabel
+        ? `${roleLabel} already includes every available permission. Switch to Revoke to remove access for this user.`
+        : 'This role already includes every available permission. Switch to Revoke to remove access for this user.'
+      : 'No role permissions left to revoke. Switch to Grant to add access outside the role.';
 
   return (
     <PermissionGate permission={PERMISSION.ASSIGN_PERMISSIONS}>
@@ -74,7 +131,8 @@ export function SettingsUserPermissionOverrides({ userId }: { userId: string }) 
             Individual Permission Overrides
           </h3>
           <p className="mt-wilms-1 text-small text-text-muted">
-            Grant or revoke permissions for this user without changing their base role.
+            Grant permissions outside the role, or revoke a role permission for this user only.
+            Changes do not edit the role itself.
           </p>
         </div>
 
@@ -112,8 +170,11 @@ export function SettingsUserPermissionOverrides({ userId }: { userId: string }) 
             <Select
               value={selectedPermissionId}
               onChange={(event) => setSelectedPermissionId(event.target.value)}
+              disabled={availablePermissions.length === 0}
             >
-              <option value="">Select permission</option>
+              <option value="">
+                {availablePermissions.length === 0 ? 'No matching permissions' : 'Select permission'}
+              </option>
               {availablePermissions.map((permission: PermissionDefinition) => (
                 <option key={permission.id} value={permission.id}>
                   {permission.label}
@@ -127,8 +188,8 @@ export function SettingsUserPermissionOverrides({ userId }: { userId: string }) 
               value={grantMode}
               onChange={(event) => setGrantMode(event.target.value as 'grant' | 'revoke')}
             >
-              <option value="grant">Grant</option>
-              <option value="revoke">Revoke</option>
+              <option value="grant">Grant (add outside role)</option>
+              <option value="revoke">Revoke (remove from role)</option>
             </Select>
           </label>
           <Button
@@ -139,6 +200,12 @@ export function SettingsUserPermissionOverrides({ userId }: { userId: string }) 
             Apply Override
           </Button>
         </div>
+
+        {availablePermissions.length === 0 ? (
+          <p className="text-small text-text-muted" role="status">
+            {emptyHint}
+          </p>
+        ) : null}
       </section>
     </PermissionGate>
   );
