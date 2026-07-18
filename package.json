@@ -1,9 +1,9 @@
 {
   "name": "wilms",
-  "version": "1.3.8",
+  "version": "1.4.0",
   "private": true,
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "workspaces": [
     "apps/*",
@@ -37,6 +37,8 @@
     "verify:mock-guard": "node scripts/rc1-mock-import-guard.mjs",
     "generate:pwa-icons": "node scripts/generate-pwa-icons.mjs",
     "verify:empty-db": "npm run verify:empty-db -w @wilms/api",
-    "verify:migrations": "npm run verify:migrations -w @wilms/api"
+    "verify:migrations": "npm run verify:migrations -w @wilms/api",
+    "verify:node": "node scripts/verify-node-version.mjs",
+    "drill:backup-restore": "node scripts/backup-restore-drill.mjs"
   }
 }

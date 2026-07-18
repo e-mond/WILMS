@@ -9,8 +9,11 @@ import { logger } from './infrastructure/logging/logger.js';
 import { getMailProvider } from './infrastructure/mail/index.js';
 import { getSmsProvider } from './infrastructure/sms/index.js';
 import { validateUploadEnvironment } from './infrastructure/uploads/index.js';
+import { registerBuiltInJobHandlers } from './infrastructure/queue/job-handlers.js';
+import { startQueueWorkers, stopQueueWorkers } from './infrastructure/queue/index.js';
 
 const envReport = validateEnvironment();
+registerBuiltInJobHandlers();
 
 assertProductionMockDisabled();
 
@@ -34,18 +37,20 @@ let server: Server | undefined;
 
 function shutdown(signal: string): void {
   logger.info('shutdown.start', { signal });
-  if (!server) {
-    process.exit(0);
-    return;
-  }
-  server.close(() => {
-    logger.info('shutdown.complete', { signal });
-    process.exit(0);
+  void stopQueueWorkers().finally(() => {
+    if (!server) {
+      process.exit(0);
+      return;
+    }
+    server.close(() => {
+      logger.info('shutdown.complete', { signal });
+      process.exit(0);
+    });
+    setTimeout(() => {
+      logger.error('shutdown.forced', { signal });
+      process.exit(1);
+    }, 10_000).unref();
   });
-  setTimeout(() => {
-    logger.error('shutdown.forced', { signal });
-    process.exit(1);
-  }, 10_000).unref();
 }
 
 process.on('SIGTERM', () => shutdown('SIGTERM'));
@@ -66,6 +71,12 @@ server = app.listen(env.port, env.host, () => {
   const mailProvider = getMailProvider().name;
   const smsProvider = getSmsProvider().name;
 
+  void startQueueWorkers().catch((error) => {
+    logger.warn('queue.workers.start_failed', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+  });
+
   logger.info('startup.complete', {
     host: env.host,
     port: env.port,
@@ -75,6 +86,7 @@ server = app.listen(env.port, env.host, () => {
     mailProvider,
     smsProvider,
     gitCommit: env.gitCommit ?? null,
+    redisConfigured: Boolean(env.redisUrl),
   });
 
   for (const warning of uploadReport.warnings) {
