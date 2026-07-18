@@ -10,7 +10,7 @@ Standard commands live in the root `package.json` and `apps/*/package.json` scri
 
 ## Cursor Cloud specific instructions
 
-- Dependencies for the whole monorepo install from the repo root with `npm ci` (the update script). Node 20+ (VM has Node 22, which is what CI uses).
+- Dependencies for the whole monorepo install from the repo root with `npm ci` (the update script). **Node 22+** required (`engines`, `.nvmrc`, Docker `node:22`; CI uses Node 22).
 - Backend needs no external services: with `DATABASE_URL` unset it runs on an in-memory store. Start it with `npm run dev:api` (serves `http://127.0.0.1:4000`, health at `/health`).
 - The frontend defaults to **mock** data mode. To run it against the real backend you must create `apps/frontend/.env.local` (gitignored, so recreate it each fresh VM) with:
   ```

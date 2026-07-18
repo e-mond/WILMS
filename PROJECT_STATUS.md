@@ -1,50 +1,40 @@
 # Project Status
 
-**Last updated:** 2026-07-17 (Phase 24 v1.4 planning)  
-**Package version:** `1.3.8` (frozen — new work targets **v1.4** on `main`)
+**Last updated:** 2026-07-18 (v1.4.0 Phase 25 platform foundation)  
+**Package version:** `1.4.0`
 
 ## Current state
 
 | Track | Status |
 |-------|--------|
-| v1.3.8 software / architecture / security / financial / docs | **CLOSED** |
-| v1.3.8 operator certification | **OPEN** (outside software dev) |
-| **v1.4 planning (Phase 24)** | **COMPLETE** — [`docs/planning/v1.4/`](docs/planning/v1.4/INDEX.md) |
+| v1.3.8 software line | **Frozen** — hotfixes only after `maintenance/v1.3.8` (post-certification) |
+| v1.3.8 operator certification | **OPEN** (outside software) |
+| **v1.4.0 Phase 25 platform foundation** | **COMPLETE (software)** — merge candidate |
 
-**v1.3.8 verdict:** ⚠ **Ready with Conditions** — certificate **NOT ISSUED**.  
-**v1.4:** All new features and architecture changes belong on `main` (or `feature/v1.4-*`); **do not patch v1.3.x** except hotfixes after `maintenance/v1.3.8` exists.
+**Phase 25 pack:** [`docs/certification/v1.4/phase-25/`](docs/certification/v1.4/phase-25/INDEX.md)
 
-## v1.4 planning hub
+### What shipped in 1.4.0 (software)
 
-| Document | Path |
-|----------|------|
-| Index | `docs/planning/v1.4/INDEX.md` |
-| v1.3.x maintenance strategy | `docs/planning/v1.4/V13_MAINTENANCE_STRATEGY.md` |
-| v1.4 roadmap | `docs/planning/v1.4/WILMS_V14_ROADMAP.md` |
-| Master timeline | `docs/planning/v1.4/MASTER_ROADMAP.md` |
-| Executive strategy | `docs/planning/v1.4/EXECUTIVE_STRATEGY.md` |
+- Node 22 everywhere (engines, Docker, `.nvmrc`, CI `verify:node`)
+- Optional Redis/BullMQ with in-process fallback
+- Idempotency hardening (payload hash + production require flag)
+- Cursor pagination foundation (borrowers keyset)
+- Transactional outbox table + publisher
+- Feature flags (`WILMS_FLAG_*`)
+- Extended `/ops` queue metrics + tracing spans
+- Backup/restore drill script (operator credentials required for PASSED)
 
-## v1.3.8 certification trail
+### Still blocked (operator / infra)
 
-| Pack | Path |
-|------|------|
-| Enterprise financial | `docs/certification/v1.3.8/enterprise-financial/` |
-| Enterprise architecture | `docs/certification/v1.3.8/enterprise-architecture/` |
-| Enterprise excellence | `docs/certification/v1.3.8/enterprise-excellence/` |
-| RC validation | `docs/certification/v1.3.8/rc-validation/` |
-| Production operations | `docs/certification/v1.3.8/production-operations/` |
-| Product acceptance | `docs/certification/v1.3.8/product-acceptance/` |
-| Go-live closure | `docs/certification/v1.3.8/go-live/` |
-| **Production cutover (Phase 23)** | `docs/certification/v1.3.8/production-cutover/` |
+- Redis provisioned in staging/production
+- Neon restore drill **PASSED** evidence
+- Production deploy of 1.4.0
+- Authenticated production smoke
 
-## Remaining operator actions
+## Planning hub
 
-1. Provide `WILMS_SMOKE_*` and run `smoke:production` + `smoke:rbac` against live  
-2. Neon PITR restore drill with RTO/RPO log  
-3. Authenticated financial reconcile against live DB  
-4. Collect real human sign-offs (do not fabricate)  
-5. Then issue certificate, tag, and create `maintenance/v1.3.x`
+[`docs/planning/v1.4/INDEX.md`](docs/planning/v1.4/INDEX.md)
 
-## Role of this file
+## Next
 
-Pointer to canonical readiness. Prefer the Phase 23 cutover pack over older root `FINAL_*` drafts when they conflict.
+Do **not** start Phase 26 without explicit approval. Next operator steps: provision Redis, run restore drill, deploy 1.4.0 to staging, smoke.

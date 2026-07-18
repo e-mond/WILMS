@@ -65,6 +65,25 @@ borrowersRouter.get(
         return;
       }
 
+      const { parseCursorListQuery, buildCursorPage } = await import(
+        '../../http/cursor-pagination.js'
+      );
+      const cursorQuery = parseCursorListQuery(req.query as Record<string, unknown>);
+      if (cursorQuery) {
+        const batch = await borrowerService.listBorrowerSummariesCursor({
+          limit: cursorQuery.limit + 1,
+          cursor: cursorQuery.cursor,
+        });
+        const page = buildCursorPage(
+          batch,
+          cursorQuery.limit,
+          (row) => row.registeredAt,
+          typeof req.query.cursor === 'string' ? req.query.cursor : null,
+        );
+        sendData(res, page);
+        return;
+      }
+
       const pagination = parseListQuery(req.query as Record<string, unknown>);
       if (pagination) {
         const items = await borrowerService.listBorrowerSummaries({

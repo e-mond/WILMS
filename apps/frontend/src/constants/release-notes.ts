@@ -6,13 +6,14 @@ export interface ReleaseNotes {
 }
 
 export const CURRENT_RELEASE_NOTES: ReleaseNotes = {
-  version: '1.3.8',
-  summary: 'Final hardening — toast reliability, guided tour, skeleton loaders, permission overrides, and security fixes.',
+  version: '1.4.0',
+  summary:
+    'Platform foundation — durable job queues, financial idempotency hardening, cursor pagination, and stronger observability.',
   highlights: [
-    'Notification toasts no longer duplicate on login, refresh, or tab focus.',
-    'Mandatory first-login product tour with Help FAB for replay.',
-    'Skeleton loaders replace page-level spinners to reduce layout shift.',
-    'Individual permission overrides for Super Admins without changing roles.',
-    'Security hardening for messaging IDOR, notification send, uploads, and webhooks.',
+    'Optional Redis/BullMQ background jobs with safe in-process fallback.',
+    'Stronger Idempotency-Key handling for money mutations (required in production).',
+    'Cursor pagination available for borrower lists.',
+    'Operations dashboard shows queue mode and feature flags.',
+    'Node.js 22 standardized across Docker, CI, and engines.',
   ],
 };

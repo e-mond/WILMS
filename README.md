@@ -309,6 +309,7 @@ See `CHANGELOG.md`, `PROJECT_STATUS.md`, and `docs/version-history.md`.
 | Go-live / production certification (v1.3.8) | `docs/certification/v1.3.8/go-live/` |
 | Production cutover (v1.3.8) | `docs/certification/v1.3.8/production-cutover/` |
 | **v1.4 planning (Phase 24)** | `docs/planning/v1.4/` |
+| **v1.4 Phase 25 foundation** | `docs/certification/v1.4/phase-25/` |
 
 Historical certification evidence is preserved under `docs/archive/`.
 

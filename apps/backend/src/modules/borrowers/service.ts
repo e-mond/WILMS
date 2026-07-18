@@ -225,6 +225,24 @@ export async function listBorrowerSummaries(options?: { limit?: number; offset?:
   return records.map((record) => toSummary(record, sequenceById.get(record.id)));
 }
 
+/** Keyset/cursor page — newest registered first. */
+export async function listBorrowerSummariesCursor(options: {
+  limit: number;
+  cursor?: { v: string; id: string } | null;
+}) {
+  const records = await listBorrowers({
+    limit: options.limit,
+    cursor: options.cursor ?? null,
+  });
+  const sorted = [...records].sort((left, right) => left.registeredAt.localeCompare(right.registeredAt));
+  const sequenceById = new Map(sorted.map((record, index) => [record.id, index + 1]));
+
+  return records.map((record) => ({
+    ...toSummary(record, sequenceById.get(record.id)),
+    registeredAt: record.registeredAt,
+  }));
+}
+
 export async function listPendingApplications() {
   const pendingRecords = (await listBorrowers())
     .filter((record) => record.status === BORROWER_STATUS.PENDING)

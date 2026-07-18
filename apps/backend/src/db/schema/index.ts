@@ -12,6 +12,7 @@ export * from './loan-schedules';
 export * from './loan-disbursements';
 export * from './ledger-entries';
 export * from './idempotency-keys';
+export * from './domain-outbox';
 export * from './payments';
 export * from './expenses';
 export * from './notifications';
