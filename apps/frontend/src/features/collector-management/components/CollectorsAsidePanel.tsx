@@ -22,7 +22,7 @@ import { cn } from '@/utils/cn';
 export interface CollectorsAsidePanelProps {
   data: CollectorListResponse;
   selected: CollectorSummary | null;
-  onMessage: () => void;
+  onMessage?: () => void;
 }
 
 export function CollectorsAsidePanel({ data, selected, onMessage }: CollectorsAsidePanelProps) {
@@ -32,9 +32,11 @@ export function CollectorsAsidePanel({ data, selected, onMessage }: CollectorsAs
         <DetailSidebarCard
           actions={
             <>
-              <Button variant="secondary" size="sm" onClick={onMessage}>
-                Message
-              </Button>
+              {onMessage ? (
+                <Button variant="secondary" size="sm" onClick={onMessage}>
+                  Message
+                </Button>
+              ) : null}
               <Link
                 href={`/collectors/${selected.id}`}
                 className="inline-flex h-8 items-center justify-center rounded-sm border border-brand-primary bg-brand-primary px-wilms-3 text-small font-semibold text-card hover:opacity-90"

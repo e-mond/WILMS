@@ -7,6 +7,7 @@ import { ShellNavbarActions } from '@/components/layout/shell/navbar/ShellNavbar
 import type { ShellProfile } from '@/constants/shell-profiles';
 import { useAuth } from '@/hooks/useAuth';
 import { useUiStore } from '@/state/uiStore';
+import { useShellLayoutStore } from '@/state/shellLayoutStore';
 import { resolveShellBreadcrumbs } from '@/utils/shell-breadcrumbs';
 import { cn } from '@/utils/cn';
 import { Menu } from 'lucide-react';
@@ -26,6 +27,7 @@ export function AppNavbar({
   const pathname = usePathname();
   const breadcrumbs = resolveShellBreadcrumbs(pathname);
   const openMobileNav = useUiStore((state) => state.openMobileNav);
+  const isSidebarCollapsed = useShellLayoutStore((state) => state.isSidebarCollapsed);
   const { user } = useAuth();
 
   const isExecutive = variant === 'executive';
@@ -35,14 +37,19 @@ export function AppNavbar({
   return (
     <header
       data-navbar="app"
+      data-sidebar-collapsed={isSidebarCollapsed ? 'true' : 'false'}
       className={cn(
-        'sticky top-0 z-30 hidden border-b border-border/80 bg-card/95 px-3 backdrop-blur-sm md:block lg:px-5',
+        'sticky top-0 z-30 hidden border-b border-border/80 bg-card/95 px-3 backdrop-blur-sm md:block lg:px-4',
         'supports-[backdrop-filter]:bg-card/90',
         className,
       )}
     >
-      <div className="mx-auto flex h-12 max-w-[1600px] items-center gap-3 lg:gap-4">
-        <div className="flex min-w-0 flex-1 items-center gap-2.5">
+      {/*
+        Use remaining-column flex widths (not viewport vw) so the search field
+        does not overflow when the sidebar is expanded.
+      */}
+      <div className="flex h-12 w-full min-w-0 items-center gap-2 lg:gap-3">
+        <div className="flex min-w-0 flex-[1_1_10rem] items-center gap-2 overflow-hidden">
           {showMobileNavTrigger ? (
             <button
               type="button"
@@ -54,7 +61,7 @@ export function AppNavbar({
             </button>
           ) : null}
 
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1 overflow-hidden">
             {isExecutive ? (
               <PageBreadcrumbs items={breadcrumbs} />
             ) : (
@@ -65,11 +72,11 @@ export function AppNavbar({
           </div>
         </div>
 
-        <div className="hidden shrink-0 justify-center md:flex md:w-[min(28rem,40vw)] lg:w-[min(32rem,42vw)]">
-          {user ? <GlobalSearchTrigger variant="desktop" className="w-full" /> : null}
+        <div className="hidden min-w-0 flex-[1_1_14rem] max-w-md md:block">
+          {user ? <GlobalSearchTrigger variant="desktop" className="w-full max-w-full" /> : null}
         </div>
 
-        <div className="flex min-w-0 shrink-0 justify-end">
+        <div className="flex shrink-0 items-center justify-end">
           <ShellNavbarActions hideSearch showDateTime={false} />
         </div>
       </div>

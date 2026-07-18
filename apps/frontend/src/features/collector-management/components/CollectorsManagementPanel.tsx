@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Avatar,
   CurrencyAmount,
@@ -24,14 +24,9 @@ import { CollectorsMobileCardList } from '@/features/collector-management/compon
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
-import { Textarea } from '@/components/ui/Textarea';
 import { Pagination } from '@/components/ui/Pagination';
 import { useCollectorsManagement } from '@/features/collector-management/hooks/useCollectorsManagement';
 import { useOnboardCollector } from '@/features/collector-management/hooks/useOnboardCollector';
-import {
-  useMessageCollector,
-  useMessageThread,
-} from '@/features/collector-management/hooks/useMessageCollector';
 import { usePaginatedRows } from '@/hooks/usePaginatedRows';
 import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
@@ -78,8 +73,6 @@ export function CollectorsManagementPanel() {
   const { data, isLoading, isError, error, refetch } = useCollectorsManagement();
   const { showLoading, isTimedOut, isForbidden } = useQueryLoadingPolicy({ isLoading, isError, error });
   const onboardCollector = useOnboardCollector();
-  const { createThread, sendMessage } = useMessageCollector();
-  const { mutateAsync: openCollectorThread, reset: resetOpenThread, isError: isThreadError, isPending: isThreadPending } = createThread;
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -87,12 +80,6 @@ export function CollectorsManagementPanel() {
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [zone, setZone] = useState('');
-  const [messageModalOpen, setMessageModalOpen] = useState(false);
-  const [messageCollector, setMessageCollector] = useState<CollectorSummary | null>(null);
-  const [threadId, setThreadId] = useState<string | null>(null);
-  const [messageBody, setMessageBody] = useState('');
-  const { data: thread } = useMessageThread(threadId);
-  const threadRequestRef = useRef(0);
 
   const filteredCollectors = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -117,80 +104,13 @@ export function CollectorsManagementPanel() {
     slice[0] ??
     null;
 
-  const openMessageModal = useCallback((collector: CollectorSummary) => {
-    resetOpenThread();
-    setMessageCollector(collector);
-    setThreadId(null);
-    setMessageBody('');
-    setMessageModalOpen(true);
-  }, [resetOpenThread]);
-
-  useEffect(() => {
-    if (!messageModalOpen || !messageCollector) {
-      return;
-    }
-
-    const requestId = threadRequestRef.current + 1;
-    threadRequestRef.current = requestId;
-    setThreadId(null);
-    resetOpenThread();
-
-    void openCollectorThread(messageCollector.id).then((createdThread) => {
-      if (threadRequestRef.current !== requestId) {
-        return;
-      }
-
-      setThreadId(createdThread.id);
-    });
-  }, [messageCollector, messageModalOpen, openCollectorThread, resetOpenThread]);
-
-  const handleAsideMessage = useCallback(() => {
-    if (selected) {
-      openMessageModal(selected);
-    }
-  }, [openMessageModal, selected]);
-
-  function closeMessageModal() {
-    threadRequestRef.current += 1;
-    resetOpenThread();
-    setMessageModalOpen(false);
-    setMessageCollector(null);
-    setThreadId(null);
-    setMessageBody('');
-  }
-
-  function retryOpenConversation() {
-    if (!messageCollector) {
-      return;
-    }
-
-    const requestId = threadRequestRef.current + 1;
-    threadRequestRef.current = requestId;
-    setThreadId(null);
-    resetOpenThread();
-
-    void openCollectorThread(messageCollector.id).then((createdThread) => {
-      if (threadRequestRef.current !== requestId) {
-        return;
-      }
-
-      setThreadId(createdThread.id);
-    });
-  }
-
   const asideContent = useMemo(() => {
     if (!data) {
       return null;
     }
 
-    return (
-      <CollectorsAsidePanel
-        data={data}
-        selected={selected}
-        onMessage={handleAsideMessage}
-      />
-    );
-  }, [data, handleAsideMessage, selected]);
+    return <CollectorsAsidePanel data={data} selected={selected} />;
+  }, [data, selected]);
 
   useShellAsideContent(asideContent);
 
@@ -477,73 +397,6 @@ export function CollectorsManagementPanel() {
         </div>
       </Modal>
 
-      <Modal
-        isOpen={messageModalOpen}
-        onClose={closeMessageModal}
-        title={messageCollector ? `Message ${messageCollector.displayName}` : 'Message Collector'}
-        footer={
-          <>
-            <Button type="button" variant="secondary" size="sm" onClick={closeMessageModal}>
-              Close
-            </Button>
-            <Button
-              type="button"
-              variant="primary"
-              size="sm"
-              disabled={
-                !threadId || !messageBody.trim() || sendMessage.isPending || isThreadPending
-              }
-              onClick={() => {
-                if (!threadId) {
-                  return;
-                }
-
-                void sendMessage
-                  .mutateAsync({ threadId, body: messageBody.trim() })
-                  .then(() => setMessageBody(''));
-              }}
-            >
-              {sendMessage.isPending ? 'Sending…' : 'Send'}
-            </Button>
-          </>
-        }
-      >
-        <div className="space-y-wilms-4">
-          {isThreadError ? (
-            <div className="rounded-sm border border-danger/30 bg-danger/5 p-wilms-3">
-              <p className="text-small text-danger">Unable to open conversation. Try again shortly.</p>
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                className="mt-wilms-2"
-                onClick={retryOpenConversation}
-              >
-                Retry
-              </Button>
-            </div>
-          ) : null}
-          {isThreadPending ? (
-            <p className="text-small text-text-muted">Opening conversation…</p>
-          ) : null}
-          {thread?.messages.length ? (
-            <ul className="max-h-48 space-y-wilms-2 overflow-y-auto text-small">
-              {thread.messages.map((message) => (
-                <li key={message.id} className="rounded-sm border border-border p-wilms-2">
-                  <p className="font-semibold text-text-primary">{message.senderDisplayName}</p>
-                  <p className="text-text-muted">{message.body}</p>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-          <Textarea
-            aria-label="Message body"
-            placeholder="Write your message..."
-            value={messageBody}
-            onChange={(event) => setMessageBody(event.target.value)}
-          />
-        </div>
-      </Modal>
     </>
   );
 }
