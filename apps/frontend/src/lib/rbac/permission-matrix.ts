@@ -40,6 +40,8 @@ export function resolveUserPermissionIds(
 /** Route prefixes → any one of these permissions grants access. */
 export const ROUTE_PERMISSION_REQUIREMENTS: { prefix: string; permissions: PermissionId[] }[] = [
   { prefix: '/dashboard', permissions: [PERMISSION.ACCESS_ADMIN_PORTAL, PERMISSION.VIEW_REPORTS] },
+  /** Platform ops control centre — distinct from executive /dashboard. */
+  { prefix: '/ops', permissions: [PERMISSION.ACCESS_ADMIN_PORTAL, PERMISSION.MANAGE_SYSTEM_SETTINGS] },
   { prefix: '/borrowers', permissions: [PERMISSION.ACCESS_ADMIN_PORTAL, PERMISSION.VIEW_ASSIGNED_BORROWERS, PERMISSION.REGISTER_BORROWERS] },
   { prefix: '/loan-pools', permissions: [PERMISSION.ACCESS_ADMIN_PORTAL, PERMISSION.VIEW_FINANCIAL_REPORTS] },
   { prefix: '/loans', permissions: [PERMISSION.ACCESS_ADMIN_PORTAL, PERMISSION.APPROVE_LOANS, PERMISSION.VIEW_FINANCIAL_REPORTS] },
@@ -95,6 +97,7 @@ export function getPortalHomePath(role: UserRole): string {
 /** Nav item href → required permission (any match shows item). */
 export const NAV_ITEM_PERMISSIONS: Record<string, PermissionId[]> = {
   '/dashboard': [PERMISSION.ACCESS_ADMIN_PORTAL],
+  '/ops': [PERMISSION.ACCESS_ADMIN_PORTAL, PERMISSION.MANAGE_SYSTEM_SETTINGS],
   '/borrowers': [PERMISSION.ACCESS_ADMIN_PORTAL, PERMISSION.VIEW_ASSIGNED_BORROWERS],
   '/loan-pools': [PERMISSION.ACCESS_ADMIN_PORTAL, PERMISSION.VIEW_FINANCIAL_REPORTS],
   '/borrowers?status=PENDING': [PERMISSION.REVIEW_APPLICATIONS, PERMISSION.ACCESS_ADMIN_PORTAL],

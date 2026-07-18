@@ -36,7 +36,7 @@ export function AppNavbar({
     <header
       data-navbar="app"
       className={cn(
-        'hidden border-b border-border/80 bg-card/95 px-3 backdrop-blur-sm md:block lg:px-5',
+        'sticky top-0 z-30 hidden border-b border-border/80 bg-card/95 px-3 backdrop-blur-sm md:block lg:px-5',
         'supports-[backdrop-filter]:bg-card/90',
         className,
       )}

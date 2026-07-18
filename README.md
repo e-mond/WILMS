@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| **Current version** | `1.4.0` (see root `package.json` / `NEXT_PUBLIC_APP_VERSION` in the UI) |
+| **Current version** | `1.4.1` (see root `package.json` / `NEXT_PUBLIC_APP_VERSION` in the UI) |
 | **Frontend** | Next.js 14 App Router, React, TanStack Query, Tailwind |
 | **API** | Express, Drizzle ORM, Neon PostgreSQL |
 | **Runtime** | Node.js 22+ (`engines`, `.nvmrc`, CI) |
@@ -203,6 +203,10 @@ Browser
 
 Executive KPIs, group risk snapshot, quick actions, **financial overview** (collections vs expenses), borrower status distribution, collector performance, and recent activity alerts.
 
+### Operations control centre (`/ops`)
+
+**Distinct from the executive Dashboard.** Platform health, API/worker/queue status, migration watermark, runtime metrics, and operational surfaces for Super Admins. Do not confuse with the “Daily Operations” sidebar group (applications, disbursements, collections).
+
 ### Expense management (`/expenses`)
 
 Dedicated sidebar entry for super admins. Review collector-submitted expenses, approve/reject pending items, and monitor spend totals. Collectors submit via `/collector/expenses`.
@@ -273,6 +277,8 @@ Full procedures: `docs/deployment-guide.md`, `docs/production-guide.md`.
 
 | Version | Highlights |
 |---------|------------|
+| **v1.4.1** | UX shell hardening: Dashboard?Operations routing fix, sticky chrome, float stack, permission catalog, command search |
+| **v1.4.0** | Platform foundation: Node 22, BullMQ/Redis optional queues, idempotency, cursor pagination, outbox, feature flags |
 | **v1.3.8** | Final hardening, enterprise certification packs, ops dashboard, request IDs / Prometheus metrics |
 | **v1.3.7** | Stable release: financial KPI integrity, recon lifecycle, display IDs, dashboard polish |
 | **v1.3.6** | Production stabilisation, messaging memory fallback, health diagnostics, UI filter/toolbar polish |
@@ -311,17 +317,33 @@ See `CHANGELOG.md`, `PROJECT_STATUS.md`, and `docs/version-history.md`.
 | Production cutover (v1.3.8) | `docs/certification/v1.3.8/production-cutover/` |
 | **v1.4 planning (Phase 24)** | `docs/planning/v1.4/` |
 | **v1.4 Phase 25 foundation** | `docs/certification/v1.4/phase-25/` |
+| **v1.4 UX modernisation** | `docs/certification/v1.4/ux-modernisation/` |
 
 Historical certification evidence is preserved under `docs/archive/`.
 
 ---
 
+## Troubleshooting (local)
+
+| Symptom | Likely cause | Action |
+|---------|--------------|--------|
+| API health fails | API not running | `npm run dev:api` — check `http://127.0.0.1:4000/health` |
+| UI shows mock data unexpectedly | Mock mode default in frontend | Set `apps/frontend/.env.local` with `NEXT_PUBLIC_USE_MOCK=false` and `WILMS_API_UPSTREAM` |
+| BFF returns 403 | CSRF on `/api/wilms` | Use the browser UI session; do not raw-curl mutating BFF routes |
+| Demo login fails on production | Expected | Demo `@wilms.demo` accounts are blocked live — use invited users |
+| Operations nav opens Dashboard | Fixed in **1.4.1** | Upgrade; ensure `/ops` is in route permission matrix |
+
+---
+
 ## Contributing & Support
 
-1. Branch from `main` using the `cursor/<description>-8847` naming convention for agent workflows.
+1. Branch from `main` with a descriptive name (agent workflows use `cursor/<description>-8847`).
 2. Run `npm run type-check`, `npm run lint`, and `npm test` before opening a PR.
 3. Keep display IDs and RBAC permissions aligned when adding routes or APIs.
-4. Report issues at [github.com/e-mond/WILMS/issues](https://github.com/e-mond/WILMS/issues).
+4. Prefer the shared UI primitives under `apps/frontend/src/components/ui/` — do not invent parallel button/modal systems.
+5. Report issues at [github.com/e-mond/WILMS/issues](https://github.com/e-mond/WILMS/issues).
+
+See also `CONTRIBUTING.md`.
 
 ---
 

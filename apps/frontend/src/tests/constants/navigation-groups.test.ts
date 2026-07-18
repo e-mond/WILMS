@@ -12,7 +12,8 @@ describe('groupShellNavItems', () => {
     const labels = groups.map((group) => group.label).filter(Boolean);
 
     expect(labels).toContain(SHELL_NAV_GROUP_LABELS.overview);
-    expect(labels).toContain(SHELL_NAV_GROUP_LABELS.operations);
+    expect(labels).toContain('Daily Operations');
+    expect(SHELL_NAV_GROUP_LABELS.operations).toBe('Daily Operations');
     expect(labels).toContain(SHELL_NAV_GROUP_LABELS.financial);
     expect(labels).toContain(SHELL_NAV_GROUP_LABELS.people);
     expect(labels).toContain(SHELL_NAV_GROUP_LABELS.reports);

@@ -52,3 +52,21 @@
 - No full Shadcn/Radix rewrite completed
 - No live production smoke with operator credentials in this pack
 - No new database migrations in this pack
+
+
+## v1.4.1 follow-up deliverables
+
+| Report | Path |
+|--------|------|
+| UX shell audit | [UX_SHELL_AUDIT.md](./UX_SHELL_AUDIT.md) |
+| Navigation audit | [NAVIGATION_AUDIT.md](./NAVIGATION_AUDIT.md) |
+| Permission catalog | [PERMISSION_CATALOG_REVIEW.md](./PERMISSION_CATALOG_REVIEW.md) |
+| Global search | [GLOBAL_SEARCH_REVIEW.md](./GLOBAL_SEARCH_REVIEW.md) |
+| Shadcn plan | [SHADCN_MIGRATION_PLAN.md](./SHADCN_MIGRATION_PLAN.md) |
+| Error handling | [ERROR_HANDLING_REVIEW.md](./ERROR_HANDLING_REVIEW.md) |
+| Loading states | [LOADING_STATE_AUDIT.md](./LOADING_STATE_AUDIT.md) |
+| Doc hygiene | [DOCUMENTATION_HYGIENE_REPORT.md](./DOCUMENTATION_HYGIENE_REPORT.md) |
+| Responsive UX | [RESPONSIVE_UX_AUDIT.md](./RESPONSIVE_UX_AUDIT.md) |
+| Accessibility delta | [ACCESSIBILITY_REVIEW.md](./ACCESSIBILITY_REVIEW.md) |
+| Design system inventory | [DESIGN_SYSTEM_INVENTORY.md](./DESIGN_SYSTEM_INVENTORY.md) |
+| Final UX report | [FINAL_UX_MODERNISATION_REPORT.md](./FINAL_UX_MODERNISATION_REPORT.md) |

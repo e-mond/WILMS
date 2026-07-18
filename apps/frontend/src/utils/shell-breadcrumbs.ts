@@ -47,8 +47,15 @@ export function resolveShellBreadcrumbs(pathname: string): ShellBreadcrumbItem[]
   if (pathname === '/dashboard') {
     return [
       { label: 'Home', href: '/dashboard' },
-      { label: 'Dashboard', href: '/dashboard' },
-      { label: 'Overview' },
+      { label: 'Dashboard' },
+    ];
+  }
+
+  if (pathname === '/ops') {
+    return [
+      { label: 'Home', href: '/dashboard' },
+      { label: 'Operations', href: '/ops' },
+      { label: 'System Health' },
     ];
   }
 

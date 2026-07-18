@@ -10,7 +10,7 @@ import { PermissionProvider } from '@/components/providers/PermissionProvider';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { ThemeScript } from '@/components/theme/ThemeScript';
-import { ConnectionStatusBar } from '@/components/layout/shell/ConnectionStatusBar';
+import { FloatingShellControls } from '@/components/layout/shell/FloatingShellControls';
 import { E2eBridge } from '@/components/dev/E2eBridge';
 import { DemoModeBanner } from '@/components/feedback/DemoModeBanner';
 import { isDemoMode } from '@/data-provider/types';
@@ -21,7 +21,6 @@ import { AppUpdatePrompt } from '@/components/pwa/AppUpdatePrompt';
 import { ChunkRecoveryHandler } from '@/components/pwa/ChunkRecoveryHandler';
 import { NotificationSoundBridge } from '@/components/notifications/NotificationSoundBridge';
 import { ProductTourOverlay } from '@/components/onboarding/ProductTourOverlay';
-import { HelpFab } from '@/components/onboarding/HelpFab';
 import { ConsoleExtensionNoiseFilter } from '@/components/dev/ConsoleExtensionNoiseFilter';
 import { ServiceWorkerRegistrar } from '@/components/pwa/ServiceWorkerRegistrar';
 import { getServerSession } from '@/lib/auth/server-session';
@@ -80,11 +79,10 @@ export default function RootLayout({
                 <SessionExpiryHandler />
                 <AppLockHandler />
                 <ToastContainer />
-                <ConnectionStatusBar />
+                <FloatingShellControls />
                 <ConsoleExtensionNoiseFilter />
                 <NotificationSoundBridge />
                 <ProductTourOverlay />
-                <HelpFab />
                 {children}
               </AppBootstrap>
               </PermissionProvider>
