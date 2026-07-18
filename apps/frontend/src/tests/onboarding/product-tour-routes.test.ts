@@ -25,4 +25,13 @@ describe('product tour routes', () => {
     expect(tourSource).toContain('Resume later');
     expect(tourSource).toContain('tour_paused');
   });
+
+  it('offers welcome actions including do-not-show-again', () => {
+    expect(tourSource).toContain('Welcome to WILMS');
+    expect(tourSource).toContain('Don&apos;t Show This Again');
+    expect(tourSource).toContain('Not Now');
+    expect(tourSource).toContain('Start Tour');
+    expect(tourSource).toContain('neverShowAgain: true');
+  });
 });
+

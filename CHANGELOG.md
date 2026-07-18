@@ -2,6 +2,24 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [Unreleased] — UX / UI Modernisation
+
+### Summary
+
+Non-destructive shell chrome modernisation: denser enterprise header, grouped navigation, improved global search presentation, shared help menu, product-tour welcome actions, motion/skeleton polish, documentation accuracy, and identity hygiene. Financial and RBAC controls unchanged.
+
+### Changed
+- App navbar densified with clustered actions and command-style search trigger
+- Shell navigation progressive-disclosure groups (Overview, Operations, Financial, People, Reports, Communication, Administration, System)
+- Global search results grouped by entity; UUID-like subtitles suppressed
+- Product tour welcome: Start Tour / Not Now / Don’t Show This Again
+- Help available from header and bottom-right FAB (shared state)
+- Skeleton shimmer + shell motion tokens; respects `prefers-reduced-motion`
+- README / docs hub stamped to **1.4.0** and Node 22
+
+### Documentation
+- Audit pack: `docs/certification/v1.4/ux-modernisation/`
+
 ## [1.4.0] — Platform Foundation (Phase 25)
 
 **Release date:** July 2026

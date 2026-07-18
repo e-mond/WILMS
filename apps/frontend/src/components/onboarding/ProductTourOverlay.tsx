@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
-import { Checkbox } from '@/components/ui/Checkbox';
 import { useAuth } from '@/hooks/useAuth';
 import { USER_ROLE, type UserRole } from '@/constants/roles';
 import { cn } from '@/utils/cn';
@@ -276,17 +275,21 @@ export function useProductTour() {
   const [neverShowAgain, setNeverShowAgain] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
 
-  const persistDismissal = useCallback(() => {
-    if (neverShowAgain) {
-      localStorage.setItem(TOUR_NEVER_SHOW_KEY, 'true');
-    }
-    if (userId) {
-      localStorage.setItem(welcomeKey(userId), 'dismissed');
-    }
-    if (role) {
-      localStorage.setItem(completedKey(role), 'true');
-    }
-  }, [neverShowAgain, role, userId]);
+  const persistDismissal = useCallback(
+    (options?: { neverShowAgain?: boolean }) => {
+      const shouldNeverShow = options?.neverShowAgain ?? neverShowAgain;
+      if (shouldNeverShow) {
+        localStorage.setItem(TOUR_NEVER_SHOW_KEY, 'true');
+      }
+      if (userId) {
+        localStorage.setItem(welcomeKey(userId), 'dismissed');
+      }
+      if (role) {
+        localStorage.setItem(completedKey(role), 'true');
+      }
+    },
+    [neverShowAgain, role, userId],
+  );
 
   const openWelcome = useCallback(() => {
     if (!steps.length) {
@@ -309,16 +312,22 @@ export function useProductTour() {
     setPhase('tour');
   }, [role, steps]);
 
-  const closeTour = useCallback(() => {
-    clearTourHighlights();
-    if (role) {
-      localStorage.removeItem(progressKey(role));
-      recordTourAnalytics(role, 'tour_completed_or_exited', steps[stepIndex]?.id);
-    }
-    persistDismissal();
-    setPhase('idle');
-    setIsNavigating(false);
-  }, [persistDismissal, role, stepIndex, steps]);
+  const closeTour = useCallback(
+    (options?: { neverShowAgain?: boolean }) => {
+      clearTourHighlights();
+      if (role) {
+        localStorage.removeItem(progressKey(role));
+        recordTourAnalytics(role, 'tour_completed_or_exited', steps[stepIndex]?.id);
+      }
+      if (typeof options?.neverShowAgain === 'boolean') {
+        setNeverShowAgain(options.neverShowAgain);
+      }
+      persistDismissal(options);
+      setPhase('idle');
+      setIsNavigating(false);
+    },
+    [persistDismissal, role, stepIndex, steps],
+  );
 
   const pauseTourForLater = useCallback(() => {
     clearTourHighlights();
@@ -557,24 +566,25 @@ export function ProductTourOverlay() {
     return (
       <TourDialogShell title="Welcome to WILMS">
         <p className="mt-wilms-3 text-body text-text-muted">
-          Would you like a quick guided tour of the portal? We will highlight key menus and pages so
-          you can get started faster.
+          Would you like a quick guided tour of the portal? We&apos;ll highlight key menus and pages
+          so you can get started faster.
         </p>
-        <div className="mt-wilms-4">
-          <Checkbox
-            label="Don't show this again"
-            checked={tour.neverShowAgain}
-            onChange={(event) => tour.setNeverShowAgain(event.target.checked)}
-          />
-        </div>
+        <p className="mt-wilms-2 text-small text-text-muted">
+          You can restart the guided tour anytime using the Help button at the bottom-right of your
+          screen, or from the help icon in the header.
+        </p>
         <div className="mt-wilms-5 flex flex-wrap justify-end gap-wilms-2">
           <Button
             type="button"
             variant="ghost"
-            onClick={() => {
-              tour.setNeverShowAgain(tour.neverShowAgain);
-              tour.closeTour();
-            }}
+            onClick={() => tour.closeTour({ neverShowAgain: true })}
+          >
+            Don&apos;t Show This Again
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => tour.closeTour({ neverShowAgain: false })}
           >
             Not Now
           </Button>
@@ -590,14 +600,14 @@ export function ProductTourOverlay() {
     return (
       <TourDialogShell title="Exit guided tour?" progressPercent={tour.progressPercent}>
         <p className="mt-wilms-3 text-body text-text-muted">
-          You are leaving the guided tour. You can open it again anytime using the help button at
-          the bottom right of your screen.
+          You are leaving the guided tour. You can open it again anytime using the Help button at
+          the bottom-right of your screen.
         </p>
         <div className="mt-wilms-5 flex flex-wrap justify-end gap-wilms-2">
           <Button type="button" variant="secondary" onClick={tour.resumeTour}>
             Continue Tour
           </Button>
-          <Button type="button" variant="ghost" onClick={tour.closeTour}>
+          <Button type="button" variant="ghost" onClick={() => tour.closeTour()}>
             Exit Tour
           </Button>
         </div>

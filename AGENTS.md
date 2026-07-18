@@ -8,7 +8,7 @@ WILMS (Women's Interest-Free Loan Management System) is an npm-workspaces + Turb
 
 Standard commands live in the root `package.json` and `apps/*/package.json` scripts; see also `CONTRIBUTING.md` and `apps/backend/README.md`.
 
-## Cursor Cloud specific instructions
+## Cloud development environment notes
 
 - Dependencies for the whole monorepo install from the repo root with `npm ci` (the update script). **Node 22+** required (`engines`, `.nvmrc`, Docker `node:22`; CI uses Node 22).
 - Backend needs no external services: with `DATABASE_URL` unset it runs on an in-memory store. Start it with `npm run dev:api` (serves `http://127.0.0.1:4000`, health at `/health`).

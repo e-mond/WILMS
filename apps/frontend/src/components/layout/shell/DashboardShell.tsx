@@ -115,7 +115,6 @@ export function DashboardShell({
           <AppNavbar
             profile={profile}
             variant={isExecutive ? 'executive' : 'standard'}
-            className="h-14"
             showMobileNavTrigger={showMobileDrawer}
           />
         )}
@@ -166,7 +165,6 @@ export function DashboardShell({
                 <AppNavbar
                   profile={profile}
                   variant="executive"
-                  className="h-14"
                   showMobileNavTrigger={showMobileDrawer}
                 />
               </div>
