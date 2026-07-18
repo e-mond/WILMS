@@ -2,23 +2,30 @@
 
 All notable changes to WILMS are documented in this file.
 
-## [Unreleased] — UX / UI Modernisation
+## [1.4.1] — UX Shell Hardening
+
+**Release date:** July 2026
 
 ### Summary
 
-Non-destructive shell chrome modernisation: denser enterprise header, grouped navigation, improved global search presentation, shared help menu, product-tour welcome actions, motion/skeleton polish, documentation accuracy, and identity hygiene. Financial and RBAC controls unchanged.
+Shell, navigation, search, and permission-catalog hardening on top of v1.4.0. Fixes the critical Dashboard vs Operations routing collision, sticky enterprise chrome, floating-control overlap, and Permission Catalog readability. Financial controls and RBAC enforcement unchanged.
+
+### Fixed
+- `/ops` missing from route permission matrix redirected Super Admins to `/dashboard` (nav collision)
+- Help FAB overlapping connectivity/health chip (shared `FloatingActionStack`)
+- Permission Catalog broken wrapping for technical keys
 
 ### Changed
-- App navbar densified with clustered actions and command-style search trigger
-- Shell navigation progressive-disclosure groups (Overview, Operations, Financial, People, Reports, Communication, Administration, System)
-- Global search results grouped by entity; UUID-like subtitles suppressed
-- Product tour welcome: Start Tour / Not Now / Don’t Show This Again
-- Help available from header and bottom-right FAB (shared state)
-- Skeleton shimmer + shell motion tokens; respects `prefers-reduced-motion`
-- README / docs hub stamped to **1.4.0** and Node 22
+- Sticky header in content column; full-height sticky sidebar
+- Nav group label `Daily Operations` (workflow) vs System nav item `Operations` (`/ops`)
+- Distinct breadcrumbs/titles for Dashboard vs Operations
+- Global search command palette: keyboard navigation, navigation destinations, error/empty states
+- Permission Catalog searchable category rows with copyable keys and “Used by” roles
+- Product tour includes Operations as a distinct Super Admin step
 
 ### Documentation
-- Audit pack: `docs/certification/v1.4/ux-modernisation/`
+- README / docs hub / PROJECT_STATUS stamped to **1.4.1**
+- UX audit pack expanded (`UX_SHELL_AUDIT.md`, `NAVIGATION_AUDIT.md`, …)
 
 ## [1.4.0] — Platform Foundation (Phase 25)
 

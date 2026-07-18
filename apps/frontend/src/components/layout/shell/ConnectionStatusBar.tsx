@@ -1,48 +1,9 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
-import { ConnectionStatusChip } from '@/components/layout/shell/navbar/ConnectionStatusChip';
-import { isPublicPath } from '@/lib/auth/routes';
-import { useAppLockStore } from '@/state/appLockStore';
-import { cn } from '@/utils/cn';
-
-function shouldHideConnectionBar(pathname: string, isLocked: boolean): boolean {
-  if (isPublicPath(pathname)) {
-    return true;
-  }
-
-  if (isLocked) {
-    return true;
-  }
-
-  return false;
-}
-
+/**
+ * Connectivity chip is owned by FloatingShellControls to prevent overlap with Help.
+ * This module remains as a no-op export for any legacy imports.
+ */
 export function ConnectionStatusBar() {
-  const pathname = usePathname();
-  const isLocked = useAppLockStore((state) => state.isLocked);
-
-  if (shouldHideConnectionBar(pathname, isLocked)) {
-    return null;
-  }
-
-  return (
-    <div
-      className={cn(
-        'pointer-events-none fixed z-50',
-        'bottom-4 right-4',
-        'pb-[max(0px,env(safe-area-inset-bottom))]',
-      )}
-      aria-hidden={false}
-    >
-      <div
-        className={cn(
-          'pointer-events-auto rounded-full border border-border bg-background/95 shadow-lg backdrop-blur-md',
-          'sm:rounded-sm',
-        )}
-      >
-        <ConnectionStatusChip />
-      </div>
-    </div>
-  );
+  return null;
 }

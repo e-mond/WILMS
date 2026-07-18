@@ -6,14 +6,14 @@ export interface ReleaseNotes {
 }
 
 export const CURRENT_RELEASE_NOTES: ReleaseNotes = {
-  version: '1.4.0',
+  version: '1.4.1',
   summary:
-    'Platform foundation — durable job queues, financial idempotency hardening, cursor pagination, and stronger observability.',
+    'UX shell hardening — distinct Dashboard vs Operations, sticky enterprise chrome, command search, permission catalog redesign, and floating-action collision fix.',
   highlights: [
-    'Optional Redis/BullMQ background jobs with safe in-process fallback.',
-    'Stronger Idempotency-Key handling for money mutations (required in production).',
-    'Cursor pagination available for borrower lists.',
-    'Operations dashboard shows queue mode and feature flags.',
-    'Node.js 22 standardized across Docker, CI, and engines.',
+    'Dashboard and Operations are distinct Super Admin destinations with correct RBAC routing.',
+    'Sticky header and sidebar shell with grouped navbar actions.',
+    'Shared floating-action stack prevents Help and connectivity overlap.',
+    'Permission Catalog redesigned as searchable category rows.',
+    'Global search upgraded toward a keyboard command palette.',
   ],
 };

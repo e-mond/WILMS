@@ -36,6 +36,13 @@ const TOUR_STEPS_BY_ROLE: Partial<Record<UserRole, ProductTourStep[]>> = {
       targetSelector: '[data-tour="financial-overview"], [data-tour-nav="/dashboard"]',
     },
     {
+      id: 'operations',
+      title: 'Operations',
+      body: 'Open the platform control centre for system health, workers, queues, and runtime status. This is separate from the executive Dashboard.',
+      href: '/ops',
+      targetSelector: '[data-tour="operations-dashboard"], [data-tour-nav="/ops"]',
+    },
+    {
       id: 'loan-pools',
       title: 'Loan Pools',
       body: 'Monitor capital utilisation, disbursements, and repayment rates for each regional pool. Assign groups when you create a pool so disbursements update utilisation.',
