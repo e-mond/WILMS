@@ -120,16 +120,9 @@ const TOUR_STEPS_BY_ROLE: Partial<Record<UserRole, ProductTourStep[]>> = {
       targetSelector: '[data-tour-nav="/collector/reconciliation"]',
     },
     {
-      id: 'messages',
-      title: 'Messages',
-      body: 'Read and reply to supervisor messages from the inbox.',
-      href: '/collector/messages',
-      targetSelector: '[data-tour-nav="/collector/messages"]',
-    },
-    {
       id: 'notifications',
       title: 'Notifications',
-      body: 'Watch the bell icon for alerts, messages, and system events.',
+      body: 'Watch the bell icon for alerts and system events.',
       targetSelector: '[data-tour="notifications-bell"]',
     },
   ],

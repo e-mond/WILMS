@@ -85,6 +85,22 @@ export function PermissionCatalogPanel({
 
   return (
     <div className="space-y-wilms-4">
+      <div className="rounded-md border border-border bg-background px-wilms-4 py-wilms-3 text-small text-text-muted">
+        <p className="font-semibold text-text-primary">How permissions work</p>
+        <ul className="mt-2 list-disc space-y-1 pl-5">
+          <li>
+            <strong className="text-text-primary">Roles</strong> carry a default set of permissions
+            (Settings → Roles). Changing a role updates every user with that role.
+          </li>
+          <li>
+            <strong className="text-text-primary">User overrides</strong> grant or revoke one
+            permission for a single person (Users → open profile → Permission overrides) without
+            changing the whole role.
+          </li>
+          <li>Permissions below are grouped by category. The technical key is secondary metadata.</li>
+        </ul>
+      </div>
+
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative min-w-0 flex-1 sm:max-w-md">
           <Search
@@ -102,7 +118,8 @@ export function PermissionCatalogPanel({
         </div>
         <p className="text-small text-text-muted">
           {total} permission{total === 1 ? '' : 's'}
-          {query.trim() ? ' matching' : ''}
+          {query.trim() ? ' matching' : ''} in {filteredGroups.length} group
+          {filteredGroups.length === 1 ? '' : 's'}
         </p>
       </div>
 

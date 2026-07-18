@@ -3,7 +3,11 @@ import { resolveShellPageTitle } from '@/utils/shell-page-title';
 
 describe('resolveShellPageTitle', () => {
   it('resolves exact dashboard title', () => {
-    expect(resolveShellPageTitle('/dashboard')).toBe('Super Admin Dashboard');
+    expect(resolveShellPageTitle('/dashboard')).toBe('Dashboard');
+  });
+
+  it('resolves operations control-centre title distinctly from dashboard', () => {
+    expect(resolveShellPageTitle('/ops')).toBe('Operations');
   });
 
   it('resolves dynamic borrower profile routes', () => {

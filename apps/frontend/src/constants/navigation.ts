@@ -119,7 +119,6 @@ export const COLLECTOR_NAV: ShellNavItem[] = [
     group: 'financial',
   },
   { href: '/collector/my-borrowers', label: 'Borrowers', icon: 'borrowers', group: 'people' },
-  { href: '/collector/messages', label: 'Messages', icon: 'messages', group: 'communication' },
   { href: '/collector/expenses', label: 'Expenses', icon: 'reports', group: 'financial' },
   {
     href: '/collector/reconciliation',
