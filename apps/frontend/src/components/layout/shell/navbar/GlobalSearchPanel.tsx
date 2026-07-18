@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Avatar } from '@/components/data-display/Avatar';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
@@ -66,6 +66,8 @@ export function GlobalSearchPanel() {
   const closeGlobalSearch = useUiStore((state) => state.closeGlobalSearch);
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
+  const activeIndexRef = useRef(0);
+  const commandItemsRef = useRef<CommandItem[]>([]);
 
   const { data: results = [], isFetching, isError } = useGlobalSearch(
     {
@@ -118,6 +120,9 @@ export function GlobalSearchPanel() {
     return items;
   }, [navigationItems, results]);
 
+  commandItemsRef.current = commandItems;
+  activeIndexRef.current = activeIndex;
+
   const groupedCommands = useMemo(() => {
     const map = new Map<string, CommandItem[]>();
     for (const item of commandItems) {
@@ -139,31 +144,73 @@ export function GlobalSearchPanel() {
     setActiveIndex(0);
   }, [query, results]);
 
+  const selectActive = useCallback(() => {
+    const items = commandItemsRef.current;
+    const target = items[activeIndexRef.current];
+    if (!target) {
+      return;
+    }
+    closeGlobalSearch();
+    router.push(target.href);
+  }, [closeGlobalSearch, router]);
+
+  const handleCommandKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      const items = commandItemsRef.current;
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        event.stopPropagation();
+        setActiveIndex((index) => Math.min(index + 1, Math.max(items.length - 1, 0)));
+        return;
+      }
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        event.stopPropagation();
+        setActiveIndex((index) => Math.max(index - 1, 0));
+        return;
+      }
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        event.stopPropagation();
+        selectActive();
+      }
+    },
+    [selectActive],
+  );
+
   useEffect(() => {
     if (!isOpen) {
       return;
     }
 
-    const handleKeyDown = (event: KeyboardEvent) => {
+    const handleWindowKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp' && event.key !== 'Enter') {
+        return;
+      }
+      // Prefer the focused input handler; this catches focus outside the input.
+      const target = event.target as HTMLElement | null;
+      if (target?.closest('[data-global-search-panel="true"]')) {
+        return;
+      }
       if (event.key === 'ArrowDown') {
         event.preventDefault();
-        setActiveIndex((index) => Math.min(index + 1, Math.max(commandItems.length - 1, 0)));
+        setActiveIndex((index) =>
+          Math.min(index + 1, Math.max(commandItemsRef.current.length - 1, 0)),
+        );
       }
       if (event.key === 'ArrowUp') {
         event.preventDefault();
         setActiveIndex((index) => Math.max(index - 1, 0));
       }
-      if (event.key === 'Enter' && commandItems[activeIndex]) {
+      if (event.key === 'Enter') {
         event.preventDefault();
-        const target = commandItems[activeIndex]!;
-        closeGlobalSearch();
-        router.push(target.href);
+        selectActive();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeIndex, closeGlobalSearch, commandItems, isOpen, router]);
+    window.addEventListener('keydown', handleWindowKeyDown);
+    return () => window.removeEventListener('keydown', handleWindowKeyDown);
+  }, [isOpen, selectActive]);
 
   if (!user) {
     return null;
@@ -178,7 +225,11 @@ export function GlobalSearchPanel() {
       title="Search WILMS"
       className="max-w-2xl"
     >
-      <div className="space-y-wilms-4">
+      <div
+        data-global-search-panel="true"
+        className="space-y-wilms-4"
+        onKeyDown={handleCommandKeyDown}
+      >
         <label className="block" htmlFor={`${titleId}-search`}>
           <span className="sr-only">Search WILMS records and navigation</span>
           <Input
@@ -188,16 +239,25 @@ export function GlobalSearchPanel() {
             placeholder={getGlobalSearchPlaceholder(user.role)}
             autoComplete="off"
             onChange={(event) => setQuery(event.target.value)}
+            onKeyDown={handleCommandKeyDown}
           />
         </label>
-        <p className="text-small text-text-muted">
-          Command palette — navigate with ↑ ↓, open with Enter, close with Esc.
+        <p className="text-small text-text-muted" id={`${titleId}-hint`}>
+          Use ↑ ↓ to move, Enter to open, Esc to close.
           {user.role === USER_ROLE.SUPER_ADMIN
-            ? ' Includes Dashboard and Operations as separate destinations.'
+            ? ' Dashboard and Operations are separate destinations.'
             : null}
         </p>
 
-        <div aria-live="polite" className="max-h-[min(26rem,55vh)] space-y-wilms-3 overflow-auto">
+        <div
+          aria-live="polite"
+          aria-labelledby={`${titleId}-hint`}
+          className="max-h-[min(26rem,55vh)] space-y-wilms-3 overflow-auto"
+          role="listbox"
+          aria-activedescendant={
+            commandItems[activeIndex] ? `search-option-${commandItems[activeIndex]!.id}` : undefined
+          }
+        >
           {query.trim().length >= 1 && isFetching ? (
             <div className="space-y-2" aria-busy="true">
               <Skeleton className="h-4 w-24" />
@@ -235,13 +295,13 @@ export function GlobalSearchPanel() {
                   const index = flatIndex;
                   const isActive = index === activeIndex;
                   return (
-                    <li key={item.id}>
+                    <li key={item.id} role="option" aria-selected={isActive} id={`search-option-${item.id}`}>
                       <button
                         type="button"
                         className={cn(
                           'flex w-full items-center gap-wilms-3 px-wilms-4 py-wilms-3 text-left',
                           'transition-colors hover:bg-background',
-                          isActive && 'bg-brand-primary-light/40',
+                          isActive && 'bg-brand-primary-light/40 ring-1 ring-inset ring-brand-primary/30',
                           'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-primary',
                         )}
                         onMouseEnter={() => setActiveIndex(index)}
@@ -316,7 +376,7 @@ export function GlobalSearchTrigger({
       <button
         type="button"
         className={cn(
-          'inline-flex h-9 w-full items-center gap-2 rounded-md border border-border bg-background px-3 text-small text-text-muted',
+          'inline-flex h-9 w-full max-w-full items-center gap-2 rounded-md border border-border bg-background px-3 text-small text-text-muted',
           'transition-colors hover:border-brand-primary/40 hover:text-text-primary',
           'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary',
           className,
@@ -325,7 +385,7 @@ export function GlobalSearchTrigger({
       >
         <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
         <span className="min-w-0 flex-1 truncate text-left">Search WILMS…</span>
-        <kbd className="hidden shrink-0 rounded border border-border bg-card px-1.5 py-0.5 text-[10px] font-medium text-text-tertiary lg:inline">
+        <kbd className="hidden shrink-0 rounded border border-border bg-card px-1.5 py-0.5 text-[10px] font-medium text-text-tertiary xl:inline">
           ⌘K
         </kbd>
       </button>
@@ -344,7 +404,6 @@ export function GlobalSearchTrigger({
     >
       <Search className="h-4 w-4" aria-hidden="true" />
       <span className="sr-only md:not-sr-only md:inline">Search</span>
-      <kbd className="hidden rounded border border-border px-1 text-[10px] xl:inline">⌘K</kbd>
     </button>
   );
 }

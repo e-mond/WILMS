@@ -12,6 +12,7 @@ import { PermissionGate } from '@/components/auth/PermissionGate';
 import { PERMISSION } from '@/constants/permissions';
 import { useAuth } from '@/hooks/useAuth';
 import { useUiStore } from '@/state/uiStore';
+import { useShellLayoutStore } from '@/state/shellLayoutStore';
 import { resolveSettingsHref } from '@/utils/settings-route';
 import { cn } from '@/utils/cn';
 import { HelpCircle, Settings } from 'lucide-react';
@@ -70,6 +71,9 @@ export function ShellNavbarActions({
   const { user } = useAuth();
   const settingsHref = resolveSettingsHref(user?.role);
   const openHelpMenu = useUiStore((state) => state.openHelpMenu);
+  const isSidebarCollapsed = useShellLayoutStore((state) => state.isSidebarCollapsed);
+  /** When the sidebar is expanded, keep the identity chip compact so the bar does not overflow. */
+  const profileCompact = compact || !isSidebarCollapsed;
 
   if (mobileSimplified) {
     return (
@@ -149,7 +153,7 @@ export function ShellNavbarActions({
       {user ? (
         <>
           <NavbarDivider />
-          <UserProfileMenu compact={compact} />
+          <UserProfileMenu compact={profileCompact} />
         </>
       ) : null}
     </div>

@@ -46,7 +46,7 @@ function ProfileSection() {
   const { user } = useAuth();
   const replayTour = useReplayProductTour();
   const toast = useToast();
-  const { data: me } = useSettingsMe();
+  const { data: me, isLoading } = useSettingsMe();
   const updateMe = useUpdateSettingsMe();
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState('');
@@ -59,8 +59,32 @@ function ProfileSection() {
     }
   }, [me]);
 
-  if (!user?.id || !me) {
-    return null;
+  if (isLoading || !user?.id) {
+    return (
+      <SettingsSectionCard
+        title="Profile"
+        description="Loading your account…"
+        icon={<SettingsProfileIcon />}
+      >
+        <div className="space-y-3 py-2" aria-busy="true">
+          <div className="h-16 w-16 animate-pulse rounded-full bg-border/40" />
+          <div className="h-10 w-full animate-pulse rounded-md bg-border/40" />
+          <div className="h-10 w-full animate-pulse rounded-md bg-border/40" />
+        </div>
+      </SettingsSectionCard>
+    );
+  }
+
+  if (!me) {
+    return (
+      <SettingsSectionCard
+        title="Profile"
+        description="We could not load your profile right now."
+        icon={<SettingsProfileIcon />}
+      >
+        <p className="text-small text-text-muted">Refresh the page or try again shortly.</p>
+      </SettingsSectionCard>
+    );
   }
 
   const resolvedDisplayName = displayName || user.displayName || 'WILMS User';
@@ -71,25 +95,31 @@ function ProfileSection() {
       description="Your account identity in WILMS."
       icon={<SettingsProfileIcon />}
     >
-      <div className="mb-wilms-4 flex items-center gap-wilms-3">
-        <Avatar
-          label={resolvedDisplayName}
-          photoUrl={resolvePersonPhotoUrl({
-            name: resolvedDisplayName,
-            id: user.id,
-            uploadUrl: profilePhotoUrl,
-          })}
-          size="lg"
-        />
-        <div>
-          <p className="text-body font-semibold text-text-primary">{resolvedDisplayName}</p>
-          <p className="text-small text-text-muted">{user.role?.replace(/_/g, ' ') ?? 'User'}</p>
+      <div className="space-y-wilms-5">
+        <div className="flex flex-col gap-wilms-4 sm:flex-row sm:items-center">
+          <Avatar
+            label={resolvedDisplayName}
+            photoUrl={resolvePersonPhotoUrl({
+              name: resolvedDisplayName,
+              id: user.id,
+              uploadUrl: profilePhotoUrl,
+            })}
+            size="lg"
+          />
+          <div className="min-w-0">
+            <p className="truncate text-body font-semibold text-text-primary">{resolvedDisplayName}</p>
+            <p className="text-small text-text-muted">{user.role?.replace(/_/g, ' ') ?? 'User'}</p>
+            <p className="mt-1 text-small text-text-tertiary">
+              ID {resolveUserDisplayId(user.id)}
+            </p>
+          </div>
         </div>
-      </div>
-      <SettingsSettingRow
-        title="Profile Photo"
-        description="Upload or replace your profile photo."
-        control={
+
+        <div className="rounded-md border border-border bg-background p-wilms-4">
+          <p className="mb-wilms-2 text-small font-semibold text-text-primary">Profile photo</p>
+          <p className="mb-wilms-3 text-small text-text-muted">
+            Upload a clear headshot. This appears in the header menu.
+          </p>
           <PhotoUpload
             id="profile-photo-upload"
             value={null}
@@ -98,67 +128,56 @@ function ProfileSection() {
             entityId={user.id}
             onUploadRecordChange={(record) => setProfilePhotoUrl(record?.url ?? null)}
           />
-        }
-      />
-      <SettingsSettingRow
-        title="Display Name"
-        description="Shown in the shell header and audit trail."
-        control={
-          <Input
-            value={displayName}
-            onChange={(event) => setDisplayName(event.target.value)}
-            aria-label="Display name"
-          />
-        }
-      />
-      <SettingsSettingRow
-        title="Email Address"
-        description="Primary contact email."
-        control={
-          <Input
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            aria-label="Email address"
-            type="email"
-          />
-        }
-      />
-      <SettingsSettingRow
-        title="User ID"
-        description="Internal account identifier."
-        control={<Input defaultValue={resolveUserDisplayId(user.id)} readOnly aria-label="User ID" />}
-      />
-      <SettingsSettingRow
-        title="Role"
-        description="Current access level."
-        control={<Input defaultValue={user.role?.replace(/_/g, ' ') ?? 'User'} readOnly aria-label="Role" />}
-      />
-      <SettingsSettingRow
-        title="Product tour"
-        description="Replay the guided walkthrough for your role."
-        control={
-          <Button type="button" size="sm" variant="secondary" onClick={replayTour}>
-            Replay tour
+        </div>
+
+        <div className="grid gap-wilms-4 sm:grid-cols-2">
+          <label className="block space-y-1.5">
+            <span className="text-small font-semibold text-text-primary">Display name</span>
+            <Input
+              value={displayName}
+              onChange={(event) => setDisplayName(event.target.value)}
+              aria-label="Display name"
+            />
+          </label>
+          <label className="block space-y-1.5">
+            <span className="text-small font-semibold text-text-primary">Email</span>
+            <Input
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              aria-label="Email address"
+              type="email"
+            />
+          </label>
+        </div>
+
+        <SettingsSettingRow
+          title="Product tour"
+          description="Replay the guided walkthrough for your role."
+          control={
+            <Button type="button" size="sm" variant="secondary" onClick={replayTour}>
+              Replay tour
+            </Button>
+          }
+        />
+
+        <div className="flex justify-end border-t border-border pt-wilms-4">
+          <Button
+            type="button"
+            size="sm"
+            disabled={updateMe.isPending}
+            onClick={() => {
+              void updateMe
+                .mutateAsync({ displayName, email })
+                .then(() => toast.success('Profile updated'))
+                .catch((error: unknown) => {
+                  const message = error instanceof Error ? error.message : 'Try again shortly.';
+                  toast.error('Unable to update profile', { message });
+                });
+            }}
+          >
+            Save profile
           </Button>
-        }
-      />
-      <div className="flex justify-end pt-wilms-2">
-        <Button
-          type="button"
-          size="sm"
-          disabled={updateMe.isPending}
-          onClick={() => {
-            void updateMe
-              .mutateAsync({ displayName, email })
-              .then(() => toast.success('Profile updated'))
-              .catch((error: unknown) => {
-                const message = error instanceof Error ? error.message : 'Try again shortly.';
-                toast.error('Unable to update profile', { message });
-              });
-          }}
-        >
-          Save profile
-        </Button>
+        </div>
       </div>
     </SettingsSectionCard>
   );
@@ -492,12 +511,12 @@ export function RoleSettingsPanel({ role: roleOverride }: RoleSettingsPanelProps
   );
 
   return (
-    <div className="grid gap-wilms-4 xl:grid-cols-[220px_minmax(0,1fr)]">
+    <div className="grid gap-wilms-4 lg:grid-cols-[200px_minmax(0,1fr)]">
       <nav
         aria-label="Settings categories"
-        className="flex gap-wilms-2 overflow-x-auto pb-wilms-1 xl:block xl:space-y-wilms-1 xl:overflow-visible xl:pb-0"
+        className="flex gap-2 overflow-x-auto pb-1 lg:block lg:space-y-1 lg:overflow-visible lg:pb-0"
       >
-        <p className="hidden px-wilms-3 pb-wilms-2 text-small font-semibold uppercase tracking-wide text-text-muted xl:block">
+        <p className="hidden px-3 pb-2 text-small font-semibold uppercase tracking-wide text-text-muted lg:block">
           Settings
         </p>
         {sections.map((section) => (
@@ -505,10 +524,10 @@ export function RoleSettingsPanel({ role: roleOverride }: RoleSettingsPanelProps
             key={section.id}
             type="button"
             className={cn(
-              'shrink-0 border-l-2 px-wilms-3 py-wilms-2 text-left text-body font-semibold transition-colors xl:flex xl:w-full xl:items-center',
+              'shrink-0 rounded-md border px-3 py-2 text-left text-body font-semibold transition-colors lg:flex lg:w-full lg:items-center lg:rounded-none lg:border-0 lg:border-l-2',
               activeSection === section.id
-                ? 'border-executive-gold bg-brand-primary-light text-executive-gold'
-                : 'border-transparent text-text-muted hover:border-border hover:bg-background hover:text-text-primary',
+                ? 'border-brand-primary/40 bg-brand-primary-light text-brand-primary lg:border-executive-gold lg:text-executive-gold'
+                : 'border-border text-text-muted hover:bg-background hover:text-text-primary lg:border-transparent',
             )}
             aria-current={activeSection === section.id ? 'page' : undefined}
             onClick={() => setActiveSection(section.id)}
