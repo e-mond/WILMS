@@ -76,9 +76,10 @@ export function OperationsDashboardPanel() {
         <div>
           <h1 className="text-heading-2 font-semibold text-text-primary">Operations</h1>
           <p className="mt-wilms-1 max-w-2xl text-small text-text-muted">
-            Platform control centre — system health, workers, queues, migrations, and runtime
-            status. This is separate from the executive Dashboard. Values come from authenticated
-            API health and financial snapshots — no secrets are exposed.
+            Super Admin platform control centre for operators (health, workers, queues, migrations,
+            runtime). Field staff and day-to-day lending work use the Dashboard and Daily Operations
+            pages instead. Values come from authenticated API health and financial snapshots — no
+            secrets are exposed.
           </p>
         </div>
         <Button type="button" variant="secondary" onClick={load} disabled={isPending}>
