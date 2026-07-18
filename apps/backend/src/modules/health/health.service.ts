@@ -119,8 +119,8 @@ export interface HealthReport {
     notifications: { inApp: 'available'; push: 'optional'; email: 'optional' | 'configured'; sms: 'optional' | 'configured' };
   };
   workers: {
-    redis: 'not_used';
-    queue: 'in_process';
+    redis: 'not_used' | 'configured';
+    queue: 'in_process' | 'bullmq_available';
     scheduler: 'http_triggered';
   };
 }
@@ -275,8 +275,11 @@ export async function buildHealthReport(): Promise<HealthReport> {
       },
     },
     workers: {
-      redis: 'not_used',
-      queue: 'in_process',
+      redis: process.env.REDIS_URL || process.env.WILMS_REDIS_URL ? 'configured' : 'not_used',
+      queue:
+        process.env.REDIS_URL || process.env.WILMS_REDIS_URL
+          ? 'bullmq_available'
+          : 'in_process',
       scheduler: 'http_triggered',
     },
   };

@@ -44,6 +44,10 @@ export const env = {
   appUrl: process.env.WILMS_APP_URL?.trim() || process.env.WILMS_CORS_ORIGIN?.trim() || undefined,
   /** Optional bearer token for Prometheus scrapes of GET /ops/metrics */
   metricsScrapeToken: process.env.WILMS_METRICS_TOKEN?.trim() || undefined,
+  /** Redis URL for BullMQ (optional — falls back to in-process jobs). */
+  redisUrl: process.env.REDIS_URL?.trim() || process.env.WILMS_REDIS_URL?.trim() || undefined,
+  /** Prefix for BullMQ queue names */
+  queuePrefix: process.env.WILMS_QUEUE_PREFIX?.trim() || 'wilms',
 };
 
 function resolveGitCommit(): string | undefined {

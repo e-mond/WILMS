@@ -1,10 +1,13 @@
 /**
- * Phase 20 — Operations status for Super Admin operations dashboard.
+ * Operations status for Super Admin operations dashboard.
  * Aggregates health + financial snapshot + worker topology. No secrets.
  */
 import { buildHealthReport } from '../health/health.service.js';
 import { buildDashboardFinancialOverview } from '../dashboard/financial-overview.js';
 import { isDatabaseEnabled } from '../../db/client.js';
+import { getFeatureFlags } from '../../config/feature-flags.js';
+import { getQueueStats } from '../../infrastructure/queue/index.js';
+import { env } from '../../config/env.js';
 
 export type OpsSurfaceState = 'ok' | 'degraded' | 'unavailable' | 'external' | 'not_applicable';
 
@@ -28,11 +31,19 @@ export interface OpsStatusReport {
   health: Awaited<ReturnType<typeof buildHealthReport>>;
   surfaces: OpsSurface[];
   workers: {
-    redis: 'not_used';
-    queue: 'in_process';
+    redis: 'not_used' | 'configured' | 'connected' | 'unavailable';
+    queue: 'in_process' | 'bullmq' | 'disabled';
     scheduler: 'http_triggered';
     note: string;
+    stats?: {
+      waiting: number;
+      active: number;
+      failed: number;
+      completed: number;
+    };
   };
+  featureFlags: ReturnType<typeof getFeatureFlags>;
+
   financial: {
     availableCapitalPesewas: number;
     totalDisbursedPesewas: number;
@@ -252,6 +263,16 @@ export async function buildOpsStatusReport(): Promise<OpsStatusReport> {
         }
       : null);
 
+  const queueStats = await getQueueStats();
+  const flags = getFeatureFlags();
+  const redisState = !env.redisUrl
+    ? 'not_used'
+    : queueStats.redisConnected
+      ? 'connected'
+      : queueStats.redisConfigured
+        ? 'unavailable'
+        : 'configured';
+
   return {
     generatedAt: new Date().toISOString(),
     deployment: {
@@ -265,11 +286,23 @@ export async function buildOpsStatusReport(): Promise<OpsStatusReport> {
     health,
     surfaces: buildSurfaces(health, resolvedFinancial),
     workers: {
-      redis: 'not_used',
-      queue: 'in_process',
+      redis: redisState,
+      queue: queueStats.mode,
       scheduler: 'http_triggered',
-      note: 'Durable Redis/BullMQ is planned for v1.4. Jobs currently run in-process or via HTTP-triggered scheduler.',
+      note:
+        queueStats.mode === 'bullmq'
+          ? 'Durable BullMQ workers active (Redis).'
+          : env.redisUrl
+            ? 'REDIS_URL set but workers running in-process fallback (connection unavailable or flag off).'
+            : 'In-process jobs (set REDIS_URL + WILMS_FLAG_DURABLE_QUEUES for BullMQ).',
+      stats: {
+        waiting: queueStats.waiting,
+        active: queueStats.active,
+        failed: queueStats.failed,
+        completed: queueStats.completed,
+      },
     },
+    featureFlags: flags,
     financial: resolvedFinancial,
     databaseEnabled: isDatabaseEnabled(),
     backups: {
@@ -284,6 +317,7 @@ export async function buildOpsStatusReport(): Promise<OpsStatusReport> {
 export function buildPrometheusMetrics(report: OpsStatusReport): string {
   const healthUp = report.health.status === 'ok' ? 1 : 0;
   const dbUp = report.health.database.connected ? 1 : 0;
+  const queueMode = report.workers.queue === 'bullmq' ? 1 : 0;
   const lines = [
     '# HELP wilms_health_up 1 when overall health status is ok',
     '# TYPE wilms_health_up gauge',
@@ -300,6 +334,15 @@ export function buildPrometheusMetrics(report: OpsStatusReport): string {
     '# HELP wilms_sms_configured 1 when SMS delivery is configured',
     '# TYPE wilms_sms_configured gauge',
     `wilms_sms_configured ${report.health.integrations.sms.configured ? 1 : 0}`,
+    '# HELP wilms_queue_bullmq 1 when BullMQ mode is active',
+    '# TYPE wilms_queue_bullmq gauge',
+    `wilms_queue_bullmq ${queueMode}`,
+    '# HELP wilms_queue_waiting Jobs waiting',
+    '# TYPE wilms_queue_waiting gauge',
+    `wilms_queue_waiting ${report.workers.stats?.waiting ?? 0}`,
+    '# HELP wilms_queue_failed Jobs failed',
+    '# TYPE wilms_queue_failed gauge',
+    `wilms_queue_failed ${report.workers.stats?.failed ?? 0}`,
   ];
 
   if (report.financial) {

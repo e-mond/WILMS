@@ -49,7 +49,12 @@ async function resolveExistingIdempotency(
   }
 
   if (row.state === 'COMPLETED' && row.responseBody) {
-    return { kind: 'replay' as const, body: row.responseBody, status: row.responseStatus ?? 200 };
+    return {
+      kind: 'replay' as const,
+      body: row.responseBody,
+      status: row.responseStatus ?? 200,
+      requestHash: row.requestHash ?? null,
+    };
   }
 
   throw new Error('IDEMPOTENCY_IN_PROGRESS');
@@ -79,8 +84,22 @@ export async function beginIdempotency(
   const row = existing[0];
 
   if (row) {
+    if (
+      input.requestHash &&
+      row.requestHash &&
+      row.requestHash !== input.requestHash
+    ) {
+      const err = new Error('IDEMPOTENCY_KEY_REUSED');
+      throw err;
+    }
+
     if (row.state === 'COMPLETED' && row.responseBody) {
-      return { kind: 'replay' as const, body: row.responseBody, status: row.responseStatus ?? 200 };
+      return {
+        kind: 'replay' as const,
+        body: row.responseBody,
+        status: row.responseStatus ?? 200,
+        requestHash: row.requestHash ?? null,
+      };
     }
 
     if (row.state === 'IN_PROGRESS') {
