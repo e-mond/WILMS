@@ -1,6 +1,6 @@
 # WILMS Documentation Hub
 
-**Current version:** v1.4.0  
+**Current version:** v1.4.1  
 **Last updated:** 2026-07-18
 
 Start here. Prefer certification packs for current system truth; older guides remain for depth but may lag version stamps.
@@ -39,7 +39,8 @@ Start here. Prefer certification packs for current system truth; older guides re
 |-------|------|
 | Planning hub | [`planning/v1.4/INDEX.md`](./planning/v1.4/INDEX.md) |
 | Phase 25 platform foundation | [`certification/v1.4/phase-25/`](./certification/v1.4/phase-25/INDEX.md) |
-| UX / UI modernisation audit pack | [`certification/v1.4/ux-modernisation/FULL_AUDIT_INDEX.md`](./certification/v1.4/ux-modernisation/FULL_AUDIT_INDEX.md) |
+| UX / UI modernisation audit pack (v1.4.1) | [`certification/v1.4/ux-modernisation/FULL_AUDIT_INDEX.md`](./certification/v1.4/ux-modernisation/FULL_AUDIT_INDEX.md) |
+| Final UX modernisation report | [`certification/v1.4/ux-modernisation/FINAL_UX_MODERNISATION_REPORT.md`](./certification/v1.4/ux-modernisation/FINAL_UX_MODERNISATION_REPORT.md) |
 | v1.3.x maintenance strategy | [`planning/v1.4/V13_MAINTENANCE_STRATEGY.md`](./planning/v1.4/V13_MAINTENANCE_STRATEGY.md) |
 | v1.4 roadmap | [`planning/v1.4/WILMS_V14_ROADMAP.md`](./planning/v1.4/WILMS_V14_ROADMAP.md) |
 | Long-term architecture | [`planning/v1.4/LONG_TERM_ARCHITECTURE.md`](./planning/v1.4/LONG_TERM_ARCHITECTURE.md) |

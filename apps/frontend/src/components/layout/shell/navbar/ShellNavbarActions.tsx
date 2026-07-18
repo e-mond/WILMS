@@ -146,7 +146,12 @@ export function ShellNavbarActions({
         </>
       ) : null}
 
-      {user ? <UserProfileMenu compact={compact} /> : null}
+      {user ? (
+        <>
+          <NavbarDivider />
+          <UserProfileMenu compact={compact} />
+        </>
+      ) : null}
     </div>
   );
 }

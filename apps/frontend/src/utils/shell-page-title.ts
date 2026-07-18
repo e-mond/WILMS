@@ -1,5 +1,6 @@
 const EXACT_TITLES: Record<string, string> = {
-  '/dashboard': 'Super Admin Dashboard',
+  '/dashboard': 'Dashboard',
+  '/ops': 'Operations',
   '/borrowers': 'Borrowers',
   '/loan-pools': 'Loan Pools',
   '/loans': 'Loans',

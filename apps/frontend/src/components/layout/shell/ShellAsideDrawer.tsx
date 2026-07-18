@@ -17,7 +17,14 @@ export function ShellAsideDrawer() {
 
   return (
     <>
-      <div className="pointer-events-none fixed bottom-wilms-4 right-wilms-4 z-40 xl:hidden">
+      <div
+        className="pointer-events-none fixed z-40 xl:hidden"
+        style={{
+          // Sit above the shared floating stack (help + connectivity ≈ 7.5rem)
+          bottom: 'max(calc(7.5rem + env(safe-area-inset-bottom)), 8.5rem)',
+          right: 'max(1rem, env(safe-area-inset-right))',
+        }}
+      >
         <Button
           type="button"
           variant="primary"
