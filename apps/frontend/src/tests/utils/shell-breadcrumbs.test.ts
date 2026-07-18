@@ -2,11 +2,18 @@ import { describe, expect, it } from 'vitest';
 import { resolveShellBreadcrumbs } from '@/utils/shell-breadcrumbs';
 
 describe('resolveShellBreadcrumbs', () => {
-  it('returns home/dashboard/overview crumbs on super admin dashboard', () => {
+  it('returns home/dashboard crumbs on super admin dashboard', () => {
     expect(resolveShellBreadcrumbs('/dashboard')).toEqual([
       { label: 'Home', href: '/dashboard' },
-      { label: 'Dashboard', href: '/dashboard' },
-      { label: 'Overview' },
+      { label: 'Dashboard' },
+    ]);
+  });
+
+  it('returns distinct operations crumbs for the platform control centre', () => {
+    expect(resolveShellBreadcrumbs('/ops')).toEqual([
+      { label: 'Home', href: '/dashboard' },
+      { label: 'Operations', href: '/ops' },
+      { label: 'System Health' },
     ]);
   });
 
