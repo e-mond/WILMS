@@ -1,20 +1,27 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useEffect } from 'react';
 import { HelpCircle, Map, BookOpen, PlayCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { useAuth } from '@/hooks/useAuth';
 import { useReplayProductTour } from '@/components/onboarding/ProductTourOverlay';
 import { USER_ROLE } from '@/constants/roles';
+import { useUiStore } from '@/state/uiStore';
 import { cn } from '@/utils/cn';
 
 export function HelpFab() {
   const { isAuthenticated, user } = useAuth();
   const replayTour = useReplayProductTour();
-  const [open, setOpen] = useState(false);
+  const isOpen = useUiStore((state) => state.isHelpMenuOpen);
+  const openHelpMenu = useUiStore((state) => state.openHelpMenu);
+  const closeHelpMenu = useUiStore((state) => state.closeHelpMenu);
 
-  const close = useCallback(() => setOpen(false), []);
+  useEffect(() => {
+    if (!isAuthenticated && isOpen) {
+      closeHelpMenu();
+    }
+  }, [closeHelpMenu, isAuthenticated, isOpen]);
 
   if (!isAuthenticated) {
     return null;
@@ -30,63 +37,67 @@ export function HelpFab() {
         aria-label="Help"
         className={cn(
           'fixed bottom-wilms-5 right-wilms-5 z-[90] inline-flex h-12 w-12 items-center justify-center rounded-full',
-          'border border-border bg-card text-brand-primary shadow-lg transition hover:bg-background',
-          'motion-safe:hover:scale-105 motion-safe:active:scale-95',
+          'border border-border bg-card text-brand-primary shadow-md transition-colors hover:bg-background',
+          'motion-safe:transition-transform motion-safe:hover:scale-105 motion-safe:active:scale-95',
+          'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary',
         )}
-        onClick={() => setOpen(true)}
+        onClick={openHelpMenu}
       >
         <HelpCircle className="h-5 w-5" aria-hidden="true" />
       </button>
 
-      <Modal isOpen={open} onClose={close} title="Help">
+      <Modal isOpen={isOpen} onClose={closeHelpMenu} title="Help">
         <div className="space-y-wilms-3">
+          <p className="text-small text-text-muted">
+            Restart the guided tour anytime from here or from the help icon in the header.
+          </p>
           <Button
             type="button"
             variant="secondary"
             className="w-full justify-start gap-wilms-2"
             onClick={() => {
-              close();
+              closeHelpMenu();
               replayTour();
             }}
           >
             <Map className="h-4 w-4" aria-hidden="true" />
-            Restart Tour
+            Restart guided tour
           </Button>
           <Button
             type="button"
             variant="secondary"
             className="w-full justify-start gap-wilms-2"
             onClick={() => {
-              close();
+              closeHelpMenu();
               window.open(rolesGuideHref, '_self');
             }}
           >
             <BookOpen className="h-4 w-4" aria-hidden="true" />
-            View Role Guide
+            View role guide
           </Button>
           <Button
             type="button"
             variant="secondary"
             className="w-full justify-start gap-wilms-2"
             onClick={() => {
-              close();
+              closeHelpMenu();
               replayTour();
             }}
           >
             <PlayCircle className="h-4 w-4" aria-hidden="true" />
-            Watch Quick Walkthrough
+            Quick walkthrough
           </Button>
           <Button
             type="button"
             variant="ghost"
             className="w-full justify-start gap-wilms-2"
             onClick={() => {
-              close();
+              closeHelpMenu();
               window.open('/settings', '_self');
             }}
           >
             <HelpCircle className="h-4 w-4" aria-hidden="true" />
-            Open Settings Help
+            Open settings help
           </Button>
         </div>
       </Modal>

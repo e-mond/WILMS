@@ -3,7 +3,7 @@
 import { Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { ShellNavLink, isShellNavLinkActive, type ShellNavVariant } from '@/layouts/ShellNavLink';
-import type { ShellNavItem } from '@/constants/navigation';
+import { groupShellNavItems, type ShellNavItem } from '@/constants/navigation';
 import { cn } from '@/utils/cn';
 
 export interface ShellNavigationProps {
@@ -17,9 +17,16 @@ export interface ShellNavigationProps {
   showSeparators?: boolean;
   animated?: boolean;
   groupLabel?: string;
+  /** When true (default for vertical), render category labels from nav item groups. */
+  useItemGroups?: boolean;
 }
 
-type ShellNavigationLinksProps = Omit<ShellNavigationProps, 'ariaLabel' | 'className' | 'groupLabel'>;
+type ShellNavigationLinksProps = Omit<
+  ShellNavigationProps,
+  'ariaLabel' | 'className' | 'groupLabel' | 'useItemGroups'
+> & {
+  items: ShellNavItem[];
+};
 
 function ShellNavigationLinks({
   items,
@@ -66,6 +73,27 @@ function ShellNavigationLinks({
   );
 }
 
+function GroupLabel({ label, collapsed }: { label: string; collapsed: boolean }) {
+  if (collapsed) {
+    return (
+      <div
+        aria-hidden="true"
+        className="mx-auto my-2 h-px w-6 bg-border/50 first:mt-0"
+        title={label}
+      />
+    );
+  }
+
+  return (
+    <p
+      aria-hidden="true"
+      className="px-3.5 pb-1 pt-3 text-[10.5px] font-medium uppercase tracking-[0.09em] text-text-tertiary first:pt-1"
+    >
+      {label}
+    </p>
+  );
+}
+
 export function ShellNavigation({
   items,
   ariaLabel,
@@ -77,8 +105,13 @@ export function ShellNavigation({
   showSeparators = false,
   animated = true,
   groupLabel,
+  useItemGroups = true,
 }: ShellNavigationProps) {
   const isVertical = orientation === 'vertical';
+  const groups =
+    isVertical && useItemGroups
+      ? groupShellNavItems(items)
+      : [{ groupId: 'ungrouped' as const, label: groupLabel ?? null, items }];
 
   return (
     <nav
@@ -90,7 +123,7 @@ export function ShellNavigation({
         className,
       )}
     >
-      {groupLabel && isVertical && !collapsed ? (
+      {groupLabel && isVertical && !collapsed && !useItemGroups ? (
         <p
           aria-hidden="true"
           className="px-3.5 pb-1.5 pt-1 text-[10.5px] font-medium uppercase tracking-[0.09em] text-text-tertiary"
@@ -103,20 +136,27 @@ export function ShellNavigation({
         fallback={
           <div className="space-y-1 px-3" aria-hidden="true">
             {items.map((item) => (
-              <div key={item.href} className="h-11 rounded-lg bg-border/20" />
+              <div key={item.href} className="h-11 rounded-lg bg-border/20 skeleton-shimmer" />
             ))}
           </div>
         }
       >
-        <ShellNavigationLinks
-          items={items}
-          orientation={orientation}
-          linkClassName={linkClassName}
-          variant={variant}
-          collapsed={collapsed}
-          showSeparators={showSeparators}
-          animated={animated}
-        />
+        {groups.map((group) => (
+          <div key={group.groupId} className={isVertical ? 'w-full' : undefined}>
+            {group.label && isVertical ? (
+              <GroupLabel label={group.label} collapsed={collapsed} />
+            ) : null}
+            <ShellNavigationLinks
+              items={group.items}
+              orientation={orientation}
+              linkClassName={linkClassName}
+              variant={variant}
+              collapsed={collapsed}
+              showSeparators={showSeparators}
+              animated={animated}
+            />
+          </div>
+        ))}
       </Suspense>
     </nav>
   );
