@@ -27,7 +27,13 @@ Use this when **all** people in a job function need the same access.
 1. Open **Settings → Users**.
 2. Open the user’s profile.
 3. Use **Permission overrides** (`ASSIGN_PERMISSIONS`).
-4. Grant or revoke with a reason (audited).
+4. Choose **Grant** (add a permission outside the role) or **Revoke** (remove a role permission for this user only).
+
+Rules enforced by the API (HTTP 422 if violated):
+
+- **Grant** only permissions the role does **not** already include.
+- **Revoke** only permissions the role **does** include.
+- Super Admin’s role includes every permission, so only **Revoke** is available for those users.
 
 Use this for exceptions (e.g. one Collector who may also view a report) without widening the whole Collector role.
 

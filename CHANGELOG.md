@@ -18,6 +18,7 @@ Shell, navigation, search, and permission-catalog hardening on top of v1.4.0. Fi
 - Navbar overflow when sidebar expanded; search keyboard ↑/↓/Enter on the input
 - Officer/Approver settings shell no longer shows unused app aside
 - Collector product tour no longer targets removed Messages inbox
+- Permission overrides UI no longer offers invalid Grant/Revoke combinations (422); surfaces API validation text; profiles expose role permission ids
 
 ### Changed
 - Sticky header in content column; full-height sticky sidebar

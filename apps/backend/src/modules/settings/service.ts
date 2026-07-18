@@ -1,5 +1,5 @@
 import { and, eq, isNull, sql } from 'drizzle-orm';
-import { PERMISSION, USER_ROLE, getPermissionsForRole, type UserRole } from '@wilms/shared-rbac';
+import { PERMISSION, USER_ROLE, type UserRole } from '@wilms/shared-rbac';
 import { formatUserDisplayId } from '@wilms/shared-utils';
 import { uuidv7 } from 'uuidv7';
 import { isDatabaseEnabled, getDb } from '../../db/client.js';
@@ -19,6 +19,7 @@ import { normalizeGhanaPhone, isValidGhanaMobile } from '../../infrastructure/sm
 import { getSmsConfig } from '../../infrastructure/sms/config.js';
 import { fetchSmsNotifyGhBalance } from '../../infrastructure/sms/smsnotifygh-adapter.js';
 import { notifyUserInvitation, notifyAccountActivated, notifyAccountDisabled, notifyAccountEnabled, notifyUserRoleChanged, notifyWelcome } from '../../infrastructure/notifications/event-dispatch.js';
+import { resolveBaseRolePermissions } from '../../infrastructure/permissions/resolve-user-permissions.js';
 import { invalidateUserSessions } from '../auth/session.service.js';
 import { permanentlyDeleteUser } from '../users/purge.service.js';
 import { dispatchMail, isMailDeliveryConfigured } from '../../infrastructure/mail/dispatch.js';
@@ -578,6 +579,9 @@ export async function getUserProfile(userId: string): Promise<SettingsUserProfil
       throw new Error('NOT_FOUND');
     }
     const presentation = resolveRolePresentation(demo.role);
+    const assignedPermissionIds = [
+      ...(await resolveBaseRolePermissions(demo.id, demo.role as UserRole)),
+    ];
     return buildMinimalProfile({
       id: demo.id,
       displayName: demo.displayName,
@@ -585,6 +589,7 @@ export async function getUserProfile(userId: string): Promise<SettingsUserProfil
       role: demo.role,
       roleLabel: presentation.roleLabel,
       status: demo.status ?? 'ACTIVE',
+      assignedPermissionIds,
     });
   }
 
@@ -594,6 +599,9 @@ export async function getUserProfile(userId: string): Promise<SettingsUserProfil
   }
 
   const presentation = resolveRolePresentation(row.role);
+  const assignedPermissionIds = [
+    ...(await resolveBaseRolePermissions(row.id, row.role as UserRole)),
+  ];
   return buildMinimalProfile({
     id: row.id,
     displayName: row.displayName,
@@ -607,6 +615,7 @@ export async function getUserProfile(userId: string): Promise<SettingsUserProfil
     region: row.region ?? '',
     zone: row.zone ?? '',
     lastLoginAt: row.lastLoginAt?.toISOString() ?? '',
+    assignedPermissionIds,
   });
 }
 
@@ -623,6 +632,7 @@ function buildMinimalProfile(input: {
   region?: string;
   zone?: string;
   lastLoginAt?: string;
+  assignedPermissionIds?: string[];
 }): SettingsUserProfile {
   return {
     id: input.id,
@@ -638,7 +648,7 @@ function buildMinimalProfile(input: {
     zone: input.zone ?? '',
     assignedGroups: [],
     assignedBorrowers: 0,
-    assignedPermissionIds: [],
+    assignedPermissionIds: input.assignedPermissionIds ?? [],
     delegatedPermissionIds: [],
     lastLoginAt: input.lastLoginAt ?? '',
     activityHistory: [],
@@ -1305,6 +1315,10 @@ export async function upsertUserPermissionOverrides(
   actorUserId: string,
   actorDisplayName?: string,
 ): Promise<UserPermissionOverrideRecord[]> {
+  if (!Array.isArray(overrides) || overrides.length === 0) {
+    throw new Error('VALIDATION:Provide at least one permission override.');
+  }
+
   let userRole: UserRole | undefined;
 
   if (!isDatabaseEnabled()) {
@@ -1321,10 +1335,23 @@ export async function upsertUserPermissionOverrides(
     userRole = user.role as UserRole;
   }
 
-  const rolePermissionsSet = getPermissionsForRole(userRole);
+  const rolePermissionsSet = await resolveBaseRolePermissions(userId, userRole);
+  const actionable: UpsertUserPermissionOverrideInput[] = [];
 
   for (const override of overrides) {
-    if (!Object.values(PERMISSION).includes(override.permissionId as (typeof PERMISSION)[keyof typeof PERMISSION])) {
+    if (
+      typeof override?.permissionId !== 'string' ||
+      !override.permissionId.trim() ||
+      typeof override.granted !== 'boolean'
+    ) {
+      throw new Error('VALIDATION:Each override must include a permissionId and granted flag.');
+    }
+
+    if (
+      !Object.values(PERMISSION).includes(
+        override.permissionId as (typeof PERMISSION)[keyof typeof PERMISSION],
+      )
+    ) {
       throw new Error('VALIDATION:One or more permission identifiers are invalid.');
     }
 
@@ -1334,17 +1361,21 @@ export async function upsertUserPermissionOverrides(
 
     if (override.granted && alreadyGrantedByRole) {
       throw new Error(
-        'VALIDATION:Cannot grant a permission the user already has through their role.',
+        'VALIDATION:Cannot grant a permission the user already has through their role. Switch to Revoke, or pick a permission outside the role.',
       );
     }
 
     if (!override.granted && !alreadyGrantedByRole) {
-      continue;
+      throw new Error(
+        'VALIDATION:Cannot revoke a permission the user does not receive from their role. Switch to Grant, or pick a role permission.',
+      );
     }
+
+    actionable.push(override);
   }
 
   if (!isDatabaseEnabled()) {
-    for (const override of overrides) {
+    for (const override of actionable) {
       const index = memoryPermissionOverrides.findIndex(
         (entry) => entry.userId === userId && entry.permissionId === override.permissionId,
       );
@@ -1378,7 +1409,7 @@ export async function upsertUserPermissionOverrides(
 
   const db = getDb();
 
-  for (const override of overrides) {
+  for (const override of actionable) {
     await db
       .insert(userPermissionOverrides)
       .values({

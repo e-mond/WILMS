@@ -7,7 +7,11 @@ import {
 import { getDb, isDatabaseEnabled } from '../../db/client.js';
 import { rolePermissions, userPermissionOverrides, userRoles } from '../../db/schema/rbac.js';
 
-export async function resolveUserPermissions(
+/**
+ * Role-default permissions for a user (no individual overrides).
+ * Prefers DB role_permissions when the user has role assignments; falls back to the shared matrix.
+ */
+export async function resolveBaseRolePermissions(
   userId: string,
   role: UserRole,
 ): Promise<Set<PermissionId>> {
@@ -21,7 +25,7 @@ export async function resolveUserPermissions(
     .from(userRoles)
     .where(eq(userRoles.userId, userId));
 
-  let base = new Set<PermissionId>();
+  const base = new Set<PermissionId>();
 
   if (roleRows.length > 0) {
     const roleIds = roleRows.map((row) => row.roleId);
@@ -36,9 +40,23 @@ export async function resolveUserPermissions(
   }
 
   if (base.size === 0) {
-    base = getPermissionsForRole(role);
+    return getPermissionsForRole(role);
   }
 
+  return base;
+}
+
+export async function resolveUserPermissions(
+  userId: string,
+  role: UserRole,
+): Promise<Set<PermissionId>> {
+  const base = await resolveBaseRolePermissions(userId, role);
+
+  if (!isDatabaseEnabled()) {
+    return base;
+  }
+
+  const db = getDb();
   const overrides = await db
     .select({
       permissionId: userPermissionOverrides.permissionId,
