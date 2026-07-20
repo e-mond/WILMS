@@ -3,6 +3,8 @@ import { AppError } from './errors.js';
 import { sendError } from './response.js';
 import { mapDatabaseError } from '../lib/db-errors.js';
 
+const GENERIC_SERVER_ERROR = 'An unexpected error occurred. Please try again.';
+
 export function errorHandler(error: unknown, _req: Request, res: Response, _next: NextFunction): void {
   if (error instanceof AppError) {
     sendError(res, error.status, error.message, error.code);
@@ -20,9 +22,10 @@ export function errorHandler(error: unknown, _req: Request, res: Response, _next
 
   if (error instanceof Error) {
     console.error('[api] unhandled error:', error.message, error.stack);
-    sendError(res, 500, error.message || 'An unexpected error occurred.', 'SERVER');
+    // Never echo raw Error.message to clients — may contain SQL, paths, or secrets.
+    sendError(res, 500, GENERIC_SERVER_ERROR, 'SERVER');
     return;
   }
 
-  sendError(res, 500, 'Unexpected server error.', 'SERVER');
+  sendError(res, 500, GENERIC_SERVER_ERROR, 'SERVER');
 }

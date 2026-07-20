@@ -13,6 +13,7 @@ import { loginRateLimiter } from '../../middleware/login-rate-limit.js';
 import { validateBody } from '../../middleware/validate-body.js';
 import { isDatabaseEnabled } from '../../db/client.js';
 import { userRepository } from '../../repositories/index.js';
+import { assertDemoLoginAllowed } from '../../lib/demo-accounts.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
 import { getSettings } from '../settings/service.js';
 import { completeOnboarding } from './onboarding.service.js';
@@ -21,6 +22,7 @@ import {
   requestPasswordReset,
   resetPasswordWithToken,
 } from './password-reset.service.js';
+import { assertSessionActive } from './session.service.js';
 import { notifyInvitationAccepted, notifyLoginAlert } from '../../infrastructure/notifications/event-dispatch.js';
 
 function summarizeUserAgent(userAgent?: string): string | undefined {
@@ -284,6 +286,17 @@ authRouter.post(
     const { email, password } = req.body as z.infer<typeof loginApiSchema>;
     const normalizedEmail = email.trim().toLowerCase();
     const clientIp = req.ip;
+
+    try {
+      assertDemoLoginAllowed(normalizedEmail);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'DEMO_LOGIN_BLOCKED') {
+        logLoginAttempt({ success: false, email: normalizedEmail, ip: clientIp });
+        throw new AppError('Invalid email or password.', ERROR_CODE.UNAUTHORIZED, 401);
+      }
+      throw error;
+    }
+
     const user = await resolveAuthUser(normalizedEmail);
 
     if (!user || user.status === 'SUSPENDED') {
@@ -429,7 +442,19 @@ authRouter.post(
 authRouter.get(
   '/auth/session',
   asyncHandler(async (req, res) => {
-    sendData(res, { authenticated: Boolean(req.session), session: req.session ?? null });
+    if (!req.session) {
+      sendData(res, { authenticated: false, session: null });
+      return;
+    }
+
+    try {
+      await assertSessionActive(req.session);
+    } catch {
+      sendData(res, { authenticated: false, session: null });
+      return;
+    }
+
+    sendData(res, { authenticated: true, session: req.session });
   }),
 );
 

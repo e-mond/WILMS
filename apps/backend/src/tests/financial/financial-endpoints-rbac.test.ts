@@ -46,9 +46,10 @@ describe('financial endpoints RBAC audit', () => {
   const auditorToken = buildToken(USER_ROLE.AUDITOR, 'auditor-fin-audit');
   const officerToken = buildToken(USER_ROLE.REGISTRATION_OFFICER, 'officer-fin-audit');
 
-  it('allows collectors to access admin-fee queue and status endpoints', async () => {
+  it('allows collectors to access admin-fee queue but scopes status to assigned borrowers', async () => {
     expect(await requestStatus('/borrowers/awaiting-admin-fee', { token: collectorToken })).not.toBe(403);
-    expect(await requestStatus('/borrowers/borrower-001/admin-fee-status', { token: collectorToken })).not.toBe(
+    // Object-level check: collectors must not read admin-fee status for unassigned borrowers.
+    expect(await requestStatus('/borrowers/borrower-001/admin-fee-status', { token: collectorToken })).toBe(
       403,
     );
   });

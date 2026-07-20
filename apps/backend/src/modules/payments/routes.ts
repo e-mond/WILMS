@@ -54,10 +54,29 @@ export const paymentsRouter = Router();
 
 paymentsRouter.use(requireAuth);
 
+async function assertCollectorPaymentAccess(
+  session: NonNullable<Express.Request['session']>,
+  borrowerId: string,
+): Promise<void> {
+  try {
+    await assertBorrowerReadAccess(session, borrowerId);
+  } catch (error) {
+    if (error instanceof Error && error.message === 'FORBIDDEN') {
+      throw new AppError('You do not have access to this borrower.', ERROR_CODE.UNAUTHORIZED, 403);
+    }
+    if (error instanceof Error && error.message === 'NOT_FOUND') {
+      throw new AppError('Borrower not found.', ERROR_CODE.NOT_FOUND, 404);
+    }
+    throw error;
+  }
+}
+
 paymentsRouter.get(
   '/borrowers/:borrowerId/payment-entry',
   requirePermission(PERMISSION.RECORD_COLLECTIONS),
   asyncHandler(async (req, res) => {
+    await assertCollectorPaymentAccess(req.session!, req.params.borrowerId!);
+
     if (isDatabaseEnabled()) {
       try {
         sendData(
@@ -94,9 +113,21 @@ paymentsRouter.get(
   '/payments/same-day',
   requirePermission(PERMISSION.RECORD_COLLECTIONS),
   asyncHandler(async (req, res) => {
+    const borrowerId = String(req.query.borrowerId ?? '');
+    if (!borrowerId) {
+      throw new AppError('borrowerId is required.', ERROR_CODE.VALIDATION, 422);
+    }
+
+    await assertCollectorPaymentAccess(req.session!, borrowerId);
+
+    const collectorId =
+      req.session!.role === 'COLLECTOR'
+        ? req.session!.userId
+        : String(req.query.collectorId ?? req.session!.userId);
+
     const payment = await findSameDayPayment(
-      String(req.query.borrowerId ?? ''),
-      String(req.query.collectorId ?? ''),
+      borrowerId,
+      collectorId,
       String(req.query.date ?? new Date().toISOString().slice(0, 10)),
     );
     sendData(res, payment ?? null);
@@ -109,7 +140,9 @@ paymentsRouter.get(
   asyncHandler(async (req, res) => {
     if (isDatabaseEnabled()) {
       try {
-        sendData(res, await paymentService.getPaymentById(req.params.paymentId!));
+        const payment = await paymentService.getPaymentById(req.params.paymentId!);
+        await assertCollectorPaymentAccess(req.session!, payment.borrowerId);
+        sendData(res, payment);
         return;
       } catch (error) {
         mapPaymentError(error);
@@ -121,6 +154,8 @@ paymentsRouter.get(
     if (!payment) {
       throw new AppError('Payment not found.', ERROR_CODE.NOT_FOUND, 404);
     }
+
+    await assertCollectorPaymentAccess(req.session!, payment.borrowerId);
 
     sendData(res, {
       id: payment.id,
