@@ -88,7 +88,7 @@ export function DashboardShell({
     }
   }, [pathname, closeMobileNav, closeAsideDrawer]);
 
-  const sidebarContent = (
+  const desktopSidebarContent = (
     <AppSidebar
       navItems={navItems}
       navAriaLabel={navAriaLabel}
@@ -97,6 +97,19 @@ export function DashboardShell({
       brandTitle={brandTitle}
       versionLabel={versionLabel}
       footer={sidebarFooter}
+    />
+  );
+
+  const mobileSidebarContent = (
+    <AppSidebar
+      navItems={navItems}
+      navAriaLabel={navAriaLabel}
+      navVariant={navVariant}
+      isExecutive={isExecutive}
+      brandTitle={brandTitle}
+      versionLabel={versionLabel}
+      footer={sidebarFooter}
+      forceExpanded
     />
   );
 
@@ -122,7 +135,7 @@ export function DashboardShell({
             isSidebarCollapsed ? 'w-16' : 'w-60',
           )}
         >
-          {sidebarContent}
+          {desktopSidebarContent}
         </aside>
 
         {/* Mobile Navigation Drawer */}
@@ -134,7 +147,9 @@ export function DashboardShell({
             sidebarVariant={isExecutive ? 'executive' : 'standard'}
             hideHeader={isExecutive}
           >
-            <div className="flex h-full flex-col">{sidebarContent}</div>
+            <div className="flex h-full flex-col" data-mobile-nav-drawer="true">
+              {mobileSidebarContent}
+            </div>
           </Drawer>
         ) : null}
 
@@ -152,7 +167,11 @@ export function DashboardShell({
           {mobileHeader}
 
           {isOffice && !mobileHeader ? (
-            <OfficeShellMobileBar brandTitle={brandTitle} isExecutive={isExecutive} />
+            <OfficeShellMobileBar
+              brandTitle={brandTitle}
+              isExecutive={isExecutive}
+              showNavTrigger={showMobileDrawer}
+            />
           ) : !isOffice ? (
             <div className="hidden md:block">
               <AppNavbar

@@ -56,12 +56,11 @@ export function LoginForm() {
       return;
     }
 
+    // Warm audio only on pointer gestures — never on every keystroke (INP).
     const unlockAudio = () => warm();
-    form.addEventListener('pointerdown', unlockAudio);
-    form.addEventListener('keydown', unlockAudio);
+    form.addEventListener('pointerdown', unlockAudio, { passive: true });
     return () => {
       form.removeEventListener('pointerdown', unlockAudio);
-      form.removeEventListener('keydown', unlockAudio);
     };
   }, [warm, isFormReady]);
 
