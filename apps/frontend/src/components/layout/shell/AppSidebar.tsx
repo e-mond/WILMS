@@ -22,6 +22,11 @@ export interface AppSidebarProps {
   brandTitle?: string;
   versionLabel?: string;
   footer?: ReactNode;
+  /**
+   * Force expanded labels (mobile drawer). Ignores the desktop collapsed preference
+   * so a collapsed desktop sidebar does not render as icon-only inside the drawer.
+   */
+  forceExpanded?: boolean;
 }
 
 export function AppSidebar({
@@ -32,10 +37,12 @@ export function AppSidebar({
   brandTitle,
   versionLabel = getAppVersionLabel() || undefined,
   footer,
+  forceExpanded = false,
 }: AppSidebarProps) {
   const { user } = useAuth();
-  const isSidebarCollapsed = useShellLayoutStore((state) => state.isSidebarCollapsed);
+  const persistedCollapsed = useShellLayoutStore((state) => state.isSidebarCollapsed);
   const toggleSidebarCollapsed = useShellLayoutStore((state) => state.toggleSidebarCollapsed);
+  const isSidebarCollapsed = forceExpanded ? false : persistedCollapsed;
   const roleLabel = getRoleLabel(user?.role).toUpperCase();
 
   return (
@@ -66,23 +73,26 @@ export function AppSidebar({
           )}
         </div>
 
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={toggleSidebarCollapsed}
-          aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className={cn(
-            'absolute top-3 h-9 w-9 shrink-0 p-0 text-text-muted transition-colors hover:bg-background hover:text-text-primary',
-            isSidebarCollapsed ? 'right-1' : 'right-2',
-          )}
-        >
+        {forceExpanded ? null : (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={toggleSidebarCollapsed}
+            aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            className={cn(
+              'absolute top-3 h-9 w-9 shrink-0 p-0 text-text-muted transition-colors hover:bg-background hover:text-text-primary',
+              'hidden md:inline-flex',
+              isSidebarCollapsed ? 'right-1' : 'right-2',
+            )}
+          >
             {isSidebarCollapsed ? (
               <ChevronRight className="h-5 w-5" aria-hidden="true" />
             ) : (
               <ChevronLeft className="h-5 w-5" aria-hidden="true" />
             )}
           </Button>
+        )}
       </div>
 
       <div className="min-h-0 flex-1 overflow-auto px-2 py-3">

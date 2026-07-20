@@ -21,8 +21,9 @@ function readPreference(): boolean {
   return true;
 }
 
-/** Unlock AudioContext during a user gesture so post-login tones can play. */
-export function warmAudioContext(): void {
+let warmScheduled = false;
+
+function warmAudioContextNow(): void {
   if (typeof window === 'undefined') {
     return;
   }
@@ -47,13 +48,38 @@ export function warmAudioContext(): void {
   }
 }
 
+/**
+ * Unlock AudioContext during a user gesture so post-login tones can play.
+ * Deferred off the event handler critical path to avoid INP regressions on inputs.
+ */
+export function warmAudioContext(): void {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  if (sharedAudioContext && sharedAudioContext.state === 'running') {
+    return;
+  }
+
+  if (warmScheduled) {
+    return;
+  }
+
+  warmScheduled = true;
+  window.setTimeout(() => {
+    warmScheduled = false;
+    warmAudioContextNow();
+  }, 0);
+}
+
 function playTone(frequency: number, durationMs: number): void {
   if (typeof window === 'undefined' || !readPreference()) {
     return;
   }
 
   try {
-    warmAudioContext();
+    // Playback needs the context immediately; gesture warm stays deferred separately.
+    warmAudioContextNow();
     const context = sharedAudioContext;
     if (!context) {
       return;
