@@ -19,6 +19,13 @@ Shell, navigation, search, and permission-catalog hardening on top of v1.4.0. Fi
 - Officer/Approver settings shell no longer shows unused app aside
 - Collector product tour no longer targets removed Messages inbox
 - Permission overrides UI no longer offers invalid Grant/Revoke combinations (422); surfaces API validation text; profiles expose role permission ids
+- Production demo login/seed blocked (`@wilms.demo`); `/auth/session` enforces active session; API 500s no longer leak raw errors
+- Collector payment GET / admin-fee status object scoping (assignment required)
+- Money reports fail closed when source lists would silently truncate past 2000 rows
+- Frontend security headers (CSP, frame deny, nosniff); deploy workflows on Node 22
+
+### Documentation
+- Final full-system audit pack under `docs/certification/v1.4/final-system-audit/` — verdict **READY WITH CONDITIONS** (Production Certified **not** issued)
 
 ### Changed
 - Sticky header in content column; full-height sticky sidebar
