@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import { asyncHandler } from '../../http/async-handler.js';
+import { AppError, ERROR_CODE } from '../../http/errors.js';
+import { MAX_UNPAGINATED_LIST_ROWS } from '../../http/list-pagination.js';
 import { sendData } from '../../http/response.js';
 import { buildDailyCollectionReport } from '../../domain/reports/daily-collection.js';
 import { buildLoanPortfolioReport } from '../../domain/reports/loan-portfolio.js';
@@ -9,7 +11,7 @@ import { buildGroupRiskReport } from '../../domain/reports/group-risk.js';
 import { buildFinancialLedgerReport } from '../../domain/reports/financial-ledger.js';
 import { isDatabaseEnabled } from '../../db/client.js';
 import { PERMISSION } from '../../infrastructure/permissions/matrix.js';
-import { listBorrowers, listPayments } from '../../db/persistence.js';
+import { countBorrowers, countPayments, listBorrowers, listPayments } from '../../db/persistence.js';
 import { requireAuth } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/require-permission.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
@@ -18,6 +20,23 @@ import { mapLoanRowToDetail } from '../../domain/loan/mappers.js';
 import { listPortfolioEntries } from '../loans/service.js';
 import { listCollectors } from '../collectors/service.js';
 import { listGroupsResponse } from '../groups/service.js';
+
+async function assertReportSourceNotTruncated(
+  label: string,
+  loadedCount: number,
+  totalCount: number,
+): Promise<void> {
+  if (loadedCount < MAX_UNPAGINATED_LIST_ROWS) {
+    return;
+  }
+  if (totalCount > loadedCount) {
+    throw new AppError(
+      `${label} exceeds the ${MAX_UNPAGINATED_LIST_ROWS}-row safety limit (${totalCount} rows). Narrow the date range or export from a filtered query; returning a truncated total would understate financial figures.`,
+      ERROR_CODE.VALIDATION,
+      422,
+    );
+  }
+}
 
 type ReportCategory = 'collection' | 'portfolio' | 'risk' | 'compliance' | 'operations';
 
@@ -150,7 +169,14 @@ reportsRouter.get(
     const date = String(req.query.date ?? new Date().toISOString().slice(0, 10));
     const collectorId = req.query.collectorId ? String(req.query.collectorId) : undefined;
 
-    const [payments, borrowers] = await Promise.all([listPayments(), listBorrowers()]);
+    const [payments, borrowers, paymentTotal, borrowerTotal] = await Promise.all([
+      listPayments(),
+      listBorrowers(),
+      countPayments(),
+      countBorrowers(),
+    ]);
+    await assertReportSourceNotTruncated('Daily collection payments', payments.length, paymentTotal);
+    await assertReportSourceNotTruncated('Daily collection borrowers', borrowers.length, borrowerTotal);
     const borrowerNames = new Map(
       borrowers.map((borrower) => [
         borrower.id,
@@ -224,11 +250,15 @@ reportsRouter.get(
   '/reports/defaulters',
   requirePermission(PERMISSION.VIEW_REPORTS),
   asyncHandler(async (_req, res) => {
-    const [loanRows, borrowers, payments] = await Promise.all([
+    const [loanRows, borrowers, payments, paymentTotal, borrowerTotal] = await Promise.all([
       loanRepo.listLoans(),
       listBorrowers(),
       listPayments(),
+      countPayments(),
+      countBorrowers(),
     ]);
+    await assertReportSourceNotTruncated('Defaulter report payments', payments.length, paymentTotal);
+    await assertReportSourceNotTruncated('Defaulter report borrowers', borrowers.length, borrowerTotal);
     const report = await buildDefaulterReport({ loanRows, borrowers, payments });
     sendData(res, report);
   }),
@@ -258,7 +288,8 @@ reportsRouter.get(
   '/reports/financial-ledger',
   requirePermission(PERMISSION.VIEW_REPORTS),
   asyncHandler(async (req, res) => {
-    const payments = await listPayments();
+    const [payments, paymentTotal] = await Promise.all([listPayments(), countPayments()]);
+    await assertReportSourceNotTruncated('Financial ledger payments', payments.length, paymentTotal);
     const report = buildFinancialLedgerReport(payments, {
       fromDate: req.query.fromDate ? String(req.query.fromDate) : undefined,
       toDate: req.query.toDate ? String(req.query.toDate) : undefined,
