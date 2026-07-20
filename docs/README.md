@@ -1,9 +1,11 @@
 # WILMS Documentation Hub
 
 **Current version:** v1.4.1  
-**Last updated:** 2026-07-18
+**Last updated:** 2026-07-20
 
 Start here. Prefer certification packs for current system truth; older guides remain for depth but may lag version stamps.
+
+**v1.4.1 final system audit (READY WITH CONDITIONS — not Production Certified):** [`FINAL_AUDIT_INDEX.md`](./FINAL_AUDIT_INDEX.md)
 
 ## Day-to-day engineering
 
@@ -37,6 +39,10 @@ Start here. Prefer certification packs for current system truth; older guides re
 
 | Topic | Path |
 |-------|------|
+| **Final system audit pack (v1.4.1)** | [`FINAL_AUDIT_INDEX.md`](./FINAL_AUDIT_INDEX.md) → [`certification/v1.4/final-system-audit/`](./certification/v1.4/final-system-audit/) |
+| Production rollout runbook | [`PRODUCTION_ROLLOUT_RUNBOOK.md`](./PRODUCTION_ROLLOUT_RUNBOOK.md) |
+| Troubleshooting | [`TROUBLESHOOTING.md`](./TROUBLESHOOTING.md) |
+| Architecture / financial model / permissions | [`ARCHITECTURE.md`](./ARCHITECTURE.md), [`FINANCIAL_MODEL.md`](./FINANCIAL_MODEL.md), [`PERMISSIONS_AND_ROLES.md`](./PERMISSIONS_AND_ROLES.md) |
 | Planning hub | [`planning/v1.4/INDEX.md`](./planning/v1.4/INDEX.md) |
 | Phase 25 platform foundation | [`certification/v1.4/phase-25/`](./certification/v1.4/phase-25/INDEX.md) |
 | UX / UI modernisation audit pack (v1.4.1) | [`certification/v1.4/ux-modernisation/FULL_AUDIT_INDEX.md`](./certification/v1.4/ux-modernisation/FULL_AUDIT_INDEX.md) |

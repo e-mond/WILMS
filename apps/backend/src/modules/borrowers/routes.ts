@@ -347,6 +347,7 @@ borrowersRouter.get(
   ),
   asyncHandler(async (req, res) => {
     try {
+      await assertBorrowerReadAccess(req.session!, req.params.id!);
       const { getAdminFeeStatus } = await import('../transactions/service.js');
       sendData(res, await getAdminFeeStatus(req.params.id!));
     } catch (error) {
