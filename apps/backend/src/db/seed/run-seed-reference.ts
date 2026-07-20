@@ -5,6 +5,7 @@ import { isDatabaseEnabled, getDb } from '../client.js';
 import { permissions, rolePermissions, roles, userRoles } from '../schema/rbac.js';
 import { collectors, users as usersTable } from '../schema/users.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
+import { shouldSeedDemoUsers } from '../../lib/demo-accounts.js';
 import { hashPassword } from '../../lib/password.js';
 import { seedAdjustmentReasons } from './seed-adjustments.js';
 import { uuidv7 } from 'uuidv7';
@@ -58,6 +59,11 @@ async function seedRbac(): Promise<void> {
         )
         .onConflictDoNothing();
     }
+  }
+
+  if (!shouldSeedDemoUsers()) {
+    console.log('[seed] Skipping demo users in production (set ALLOW_DEMO_SEED=true to override).');
+    return;
   }
 
   for (const user of DEMO_USERS) {
