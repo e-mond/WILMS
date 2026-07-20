@@ -3,21 +3,26 @@
 import Link from 'next/link';
 import { ShellNavbarActions } from '@/components/layout/shell/navbar/ShellNavbarActions';
 import { useAuth } from '@/hooks/useAuth';
+import { useUiStore } from '@/state/uiStore';
 import { resolveSettingsHref } from '@/utils/settings-route';
 import { cn } from '@/utils/cn';
-import { Settings } from 'lucide-react';
+import { Menu, Settings } from 'lucide-react';
 
 export interface OfficeShellMobileBarProps {
   brandTitle?: string;
   isExecutive?: boolean;
+  /** When true, show the menu control that opens the mobile nav drawer. */
+  showNavTrigger?: boolean;
 }
 
 export function OfficeShellMobileBar({
   brandTitle = 'WILMS',
   isExecutive = false,
+  showNavTrigger = false,
 }: OfficeShellMobileBarProps) {
   const { user } = useAuth();
   const settingsHref = resolveSettingsHref(user?.role);
+  const openMobileNav = useUiStore((state) => state.openMobileNav);
 
   return (
     <header
@@ -31,6 +36,17 @@ export function OfficeShellMobileBar({
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
+          {showNavTrigger ? (
+            <button
+              type="button"
+              onClick={openMobileNav}
+              className="inline-flex h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full text-text-primary transition-colors hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary"
+              aria-label="Open navigation menu"
+            >
+              <Menu className="h-5 w-5" aria-hidden="true" />
+            </button>
+          ) : null}
+
           <div
             aria-hidden="true"
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-primary"
