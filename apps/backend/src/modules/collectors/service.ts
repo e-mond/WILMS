@@ -6,6 +6,7 @@ import { financialReconciliations } from '../../db/schema/financial-reconciliati
 import { groups } from '../../db/schema/groups.js';
 import { collectors, users } from '../../db/schema/users.js';
 import { listPayments } from '../../db/persistence.js';
+import * as paymentRepo from '../../repositories/payment.repository.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
 import { hashPassword } from '../../lib/password.js';
 import { generateInvitePassword } from '../../lib/invite-password.js';
@@ -184,11 +185,15 @@ async function loadReconciliationCounts(): Promise<Map<string, number>> {
 
 export async function listCollectors(): Promise<CollectorListResponse> {
   const today = new Date().toISOString().slice(0, 10);
-  const payments = await listPayments();
-  const [groupStats, reconciliationCounts] = await Promise.all([
-    loadGroupStatsByCollector(),
-    loadReconciliationCounts(),
-  ]);
+  const useDb = isDatabaseEnabled();
+  const [payments, paymentsByCollector, activeTodayCollectors, groupStats, reconciliationCounts] =
+    await Promise.all([
+      useDb ? Promise.resolve([] as Awaited<ReturnType<typeof listPayments>>) : listPayments(),
+      useDb ? paymentRepo.sumConfirmedPaymentsByCollector() : Promise.resolve(new Map<string, number>()),
+      useDb ? paymentRepo.listCollectorIdsWithPaymentOnDate(today) : Promise.resolve(new Set<string>()),
+      loadGroupStatsByCollector(),
+      loadReconciliationCounts(),
+    ]);
 
   let collectorEntries: Array<{
     id: string;
@@ -228,11 +233,18 @@ export async function listCollectors(): Promise<CollectorListResponse> {
   }
 
   const collectors = collectorEntries.map((entry) => {
-    const collectorPayments = payments.filter((payment) => payment.collectorId === entry.id);
-    const collectedPesewas = collectorPayments.reduce((sum, payment) => sum + payment.amountPesewas, 0);
+    const collectedPesewas = useDb
+      ? (paymentsByCollector.get(entry.id) ?? 0)
+      : payments
+          .filter((payment) => payment.collectorId === entry.id)
+          .reduce((sum, payment) => sum + payment.amountPesewas, 0);
     const expectedPesewas = collectedPesewas;
     const groupInfo = groupStats.get(entry.id) ?? { groupCount: 0, borrowerCount: 0 };
-    const activeToday = collectorPayments.some((payment) => payment.paymentDate === today);
+    const activeToday = useDb
+      ? activeTodayCollectors.has(entry.id)
+      : payments
+          .filter((payment) => payment.collectorId === entry.id)
+          .some((payment) => payment.paymentDate === today);
 
     return {
       summary: buildCollectorSummary({
@@ -314,14 +326,25 @@ export async function getCollector(id: string): Promise<CollectorDetail> {
     }));
   }
 
-  const payments = (await listPayments())
-    .filter((payment) => payment.collectorId === id)
-    .slice(0, 5)
-    .map((payment) => ({
+  let recentPaymentRows: Array<{ id: string; paymentDate: string }> = [];
+
+  if (isDatabaseEnabled()) {
+    recentPaymentRows = (await paymentRepo.listRecentPaymentsForCollector(id, 5)).map((payment) => ({
       id: payment.id,
-      message: `Collected payment on ${payment.paymentDate}`,
-      tone: 'default' as const,
+      paymentDate: payment.paymentDate,
     }));
+  } else {
+    recentPaymentRows = (await listPayments())
+      .filter((payment) => payment.collectorId === id)
+      .slice(0, 5)
+      .map((payment) => ({ id: payment.id, paymentDate: payment.paymentDate }));
+  }
+
+  const payments = recentPaymentRows.map((payment) => ({
+    id: payment.id,
+    message: `Collected payment on ${payment.paymentDate}`,
+    tone: 'default' as const,
+  }));
 
   return {
     ...collector,

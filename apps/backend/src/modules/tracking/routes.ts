@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { asyncHandler } from '../../http/async-handler.js';
+import { validateSafeRedirectUrl } from '../../lib/safe-redirect-url.js';
 import {
   getTrackingPixel,
   recordEmailClick,
@@ -26,8 +27,9 @@ trackingRouter.get(
 trackingRouter.get(
   '/tracking/click/:token/:linkId',
   asyncHandler(async (req, res) => {
-    const destination =
+    const rawDestination =
       typeof req.query.url === 'string' ? req.query.url : 'https://wilms.vercel.app';
+    const destination = validateSafeRedirectUrl(rawDestination);
     const redirectUrl = await recordEmailClick({
       trackingToken: req.params.token!,
       linkId: req.params.linkId!,
