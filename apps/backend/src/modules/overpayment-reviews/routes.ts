@@ -15,6 +15,9 @@ function mapError(error: unknown): never {
     if (error.message.startsWith('VALIDATION:')) {
       throw new AppError(error.message.slice('VALIDATION:'.length), ERROR_CODE.VALIDATION, 422);
     }
+    if (error.message.startsWith('FORBIDDEN:')) {
+      throw new AppError(error.message.slice('FORBIDDEN:'.length), ERROR_CODE.FORBIDDEN, 403);
+    }
   }
   throw error;
 }
@@ -49,6 +52,7 @@ overpaymentReviewsRouter.post(
         overpaymentReviewService.resolveReview(
           req.params.id!,
           req.body,
+          req.session!.userId,
           String(req.body?.actorDisplayName ?? req.session!.displayName),
         ),
       );

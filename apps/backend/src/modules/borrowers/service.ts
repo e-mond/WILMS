@@ -480,6 +480,13 @@ export async function registerBorrower(payload: Record<string, unknown>, actorId
 
 export async function approveBorrower(id: string, actorId: string, actorDisplayName?: string) {
   const record = assertPending(await getBorrower(id));
+
+  if (record.registeredByOfficerId === actorId) {
+    throw new Error(
+      'FORBIDDEN:You cannot approve a borrower registration you submitted. Ask another authorised approver.',
+    );
+  }
+
   record.status = BORROWER_STATUS.APPROVED;
   await saveBorrower(record);
 

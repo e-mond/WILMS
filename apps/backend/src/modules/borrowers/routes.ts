@@ -33,6 +33,10 @@ function mapError(error: unknown): never {
       throw new AppError(error.message.slice('VALIDATION:'.length), ERROR_CODE.VALIDATION, 422);
     }
 
+    if (error.message.startsWith('FORBIDDEN:')) {
+      throw new AppError(error.message.slice('FORBIDDEN:'.length), ERROR_CODE.FORBIDDEN, 403);
+    }
+
     if (error.message === 'DUPLICATE') {
       throw new AppError(
         'Admin fee has already been recorded for this borrower.',

@@ -1,0 +1,36 @@
+{
+  "version": "1.4.2",
+  "generatedAt": "2026-07-21T11:30:00Z",
+  "branch": "feat/phase28-defaulter-sql-deps-8847",
+  "results": [
+    { "command": "npm run type-check", "status": "PASS" },
+    { "command": "npm run lint", "status": "PASS", "notes": "0 warnings, 0 errors" },
+    { "command": "npm run test -w @wilms/api", "status": "PASS", "files": 64, "tests": 196 },
+    { "command": "npm run test", "status": "PASS", "files": 90, "tests": 252 },
+    { "command": "npm run build", "status": "PASS" },
+    { "command": "npm run bundle:budget-check", "status": "PASS", "jsGzipKb": 168.4, "cssGzipKb": 10.1 },
+    { "command": "npm run verify:migrations", "status": "PASS", "journalEntries": 30, "liveDb": "SKIPPED" },
+    { "command": "npm run verify:version", "status": "PASS", "version": "1.4.2" },
+    { "command": "npm run verify:api-integrity", "status": "PASS" },
+    { "command": "npm run verify:api-coverage", "status": "PASS", "pages": 57 },
+    { "command": "npm run verify:mock-guard", "status": "PASS" },
+    { "command": "npm run verify:node", "status": "PASS", "nodeMajor": 22 },
+    { "command": "npm run verify:financial -w @wilms/api", "status": "PARTIAL", "passed": 22, "total": 23, "skipped": "DATABASE_URL not set" },
+    { "command": "npm audit --omit=dev", "status": "PARTIAL", "vulnerabilities": 7, "critical": 0 }
+  ],
+  "newRegressionTests": [
+    "apps/backend/src/tests/borrowers/sod-self-approve.test.ts",
+    "apps/backend/src/tests/loans/sod-self-approve.test.ts",
+    "apps/backend/src/tests/reconciliation/sod-self-review.test.ts",
+    "apps/backend/src/tests/sync/sod-self-approve.test.ts",
+    "apps/backend/src/tests/overpayment-reviews/sod-self-resolve.test.ts",
+    "apps/backend/src/tests/security/safe-redirect-url.test.ts",
+    "apps/backend/src/tests/reports/defaulter.test.ts"
+  ],
+  "testHygiene": {
+    "itOnly": 0,
+    "describeOnly": 0,
+    "conditionalSkip": 1,
+    "conditionalSkipLocation": "apps/frontend/e2e/shell-navbar.spec.ts:205"
+  }
+}

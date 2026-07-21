@@ -124,10 +124,13 @@ export async function listBorrowerLoans(borrowerId: string, tx: WilmsDb = getDb(
 
 export async function sumLedgerRepayments(loanId: string, tx: WilmsDb = getDb()) {
   const { ledgerEntries } = await import('../db/schema/ledger-entries.js');
-  const rows = await tx.select().from(ledgerEntries).where(eq(ledgerEntries.loanId, loanId));
-  return rows
-    .filter((row) => row.entryType === 'REPAYMENT')
-    .reduce((total, row) => total + Number(row.amount) * 100, 0);
+  const [row] = await tx
+    .select({
+      total: sql<number>`COALESCE(SUM(${ledgerEntries.amount}::numeric * 100), 0)::int`,
+    })
+    .from(ledgerEntries)
+    .where(and(eq(ledgerEntries.loanId, loanId), eq(ledgerEntries.entryType, 'REPAYMENT')));
+  return Number(row?.total ?? 0);
 }
 
 /**
