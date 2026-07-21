@@ -12,6 +12,7 @@ import { buildFinancialLedgerReport } from '../../domain/reports/financial-ledge
 import { isDatabaseEnabled } from '../../db/client.js';
 import { PERMISSION } from '../../infrastructure/permissions/matrix.js';
 import { countBorrowers, countPayments, listBorrowers, listPayments } from '../../db/persistence.js';
+import * as paymentRepo from '../../repositories/payment.repository.js';
 import { requireAuth } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/require-permission.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
@@ -169,13 +170,24 @@ reportsRouter.get(
     const date = String(req.query.date ?? new Date().toISOString().slice(0, 10));
     const collectorId = req.query.collectorId ? String(req.query.collectorId) : undefined;
 
-    const [payments, borrowers, paymentTotal, borrowerTotal] = await Promise.all([
-      listPayments(),
-      listBorrowers(),
-      countPayments(),
-      countBorrowers(),
-    ]);
-    await assertReportSourceNotTruncated('Daily collection payments', payments.length, paymentTotal);
+    // Payments are date-scoped at the query layer (SQL) to avoid full-table load + 2000-row trap.
+    let payments;
+    if (isDatabaseEnabled()) {
+      const [datePayments, dateTotal] = await Promise.all([
+        paymentRepo.listPaymentsForDate(date, { collectorId }),
+        paymentRepo.countPaymentsForDate(date, { collectorId }),
+      ]);
+      await assertReportSourceNotTruncated('Daily collection payments', datePayments.length, dateTotal);
+      payments = datePayments;
+    } else {
+      const all = await listPayments();
+      payments = all.filter(
+        (payment) =>
+          payment.paymentDate === date && (!collectorId || payment.collectorId === collectorId),
+      );
+    }
+
+    const [borrowers, borrowerTotal] = await Promise.all([listBorrowers(), countBorrowers()]);
     await assertReportSourceNotTruncated('Daily collection borrowers', borrowers.length, borrowerTotal);
     const borrowerNames = new Map(
       borrowers.map((borrower) => [
@@ -288,12 +300,21 @@ reportsRouter.get(
   '/reports/financial-ledger',
   requirePermission(PERMISSION.VIEW_REPORTS),
   asyncHandler(async (req, res) => {
-    const [payments, paymentTotal] = await Promise.all([listPayments(), countPayments()]);
-    await assertReportSourceNotTruncated('Financial ledger payments', payments.length, paymentTotal);
-    const report = buildFinancialLedgerReport(payments, {
-      fromDate: req.query.fromDate ? String(req.query.fromDate) : undefined,
-      toDate: req.query.toDate ? String(req.query.toDate) : undefined,
-    });
+    const fromDate = req.query.fromDate ? String(req.query.fromDate) : undefined;
+    const toDate = req.query.toDate ? String(req.query.toDate) : undefined;
+
+    let payments;
+    if (isDatabaseEnabled()) {
+      const { rows, total } = await paymentRepo.listPaymentsInDateRange({ fromDate, toDate });
+      await assertReportSourceNotTruncated('Financial ledger payments', rows.length, total);
+      payments = rows;
+    } else {
+      const [all, paymentTotal] = await Promise.all([listPayments(), countPayments()]);
+      await assertReportSourceNotTruncated('Financial ledger payments', all.length, paymentTotal);
+      payments = all;
+    }
+
+    const report = buildFinancialLedgerReport(payments, { fromDate, toDate });
     sendData(res, report);
   }),
 );

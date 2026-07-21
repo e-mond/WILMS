@@ -387,6 +387,7 @@ export async function onboardCollector(
   const temporaryPassword = generateInvitePassword();
   const passwordHash = await hashPassword(temporaryPassword);
   const now = new Date();
+  const invitedAt = now;
 
   const db = getDb();
   await db.insert(users).values({
@@ -399,6 +400,7 @@ export async function onboardCollector(
     region: input.assignedRegion?.trim() ?? null,
     role: USER_ROLE.COLLECTOR,
     status: 'INVITED',
+    invitedAt,
   });
 
   await db.insert(collectors).values({
@@ -419,6 +421,31 @@ export async function onboardCollector(
     targetEntityType: 'user',
     reason: `Onboarded collector ${collectorCode}`,
   });
+
+  try {
+    const { issueInvitationToken } = await import('../auth/invitation-token.service.js');
+    const { notifyUserInvitation } = await import(
+      '../../infrastructure/notifications/event-dispatch.js'
+    );
+    const { computeInvitationExpiresAt } = await import('../../lib/invitation-expiry.js');
+    const expiresAt = computeInvitationExpiresAt(invitedAt);
+    const issued = await issueInvitationToken({
+      userId,
+      expiresAt,
+      actorUserId: actorId,
+    });
+    await notifyUserInvitation({
+      email,
+      displayName,
+      temporaryPassword,
+      userId,
+      phone: input.phone?.trim(),
+      expiresAt: issued.expiresAt,
+      invitationToken: issued.rawToken,
+    });
+  } catch (error) {
+    console.error('[collectors] invitation delivery failed:', error);
+  }
 
   return getCollector(userId);
 }

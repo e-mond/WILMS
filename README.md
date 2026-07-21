@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| **Current version** | `1.4.1` (see root `package.json` / `NEXT_PUBLIC_APP_VERSION` in the UI) |
+| **Current version** | `1.4.2` (see root `package.json` / `NEXT_PUBLIC_APP_VERSION` in the UI) |
 | **Frontend** | Next.js 14 App Router, React, TanStack Query, Tailwind |
 | **API** | Express, Drizzle ORM, Neon PostgreSQL |
 | **Runtime** | Node.js 22+ (`engines`, `.nvmrc`, CI) |
@@ -277,6 +277,7 @@ Full procedures: `docs/deployment-guide.md`, `docs/production-guide.md`.
 
 | Version | Highlights |
 |---------|------------|
+| **v1.4.2** | Phase 27: signed invite tokens, expense SoD, SQL-scoped reports, API rate limiting |
 | **v1.4.1** | UX shell hardening: Dashboard?Operations routing fix, sticky chrome, float stack, permission catalog, command search |
 | **v1.4.0** | Platform foundation: Node 22, BullMQ/Redis optional queues, idempotency, cursor pagination, outbox, feature flags |
 | **v1.3.8** | Final hardening, enterprise certification packs, ops dashboard, request IDs / Prometheus metrics |

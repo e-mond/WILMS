@@ -184,6 +184,7 @@ export async function notifyUserInvitation(input: {
   userId: string;
   phone?: string;
   expiresAt?: Date;
+  invitationToken?: string;
 }): Promise<{
   emailSent: boolean;
   emailError?: string;
@@ -194,6 +195,7 @@ export async function notifyUserInvitation(input: {
     displayName: input.displayName,
     email: input.email,
     temporaryPassword: input.temporaryPassword,
+    invitationToken: input.invitationToken,
     appUrl: env.appUrl,
     expiresAt: input.expiresAt,
   });

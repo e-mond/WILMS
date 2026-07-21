@@ -82,6 +82,20 @@ export const passwordResetTokens = pgTable('password_reset_tokens', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+/** One-time invitation accept tokens (hash only stored). */
+export const invitationTokens = pgTable('invitation_tokens', {
+  id: text('id').primaryKey(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id),
+  tokenHash: text('token_hash').notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  usedAt: timestamp('used_at', { withTimezone: true }),
+  revokedAt: timestamp('revoked_at', { withTimezone: true }),
+  ipAddress: text('ip_address'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const authOtpChallenges = pgTable('auth_otp_challenges', {
   id: text('id').primaryKey(),
   userId: uuid('user_id')
