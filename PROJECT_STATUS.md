@@ -1,6 +1,6 @@
 # Project Status
 
-**Last updated:** 2026-07-21 (v1.4.2 Phase 27)  
+**Last updated:** 2026-07-21 (v1.4.2 Phase 28)  
 **Package version:** `1.4.2`
 
 ## Current state
@@ -10,11 +10,13 @@
 | v1.3.8 software line | **Frozen** — hotfixes only after `maintenance/v1.3.8` |
 | v1.4.0 Phase 25 platform foundation | **COMPLETE (software)** |
 | v1.4.1 UX + final-system + Phase 26 | **COMPLETE (software)** — PRs #132 / #136 / #137 / #138 |
-| **v1.4.2 Phase 27 residual Medium closure** | **COMPLETE (software)** — operator evidence still open |
+| **v1.4.2 Phase 27 residual Medium closure** | **COMPLETE** |
+| **v1.4.2 Phase 28 operator evidence closure** | **COMPLETE (software)** — operator gates still open |
 
 **Verdict:** **READY WITH CONDITIONS**  
 **Production Certified:** **NOT ISSUED**
 
+**Phase 28 pack:** [`docs/certification/v1.4/phase-28/`](docs/certification/v1.4/phase-28/FINAL_PHASE_28_AUDIT.md)  
 **Phase 27 pack:** [`docs/certification/v1.4/phase-27/`](docs/certification/v1.4/phase-27/FINAL_PHASE_27_AUDIT.md)  
 **Audit index:** [`docs/FINAL_AUDIT_INDEX.md`](docs/FINAL_AUDIT_INDEX.md)
 
