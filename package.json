@@ -39,6 +39,7 @@
     "verify:empty-db": "npm run verify:empty-db -w @wilms/api",
     "verify:migrations": "npm run verify:migrations -w @wilms/api",
     "verify:node": "node scripts/verify-node-version.mjs",
-    "drill:backup-restore": "node scripts/backup-restore-drill.mjs"
+    "drill:backup-restore": "node scripts/backup-restore-drill.mjs",
+    "verify:phase29": "node scripts/phase29-verify-all.mjs"
   }
 }

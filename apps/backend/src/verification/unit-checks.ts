@@ -104,7 +104,8 @@ export function runAllocationChecks(): VerificationResult[] {
     amountPesewas: 5000,
     weeklyPaymentPesewas,
     paymentDay: 'Monday',
-    referenceDate: '2026-05-15',
+    // Wednesday — not the loan payment day (Friday) and not the oldest due date.
+    referenceDate: '2026-05-13',
     scheduleWeeks,
   });
   results.push({
