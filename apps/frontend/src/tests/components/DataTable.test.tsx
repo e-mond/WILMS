@@ -56,4 +56,25 @@ describe('DataTable', () => {
 
     expect(screen.getByText('No registrations found.')).toBeInTheDocument();
   });
+
+  it('keeps executive identity cells on a single line', () => {
+    const { container } = render(
+      <DataTable
+        variant="executive"
+        caption="Collectors"
+        getRowId={(row) => row.id}
+        data={[{ id: 'c-1', name: 'Ama Serwaa Mensah' }]}
+        columns={[
+          {
+            id: 'name',
+            header: 'Collector',
+            cell: (row) => <p className="font-semibold">{row.name}</p>,
+          },
+        ]}
+      />,
+    );
+
+    const cell = container.querySelector('td');
+    expect(cell?.className).toContain('whitespace-nowrap');
+  });
 });

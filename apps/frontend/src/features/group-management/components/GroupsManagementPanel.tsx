@@ -238,15 +238,15 @@ export function GroupsManagementPanel() {
           {
             id: 'group',
             header: 'Name',
-            className: 'min-w-[10rem] max-w-[16rem]',
+            className: 'min-w-[12rem]',
             cell: (row) => (
               <Link
                 href={`/groups/${row.id}`}
-                className="block min-w-0 text-left hover:underline"
+                className="block text-left hover:underline"
                 onClick={(event) => event.stopPropagation()}
               >
-                <p className="truncate font-semibold text-text-primary">{row.name}</p>
-                <p className="truncate text-small text-text-muted">
+                <p className="whitespace-nowrap font-semibold text-text-primary">{row.name}</p>
+                <p className="whitespace-nowrap text-small text-text-muted">
                   Formed {formatDisplayDate(row.formedAt)}
                 </p>
               </Link>
@@ -255,14 +255,12 @@ export function GroupsManagementPanel() {
           {
             id: 'community',
             header: 'Community',
-            className: 'max-w-[10rem] truncate whitespace-nowrap',
-            cell: (row) => <span title={row.community}>{row.community}</span>,
+            cell: (row) => <span className="whitespace-nowrap">{row.community}</span>,
           },
           {
             id: 'officer',
             header: 'Officer',
-            className: 'max-w-[10rem] truncate whitespace-nowrap',
-            cell: (row) => <span title={row.officerName}>{row.officerName}</span>,
+            cell: (row) => <span className="whitespace-nowrap">{row.officerName}</span>,
           },
           {
             id: 'members',

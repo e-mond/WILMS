@@ -41,7 +41,15 @@ notificationsRouter.use(requireAuth);
 notificationsRouter.get(
   '/notifications/inbox',
   asyncHandler(async (req, res) => {
-    sendData(res, await notificationService.listInbox(req.session!.userId));
+    const limit = typeof req.query.limit === 'string' ? Number(req.query.limit) : undefined;
+    const offset = typeof req.query.offset === 'string' ? Number(req.query.offset) : undefined;
+    sendData(
+      res,
+      await notificationService.listInbox(req.session!.userId, {
+        limit: Number.isFinite(limit) ? limit : undefined,
+        offset: Number.isFinite(offset) ? offset : undefined,
+      }),
+    );
   }),
 );
 

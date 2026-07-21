@@ -26,7 +26,7 @@ const PAGE_SIZE = 20;
 
 function matchesCategory(event: string, filter: NotificationFilter): boolean {
   if (filter === 'payments') {
-    return /PAYMENT|COLLECTION/i.test(event);
+    return /PAYMENT|COLLECTION|MISSED_PAYMENT/i.test(event);
   }
   if (filter === 'loans') {
     return /LOAN|DISBURSE|DEFAULT/i.test(event);
@@ -35,6 +35,24 @@ function matchesCategory(event: string, filter: NotificationFilter): boolean {
     return /PASSWORD|LOGIN|INVITATION|ACCOUNT|ROLE/i.test(event);
   }
   return true;
+}
+
+/** Human-readable label for payment-related notification events. */
+function eventTypeLabel(event: string): string | null {
+  switch (event) {
+    case 'PAYMENT_REMINDER':
+      return 'Upcoming payment';
+    case 'MISSED_PAYMENT':
+      return 'Missed payment';
+    case 'PAYMENT_RECEIVED':
+      return 'Payment confirmed';
+    case 'PAYMENT_REVERSAL':
+      return 'Payment reversed';
+    case 'SUPERVISOR_ALERT':
+      return 'Operations alert';
+    default:
+      return null;
+  }
 }
 
 function severityConfig(severity: string): { className: string; label: string; dot: string } {
@@ -249,12 +267,19 @@ export function NotificationInboxPanel() {
                         <div className="min-w-0 flex-1">
                       {/* Top row: title + severity badge */}
                       <div className="flex items-start justify-between gap-wilms-3">
-                        <p className={cn(
-                          'text-body leading-snug',
-                          item.isRead ? 'font-medium text-text-primary' : 'font-semibold text-text-primary',
-                        )}>
-                          {item.title}
-                        </p>
+                        <div className="min-w-0">
+                          {eventTypeLabel(item.event) ? (
+                            <p className="mb-wilms-1 text-small font-semibold uppercase tracking-wide text-executive-gold">
+                              {eventTypeLabel(item.event)}
+                            </p>
+                          ) : null}
+                          <p className={cn(
+                            'text-body leading-snug',
+                            item.isRead ? 'font-medium text-text-primary' : 'font-semibold text-text-primary',
+                          )}>
+                            {item.title}
+                          </p>
+                        </div>
                         <span
                           className={cn(
                             'inline-flex shrink-0 items-center gap-1 rounded-full border px-wilms-2 py-0.5 text-small font-medium',
