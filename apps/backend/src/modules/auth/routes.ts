@@ -14,6 +14,10 @@ import { validateBody } from '../../middleware/validate-body.js';
 import { isDatabaseEnabled } from '../../db/client.js';
 import { userRepository } from '../../repositories/index.js';
 import { assertDemoLoginAllowed } from '../../lib/demo-accounts.js';
+import {
+  INVITATION_EXPIRED_MESSAGE,
+  isInvitationExpired,
+} from '../../lib/invitation-expiry.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
 import { getSettings } from '../settings/service.js';
 import { completeOnboarding } from './onboarding.service.js';
@@ -103,7 +107,7 @@ const otpVerifyLimiter = rateLimit({
 });
 
 const completeOnboardingSchema = {
-  newPassword: (value: unknown) => typeof value === 'string' && value.length >= 8,
+  newPassword: (value: unknown) => typeof value === 'string' && value.trim().length >= 10,
   displayName: (value: unknown) => value === undefined || (typeof value === 'string' && value.trim().length > 0),
   phone: (value: unknown) => value === undefined || typeof value === 'string',
   branch: (value: unknown) => value === undefined || typeof value === 'string',
@@ -149,6 +153,7 @@ type AuthUser = {
   status: 'ACTIVE' | 'INVITED' | 'SUSPENDED';
   phone?: string | null;
   sessionVersion: number;
+  invitedAt?: Date | null;
 };
 
 async function resolveAuthUser(email: string): Promise<AuthUser | null> {
@@ -166,6 +171,7 @@ async function resolveAuthUser(email: string): Promise<AuthUser | null> {
       status: row.status,
       phone: row.phone,
       sessionVersion: row.sessionVersion ?? 1,
+      invitedAt: row.invitedAt ?? null,
     };
   }
 
@@ -182,7 +188,17 @@ async function resolveAuthUser(email: string): Promise<AuthUser | null> {
     status: demo.status ?? 'ACTIVE',
     phone: null,
     sessionVersion: 1,
+    invitedAt: null,
   };
+}
+
+function assertInvitationStillValid(user: AuthUser): void {
+  if (user.status !== 'INVITED') {
+    return;
+  }
+  if (isInvitationExpired(user.invitedAt)) {
+    throw new AppError(INVITATION_EXPIRED_MESSAGE, ERROR_CODE.VALIDATION, 422);
+  }
 }
 
 async function resolveAuthPassword(email: string, password: string): Promise<boolean> {
@@ -252,6 +268,10 @@ authRouter.post(
       return;
     }
 
+    if (isInvitationExpired(user.invitedAt)) {
+      throw new AppError(INVITATION_EXPIRED_MESSAGE, ERROR_CODE.VALIDATION, 422);
+    }
+
     await userRepository.recordInvitationAccepted(user.id);
 
     appendAuditEntry({
@@ -303,6 +323,8 @@ authRouter.post(
       logLoginAttempt({ success: false, email: normalizedEmail, ip: clientIp });
       throw new AppError('Invalid email or password.', ERROR_CODE.UNAUTHORIZED, 401);
     }
+
+    assertInvitationStillValid(user);
 
     const passwordValid = await resolveAuthPassword(normalizedEmail, password);
 

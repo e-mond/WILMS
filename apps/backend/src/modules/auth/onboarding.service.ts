@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { getDb, isDatabaseEnabled } from '../../db/client.js';
 import { users } from '../../db/schema/users.js';
+import { assertPasswordStrength } from '../../lib/password-policy.js';
 import { hashPassword } from '../../lib/password.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import { notifyWelcome } from '../../infrastructure/notifications/event-dispatch.js';
@@ -20,9 +21,10 @@ export async function completeOnboarding(
   input: CompleteOnboardingInput,
 ): Promise<{ status: 'ACTIVE' }> {
   const password = input.newPassword?.trim();
-  if (!password || password.length < 8) {
-    throw new Error('VALIDATION:Password must be at least 8 characters.');
+  if (!password) {
+    throw new Error('VALIDATION:Password is required.');
   }
+  assertPasswordStrength(password);
 
   if (!isDatabaseEnabled()) {
     return { status: 'ACTIVE' };
