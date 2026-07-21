@@ -7,7 +7,33 @@
 
 ---
 
-## Phase 27 pack (current)
+## Phase 28 pack (current)
+
+Primary pack: [`certification/v1.4/phase-28/`](./certification/v1.4/phase-28/)
+
+| Doc | Path |
+|-----|------|
+| Index | [INDEX.md](./certification/v1.4/phase-28/INDEX.md) |
+| Phase 28 audit summary | [FINAL_PHASE_28_AUDIT.md](./certification/v1.4/phase-28/FINAL_PHASE_28_AUDIT.md) |
+| Codebase verification | [PHASE28A_CODEBASE_VERIFICATION.md](./certification/v1.4/phase-28/PHASE28A_CODEBASE_VERIFICATION.md) |
+| Defaulter SQL aggregation | [DEFAULTER_SQL_AGGREGATION_REPORT.md](./certification/v1.4/phase-28/DEFAULTER_SQL_AGGREGATION_REPORT.md) |
+| Dependency triage | [DEPENDENCY_TRIAGE_REPORT.md](./certification/v1.4/phase-28/DEPENDENCY_TRIAGE_REPORT.md) |
+| Migration 0029 verification | [MIGRATION_0029_VERIFICATION_REPORT.md](./certification/v1.4/phase-28/MIGRATION_0029_VERIFICATION_REPORT.md) |
+| Staging smoke | [STAGING_SMOKE_REPORT.md](./certification/v1.4/phase-28/STAGING_SMOKE_REPORT.md) |
+| Money-chain evidence | [MONEY_CHAIN_EVIDENCE_REPORT.md](./certification/v1.4/phase-28/MONEY_CHAIN_EVIDENCE_REPORT.md) |
+| RBAC & security smoke | [RBAC_SECURITY_SMOKE_REPORT.md](./certification/v1.4/phase-28/RBAC_SECURITY_SMOKE_REPORT.md) |
+| Backup / restore / DR | [BACKUP_RESTORE_DR_REPORT.md](./certification/v1.4/phase-28/BACKUP_RESTORE_DR_REPORT.md) |
+| Load / performance | [LOAD_PERFORMANCE_REPORT.md](./certification/v1.4/phase-28/LOAD_PERFORMANCE_REPORT.md) |
+| Production configuration | [PRODUCTION_CONFIGURATION_AUDIT.md](./certification/v1.4/phase-28/PRODUCTION_CONFIGURATION_AUDIT.md) |
+| UX / accessibility | [UX_ACCESSIBILITY_FINAL_REPORT.md](./certification/v1.4/phase-28/UX_ACCESSIBILITY_FINAL_REPORT.md) |
+| Documentation audit | [DOCUMENTATION_FINAL_AUDIT.md](./certification/v1.4/phase-28/DOCUMENTATION_FINAL_AUDIT.md) |
+| Manual actions | [FINAL_MANUAL_ACTIONS_REQUIRED.md](./certification/v1.4/phase-28/FINAL_MANUAL_ACTIONS_REQUIRED.md) |
+| Final certification | [FINAL_PRODUCTION_CERTIFICATION.md](./certification/v1.4/phase-28/FINAL_PRODUCTION_CERTIFICATION.md) |
+| Release readiness | [FINAL_RELEASE_READINESS.md](./certification/v1.4/phase-28/FINAL_RELEASE_READINESS.md) |
+
+---
+
+## Phase 27 pack (archived)
 
 Primary pack: [`certification/v1.4/phase-27/`](./certification/v1.4/phase-27/)
 

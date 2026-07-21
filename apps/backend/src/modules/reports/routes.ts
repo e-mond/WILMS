@@ -17,6 +17,7 @@ import { requireAuth } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/require-permission.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import * as userRepo from '../../repositories/user.repository.js';
+import * as defaulterRepo from '../../repositories/defaulter.repository.js';
 import { mapLoanRowToDetail } from '../../domain/loan/mappers.js';
 import { listPortfolioEntries } from '../loans/service.js';
 import { listCollectors } from '../collectors/service.js';
@@ -262,6 +263,27 @@ reportsRouter.get(
   '/reports/defaulters',
   requirePermission(PERMISSION.VIEW_REPORTS),
   asyncHandler(async (_req, res) => {
+    // Prefer SQL aggregation path (no row-count cap).
+    const sqlResult = await defaulterRepo.queryDefaulterAggregates();
+    if (sqlResult) {
+      sendData(res, {
+        generatedAt: new Date().toISOString(),
+        summary: sqlResult.summary,
+        rows: sqlResult.rows.map((row) => ({
+          id: `def-${row.loanId}`,
+          borrowerId: row.borrowerId,
+          borrowerName: row.borrowerName,
+          community: row.community,
+          groupName: row.groupName,
+          missedWeeks: row.missedWeeks,
+          outstandingPesewas: row.outstandingPesewas,
+          lastPaymentDate: row.lastPaymentDate ?? undefined,
+        })),
+      });
+      return;
+    }
+
+    // In-memory fallback (no DATABASE_URL / dev/test mode) with existing fail-closed guard.
     const [loanRows, borrowers, payments, paymentTotal, borrowerTotal] = await Promise.all([
       loanRepo.listLoans(),
       listBorrowers(),
