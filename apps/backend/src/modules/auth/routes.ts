@@ -251,21 +251,57 @@ function buildLoginResponse(user: AuthUser) {
 
 authRouter.post(
   '/auth/accept-invitation',
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+      error: { message: 'Too many invitation attempts. Please try again later.', code: 'RATE_LIMITED' },
+    },
+  }),
   asyncHandler(async (req, res) => {
+    const token = typeof req.body?.token === 'string' ? req.body.token.trim() : '';
     const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
-    if (!email || !email.includes('@')) {
-      throw new AppError('A valid email address is required.', ERROR_CODE.VALIDATION, 422);
+
+    if (!token) {
+      throw new AppError(
+        'A valid invitation token is required. Open the Accept Invitation link from your email.',
+        ERROR_CODE.VALIDATION,
+        422,
+      );
+    }
+
+    const { consumeInvitationToken, INVITATION_TOKEN_INVALID_MESSAGE } = await import(
+      './invitation-token.service.js'
+    );
+
+    let consumed: { userId: string; email: string; displayName: string; role: string };
+    try {
+      consumed = await consumeInvitationToken({
+        token,
+        ipAddress: req.ip,
+      });
+    } catch (error) {
+      if (error instanceof Error && error.message.startsWith('VALIDATION:')) {
+        const message = error.message.slice('VALIDATION:'.length);
+        throw new AppError(message || INVITATION_TOKEN_INVALID_MESSAGE, ERROR_CODE.VALIDATION, 422);
+      }
+      throw error;
+    }
+
+    if (email && email !== consumed.email.toLowerCase()) {
+      throw new AppError(INVITATION_TOKEN_INVALID_MESSAGE, ERROR_CODE.VALIDATION, 422);
     }
 
     if (!isDatabaseEnabled()) {
-      sendData(res, { accepted: true });
+      sendData(res, { accepted: true, email: consumed.email });
       return;
     }
 
-    const user = await userRepository.findAnyUserByEmail(email);
+    const user = await userRepository.findAnyUserByEmail(consumed.email);
     if (!user || user.deletedAt || user.status !== 'INVITED') {
-      sendData(res, { accepted: false });
-      return;
+      throw new AppError(INVITATION_TOKEN_INVALID_MESSAGE, ERROR_CODE.VALIDATION, 422);
     }
 
     if (isInvitationExpired(user.invitedAt)) {
@@ -280,7 +316,7 @@ authRouter.post(
       actorDisplayName: user.displayName,
       targetEntityId: user.id,
       targetEntityType: 'user',
-      reason: 'accept-invitation-link',
+      reason: 'accept-invitation-token',
     });
 
     try {
@@ -294,7 +330,7 @@ authRouter.post(
       console.error('[auth] invitation-accepted notification failed:', error);
     }
 
-    sendData(res, { accepted: true });
+    sendData(res, { accepted: true, email: user.email });
   }),
 );
 

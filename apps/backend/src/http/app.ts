@@ -39,6 +39,7 @@ import { webhooksRouter } from '../modules/webhooks/routes.js';
 import { organizationHolidaysRouter } from '../modules/organization-holidays/routes.js';
 import { opsRouter } from '../modules/ops/routes.js';
 import { requestIdMiddleware } from '../middleware/request-id.js';
+import { createApiRateLimiter } from '../middleware/api-rate-limit.js';
 
 function mountBusinessRoutes(app: express.Application, basePath = '') {
   const prefix = basePath.replace(/\/$/, '');
@@ -87,6 +88,9 @@ export function createApp() {
 
   // Correlation ID must run first so all subsequent logs include requestId.
   app.use(requestIdMiddleware);
+
+  // Global abuse protection (Redis-backed when REDIS_URL is set).
+  app.use(createApiRateLimiter({ windowMs: 60_000, max: 300 }));
 
   app.use(
     helmet({

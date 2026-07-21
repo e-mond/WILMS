@@ -43,7 +43,10 @@ export function useRecordExpenseOrQueue() {
       }
 
       void queryClient.invalidateQueries({ queryKey: ['expenses'] });
-      notifyMutationSuccess('Expense recorded', 'Your expense was saved and appears in history.');
+      notifyMutationSuccess(
+        'Expense submitted',
+        'It is pending review. Operating cash updates only after approval by another user.',
+      );
     },
     onError: (error) => {
       notifyMutationError('Expense recording failed', error, 'Unable to record expense.');

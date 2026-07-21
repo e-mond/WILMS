@@ -1,4 +1,4 @@
-import { eq, inArray, isNull } from 'drizzle-orm';
+import { eq, inArray, isNull, sql, and } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
 import { formatExpenseDisplayId } from '@wilms/shared-utils';
 import { isDatabaseEnabled, getDb, runInTransaction } from '../../db/client.js';
@@ -65,12 +65,12 @@ function rowToRecord(
 }
 
 function buildSummary(items: ExpenseRecord[]): ExpenseListResponse['summary'] {
-  // Expenses are recorded as APPROVED immediately — no approval workflow.
-  const recordedTotal = items.reduce((sum, entry) => sum + entry.amountPesewas, 0);
+  const pending = items.filter((entry) => entry.status === 'PENDING');
+  const approved = items.filter((entry) => entry.status === 'APPROVED');
   return {
-    pendingCount: 0,
-    approvedTotalPesewas: recordedTotal,
-    pendingTotalPesewas: 0,
+    pendingCount: pending.length,
+    approvedTotalPesewas: approved.reduce((sum, entry) => sum + entry.amountPesewas, 0),
+    pendingTotalPesewas: pending.reduce((sum, entry) => sum + entry.amountPesewas, 0),
   };
 }
 
@@ -144,58 +144,36 @@ export async function createExpense(input: {
     gpsLabel: input.gpsLabel,
     recordedById: input.recordedById,
     recordedByName: input.recordedByName,
-    status: 'APPROVED',
+    status: 'PENDING',
     createdAt: now.toISOString(),
   };
 
   if (isDatabaseEnabled()) {
-    await runInTransaction(async (tx) => {
-      await tx.insert(expenses).values({
-        id: created.id,
-        category: input.category as typeof expenses.$inferInsert.category,
-        categoryLabel: created.categoryLabel,
-        amountPesewas: input.amountPesewas,
-        expenseDate: input.expenseDate,
-        reason: input.reason,
-        notes: input.notes ?? null,
-        receiptUploadId: input.receiptUploadId ?? null,
-        gpsLabel: input.gpsLabel ?? null,
-        recordedByUserId: input.recordedById,
-        status: 'APPROVED',
-        reviewedByUserId: input.recordedById,
-        reviewedAt: now,
-      });
-
-      // Operating-cash ledger entry — never touches loan principal or pool capital.
-      await ledgerRepo.appendLedgerEntry(
-        {
-          entryType: 'ADJUSTMENT',
-          amountDecimal: pesewasToDecimal(input.amountPesewas),
-          description: `Operating expense: ${created.categoryLabel} (${created.displayId})`,
-          actorUserId: input.recordedById,
-          metadata: {
-            kind: 'OPERATING_EXPENSE',
-            expenseId: created.id,
-            category: input.category,
-            expenseDate: input.expenseDate,
-            affectsLoanPrincipal: false,
-            affectsPoolCapital: false,
-          },
-        },
-        tx,
-      );
+    const db = getDb();
+    await db.insert(expenses).values({
+      id: created.id,
+      category: input.category as typeof expenses.$inferInsert.category,
+      categoryLabel: created.categoryLabel,
+      amountPesewas: input.amountPesewas,
+      expenseDate: input.expenseDate,
+      reason: input.reason,
+      notes: input.notes ?? null,
+      receiptUploadId: input.receiptUploadId ?? null,
+      gpsLabel: input.gpsLabel ?? null,
+      recordedByUserId: input.recordedById,
+      status: 'PENDING',
     });
   } else {
     memoryExpenses.unshift(created);
   }
 
   appendAuditEntry({
-    action: 'expense.recorded',
+    action: 'expense.submitted',
     actorId: input.recordedById,
     actorDisplayName: input.recordedByName,
     targetEntityId: created.id,
     targetEntityType: 'expense',
-    reason: `${created.categoryLabel} ${input.amountPesewas} pesewas`,
+    reason: `${created.categoryLabel} ${input.amountPesewas} pesewas (pending approval)`,
   });
 
   return { ...created };
@@ -206,26 +184,76 @@ export async function reviewExpense(
   input: { status: 'APPROVED' | 'REJECTED'; reviewNote?: string },
   reviewerUserId: string,
 ): Promise<ExpenseRecord> {
+  if (input.status !== 'APPROVED' && input.status !== 'REJECTED') {
+    throw new Error('VALIDATION:Expense review status must be APPROVED or REJECTED.');
+  }
+
+  if (input.status === 'REJECTED' && !input.reviewNote?.trim()) {
+    throw new Error('VALIDATION:A rejection reason is required.');
+  }
+
   if (isDatabaseEnabled()) {
-    const db = getDb();
-    const [row] = await db.select().from(expenses).where(eq(expenses.id, id)).limit(1);
-    if (!row || row.deletedAt) {
-      throw new Error('NOT_FOUND');
-    }
+    return runInTransaction(async (tx) => {
+      const [row] = await tx.select().from(expenses).where(eq(expenses.id, id)).limit(1);
+      if (!row || row.deletedAt) {
+        throw new Error('NOT_FOUND');
+      }
 
-    await db
-      .update(expenses)
-      .set({
-        status: input.status,
-        reviewNote: input.reviewNote ?? null,
-        reviewedByUserId: reviewerUserId,
-        reviewedAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .where(eq(expenses.id, id));
+      if (row.status !== 'PENDING') {
+        // Idempotent: same decision again is a no-op success; conflicting decision fails.
+        if (row.status === input.status) {
+          return rowToRecord(row);
+        }
+        throw new Error('VALIDATION:Only pending expenses can be reviewed.');
+      }
 
-    const [updated] = await db.select().from(expenses).where(eq(expenses.id, id)).limit(1);
-    return rowToRecord(updated!);
+      if (row.recordedByUserId === reviewerUserId) {
+        throw new Error('FORBIDDEN:You cannot approve or reject an expense you recorded.');
+      }
+
+      const now = new Date();
+      await tx
+        .update(expenses)
+        .set({
+          status: input.status,
+          reviewNote: input.reviewNote?.trim() ?? null,
+          reviewedByUserId: reviewerUserId,
+          reviewedAt: now,
+          updatedAt: now,
+        })
+        .where(and(eq(expenses.id, id), eq(expenses.status, 'PENDING')));
+
+      if (input.status === 'APPROVED') {
+        await ledgerRepo.appendLedgerEntry(
+          {
+            entryType: 'ADJUSTMENT',
+            amountDecimal: pesewasToDecimal(row.amountPesewas),
+            description: `Operating expense: ${row.categoryLabel}`,
+            actorUserId: reviewerUserId,
+            metadata: {
+              kind: 'OPERATING_EXPENSE',
+              expenseId: row.id,
+              category: row.category,
+              expenseDate: row.expenseDate,
+              affectsLoanPrincipal: false,
+              affectsPoolCapital: false,
+            },
+          },
+          tx,
+        );
+      }
+
+      appendAuditEntry({
+        action: input.status === 'APPROVED' ? 'expense.approved' : 'expense.rejected',
+        actorId: reviewerUserId,
+        targetEntityId: id,
+        targetEntityType: 'expense',
+        reason: input.reviewNote?.trim() || input.status,
+      });
+
+      const [updated] = await tx.select().from(expenses).where(eq(expenses.id, id)).limit(1);
+      return rowToRecord(updated!);
+    });
   }
 
   const index = memoryExpenses.findIndex((entry) => entry.id === id);
@@ -233,9 +261,34 @@ export async function reviewExpense(
     throw new Error('NOT_FOUND');
   }
 
-  const updated = { ...memoryExpenses[index]!, status: input.status };
+  const current = memoryExpenses[index]!;
+  if (current.status !== 'PENDING') {
+    if (current.status === input.status) {
+      return { ...current };
+    }
+    throw new Error('VALIDATION:Only pending expenses can be reviewed.');
+  }
+
+  if (current.recordedById === reviewerUserId) {
+    throw new Error('FORBIDDEN:You cannot approve or reject an expense you recorded.');
+  }
+
+  const updated = { ...current, status: input.status };
   memoryExpenses[index] = updated;
+
+  appendAuditEntry({
+    action: input.status === 'APPROVED' ? 'expense.approved' : 'expense.rejected',
+    actorId: reviewerUserId,
+    targetEntityId: id,
+    targetEntityType: 'expense',
+    reason: input.reviewNote?.trim() || input.status,
+  });
+
   return { ...updated };
+}
+
+function isoDate(date: Date): string {
+  return date.toISOString().slice(0, 10);
 }
 
 export async function getExpenseSummary(filter?: {
@@ -246,7 +299,6 @@ export async function getExpenseSummary(filter?: {
   monthPesewas: number;
   yearPesewas: number;
 }> {
-  const { expenses: items } = await listExpenses(filter);
   const now = new Date();
   const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const startOfWeek = new Date(startOfDay);
@@ -254,8 +306,39 @@ export async function getExpenseSummary(filter?: {
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const startOfYear = new Date(now.getFullYear(), 0, 1);
 
+  if (isDatabaseEnabled()) {
+    const db = getDb();
+    const conditions = [
+      isNull(expenses.deletedAt),
+      eq(expenses.status, 'APPROVED'),
+      sql`${expenses.expenseDate} >= ${isoDate(startOfYear)}`,
+    ];
+    if (filter?.recordedByUserId) {
+      conditions.push(eq(expenses.recordedByUserId, filter.recordedByUserId));
+    }
+
+    const [row] = await db
+      .select({
+        todayPesewas: sql<number>`COALESCE(SUM(CASE WHEN ${expenses.expenseDate} >= ${isoDate(startOfDay)} THEN ${expenses.amountPesewas} ELSE 0 END), 0)::int`,
+        weekPesewas: sql<number>`COALESCE(SUM(CASE WHEN ${expenses.expenseDate} >= ${isoDate(startOfWeek)} THEN ${expenses.amountPesewas} ELSE 0 END), 0)::int`,
+        monthPesewas: sql<number>`COALESCE(SUM(CASE WHEN ${expenses.expenseDate} >= ${isoDate(startOfMonth)} THEN ${expenses.amountPesewas} ELSE 0 END), 0)::int`,
+        yearPesewas: sql<number>`COALESCE(SUM(${expenses.amountPesewas}), 0)::int`,
+      })
+      .from(expenses)
+      .where(and(...conditions));
+
+    return {
+      todayPesewas: Number(row?.todayPesewas ?? 0),
+      weekPesewas: Number(row?.weekPesewas ?? 0),
+      monthPesewas: Number(row?.monthPesewas ?? 0),
+      yearPesewas: Number(row?.yearPesewas ?? 0),
+    };
+  }
+
+  const { expenses: items } = await listExpenses(filter);
+  const approved = items.filter((entry) => entry.status === 'APPROVED');
   const sumSince = (date: Date) =>
-    items
+    approved
       .filter((entry) => new Date(entry.expenseDate) >= date)
       .reduce((total, entry) => total + entry.amountPesewas, 0);
 
@@ -265,4 +348,9 @@ export async function getExpenseSummary(filter?: {
     monthPesewas: sumSince(startOfMonth),
     yearPesewas: sumSince(startOfYear),
   };
+}
+
+/** Test helper */
+export function __resetExpensesForTests(): void {
+  memoryExpenses.length = 0;
 }

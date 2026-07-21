@@ -176,11 +176,17 @@ export function buildUserInvitationEmail(input: {
   displayName: string;
   email: string;
   temporaryPassword: string;
+  /** One-time signed accept token (raw). Required for secure accept links. */
+  invitationToken?: string;
   appUrl?: string;
   expiresAt?: Date;
 }): EmailTemplate {
   const baseUrl = input.appUrl?.trim() || 'https://wilms.vercel.app';
-  const acceptUrl = `${baseUrl.replace(/\/$/, '')}/accept-invitation?email=${encodeURIComponent(input.email)}`;
+  const acceptParams = new URLSearchParams({ email: input.email });
+  if (input.invitationToken) {
+    acceptParams.set('token', input.invitationToken);
+  }
+  const acceptUrl = `${baseUrl.replace(/\/$/, '')}/accept-invitation?${acceptParams.toString()}`;
   const expiryLabel = input.expiresAt
     ? input.expiresAt.toISOString().slice(0, 10)
     : '7 days from invite';
@@ -199,7 +205,7 @@ export function buildUserInvitationEmail(input: {
       `Temporary password: ${input.temporaryPassword}`,
       `Invitation expires: ${expiryLabel}`,
       '',
-      'Please sign in and change your password immediately.',
+      'Open the Accept Invitation link once, then sign in and change your password.',
       '',
       'Need help? Contact your WILMS administrator or support@wilms.org',
       '',
