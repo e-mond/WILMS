@@ -20,18 +20,21 @@ import {
 import { ADJUSTMENT_TYPE } from '../domain/adjustment/types.js';
 import type { VerificationResult } from './unit-checks.js';
 
-const DEMO_ACTOR_EMAIL = 'admin@wilms.demo';
+const DEMO_REQUESTER_EMAIL = 'admin@wilms.demo';
+const DEMO_REVIEWER_EMAIL = 'approver@wilms.demo';
 
-async function resolveDemoActor(): Promise<{ actorId: string; actorDisplayName: string }> {
+async function resolveUserByEmail(
+  email: string,
+): Promise<{ actorId: string; actorDisplayName: string }> {
   const db = getDb();
   const [row] = await db
     .select({ id: users.id, displayName: users.displayName })
     .from(users)
-    .where(eq(users.email, DEMO_ACTOR_EMAIL))
+    .where(eq(users.email, email))
     .limit(1);
 
   if (!row) {
-    throw new Error('Super admin demo user missing — run db:seed');
+    throw new Error(`${email} demo user missing — run db:seed`);
   }
 
   return { actorId: row.id, actorDisplayName: row.displayName };
@@ -57,7 +60,8 @@ export function adjustmentChecksAvailable(): boolean {
 
 export async function runAdjustmentWorkflowChecks(): Promise<VerificationResult[]> {
   const results: VerificationResult[] = [];
-  const { actorId, actorDisplayName } = await resolveDemoActor();
+  const requester = await resolveUserByEmail(DEMO_REQUESTER_EMAIL);
+  const reviewer = await resolveUserByEmail(DEMO_REVIEWER_EMAIL);
   const target = await findActiveLoanBorrower();
 
   if (!target) {
@@ -77,8 +81,8 @@ export async function runAdjustmentWorkflowChecks(): Promise<VerificationResult[
     loanId: target.loanId,
     amountPesewas: 1000,
     reason: 'Verification harness balance correction',
-    actorId,
-    actorDisplayName,
+    actorId: requester.actorId,
+    actorDisplayName: requester.actorDisplayName,
   });
 
   results.push({
@@ -97,7 +101,24 @@ export async function runAdjustmentWorkflowChecks(): Promise<VerificationResult[
   const loanBefore = await loanRepo.findLoanById(target.loanId);
   const beforeBalance = loanBefore ? decimalToPesewas(loanBefore.loanBalance) : 0;
 
-  const approved = await approveAdjustment(created.id, actorId, actorDisplayName);
+  let selfApproveBlocked = false;
+  try {
+    await approveAdjustment(created.id, requester.actorId, requester.actorDisplayName);
+  } catch (error) {
+    selfApproveBlocked =
+      error instanceof Error && error.message.includes('cannot approve an adjustment you requested');
+  }
+  results.push({
+    name: 'adjustment-self-approve-blocked',
+    passed: selfApproveBlocked,
+    detail: selfApproveBlocked ? 'SoD enforced' : 'self-approve unexpectedly allowed',
+  });
+
+  const approved = await approveAdjustment(
+    created.id,
+    reviewer.actorId,
+    reviewer.actorDisplayName,
+  );
   results.push({
     name: 'adjustment-approve-status',
     passed: approved.status === 'APPROVED',
@@ -138,15 +159,15 @@ export async function runAdjustmentWorkflowChecks(): Promise<VerificationResult[
     loanId: target.loanId,
     amountPesewas: 500,
     reason: 'Verification harness reject path',
-    actorId,
-    actorDisplayName,
+    actorId: requester.actorId,
+    actorDisplayName: requester.actorDisplayName,
   });
 
   const rejected = await rejectAdjustment(
     rejectTarget.id,
     'Rejected by verification harness',
-    actorId,
-    actorDisplayName,
+    reviewer.actorId,
+    reviewer.actorDisplayName,
   );
   results.push({
     name: 'adjustment-reject-status',

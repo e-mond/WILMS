@@ -335,22 +335,34 @@ async function postPayment(
 
 export async function getPaymentById(paymentId: string) {
   requireDatabase();
-  const payments = await paymentRepo.listPayments();
-  const payment = payments.find((entry) => entry.id === paymentId);
-  if (!payment) {
+  const payment = await paymentRepo.findPaymentById(paymentId);
+  if (!payment || payment.status === 'REVERSED') {
     throw new Error('NOT_FOUND');
   }
 
+  const recordedAt = payment.recordedAt.toISOString();
+  const gpsRaw = (payment.gps ?? null) as
+    | { latitude?: number; longitude?: number; lat?: number; lng?: number; accuracyMeters?: number }
+    | null;
+
   return {
     id: payment.id,
-    displayId: formatPaymentDisplayId({ recordedAt: payment.recordedAt }),
+    displayId: formatPaymentDisplayId({ recordedAt }),
     borrowerId: payment.borrowerId,
-    collectorId: payment.collectorId,
+    collectorId: payment.collectorUserId,
     amountPesewas: payment.amountPesewas,
     paymentDate: payment.paymentDate,
-    recordedAt: payment.recordedAt,
-    status: 'CONFIRMED',
-    gps: payment.gps,
+    recordedAt,
+    status: payment.status,
+    gps:
+      gpsRaw && (gpsRaw.latitude != null || gpsRaw.lat != null)
+        ? {
+            latitude: Number(gpsRaw.latitude ?? gpsRaw.lat),
+            longitude: Number(gpsRaw.longitude ?? gpsRaw.lng),
+            accuracyMeters:
+              gpsRaw.accuracyMeters != null ? Number(gpsRaw.accuracyMeters) : undefined,
+          }
+        : undefined,
   };
 }
 

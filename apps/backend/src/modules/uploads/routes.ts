@@ -130,8 +130,13 @@ uploadsRouter.post(
       );
     }
 
+    let verifiedMime = input.mimeType;
     try {
-      validateUploadInput({ mimeType: input.mimeType, sizeBytes: buffer.length });
+      verifiedMime = validateUploadInput({
+        mimeType: input.mimeType,
+        sizeBytes: buffer.length,
+        buffer,
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message.replace(/^VALIDATION:/, '') : 'Invalid upload.';
       throw new AppError(message, ERROR_CODE.VALIDATION, 422);
@@ -140,7 +145,7 @@ uploadsRouter.post(
     const stored = await saveUpload({
       purpose: input.purpose,
       fileName: input.fileName,
-      mimeType: input.mimeType,
+      mimeType: verifiedMime,
       sizeBytes: buffer.length,
       entityId: input.entityId,
       buffer,

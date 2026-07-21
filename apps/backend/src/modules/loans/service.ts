@@ -167,97 +167,111 @@ export async function getLoan(id: string): Promise<LoanDetailDto> {
   return mapLoanRowToDetail(row, 1);
 }
 
-export async function createLoan(input: CreateLoanBody, actorId: string): Promise<LoanDetailDto> {
+export async function createLoan(
+  input: CreateLoanBody,
+  actorId: string,
+  idempotencyKey?: string,
+): Promise<LoanDetailDto> {
   requireDatabase();
-  assertDivisibleLoanAmount(input.amountPesewas, input.durationWeeks);
 
-  const borrower = await borrowerRepo.getBorrower(input.borrowerId);
-  if (!borrower) {
-    throw new Error('NOT_FOUND');
-  }
-  if (borrower.status !== BORROWER_STATUS.APPROVED) {
-    throw new Error('VALIDATION:Loans can only be created for approved borrowers.');
-  }
-  if (await loanRepo.borrowerHasOpenLoan(input.borrowerId)) {
-    throw new Error('VALIDATION:This borrower already has an active or pending loan.');
-  }
+  return runWithIdempotency({
+    scope: 'LOAN_CREATE',
+    actorUserId: actorId,
+    idempotencyKey,
+    requestPayload: input,
+    responseStatus: 201,
+    execute: async () => {
+      assertDivisibleLoanAmount(input.amountPesewas, input.durationWeeks);
 
-  await assertAdminFeeRecorded(input.borrowerId);
-
-  if (!isValidPaymentDay(input.paymentDay)) {
-    throw new Error('VALIDATION:Payment day must be a valid weekday (Sunday through Saturday).');
-  }
-
-  const weeklyPaymentPesewas = calculateWeeklyPaymentPesewas(
-    input.amountPesewas,
-    input.durationWeeks,
-  );
-
-  const { listHolidays } = await import('../organization-holidays/service.js');
-  const holidays = await listHolidays();
-
-  const scheduleWeeks = generateLoanScheduleWeeks({
-    durationWeeks: input.durationWeeks,
-    weeklyPaymentPesewas,
-    startDate: input.startDate,
-    paymentDay: input.paymentDay,
-    holidayDates: holidays.map((holiday) => holiday.holidayDate),
-  });
-
-  try {
-    const loanPoolId = await resolveLoanPoolIdForBorrower(input.borrowerId, input.loanPoolId);
-    if (!loanPoolId) {
-      const pools = await poolRepo.listPools();
-      if (pools.length > 0) {
-        throw new Error(
-          'VALIDATION:Select a funding pool for this loan so pool utilisation can be tracked.',
-        );
+      const borrower = await borrowerRepo.getBorrower(input.borrowerId);
+      if (!borrower) {
+        throw new Error('NOT_FOUND');
       }
-    }
+      if (borrower.status !== BORROWER_STATUS.APPROVED) {
+        throw new Error('VALIDATION:Loans can only be created for approved borrowers.');
+      }
+      if (await loanRepo.borrowerHasOpenLoan(input.borrowerId)) {
+        throw new Error('VALIDATION:This borrower already has an active or pending loan.');
+      }
 
-    const loan = await runInTransaction(async (tx) => {
-      const row = await loanRepo.insertLoan(
-        {
-          borrowerId: input.borrowerId,
-          amountPesewas: input.amountPesewas,
-          durationWeeks: input.durationWeeks,
-          weeklyPaymentPesewas,
-          paymentDay: input.paymentDay,
-          startDate: input.startDate,
-          cycleBatch: input.cycleBatch,
-          createdByUserId: actorId,
-          loanPoolId,
-        },
-        tx,
+      await assertAdminFeeRecorded(input.borrowerId);
+
+      if (!isValidPaymentDay(input.paymentDay)) {
+        throw new Error('VALIDATION:Payment day must be a valid weekday (Sunday through Saturday).');
+      }
+
+      const weeklyPaymentPesewas = calculateWeeklyPaymentPesewas(
+        input.amountPesewas,
+        input.durationWeeks,
       );
 
-      await scheduleRepo.insertScheduleWeeks(row.id, scheduleWeeks, tx);
-      await ledgerRepo.appendLedgerEntry(
-        {
-          entryType: 'ADJUSTMENT',
-          loanId: row.id,
-          borrowerId: input.borrowerId,
-          amountDecimal: '0.00',
-          description: 'Loan created — pending approval (interest-free; no interest accrued)',
-          actorUserId: actorId,
-        },
-        tx,
-      );
+      const { listHolidays } = await import('../organization-holidays/service.js');
+      const holidays = await listHolidays();
 
-      return row;
-    });
+      const scheduleWeeks = generateLoanScheduleWeeks({
+        durationWeeks: input.durationWeeks,
+        weeklyPaymentPesewas,
+        startDate: input.startDate,
+        paymentDay: input.paymentDay,
+        holidayDates: holidays.map((holiday) => holiday.holidayDate),
+      });
 
-    appendAuditEntry({
-      action: 'loan.created',
-      actorId,
-      targetEntityId: loan.id,
-      targetEntityType: 'loan',
-    });
+      try {
+        const loanPoolId = await resolveLoanPoolIdForBorrower(input.borrowerId, input.loanPoolId);
+        if (!loanPoolId) {
+          const pools = await poolRepo.listPools();
+          if (pools.length > 0) {
+            throw new Error(
+              'VALIDATION:Select a funding pool for this loan so pool utilisation can be tracked.',
+            );
+          }
+        }
 
-    return mapLoanRowToDetail(loan);
-  } catch (error) {
-    mapServiceError(error);
-  }
+        const loan = await runInTransaction(async (tx) => {
+          const row = await loanRepo.insertLoan(
+            {
+              borrowerId: input.borrowerId,
+              amountPesewas: input.amountPesewas,
+              durationWeeks: input.durationWeeks,
+              weeklyPaymentPesewas,
+              paymentDay: input.paymentDay,
+              startDate: input.startDate,
+              cycleBatch: input.cycleBatch,
+              createdByUserId: actorId,
+              loanPoolId,
+            },
+            tx,
+          );
+
+          await scheduleRepo.insertScheduleWeeks(row.id, scheduleWeeks, tx);
+          await ledgerRepo.appendLedgerEntry(
+            {
+              entryType: 'ADJUSTMENT',
+              loanId: row.id,
+              borrowerId: input.borrowerId,
+              amountDecimal: '0.00',
+              description: 'Loan created — pending approval (interest-free; no interest accrued)',
+              actorUserId: actorId,
+            },
+            tx,
+          );
+
+          return row;
+        });
+
+        appendAuditEntry({
+          action: 'loan.created',
+          actorId,
+          targetEntityId: loan.id,
+          targetEntityType: 'loan',
+        });
+
+        return mapLoanRowToDetail(loan);
+      } catch (error) {
+        mapServiceError(error);
+      }
+    },
+  });
 }
 
 export async function approveLoan(loanId: string, actorId: string): Promise<LoanDetailDto> {
@@ -278,6 +292,12 @@ export async function approveLoan(loanId: string, actorId: string): Promise<Loan
     assertLifecycleTransition(LOAN_LIFECYCLE.PENDING_APPROVAL, LOAN_LIFECYCLE.APPROVED);
   } else {
     throw new Error(`VALIDATION:Loan cannot be approved from status ${loan.lifecycleStatus}.`);
+  }
+
+  if (loan.createdByUserId && loan.createdByUserId === actorId) {
+    throw new Error(
+      'VALIDATION:You cannot approve a loan you created. Ask another authorised approver.',
+    );
   }
 
   await assertAdminFeeRecorded(loan.borrowerId);

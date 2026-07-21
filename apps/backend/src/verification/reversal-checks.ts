@@ -25,25 +25,32 @@ import * as reversalRepo from '../repositories/reversal.repository.js';
 import type { VerificationResult } from './unit-checks.js';
 
 const DEMO_ADMIN_EMAIL = 'admin@wilms.demo';
+const DEMO_APPROVER_EMAIL = 'approver@wilms.demo';
 const DEMO_COLLECTOR_EMAIL = 'collector@wilms.demo';
 const FALLBACK_SEED_LOAN_IDS = [
   '01930002-0001-7000-8000-000000000003',
   '01930002-0001-7000-8000-000000000004',
 ] as const;
 
-async function resolveDemoActor(): Promise<{ actorId: string; actorDisplayName: string }> {
+async function resolveUserByEmail(
+  email: string,
+): Promise<{ actorId: string; actorDisplayName: string }> {
   const db = getDb();
   const [row] = await db
     .select({ id: users.id, displayName: users.displayName })
     .from(users)
-    .where(eq(users.email, DEMO_ADMIN_EMAIL))
+    .where(eq(users.email, email))
     .limit(1);
 
   if (!row) {
-    throw new Error('Super admin demo user missing — run db:seed');
+    throw new Error(`${email} demo user missing — run db:seed`);
   }
 
   return { actorId: row.id, actorDisplayName: row.displayName };
+}
+
+async function resolveDemoActor(): Promise<{ actorId: string; actorDisplayName: string }> {
+  return resolveUserByEmail(DEMO_ADMIN_EMAIL);
 }
 
 const REVERSIBLE_LIFECYCLES = [LOAN_LIFECYCLE.ACTIVE, LOAN_LIFECYCLE.COMPLETED] as const;
@@ -397,7 +404,8 @@ export async function runPaymentReversalWorkflowChecks(): Promise<VerificationRe
     actorDisplayName,
   });
 
-  await approveAdjustment(correction.id, actorId, actorDisplayName);
+  const reviewer = await resolveUserByEmail(DEMO_APPROVER_EMAIL);
+  await approveAdjustment(correction.id, reviewer.actorId, reviewer.actorDisplayName);
 
   let correctionBlocked = false;
   try {

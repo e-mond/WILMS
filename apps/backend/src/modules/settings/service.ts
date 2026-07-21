@@ -8,6 +8,7 @@ import { permissions, rolePermissions, roles, userPermissionOverrides, userRoles
 import { users } from '../../db/schema/users.js';
 import { hashPassword } from '../../lib/password.js';
 import { generateInvitePassword } from '../../lib/invite-password.js';
+import { computeInvitationExpiresAt } from '../../lib/invitation-expiry.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
 import * as userRepo from '../../repositories/user.repository.js';
 import * as systemSettingsRepo from '../../repositories/system-settings.repository.js';
@@ -923,12 +924,8 @@ function resolveUniqueRoleCloneName(sourceName: string, existingRoles: RoleDefin
   return `${baseName} ${suffix}`;
 }
 
-const INVITATION_EXPIRY_DAYS = 7;
-
 function invitationExpiresAt(): Date {
-  const expires = new Date();
-  expires.setDate(expires.getDate() + INVITATION_EXPIRY_DAYS);
-  return expires;
+  return computeInvitationExpiresAt();
 }
 
 export async function createUser(
@@ -1087,13 +1084,14 @@ export async function resendInvitation(
     throw new Error('VALIDATION:Only invited users can receive a resent invitation email.');
   }
 
+  const invitedAt = new Date();
   const expiresAt = invitationExpiresAt();
   const temporaryPassword = generateInvitePassword();
   const passwordHash = await hashPassword(temporaryPassword);
   const db = getDb();
   await db
     .update(users)
-    .set({ passwordHash, updatedAt: new Date() })
+    .set({ passwordHash, invitedAt, updatedAt: invitedAt })
     .where(eq(users.id, userId));
 
   const delivery = await notifyUserInvitation({

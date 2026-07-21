@@ -208,6 +208,11 @@ export async function approveAdjustment(
       if (pending.status !== ADJUSTMENT_STATUS.PENDING) {
         throw new Error('VALIDATION:Only pending adjustments can be reviewed.');
       }
+      if (pending.requestedByUserId === actorId) {
+        throw new Error(
+          'VALIDATION:You cannot approve an adjustment you requested. Ask another authorised reviewer.',
+        );
+      }
 
       const loan = await resolveLoanForAdjustment(
         pending.borrowerId,
@@ -290,6 +295,7 @@ export async function approveAdjustment(
               },
               tx,
             );
+            await poolRepo.refreshPoolAggregates(loan.loanPoolId, tx);
           }
         }
 
