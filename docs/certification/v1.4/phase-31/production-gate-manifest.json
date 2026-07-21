@@ -1,0 +1,27 @@
+{
+  "version": "1.4.2",
+  "generatedAt": "2026-07-21T16:10:00Z",
+  "verdict": "READY_WITH_CONDITIONS",
+  "productionCertified": false,
+  "gates": [
+    { "id": 1, "name": "Backend tests", "status": "PASS", "count": 206 },
+    { "id": 2, "name": "Migration journal 0000-0030", "status": "PASS" },
+    { "id": 3, "name": "Scheduler token auth", "status": "PASS" },
+    { "id": 4, "name": "Notification dedupe tests", "status": "PASS" },
+    { "id": 5, "name": "Dependency audit", "status": "ADVISORY", "residualHigh": 4 },
+    { "id": 6, "name": "Scheduler cron evidence", "status": "BLOCKED", "script": "scripts/operator/run-notification-scheduler.sh" },
+    { "id": 7, "name": "Staging smoke", "status": "BLOCKED" },
+    { "id": 8, "name": "RBAC live", "status": "BLOCKED" },
+    { "id": 9, "name": "Money-chain", "status": "BLOCKED" },
+    { "id": 10, "name": "Migration 0030 live", "status": "BLOCKED" },
+    { "id": 11, "name": "Mail delivery", "status": "BLOCKED" },
+    { "id": 12, "name": "SMS delivery", "status": "BLOCKED" },
+    { "id": 13, "name": "Backup/restore", "status": "BLOCKED" },
+    { "id": 14, "name": "Load test", "status": "BLOCKED" },
+    { "id": 15, "name": "WCAG manual", "status": "BLOCKED" },
+    { "id": 16, "name": "Engineering sign-off", "status": "PENDING" },
+    { "id": 17, "name": "Security sign-off", "status": "PENDING" },
+    { "id": 18, "name": "Operations sign-off", "status": "PENDING" },
+    { "id": 19, "name": "Product sign-off", "status": "PENDING" }
+  ]
+}

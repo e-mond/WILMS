@@ -1,0 +1,75 @@
+# Daily payment + communications notification scheduler.
+#
+# Requires repository secrets:
+#   WILMS_API_BASE_URL          e.g. https://api.example.com  (no trailing slash)
+#   WILMS_SCHEDULER_TOKEN       matches API env WILMS_SCHEDULER_TOKEN
+#
+# Does not use session cookies. Safe to enable on main after secrets are set.
+# Disable by deleting secrets or commenting out the schedule trigger.
+
+name: Notification scheduler
+
+on:
+  schedule:
+    # 06:00 UTC daily — adjust for Ghana operations as needed
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      reference_date:
+        description: Optional ISO date (yyyy-mm-dd) for payment scheduler backfill
+        required: false
+        type: string
+
+jobs:
+  run-schedulers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Payment notification scheduler
+        env:
+          WILMS_API_BASE_URL: ${{ secrets.WILMS_API_BASE_URL }}
+          WILMS_SCHEDULER_TOKEN: ${{ secrets.WILMS_SCHEDULER_TOKEN }}
+          REFERENCE_DATE: ${{ inputs.reference_date }}
+        run: |
+          set -euo pipefail
+          if [ -z "${WILMS_API_BASE_URL:-}" ] || [ -z "${WILMS_SCHEDULER_TOKEN:-}" ]; then
+            echo "BLOCKED: WILMS_API_BASE_URL and WILMS_SCHEDULER_TOKEN secrets required"
+            exit 1
+          fi
+          BODY='{}'
+          if [ -n "${REFERENCE_DATE:-}" ]; then
+            BODY=$(printf '{"referenceDate":"%s"}' "$REFERENCE_DATE")
+          fi
+          curl -fsS -X POST "${WILMS_API_BASE_URL}/notifications/scheduler/run" \
+            -H "Authorization: Bearer ${WILMS_SCHEDULER_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -H "X-Request-Id: gha-${GITHUB_RUN_ID}-payment" \
+            -d "$BODY" \
+            -o payment-scheduler-result.json
+          echo "Payment scheduler response:"
+          cat payment-scheduler-result.json
+          echo
+
+      - name: Communications scheduler
+        env:
+          WILMS_API_BASE_URL: ${{ secrets.WILMS_API_BASE_URL }}
+          WILMS_SCHEDULER_TOKEN: ${{ secrets.WILMS_SCHEDULER_TOKEN }}
+        run: |
+          set -euo pipefail
+          curl -fsS -X POST "${WILMS_API_BASE_URL}/communications/scheduler/run" \
+            -H "Authorization: Bearer ${WILMS_SCHEDULER_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -H "X-Request-Id: gha-${GITHUB_RUN_ID}-comms" \
+            -o communications-scheduler-result.json
+          echo "Communications scheduler response:"
+          cat communications-scheduler-result.json
+
+      - name: Upload evidence artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scheduler-evidence-${{ github.run_id }}
+          path: |
+            payment-scheduler-result.json
+            communications-scheduler-result.json
+          if-no-files-found: ignore

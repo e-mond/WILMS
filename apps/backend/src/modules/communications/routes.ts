@@ -6,9 +6,13 @@ import { AppError, ERROR_CODE } from '../../http/errors.js';
 import { sendData } from '../../http/response.js';
 import { requireAuth } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/require-permission.js';
+import { requireSchedulerAccess } from '../../middleware/require-scheduler-access.js';
 import { validateBody } from '../../middleware/validate-body.js';
 import * as communicationsService from './service.js';
 import * as attachmentsService from './attachments.service.js';
+import { logger } from '../../infrastructure/logging/logger.js';
+import { recordSchedulerRun } from '../../infrastructure/scheduler/scheduler-run-state.js';
+import { uuidv7 } from 'uuidv7';
 
 export const communicationsRouter = Router();
 
@@ -312,9 +316,43 @@ communicationsRouter.get(
 
 communicationsRouter.post(
   '/communications/scheduler/run',
-  requireAuth,
-  requirePermission(PERMISSION.MANAGE_COMMUNICATION_SCHEDULER),
+  requireSchedulerAccess,
   asyncHandler(async (_req, res) => {
-    sendData(res, { processed: await communicationsService.processScheduledMessages() });
+    const startedAt = new Date();
+    const correlationId = uuidv7();
+    logger.info('scheduler.communications.start', { correlationId });
+    try {
+      const processed = await communicationsService.processScheduledMessages();
+      const durationMs = Date.now() - startedAt.getTime();
+      recordSchedulerRun({
+        kind: 'communications',
+        startedAt: startedAt.toISOString(),
+        finishedAt: new Date().toISOString(),
+        durationMs,
+        success: true,
+        correlationId,
+        summary: { processed },
+      });
+      logger.info('scheduler.communications.complete', {
+        correlationId,
+        processed,
+        durationMs,
+      });
+      sendData(res, { processed, correlationId, durationMs });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Communications scheduler failed';
+      const durationMs = Date.now() - startedAt.getTime();
+      recordSchedulerRun({
+        kind: 'communications',
+        startedAt: startedAt.toISOString(),
+        finishedAt: new Date().toISOString(),
+        durationMs,
+        success: false,
+        correlationId,
+        error: message,
+      });
+      logger.error('scheduler.communications.failed', { correlationId, error: message });
+      throw error;
+    }
   }),
 );

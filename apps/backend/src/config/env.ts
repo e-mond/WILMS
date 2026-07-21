@@ -44,6 +44,11 @@ export const env = {
   appUrl: process.env.WILMS_APP_URL?.trim() || process.env.WILMS_CORS_ORIGIN?.trim() || undefined,
   /** Optional bearer token for Prometheus scrapes of GET /ops/metrics */
   metricsScrapeToken: process.env.WILMS_METRICS_TOKEN?.trim() || undefined,
+  /**
+   * Optional bearer / x-wilms-scheduler-token for HTTP-triggered cron jobs
+   * (POST /notifications/scheduler/run, POST /communications/scheduler/run).
+   */
+  schedulerToken: process.env.WILMS_SCHEDULER_TOKEN?.trim() || undefined,
   /** Redis URL for BullMQ (optional — falls back to in-process jobs). */
   redisUrl: process.env.REDIS_URL?.trim() || process.env.WILMS_REDIS_URL?.trim() || undefined,
   /** Prefix for BullMQ queue names */
