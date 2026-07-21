@@ -27,9 +27,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Reset token is required.' }, { status: 422 });
   }
 
-  if (!newPassword || newPassword.length < 8) {
+  if (!newPassword || newPassword.length < 10) {
     return NextResponse.json(
-      { message: 'Password must be at least 8 characters.' },
+      { message: 'Password must be at least 10 characters.' },
       { status: 422 },
     );
   }

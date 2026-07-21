@@ -33,8 +33,11 @@ export async function POST(request: Request) {
     zone?: string;
   };
 
-  if (!payload.newPassword || payload.newPassword.length < 8) {
-    return NextResponse.json({ message: 'Password must be at least 8 characters.' }, { status: 422 });
+  if (!payload.newPassword || payload.newPassword.length < 10) {
+    return NextResponse.json(
+      { message: 'Password must be at least 10 characters.' },
+      { status: 422 },
+    );
   }
 
   const authResult = await completeOnboardingRequest(sessionToken, {

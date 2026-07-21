@@ -122,7 +122,7 @@ export function CompleteProfileForm() {
             errorMessage={errors.newPassword?.message}
             {...register('newPassword', {
               required: 'Password is required.',
-              minLength: { value: 8, message: 'Password must be at least 8 characters.' },
+              minLength: { value: 10, message: 'Password must be at least 10 characters.' },
             })}
           />
 

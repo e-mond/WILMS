@@ -164,7 +164,8 @@ loansRouter.post(
   asyncHandler(async (req, res) => {
     try {
       const body = req.body as z.infer<typeof createLoanSchema>;
-      sendData(res, await loanService.createLoan(body, req.session!.userId), 201);
+      const idempotencyKey = req.header('Idempotency-Key') ?? undefined;
+      sendData(res, await loanService.createLoan(body, req.session!.userId, idempotencyKey), 201);
     } catch (error) {
       mapError(error);
     }
