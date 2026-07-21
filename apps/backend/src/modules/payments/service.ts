@@ -14,7 +14,11 @@ import { pesewasToDecimal } from '../../domain/money.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import { runWithIdempotency } from '../../infrastructure/idempotency/run-with-idempotency.js';
 import * as borrowerRepo from '../../repositories/borrower.repository.js';
-import { notifyPaymentReceived, notifyMissedPayment, notifyLoanFullyPaid } from '../../infrastructure/notifications/event-dispatch.js';
+import { notifyLoanFullyPaid } from '../../infrastructure/notifications/event-dispatch.js';
+import {
+  emitPaymentConfirmedNotification,
+  resolveNextDueDate,
+} from '../../infrastructure/notifications/payment-notifications.js';
 import * as ledgerRepo from '../../repositories/ledger.repository.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import * as paymentRepo from '../../repositories/payment.repository.js';
@@ -74,15 +78,8 @@ export async function getPaymentEntryContext(borrowerId: string, referenceDate?:
     ref,
     settings.latePaymentGraceDays,
   );
-  if (newlyMissedWeeks.length > 0 && borrower.phone?.trim()) {
-    void notifyMissedPayment({
-      borrowerId,
-      borrowerName: borrower.fullName,
-      borrowerPhone: borrower.phone,
-      weeksOverdue: newlyMissedWeeks.length,
-      amountPesewas: loan.weeklyPaymentPesewas * newlyMissedWeeks.length,
-    });
-  }
+  // Missed-payment notifications are dispatched by the payment notification scheduler.
+  void newlyMissedWeeks;
   const scheduleRows = await scheduleRepo.listScheduleWeeks(loan.id);
   const scheduleWeeks = scheduleRows.map(mapScheduleRow);
 
@@ -291,7 +288,9 @@ async function postPayment(
 
   const borrower = await borrowerRepo.getBorrower(input.borrowerId);
   if (borrower) {
-    void notifyPaymentReceived({
+    const nextDueDate = await resolveNextDueDate(loan.id);
+    void emitPaymentConfirmedNotification({
+      paymentId: result.id,
       borrowerId: borrower.id,
       borrowerName: borrower.fullName,
       borrowerPhone: borrower.phone,
@@ -301,6 +300,7 @@ async function postPayment(
       loanDisplayId: loan.displayId ?? loan.id,
       loanId: loan.id,
       outstandingBalancePesewas: newBalancePesewas,
+      nextDueDate,
       collectorUserId: input.collectorId,
     });
 

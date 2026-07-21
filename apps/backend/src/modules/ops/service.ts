@@ -8,6 +8,7 @@ import { isDatabaseEnabled } from '../../db/client.js';
 import { getFeatureFlags } from '../../config/feature-flags.js';
 import { getQueueStats } from '../../infrastructure/queue/index.js';
 import { env } from '../../config/env.js';
+import { getNotificationMetrics } from '../../infrastructure/notifications/notification-metrics.js';
 
 export type OpsSurfaceState = 'ok' | 'degraded' | 'unavailable' | 'external' | 'not_applicable';
 
@@ -358,6 +359,31 @@ export function buildPrometheusMetrics(report: OpsStatusReport): string {
       `wilms_negative_operating_cash ${report.financial.netOperatingCashPesewas < 0 ? 1 : 0}`,
     );
   }
+
+  const notificationMetrics = getNotificationMetrics();
+  lines.push(
+    '# HELP wilms_notifications_created Total notification delivery records created',
+    '# TYPE wilms_notifications_created counter',
+    `wilms_notifications_created ${notificationMetrics.created}`,
+    '# HELP wilms_notifications_sent Total notifications marked sent',
+    '# TYPE wilms_notifications_sent counter',
+    `wilms_notifications_sent ${notificationMetrics.sent}`,
+    '# HELP wilms_notifications_failed Total notification delivery failures',
+    '# TYPE wilms_notifications_failed counter',
+    `wilms_notifications_failed ${notificationMetrics.failed}`,
+    '# HELP wilms_notifications_duplicate_prevented Duplicate sends prevented by dedupe',
+    '# TYPE wilms_notifications_duplicate_prevented counter',
+    `wilms_notifications_duplicate_prevented ${notificationMetrics.duplicate_prevented}`,
+    '# HELP wilms_notifications_payment_due_soon Payment due-soon events emitted',
+    '# TYPE wilms_notifications_payment_due_soon counter',
+    `wilms_notifications_payment_due_soon ${notificationMetrics.payment_due_soon}`,
+    '# HELP wilms_notifications_payment_missed Payment missed events emitted',
+    '# TYPE wilms_notifications_payment_missed counter',
+    `wilms_notifications_payment_missed ${notificationMetrics.payment_missed}`,
+    '# HELP wilms_notifications_payment_confirmed Payment confirmed events emitted',
+    '# TYPE wilms_notifications_payment_confirmed counter',
+    `wilms_notifications_payment_confirmed ${notificationMetrics.payment_confirmed}`,
+  );
 
   const safeVersion = report.deployment.version.replace(/"/g, '');
   lines.push(`# HELP wilms_info Deployment metadata`, `# TYPE wilms_info gauge`);

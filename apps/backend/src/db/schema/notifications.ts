@@ -21,6 +21,8 @@ export const notifications = pgTable('notifications', {
   loanId: uuid('loan_id'),
   isRead: boolean('is_read').notNull().default(false),
   sentAt: timestamp('sent_at', { withTimezone: true }),
+  dedupeKey: text('dedupe_key'),
+  correlationId: text('correlation_id'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
 });

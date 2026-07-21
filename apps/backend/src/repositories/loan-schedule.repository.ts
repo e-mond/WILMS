@@ -126,14 +126,19 @@ function addGraceDays(isoDate: string, graceDays: number): string {
   return date.toISOString().slice(0, 10);
 }
 
+export interface NewlyMissedWeek {
+  weekNumber: number;
+  dueDate: string;
+}
+
 export async function applyMissedWeekMarking(
   loanId: string,
   referenceDate: string,
   graceDays = 0,
   tx: WilmsDb = getDb(),
-): Promise<number[]> {
+): Promise<NewlyMissedWeek[]> {
   const weeks = await listScheduleWeeks(loanId, tx);
-  const newlyMissed: number[] = [];
+  const newlyMissed: NewlyMissedWeek[] = [];
 
   for (const week of weeks) {
     const missedThreshold = addGraceDays(week.dueDate, graceDays);
@@ -148,7 +153,7 @@ export async function applyMissedWeekMarking(
             eq(loanSchedules.version, week.version),
           ),
         );
-      newlyMissed.push(week.weekNumber);
+      newlyMissed.push({ weekNumber: week.weekNumber, dueDate: week.dueDate });
     }
   }
 

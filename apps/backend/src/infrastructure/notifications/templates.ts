@@ -25,8 +25,11 @@ export interface LoanApprovalSmsInput {
 
 export interface MissedPaymentSmsInput {
   borrowerName: string;
-  weeksOverdue: number;
   amountPesewas: number;
+  /** Expected collection date (ISO yyyy-mm-dd). */
+  dueDate?: string;
+  /** Legacy aggregate count when dueDate is unavailable. */
+  weeksOverdue?: number;
 }
 
 export interface PaymentConfirmationEmailInput {
@@ -61,7 +64,11 @@ export function buildLoanApprovalSmsBody(input: LoanApprovalSmsInput): string {
 
 export function buildMissedPaymentSmsBody(input: MissedPaymentSmsInput): string {
   const amountGhs = formatGhsAmount(input.amountPesewas);
-  return `WILMS: Hi ${input.borrowerName}, you have ${input.weeksOverdue} missed payment(s). Outstanding: GHS ${amountGhs}. Please contact your collector.`;
+  if (input.dueDate) {
+    return `WILMS: Hi ${input.borrowerName}, your scheduled payment of GHS ${amountGhs} was not recorded for ${input.dueDate}. Please contact your collector to arrange payment.`;
+  }
+  const weeks = input.weeksOverdue ?? 1;
+  return `WILMS: Hi ${input.borrowerName}, you have ${weeks} missed payment(s). Outstanding: GHS ${amountGhs}. Please contact your collector.`;
 }
 
 export function buildBorrowerRegistrationApprovalSmsBody(input: { borrowerName: string }): string {
@@ -94,8 +101,12 @@ export function buildLoanReminderSmsBody(input: {
   loanDisplayId: string;
   amountPesewas: number;
   dueDate: string;
+  dueTomorrow?: boolean;
 }): string {
   const amountGhs = formatGhsAmount(input.amountPesewas);
+  if (input.dueTomorrow) {
+    return `WILMS: Hi ${input.borrowerName}, your next weekly payment of GHS ${amountGhs} is due tomorrow (${input.dueDate}).`;
+  }
   return `WILMS: Hi ${input.borrowerName}, payment of GHS ${amountGhs} for loan ${input.loanDisplayId} is due on ${input.dueDate}.`;
 }
 

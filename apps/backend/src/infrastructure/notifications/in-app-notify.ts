@@ -60,6 +60,8 @@ export async function createInAppNotification(input: {
   href?: string;
   borrowerId?: string;
   loanId?: string;
+  dedupeKey?: string;
+  correlationId?: string;
 }): Promise<void> {
   if (!input.userId.trim()) {
     return;
@@ -90,6 +92,8 @@ export async function createInAppNotification(input: {
     loanId: input.loanId ?? null,
     isRead: false,
     sentAt: now,
+    dedupeKey: input.dedupeKey ?? null,
+    correlationId: input.correlationId ?? null,
   });
 }
 
