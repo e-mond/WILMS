@@ -146,7 +146,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true, messageId: result.messageId });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Gmail SMTP send failed.';
-    return NextResponse.json({ error: message }, { status: 422 });
+    console.error('[wilms-mail] Gmail SMTP send failed', error);
+    return NextResponse.json({ error: 'Unable to send test email. Check SMTP configuration.' }, { status: 422 });
   }
 }

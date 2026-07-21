@@ -153,6 +153,12 @@ export async function approveConflict(conflictId: string, resolverUserId: string
       throw new Error('NOT_FOUND');
     }
 
+    if (operation.actorUserId === resolverUserId) {
+      throw new Error(
+        'FORBIDDEN:You cannot approve a sync conflict from your own offline operation.',
+      );
+    }
+
     let paymentResult: unknown = null;
 
     if (operation.operationType === 'RECORD_PAYMENT') {

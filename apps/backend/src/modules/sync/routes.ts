@@ -31,6 +31,9 @@ function mapError(error: unknown): never {
   if (error instanceof Error && error.message === 'NOT_FOUND') {
     throw new AppError('Sync conflict not found.', ERROR_CODE.NOT_FOUND, 404);
   }
+  if (error instanceof Error && error.message.startsWith('FORBIDDEN:')) {
+    throw new AppError(error.message.slice('FORBIDDEN:'.length), ERROR_CODE.FORBIDDEN, 403);
+  }
   throw error;
 }
 

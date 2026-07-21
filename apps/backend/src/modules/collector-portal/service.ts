@@ -1,6 +1,7 @@
 import { listBorrowers, listPayments } from '../../db/persistence.js';
 import * as groupService from '../groups/service.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
+import * as paymentRepo from '../../repositories/payment.repository.js';
 import { isDatabaseEnabled } from '../../db/client.js';
 import { decimalToPesewas } from '../../domain/money.js';
 import { isLoanDueOnDate } from '../../domain/reconciliation/weekday.js';
@@ -92,9 +93,12 @@ export async function getCollectorDashboard(
   date?: string,
 ): Promise<CollectorDashboard> {
   const referenceDate = resolveReferenceDate(date);
+  const useDb = isDatabaseEnabled();
   const [borrowers, payments, assignedGroups] = await Promise.all([
     listBorrowers(),
-    listPayments(),
+    useDb
+      ? paymentRepo.listPaymentsForDate(referenceDate, { collectorId })
+      : listPayments(),
     groupService.getGroupsForCollector(collectorId),
   ]);
 
@@ -104,11 +108,15 @@ export async function getCollectorDashboard(
       ? borrowers.filter((borrower) => borrowerIds.includes(borrower.id))
       : borrowers;
 
-  const collectorPayments = payments.filter(
-    (payment) =>
-      payment.collectorId === collectorId && payment.paymentDate === referenceDate,
-  );
-  const collectedPesewas = collectorPayments.reduce((sum, payment) => sum + payment.amountPesewas, 0);
+  const collectorPayments = useDb
+    ? payments
+    : payments.filter(
+        (payment) =>
+          payment.collectorId === collectorId && payment.paymentDate === referenceDate,
+      );
+  const collectedPesewas = useDb
+    ? await paymentRepo.sumConfirmedPaymentsForDatePesewas(referenceDate, { collectorId })
+    : collectorPayments.reduce((sum, payment) => sum + payment.amountPesewas, 0);
 
   let expectedPesewas = 0;
   const borrowerRows: CollectorDashboard['borrowers'] = [];

@@ -426,14 +426,23 @@ export async function getGroupDetail(groupId: string): Promise<GroupDetail> {
     throw new Error('NOT_FOUND');
   }
 
-  const [borrowers, payments, officerName, collector] = await Promise.all([
+  const useDb = isDatabaseEnabled();
+  const [borrowers, payments, officerName, collector, statsByGroup] = await Promise.all([
     listBorrowers(),
-    listPayments(),
+    useDb ? Promise.resolve([] as Awaited<ReturnType<typeof listPayments>>) : listPayments(),
     resolveOfficerName(),
     resolveCollector(row.collectorUserId),
+    useDb ? groupRepository.getGroupListStats() : Promise.resolve(new Map()),
   ]);
 
-  const summary = await buildGroupSummary(row, borrowers, payments, officerName);
+  const stats = statsByGroup.get(groupId);
+  const summary = await buildGroupSummary(
+    row,
+    borrowers,
+    payments,
+    officerName,
+    stats,
+  );
   const members = await buildMembers(row.id, row.memberIds, borrowers, payments, row.leaderBorrowerId);
   const leaderMember = members.find((member) => member.role === 'LEADER') ?? members[0];
   const leaderBorrower = borrowers.find((entry) => entry.id === leaderMember?.borrowerId);

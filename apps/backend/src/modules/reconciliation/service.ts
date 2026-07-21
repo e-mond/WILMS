@@ -301,6 +301,12 @@ export async function reviewReconciliation(
     throw new Error('NOT_FOUND');
   }
 
+  if (row.collectorUserId === input.reviewerUserId) {
+    throw new Error(
+      'FORBIDDEN:You cannot review your own reconciliation submission. Ask another authorised reviewer.',
+    );
+  }
+
   const db = getDb();
   const reviewedAt = new Date();
 

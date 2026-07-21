@@ -1,11 +1,11 @@
 # WILMS Documentation Hub
 
-**Current version:** v1.4.1  
-**Last updated:** 2026-07-20
+**Current version:** v1.4.2  
+**Last updated:** 2026-07-21
 
 Start here. Prefer certification packs for current system truth; older guides remain for depth but may lag version stamps.
 
-**v1.4.1 final system audit (READY WITH CONDITIONS — not Production Certified):** [`FINAL_AUDIT_INDEX.md`](./FINAL_AUDIT_INDEX.md)
+**v1.4.2 multi-discipline certification (READY WITH CONDITIONS — not Production Certified):** [`FINAL_AUDIT_INDEX.md`](./FINAL_AUDIT_INDEX.md) · [`certification/v1.4/phase-28-multi/`](./certification/v1.4/phase-28-multi/INDEX.md)
 
 ## Day-to-day engineering
 

@@ -1,0 +1,25 @@
+{
+  "version": "1.4.2",
+  "generatedAt": "2026-07-21T11:30:00Z",
+  "verdict": "READY_WITH_CONDITIONS",
+  "productionCertified": false,
+  "gates": [
+    { "id": "G01", "name": "Critical findings = 0", "status": "PASS", "evidence": "findings-inventory.json" },
+    { "id": "G02", "name": "High code findings = 0", "status": "PASS", "evidence": "findings-inventory.json" },
+    { "id": "G03", "name": "All available tests pass", "status": "PASS", "evidence": "test-evidence-manifest.json" },
+    { "id": "G04", "name": "Build passes", "status": "PASS" },
+    { "id": "G05", "name": "Migration journal integrity", "status": "PASS" },
+    { "id": "G06", "name": "Migration 0029 live apply", "status": "BLOCKED", "requiredInput": "DATABASE_URL", "command": "DATABASE_URL=<url> npm run db:migrate" },
+    { "id": "G07", "name": "Authenticated staging smoke", "status": "BLOCKED", "owner": "Operations" },
+    { "id": "G08", "name": "RBAC live smoke", "status": "BLOCKED", "owner": "Security" },
+    { "id": "G09", "name": "Money-chain smoke", "status": "BLOCKED", "owner": "Operations" },
+    { "id": "G10", "name": "Backup/restore drill", "status": "BLOCKED", "owner": "Operations", "command": "npm run drill:backup-restore" },
+    { "id": "G11", "name": "Load test evidence", "status": "BLOCKED", "owner": "SRE" },
+    { "id": "G12", "name": "Production secrets verified", "status": "BLOCKED", "owner": "Operations" },
+    { "id": "G13", "name": "Demo accounts purged", "status": "BLOCKED", "owner": "Operations", "sql": "SELECT id FROM users WHERE email LIKE '%@wilms.demo'" },
+    { "id": "G14", "name": "Engineering sign-off", "status": "PENDING", "owner": "Engineering Lead" },
+    { "id": "G15", "name": "Security sign-off", "status": "PENDING", "owner": "Security Lead" },
+    { "id": "G16", "name": "Operations sign-off", "status": "PENDING", "owner": "Operations Lead" },
+    { "id": "G17", "name": "Product sign-off", "status": "PENDING", "owner": "Product Lead" }
+  ]
+}
