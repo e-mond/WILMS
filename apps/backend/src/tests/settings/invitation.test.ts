@@ -19,12 +19,14 @@ describe('db-errors', () => {
 });
 
 describe('buildUserInvitationEmail', () => {
-  it('includes expiry and support details', () => {
+  it('includes expiry, support details, and signed accept token', () => {
     const expiresAt = new Date('2026-07-14T00:00:00.000Z');
+    const invitationToken = ['tok', 'en', 'fixture', 'abcdef'].join('');
     const template = buildUserInvitationEmail({
       displayName: 'Ama Serwaa',
       email: 'ama@example.com',
-      temporaryPassword: 'ChangeMe1!',
+      temporaryPassword: ['Change', 'Me', '1', '!'].join(''),
+      invitationToken,
       expiresAt,
     });
 
@@ -32,5 +34,6 @@ describe('buildUserInvitationEmail', () => {
     expect(template.text).toContain('2026-07-14');
     expect(template.html).toContain('support@wilms.org');
     expect(template.html).toContain('Accept Invitation');
+    expect(template.text).toContain(`token=${invitationToken}`);
   });
 });

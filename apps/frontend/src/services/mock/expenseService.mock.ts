@@ -8,12 +8,13 @@ let expenses: ExpenseRecord[] = MOCK_EXPENSES.map((entry) => ({ ...entry }));
 let nextExpenseSequence = expenses.length + 1;
 
 function buildSummary() {
-  const recordedTotal = expenses.reduce((sum, entry) => sum + entry.amountPesewas, 0);
+  const pending = expenses.filter((entry) => entry.status === EXPENSE_STATUS.PENDING);
+  const approved = expenses.filter((entry) => entry.status === EXPENSE_STATUS.APPROVED);
 
   return {
-    pendingCount: 0,
-    approvedTotalPesewas: recordedTotal,
-    pendingTotalPesewas: 0,
+    pendingCount: pending.length,
+    approvedTotalPesewas: approved.reduce((sum, entry) => sum + entry.amountPesewas, 0),
+    pendingTotalPesewas: pending.reduce((sum, entry) => sum + entry.amountPesewas, 0),
   };
 }
 
@@ -40,7 +41,7 @@ const expenseServiceMock: IExpenseService = {
       gpsLabel: input.gpsLabel,
       recordedById: input.recordedById,
       recordedByName: input.recordedByName,
-      status: EXPENSE_STATUS.APPROVED,
+      status: EXPENSE_STATUS.PENDING,
       createdAt: new Date().toISOString(),
     };
 
@@ -57,7 +58,19 @@ const expenseServiceMock: IExpenseService = {
       throw new Error('Expense not found');
     }
 
-    const updated = { ...expenses[index]!, status: input.status };
+    const current = expenses[index]!;
+    if (current.status !== EXPENSE_STATUS.PENDING) {
+      if (current.status === input.status) {
+        return { ...current };
+      }
+      throw new Error('Only pending expenses can be reviewed.');
+    }
+
+    if (input.status === EXPENSE_STATUS.REJECTED && !input.reviewNote?.trim()) {
+      throw new Error('A rejection reason is required.');
+    }
+
+    const updated = { ...current, status: input.status };
     expenses = [...expenses.slice(0, index), updated, ...expenses.slice(index + 1)];
     return { ...updated };
   },

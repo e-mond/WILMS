@@ -1029,13 +1029,21 @@ export async function createUser(
   record.invitationSmsError = null;
 
   try {
+    const { issueInvitationToken } = await import('../auth/invitation-token.service.js');
+    const issued = await issueInvitationToken({
+      userId,
+      expiresAt,
+      actorUserId: actorUserId,
+    });
+
     const delivery = await notifyUserInvitation({
       email,
       displayName,
       temporaryPassword,
       userId,
       phone: input.phone?.trim(),
-      expiresAt,
+      expiresAt: issued.expiresAt,
+      invitationToken: issued.rawToken,
     });
 
     record.invitationEmailSent = delivery.emailSent;
@@ -1094,13 +1102,21 @@ export async function resendInvitation(
     .set({ passwordHash, invitedAt, updatedAt: invitedAt })
     .where(eq(users.id, userId));
 
+  const { issueInvitationToken } = await import('../auth/invitation-token.service.js');
+  const issued = await issueInvitationToken({
+    userId: row.id,
+    expiresAt,
+    actorUserId: actorUserId,
+  });
+
   const delivery = await notifyUserInvitation({
     email: row.email,
     displayName: row.displayName,
     temporaryPassword,
     userId: row.id,
     phone: row.phone ?? undefined,
-    expiresAt,
+    expiresAt: issued.expiresAt,
+    invitationToken: issued.rawToken,
   });
 
   appendAuditEntry({

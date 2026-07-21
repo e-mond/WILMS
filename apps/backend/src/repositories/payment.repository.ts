@@ -257,3 +257,87 @@ export async function listConfirmedPaymentsForCollectorOnDate(
       ),
     );
 }
+
+/** Date-scoped payment list for reports — avoids loading the full payments table. */
+export async function listPaymentsForDate(
+  paymentDate: string,
+  options: { collectorId?: string; limit?: number } = {},
+  tx: WilmsDb = getDb(),
+): Promise<PaymentRecord[]> {
+  const limit = Math.min(options.limit ?? MAX_UNPAGINATED_LIST_ROWS, MAX_UNPAGINATED_LIST_ROWS);
+  const conditions = [eq(payments.paymentDate, paymentDate)];
+  if (options.collectorId) {
+    conditions.push(eq(payments.collectorUserId, options.collectorId));
+  }
+
+  const rows = await tx
+    .select()
+    .from(payments)
+    .where(and(...conditions))
+    .limit(limit);
+
+  return rows.map(rowToRecord);
+}
+
+export async function countPaymentsForDate(
+  paymentDate: string,
+  options: { collectorId?: string } = {},
+  tx: WilmsDb = getDb(),
+): Promise<number> {
+  const conditions = [eq(payments.paymentDate, paymentDate)];
+  if (options.collectorId) {
+    conditions.push(eq(payments.collectorUserId, options.collectorId));
+  }
+  const [row] = await tx
+    .select({ total: count() })
+    .from(payments)
+    .where(and(...conditions));
+  return Number(row?.total ?? 0);
+}
+
+/** SQL sum of confirmed (non-reversed) payments for a calendar date. */
+export async function sumConfirmedPaymentsForDatePesewas(
+  paymentDate: string,
+  options: { collectorId?: string } = {},
+  tx: WilmsDb = getDb(),
+): Promise<number> {
+  const conditions = [eq(payments.paymentDate, paymentDate), ne(payments.status, 'REVERSED')];
+  if (options.collectorId) {
+    conditions.push(eq(payments.collectorUserId, options.collectorId));
+  }
+  const [row] = await tx
+    .select({
+      total: sql<number>`COALESCE(SUM(${payments.amountPesewas}), 0)::int`,
+    })
+    .from(payments)
+    .where(and(...conditions));
+  return Number(row?.total ?? 0);
+}
+
+/** Date-range payment list for financial ledger (fail-closed if over safety cap). */
+export async function listPaymentsInDateRange(
+  options: { fromDate?: string; toDate?: string; limit?: number } = {},
+  tx: WilmsDb = getDb(),
+): Promise<{ rows: PaymentRecord[]; total: number }> {
+  const limit = Math.min(options.limit ?? MAX_UNPAGINATED_LIST_ROWS, MAX_UNPAGINATED_LIST_ROWS);
+  const conditions = [];
+  if (options.fromDate) {
+    conditions.push(sql`${payments.paymentDate} >= ${options.fromDate}`);
+  }
+  if (options.toDate) {
+    conditions.push(sql`${payments.paymentDate} <= ${options.toDate}`);
+  }
+  const where = conditions.length > 0 ? and(...conditions) : undefined;
+
+  const [countRow] = await tx.select({ total: count() }).from(payments).where(where);
+  const total = Number(countRow?.total ?? 0);
+
+  const rows = await tx
+    .select()
+    .from(payments)
+    .where(where)
+    .orderBy(sql`${payments.recordedAt} DESC`)
+    .limit(limit);
+
+  return { rows: rows.map(rowToRecord), total };
+}
