@@ -2,6 +2,24 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.4.2] — Phase 30 Payment Notification System
+
+**Release date:** July 2026
+
+### Added
+
+- Migration `0030_v142_notification_dedupe` — `notification_delivery_records` table
+- Payment notification orchestrator with dedupe keys for due-soon, missed, and confirmed events
+- HTTP-triggered scheduler: `POST /notifications/scheduler/run`
+- Collector in-app missed-payment alerts; Super Admin daily missed summary
+- Prometheus notification counters on `/ops/metrics`
+
+### Changed
+
+- Payment confirmation notifications deduplicated by `paymentId`
+- Missed-payment SMS no longer fires on every payment context load (scheduler-only)
+- Missed-payment SMS template uses professional due-date wording
+
 ## [1.4.2] — Phase 27 Residual Medium Closure
 
 **Release date:** July 2026
