@@ -9,6 +9,7 @@ import { getFeatureFlags } from '../../config/feature-flags.js';
 import { getQueueStats } from '../../infrastructure/queue/index.js';
 import { env } from '../../config/env.js';
 import { getNotificationMetrics } from '../../infrastructure/notifications/notification-metrics.js';
+import { getSchedulerLastRuns } from '../../infrastructure/scheduler/scheduler-run-state.js';
 
 export type OpsSurfaceState = 'ok' | 'degraded' | 'unavailable' | 'external' | 'not_applicable';
 
@@ -35,6 +36,29 @@ export interface OpsStatusReport {
     redis: 'not_used' | 'configured' | 'connected' | 'unavailable';
     queue: 'in_process' | 'bullmq' | 'disabled';
     scheduler: 'http_triggered';
+    schedulerTokenConfigured?: boolean;
+    lastRuns?: {
+      paymentNotifications: {
+        kind: string;
+        startedAt: string;
+        finishedAt: string;
+        durationMs: number;
+        success: boolean;
+        correlationId?: string;
+        summary?: Record<string, unknown>;
+        error?: string;
+      } | null;
+      communications: {
+        kind: string;
+        startedAt: string;
+        finishedAt: string;
+        durationMs: number;
+        success: boolean;
+        correlationId?: string;
+        summary?: Record<string, unknown>;
+        error?: string;
+      } | null;
+    };
     note: string;
     stats?: {
       waiting: number;
@@ -290,6 +314,8 @@ export async function buildOpsStatusReport(): Promise<OpsStatusReport> {
       redis: redisState,
       queue: queueStats.mode,
       scheduler: 'http_triggered',
+      schedulerTokenConfigured: Boolean(env.schedulerToken),
+      lastRuns: getSchedulerLastRuns(),
       note:
         queueStats.mode === 'bullmq'
           ? 'Durable BullMQ workers active (Redis).'
@@ -383,6 +409,20 @@ export function buildPrometheusMetrics(report: OpsStatusReport): string {
     '# HELP wilms_notifications_payment_confirmed Payment confirmed events emitted',
     '# TYPE wilms_notifications_payment_confirmed counter',
     `wilms_notifications_payment_confirmed ${notificationMetrics.payment_confirmed}`,
+  );
+
+  const lastRuns = getSchedulerLastRuns();
+  const paymentLast = lastRuns.paymentNotifications;
+  lines.push(
+    '# HELP wilms_scheduler_payment_last_success 1 when last payment notification run succeeded',
+    '# TYPE wilms_scheduler_payment_last_success gauge',
+    `wilms_scheduler_payment_last_success ${paymentLast?.success ? 1 : 0}`,
+    '# HELP wilms_scheduler_payment_last_duration_ms Duration of last payment notification run',
+    '# TYPE wilms_scheduler_payment_last_duration_ms gauge',
+    `wilms_scheduler_payment_last_duration_ms ${paymentLast?.durationMs ?? 0}`,
+    '# HELP wilms_scheduler_token_configured 1 when WILMS_SCHEDULER_TOKEN is set',
+    '# TYPE wilms_scheduler_token_configured gauge',
+    `wilms_scheduler_token_configured ${env.schedulerToken ? 1 : 0}`,
   );
 
   const safeVersion = report.deployment.version.replace(/"/g, '');

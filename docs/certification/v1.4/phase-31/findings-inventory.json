@@ -1,0 +1,28 @@
+{
+  "version": "1.4.2",
+  "phase": 31,
+  "generatedAt": "2026-07-21T16:10:00Z",
+  "phase31Fixes": [
+    {
+      "id": "SCHED-001",
+      "severity": "High",
+      "status": "CLOSED",
+      "title": "Scheduler endpoint lacked cron-safe shared-secret authentication"
+    },
+    {
+      "id": "SCHED-002",
+      "severity": "Medium",
+      "status": "CLOSED",
+      "title": "No scheduler last-run visibility in ops/metrics"
+    },
+    {
+      "id": "SCHED-003",
+      "severity": "Medium",
+      "status": "CLOSED",
+      "title": "No repository cron workflow example for notifications"
+    }
+  ],
+  "openCodeFindings": { "critical": 0, "high": 0 },
+  "residualNpmHigh": 4,
+  "blockedOperatorGates": 14
+}

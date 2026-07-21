@@ -60,6 +60,8 @@ describe('ops.service', () => {
     expect(text).toContain('wilms_health_up 1');
     expect(text).toContain('wilms_database_up 0');
     expect(text).toContain('wilms_queue_waiting');
+    expect(text).toContain('wilms_scheduler_token_configured');
+    expect(text).toContain('wilms_notifications_created');
     expect(text).toContain('wilms_info{version="1.4.0"} 1');
   });
 });

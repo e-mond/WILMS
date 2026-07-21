@@ -5,6 +5,7 @@
 
 Start here. Prefer certification packs for current system truth; older guides remain for depth but may lag version stamps.
 
+**v1.4.2 Phase 31 final certification (READY WITH CONDITIONS — not Production Certified):** [`certification/v1.4/phase-31/`](./certification/v1.4/phase-31/INDEX.md)  
 **v1.4.2 Phase 30 payment notifications:** [`certification/v1.4/phase-30/`](./certification/v1.4/phase-30/INDEX.md)  
 **v1.4.2 Phase 29 certification (READY WITH CONDITIONS — not Production Certified):** [`FINAL_AUDIT_INDEX.md`](./FINAL_AUDIT_INDEX.md) · [`certification/v1.4/phase-29/`](./certification/v1.4/phase-29/INDEX.md)
 
