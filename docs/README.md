@@ -5,7 +5,7 @@
 
 Start here. Prefer certification packs for current system truth; older guides remain for depth but may lag version stamps.
 
-**v1.4.2 multi-discipline certification (READY WITH CONDITIONS — not Production Certified):** [`FINAL_AUDIT_INDEX.md`](./FINAL_AUDIT_INDEX.md) · [`certification/v1.4/phase-28-multi/`](./certification/v1.4/phase-28-multi/INDEX.md)
+**v1.4.2 Phase 29 certification (READY WITH CONDITIONS — not Production Certified):** [`FINAL_AUDIT_INDEX.md`](./FINAL_AUDIT_INDEX.md) · [`certification/v1.4/phase-29/`](./certification/v1.4/phase-29/INDEX.md)
 
 ## Day-to-day engineering
 

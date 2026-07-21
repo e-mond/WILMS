@@ -1,0 +1,16 @@
+{
+  "version": "1.4.2",
+  "phase29Fixes": [
+    {
+      "id": "FIN-HARNESS-001",
+      "severity": "High",
+      "status": "CLOSED",
+      "title": "Financial harness wrong-payment-day test used coinciding Friday date",
+      "file": "apps/backend/src/verification/unit-checks.ts"
+    }
+  ],
+  "inheritedPhase28Closed": "see docs/certification/v1.4/phase-28-multi/findings-inventory.json",
+  "openCodeFindings": { "critical": 0, "high": 0 },
+  "blockedOperatorGates": 14,
+  "residualDependencyHigh": 4
+}

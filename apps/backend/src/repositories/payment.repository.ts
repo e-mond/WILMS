@@ -155,6 +155,10 @@ export async function sumConfirmedPaymentsSincePesewas(
   return Number(row?.total ?? 0);
 }
 
+/**
+ * Aggregates confirmed payment totals per collector in SQL.
+ * Replaces in-memory scans that were capped at MAX_UNPAGINATED_LIST_ROWS (2000).
+ */
 export async function sumConfirmedPaymentsByCollector(
   tx: WilmsDb = getDb(),
 ): Promise<Map<string, number>> {
