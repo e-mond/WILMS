@@ -13,6 +13,12 @@ function mapError(error: unknown): never {
   if (error instanceof Error && error.message === 'NOT_FOUND') {
     throw new AppError('Expense not found.', ERROR_CODE.NOT_FOUND, 404);
   }
+  if (error instanceof Error && error.message.startsWith('FORBIDDEN:')) {
+    throw new AppError(error.message.slice('FORBIDDEN:'.length), ERROR_CODE.FORBIDDEN, 403);
+  }
+  if (error instanceof Error && error.message.startsWith('VALIDATION:')) {
+    throw new AppError(error.message.slice('VALIDATION:'.length), ERROR_CODE.VALIDATION, 422);
+  }
   throw error;
 }
 

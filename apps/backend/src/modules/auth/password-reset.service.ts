@@ -1,4 +1,3 @@
-import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
 import { env } from '../../config/env.js';
@@ -6,6 +5,7 @@ import { getDb, isDatabaseEnabled } from '../../db/client.js';
 import { passwordResetTokens } from '../../db/schema/communication-platform.js';
 import { assertPasswordStrength } from '../../lib/password-policy.js';
 import { hashPassword } from '../../lib/password.js';
+import { generateRawToken, hashToken, secureCompare } from '../../lib/secure-token.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import { notifyPasswordReset, notifyPasswordChanged } from '../../infrastructure/notifications/event-dispatch.js';
 import * as userRepo from '../../repositories/user.repository.js';
@@ -13,17 +13,6 @@ import { invalidateUserSessions } from './session.service.js';
 
 const TOKEN_EXPIRY_MS = 60 * 60 * 1000;
 const MAX_REQUESTS_PER_HOUR = 5;
-
-function hashToken(token: string): string {
-  return createHash('sha256').update(token).digest('hex');
-}
-
-function secureCompare(a: string, b: string): boolean {
-  const bufA = Buffer.from(a);
-  const bufB = Buffer.from(b);
-  if (bufA.length !== bufB.length) return false;
-  return timingSafeEqual(bufA, bufB);
-}
 
 export async function requestPasswordReset(input: {
   email: string;
@@ -62,7 +51,7 @@ export async function requestPasswordReset(input: {
     throw new Error('VALIDATION:Too many reset requests. Please try again later.');
   }
 
-  const rawToken = randomBytes(32).toString('hex');
+  const rawToken = generateRawToken();
   const tokenHash = hashToken(rawToken);
   const expiresAt = new Date(Date.now() + TOKEN_EXPIRY_MS);
 

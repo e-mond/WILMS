@@ -2,6 +2,37 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.4.2] — Phase 27 Residual Medium Closure
+
+**Release date:** July 2026
+
+### Summary
+
+Phase 27 closes the remaining code-level Medium residuals after Phase 26: signed invitation accept tokens, expense maker-checker, SQL date-scoped financial report queries, and global API rate limiting. Verdict **READY WITH CONDITIONS**; Production Certified **not** issued (staging smoke, backup/restore, and live load evidence remain operator-gated).
+
+### Added
+- `invitation_tokens` table + migration `0029_v141_invitation_tokens`
+- Invitation token service (issue / consume / revoke) with hash-only storage and audit events
+- Global API rate limiter (Redis store when `REDIS_URL` set; otherwise in-memory)
+- Expense approval UI actions on Expense Management
+- Payment repository helpers: `listPaymentsForDate`, `listPaymentsInDateRange`, SQL expense summary aggregates
+- Phase 27 certification pack under `docs/certification/v1.4/phase-27/`
+
+### Fixed
+- Invite accept no longer email-only — requires one-time signed token
+- Expenses no longer self-approve on create; recorder cannot review own expense
+- Collector onboard now sets `invitedAt` and sends tokenized invitation email
+- Daily collection and financial ledger reports no longer load the full payments table when DB is enabled
+
+### Changed
+- Package version **1.4.2**
+- Accept-invitation UX surfaces invalid/missing token errors
+- Collector expense success copy reflects pending review
+
+### Documentation
+- `docs/FINAL_AUDIT_INDEX.md`, `PROJECT_STATUS.md`, `VERSION.md` stamped for Phase 27
+- Operator blockers documented (staging smoke, DR drill, load test, CVE triage)
+
 ## [1.4.1] — UX Shell Hardening + Phase 26 Closure
 
 **Release date:** July 2026
