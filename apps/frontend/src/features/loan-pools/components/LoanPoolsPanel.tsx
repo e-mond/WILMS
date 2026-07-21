@@ -269,10 +269,13 @@ export function LoanPoolsPanel() {
           {
             id: 'pool',
             header: 'Pool',
+            className: 'min-w-[12rem]',
             cell: (row) => (
               <div className="text-left">
-                <p className="font-semibold text-text-primary">{row.name}</p>
-                <p className="text-small font-semibold text-executive-gold">{resolvePoolDisplayId(row)}</p>
+                <p className="whitespace-nowrap font-semibold text-text-primary">{row.name}</p>
+                <p className="whitespace-nowrap text-small font-semibold text-executive-gold">
+                  {resolvePoolDisplayId(row)}
+                </p>
               </div>
             ),
           },

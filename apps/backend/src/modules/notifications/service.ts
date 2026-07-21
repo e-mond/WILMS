@@ -129,11 +129,17 @@ async function maybeSendEmailNotification(
   }
 }
 
-export async function listInbox(userId: string): Promise<NotificationInboxItem[]> {
+export async function listInbox(
+  userId: string,
+  options?: { limit?: number; offset?: number },
+): Promise<NotificationInboxItem[]> {
+  const limit = Math.min(Math.max(options?.limit ?? 50, 1), 100);
+  const offset = Math.max(options?.offset ?? 0, 0);
+
   if (!isDatabaseEnabled()) {
-    return [...(memoryInbox.get(userId) ?? [])].sort(
-      (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
-    );
+    return [...(memoryInbox.get(userId) ?? [])]
+      .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime())
+      .slice(offset, offset + limit);
   }
 
   const db = getDb();
@@ -141,14 +147,31 @@ export async function listInbox(userId: string): Promise<NotificationInboxItem[]
     .select()
     .from(notifications)
     .where(and(eq(notifications.userId, userId), isNull(notifications.deletedAt)))
-    .orderBy(sql`${notifications.createdAt} desc`);
+    .orderBy(sql`${notifications.createdAt} desc`)
+    .limit(limit)
+    .offset(offset);
 
   return rows.map(mapRowToInboxItem);
 }
 
 export async function getUnreadCount(userId: string): Promise<number> {
-  const inbox = await listInbox(userId);
-  return inbox.filter((item) => !item.isRead).length;
+  if (!isDatabaseEnabled()) {
+    return (memoryInbox.get(userId) ?? []).filter((item) => !item.isRead).length;
+  }
+
+  const db = getDb();
+  const [row] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(notifications)
+    .where(
+      and(
+        eq(notifications.userId, userId),
+        eq(notifications.isRead, false),
+        isNull(notifications.deletedAt),
+      ),
+    );
+
+  return row?.count ?? 0;
 }
 
 export async function markAsRead(notificationId: string, userId: string): Promise<void> {

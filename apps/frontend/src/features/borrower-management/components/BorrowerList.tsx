@@ -235,7 +235,7 @@ export function BorrowerList() {
                 id: 'id',
                 header: 'Borrower ID',
                 cell: (row) => (
-                  <span className="font-semibold text-brand-primary">
+                  <span className="whitespace-nowrap font-semibold text-brand-primary">
                     {resolveBorrowerDisplayId(row)}
                   </span>
                 ),
@@ -243,6 +243,7 @@ export function BorrowerList() {
               {
                 id: 'name',
                 header: 'Borrower',
+                className: 'min-w-[12rem]',
                 cell: (row) => (
                   <div className="flex items-center gap-wilms-3">
                     <Avatar
@@ -250,9 +251,9 @@ export function BorrowerList() {
                       photoUrl={resolveEntityPhotoUrl({ name: row.fullName, id: row.id, photoUrl: row.photoUrl })}
                       size="sm"
                     />
-                    <div>
-                      <p className="font-semibold text-text-primary">{row.fullName}</p>
-                      <p className="text-small text-text-muted">{row.phone}</p>
+                    <div className="min-w-0">
+                      <p className="whitespace-nowrap font-semibold text-text-primary">{row.fullName}</p>
+                      <p className="whitespace-nowrap text-small text-text-muted">{row.phone}</p>
                     </div>
                   </div>
                 ),
@@ -264,12 +265,12 @@ export function BorrowerList() {
                   row.groupId ? (
                     <Link
                       href={`/groups/${row.groupId}`}
-                      className="font-semibold text-brand-primary hover:underline"
+                      className="whitespace-nowrap font-semibold text-brand-primary hover:underline"
                     >
                       {row.groupName}
                     </Link>
                   ) : (
-                    row.groupName
+                    <span className="whitespace-nowrap">{row.groupName}</span>
                   ),
               },
               {
@@ -283,7 +284,7 @@ export function BorrowerList() {
                 cell: (row) => (
                   <Link
                     href={`/borrowers/${row.id}`}
-                    className="text-small font-semibold text-brand-primary hover:underline"
+                    className="whitespace-nowrap text-small font-semibold text-brand-primary hover:underline"
                   >
                     View profile
                   </Link>

@@ -241,6 +241,7 @@ export function CollectorsManagementPanel() {
                   {
                     id: 'name',
                     header: 'Collector',
+                    className: 'min-w-[12rem]',
                     cell: (row) => (
                       <div className="flex items-center gap-wilms-3">
                         <Avatar
@@ -252,9 +253,11 @@ export function CollectorsManagementPanel() {
                           })}
                           size="sm"
                         />
-                        <div>
-                          <p className="font-semibold text-text-primary">{row.displayName}</p>
-                          <p className="text-small font-semibold text-executive-gold">
+                        <div className="min-w-0">
+                          <p className="whitespace-nowrap font-semibold text-text-primary">
+                            {row.displayName}
+                          </p>
+                          <p className="whitespace-nowrap text-small font-semibold text-executive-gold">
                             {resolveCollectorDisplayId(row)}
                           </p>
                         </div>

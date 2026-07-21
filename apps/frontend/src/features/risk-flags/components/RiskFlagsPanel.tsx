@@ -329,15 +329,20 @@ export function RiskFlagsPanel() {
           {
             id: 'id',
             header: sortHeader('Flag ID', 'id'),
-            cell: (row) => <span className="font-semibold text-executive-gold">{row.id}</span>,
+            cell: (row) => (
+              <span className="whitespace-nowrap font-semibold text-executive-gold">{row.id}</span>
+            ),
           },
           {
             id: 'entity',
             header: sortHeader('Entity', 'entityName'),
+            className: 'min-w-[12rem]',
             cell: (row) => (
               <div className="text-left">
-                <p className="font-semibold text-text-primary">{row.entityName}</p>
-                <p className="text-small text-text-muted">{resolveEntityDisplayId(row)}</p>
+                <p className="whitespace-nowrap font-semibold text-text-primary">{row.entityName}</p>
+                <p className="whitespace-nowrap text-small text-text-muted">
+                  {resolveEntityDisplayId(row)}
+                </p>
               </div>
             ),
           },
@@ -351,8 +356,16 @@ export function RiskFlagsPanel() {
             header: 'Flag Type',
             cell: (row) => <FlagBadge flagType={row.flagType} />,
           },
-          { id: 'community', header: 'Community', cell: (row) => row.community },
-          { id: 'officer', header: 'Officer', cell: (row) => row.officerName },
+          {
+            id: 'community',
+            header: 'Community',
+            cell: (row) => <span className="whitespace-nowrap">{row.community}</span>,
+          },
+          {
+            id: 'officer',
+            header: 'Officer',
+            cell: (row) => <span className="whitespace-nowrap">{row.officerName}</span>,
+          },
           {
             id: 'raised',
             header: sortHeader('Raised', 'raisedAt'),

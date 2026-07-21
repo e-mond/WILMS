@@ -6,6 +6,8 @@ export interface DataTableColumn<T> {
   header: ReactNode;
   cell: (row: T) => ReactNode;
   className?: string;
+  /** When true, cell content may wrap. Default for executive tables is nowrap. */
+  allowWrap?: boolean;
 }
 
 export interface DataTableProps<T> {
@@ -36,7 +38,9 @@ export function DataTable<T>({
   className,
 }: DataTableProps<T>) {
   const isExecutive = variant === 'executive';
-  const tableLayout = layout ?? (isExecutive ? 'fixed' : 'auto');
+  // Auto layout prevents identity/name cells from crushing under table-fixed.
+  // Horizontal overflow is handled by the scroll region wrapper.
+  const tableLayout = layout ?? 'auto';
 
   const scrollLabel = caption ?? 'Scrollable table';
 
@@ -68,6 +72,7 @@ export function DataTable<T>({
                 scope="col"
                 className={cn(
                   'px-wilms-4 py-wilms-3 text-small font-semibold uppercase tracking-wide text-text-muted',
+                  isExecutive && !column.allowWrap && 'whitespace-nowrap',
                   column.className,
                 )}
               >
@@ -120,7 +125,11 @@ export function DataTable<T>({
                   {columns.map((column) => (
                     <td
                       key={column.id}
-                      className={cn('px-wilms-4 py-wilms-3 text-text-primary', column.className)}
+                      className={cn(
+                        'px-wilms-4 py-wilms-3 text-text-primary',
+                        isExecutive && !column.allowWrap && 'whitespace-nowrap',
+                        column.className,
+                      )}
                     >
                       {column.cell(row)}
                     </td>
