@@ -1,0 +1,17 @@
+{
+  "version": "1.4.2",
+  "generatedAt": "2026-07-21T14:45:00Z",
+  "verdict": "IMPLEMENTED_AND_VERIFIED",
+  "operatorReady": "READY_WITH_CONDITIONS",
+  "gates": [
+    { "id": 1, "name": "Dedupe unit tests", "status": "PASS", "automated": true },
+    { "id": 2, "name": "Backend regression", "status": "PASS", "automated": true, "count": 202 },
+    { "id": 3, "name": "Frontend regression", "status": "PASS", "automated": true, "count": 252 },
+    { "id": 4, "name": "Migration 0030 journal", "status": "PASS", "automated": true },
+    { "id": 5, "name": "Type-check", "status": "PASS", "automated": true },
+    { "id": 6, "name": "Production scheduler cron", "status": "BLOCKED", "owner": "Operations" },
+    { "id": 7, "name": "Live SMS delivery", "status": "BLOCKED", "owner": "Operations" },
+    { "id": 8, "name": "Live email delivery", "status": "BLOCKED", "owner": "Operations" },
+    { "id": 9, "name": "Scheduler scale test", "status": "BLOCKED", "owner": "SRE" }
+  ]
+}

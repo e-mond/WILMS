@@ -43,3 +43,10 @@ WILMS_BACKUP_DATABASE_URL=... WILMS_RESTORE_DATABASE_URL=... npm run drill:backu
 ```
 
 Never point restore URL at production.
+
+## Payment notification scheduler (Phase 30)
+
+No new environment variables. Configure external cron to POST `/notifications/scheduler/run` with an authenticated session or service account holding `manage-communication-scheduler`.
+
+Mail: `MAIL_PROVIDER`, `RESEND_API_KEY`, or SMTP / `WILMS_VERCEL_MAIL_URL` + `WILMS_INTERNAL_MAIL_SECRET`.  
+SMS: provider env vars per `apps/backend/src/infrastructure/sms/` (Arkesel, Twilio, SMSNotifyGH).
