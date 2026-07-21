@@ -929,37 +929,16 @@ export async function notifyLoanReminder(input: {
   loanDisplayId: string;
   amountPesewas: number;
   dueDate: string;
+  correlationId?: string;
 }): Promise<void> {
-  const settings = await getSettings();
-
-  if (input.borrowerPhone) {
-    await dispatchSms({
-      event: 'PAYMENT_REMINDER',
-      to: input.borrowerPhone,
-      body: buildLoanReminderSmsBody(input),
-      enabled: settings.smsNotificationsEnabled,
-      borrowerId: input.borrowerId,
-      loanId: input.loanId,
-    });
-  }
-
-  if (input.borrowerEmail) {
-    const template = buildLoanReminderEmail(input);
-    await dispatchEmailWhenEnabled({
-      event: 'PAYMENT_REMINDER',
-      to: input.borrowerEmail,
-      subject: template.subject,
-      text: template.text,
-      html: template.html,
-      borrowerId: input.borrowerId,
-      loanId: input.loanId,
-    });
-  }
+  const { emitPaymentDueSoonNotification } = await import('./payment-notifications.js');
+  await emitPaymentDueSoonNotification(input);
 }
 
 // ─── Payment notifications ───────────────────────────────────────────────────
 
 export async function notifyPaymentReceived(input: {
+  paymentId?: string;
   borrowerId: string;
   borrowerName: string;
   borrowerPhone?: string;
@@ -970,73 +949,56 @@ export async function notifyPaymentReceived(input: {
   loanId?: string;
   outstandingBalancePesewas?: number;
   collectorUserId?: string;
+  correlationId?: string;
 }): Promise<void> {
-  const settings = await getSettings();
-
-  if (input.borrowerPhone) {
-    await dispatchSms({
-      event: 'PAYMENT_RECEIVED',
-      to: input.borrowerPhone,
-      body: buildPaymentConfirmationSmsBody({
-        amountPesewas: input.amountPesewas,
-        paymentDate: input.paymentDate,
-      }),
-      enabled: settings.smsNotificationsEnabled,
-      borrowerId: input.borrowerId,
-      loanId: input.loanId,
-    });
+  const { emitPaymentConfirmedNotification } = await import('./payment-notifications.js');
+  if (!input.paymentId || !input.loanId) {
+    return;
   }
-
-  if (input.borrowerEmail) {
-    const template = buildPaymentConfirmationEmail({
-      borrowerName: input.borrowerName,
-      amountPesewas: input.amountPesewas,
-      paymentDate: input.paymentDate,
-      loanDisplayId: input.loanDisplayId,
-      outstandingBalancePesewas: input.outstandingBalancePesewas,
-    });
-    await dispatchEmailWhenEnabled({
-      event: 'PAYMENT_RECEIVED',
-      to: input.borrowerEmail,
-      subject: template.subject,
-      text: template.text,
-      html: template.html,
-      borrowerId: input.borrowerId,
-      loanId: input.loanId,
-    });
-  }
-
-  if (input.collectorUserId) {
-    void createInAppNotification({
-      userId: input.collectorUserId,
-      event: 'PAYMENT_RECEIVED',
-      title: 'Payment received',
-      body: `GHS ${(input.amountPesewas / 100).toFixed(2)} received from ${input.borrowerName}.`,
-      href: `/reports/daily-collection`,
-      borrowerId: input.borrowerId,
-      loanId: input.loanId,
-    });
-  }
+  await emitPaymentConfirmedNotification({
+    paymentId: input.paymentId,
+    borrowerId: input.borrowerId,
+    borrowerName: input.borrowerName,
+    borrowerPhone: input.borrowerPhone,
+    borrowerEmail: input.borrowerEmail,
+    amountPesewas: input.amountPesewas,
+    paymentDate: input.paymentDate,
+    loanDisplayId: input.loanDisplayId,
+    loanId: input.loanId,
+    outstandingBalancePesewas: input.outstandingBalancePesewas,
+    collectorUserId: input.collectorUserId,
+    correlationId: input.correlationId,
+  });
 }
 
 export async function notifyMissedPayment(input: {
   borrowerId: string;
   borrowerName: string;
   borrowerPhone?: string;
-  weeksOverdue: number;
+  borrowerEmail?: string;
+  weeksOverdue?: number;
   amountPesewas: number;
   loanId?: string;
+  loanDisplayId?: string;
+  dueDate?: string;
+  collectorUserId?: string;
+  correlationId?: string;
 }): Promise<void> {
-  const settings = await getSettings();
-  if (!input.borrowerPhone) return;
-
-  await dispatchSms({
-    event: 'MISSED_PAYMENT',
-    to: input.borrowerPhone,
-    body: buildMissedPaymentSmsBody(input),
-    enabled: settings.smsNotificationsEnabled && settings.missedPaymentSmsEnabled,
+  const { emitPaymentMissedNotification } = await import('./payment-notifications.js');
+  if (!input.loanId || !input.dueDate) {
+    return;
+  }
+  await emitPaymentMissedNotification({
     borrowerId: input.borrowerId,
+    borrowerName: input.borrowerName,
+    borrowerPhone: input.borrowerPhone,
+    borrowerEmail: input.borrowerEmail,
     loanId: input.loanId,
+    loanDisplayId: input.loanDisplayId ?? input.loanId,
+    dueDate: input.dueDate,
+    amountPesewas: input.amountPesewas,
+    collectorUserId: input.collectorUserId,
+    correlationId: input.correlationId,
   });
 }
 
