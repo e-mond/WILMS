@@ -7,7 +7,24 @@
 
 ---
 
-## Phase 28 multi-discipline pack (current)
+## Phase 29 certification pack (current)
+
+Primary pack: [`certification/v1.4/phase-29/`](./certification/v1.4/phase-29/)
+
+| Doc | Path |
+|-----|------|
+| Index | [INDEX.md](./certification/v1.4/phase-29/INDEX.md) |
+| Master audit | [FINAL_PHASE_29_AUDIT.md](./certification/v1.4/phase-29/FINAL_PHASE_29_AUDIT.md) |
+| Findings (JSON) | [findings-inventory.json](./certification/v1.4/phase-29/findings-inventory.json) |
+| Test evidence (JSON) | [test-evidence-manifest.json](./certification/v1.4/phase-29/test-evidence-manifest.json) |
+| Production gates (JSON) | [production-gate-manifest.json](./certification/v1.4/phase-29/production-gate-manifest.json) |
+| Final certification | [FINAL_PRODUCTION_CERTIFICATION_REPORT.md](./certification/v1.4/phase-29/FINAL_PRODUCTION_CERTIFICATION_REPORT.md) |
+| Manual actions | [FINAL_MANUAL_ACTIONS_REQUIRED.md](./certification/v1.4/phase-29/FINAL_MANUAL_ACTIONS_REQUIRED.md) |
+| Environment vars | [ENVIRONMENT_VARIABLES.md](./operations/ENVIRONMENT_VARIABLES.md) |
+
+---
+
+## Phase 28 multi-discipline pack (archived)
 
 Primary pack: [`certification/v1.4/phase-28-multi/`](./certification/v1.4/phase-28-multi/)
 

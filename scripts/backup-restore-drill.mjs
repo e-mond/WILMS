@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-const outDir = path.join(root, 'docs/certification/v1.4/phase-25/evidence');
+const outDir = path.join(root, 'docs/certification/v1.4/phase-29/evidence');
 mkdirSync(outDir, { recursive: true });
 
 const source = process.env.WILMS_BACKUP_DATABASE_URL?.trim();
