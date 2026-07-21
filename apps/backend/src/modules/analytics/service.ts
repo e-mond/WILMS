@@ -1,4 +1,6 @@
 import { listPayments } from '../../db/persistence.js';
+import { isDatabaseEnabled } from '../../db/client.js';
+import * as paymentRepo from '../../repositories/payment.repository.js';
 
 export interface CollectionMetricsQuery {
   period: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
@@ -112,8 +114,63 @@ export async function getCollectionMetrics(
 ): Promise<CollectionMetricsResponse> {
   const referenceDate = new Date(query.referenceDate ?? new Date().toISOString().slice(0, 10));
   const { start, end } = resolvePeriodBounds(query.period, referenceDate);
-  const payments = await listPayments();
   const scope = query.scope ?? 'ORGANISATION';
+
+  if (isDatabaseEnabled()) {
+    const buildSqlSnapshot = (
+      snapshotScope: CollectionMetricSnapshot['scope'],
+      scopeId: string,
+      scopeLabel: string,
+      collected: number,
+      count: number,
+    ): CollectionMetricSnapshot => {
+      const expected = collected;
+      return {
+        period: query.period,
+        scope: snapshotScope,
+        scopeId,
+        scopeLabel,
+        expectedPesewas: expected,
+        collectedPesewas: collected,
+        collectionRatePercent:
+          expected === 0 ? (collected > 0 ? 100 : 0) : Math.round((collected / expected) * 100),
+        transactionCount: count,
+        periodStart: start.toISOString(),
+        periodEnd: end.toISOString(),
+      };
+    };
+
+    const [orgCollected, orgCount] = await Promise.all([
+      paymentRepo.sumConfirmedPaymentsInRecordedAtRangePesewas(start, end),
+      paymentRepo.countConfirmedPaymentsInRecordedAtRange(start, end),
+    ]);
+    const organisationTotal = buildSqlSnapshot(
+      'ORGANISATION',
+      'organisation',
+      'Organisation',
+      orgCollected,
+      orgCount,
+    );
+
+    if (scope === 'COLLECTOR' && query.scopeId) {
+      const [collected, count] = await Promise.all([
+        paymentRepo.sumConfirmedPaymentsInRecordedAtRangePesewas(start, end, {
+          collectorId: query.scopeId,
+        }),
+        paymentRepo.countConfirmedPaymentsInRecordedAtRange(start, end, {
+          collectorId: query.scopeId,
+        }),
+      ]);
+      return {
+        metrics: [buildSqlSnapshot('COLLECTOR', query.scopeId, query.scopeId, collected, count)],
+        organisationTotal,
+      };
+    }
+
+    return { metrics: [organisationTotal], organisationTotal };
+  }
+
+  const payments = await listPayments();
 
   const organisationTotal = buildSnapshot({
     period: query.period,

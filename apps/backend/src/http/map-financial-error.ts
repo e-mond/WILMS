@@ -33,6 +33,9 @@ export function mapFinancialRouteError(error: unknown): never {
     if (error.message.startsWith('CONFLICT')) {
       throw new AppError('Resource was modified concurrently.', ERROR_CODE.CONFLICT, 409);
     }
+    if (error.message.startsWith('FORBIDDEN:')) {
+      throw new AppError(error.message.slice('FORBIDDEN:'.length), ERROR_CODE.FORBIDDEN, 403);
+    }
     if (error.message === 'IDEMPOTENCY_IN_PROGRESS') {
       throw new AppError('Request is already in progress.', ERROR_CODE.CONFLICT, 409);
     }

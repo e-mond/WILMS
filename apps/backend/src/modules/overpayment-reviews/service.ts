@@ -64,6 +64,7 @@ export function queueReview(input: {
 export function resolveReview(
   id: string,
   input: { action: 'RESOLVED' | 'DISMISSED'; note?: string },
+  resolverUserId: string,
   actorDisplayName: string,
 ): OverpaymentReview {
   const index = reviews.findIndex((review) => review.id === id);
@@ -74,6 +75,12 @@ export function resolveReview(
   const current = reviews[index]!;
   if (current.status !== 'PENDING') {
     throw new Error('VALIDATION:Only pending overpayment reviews can be resolved.');
+  }
+
+  if (current.collectorId === resolverUserId) {
+    throw new Error(
+      'FORBIDDEN:You cannot resolve an overpayment review you submitted. Ask another authorised reviewer.',
+    );
   }
 
   const status = input.action === 'RESOLVED' ? 'RESOLVED' : 'DISMISSED';

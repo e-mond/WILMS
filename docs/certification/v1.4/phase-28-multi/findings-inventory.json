@@ -1,0 +1,177 @@
+{
+  "version": "1.4.2",
+  "generatedAt": "2026-07-21T11:30:00Z",
+  "branch": "feat/phase28-defaulter-sql-deps-8847",
+  "findings": [
+    {
+      "id": "FIN-001",
+      "severity": "High",
+      "status": "CLOSED",
+      "title": "Collector list used capped listPayments() in DB mode",
+      "files": ["apps/backend/src/modules/collectors/service.ts"],
+      "fix": "SQL sumConfirmedPaymentsByCollector + listCollectorIdsWithPaymentOnDate"
+    },
+    {
+      "id": "FIN-002",
+      "severity": "High",
+      "status": "CLOSED",
+      "title": "Collector portal dashboard used full listPayments() scan",
+      "files": ["apps/backend/src/modules/collector-portal/service.ts"],
+      "fix": "listPaymentsForDate + sumConfirmedPaymentsForDatePesewas"
+    },
+    {
+      "id": "FIN-003",
+      "severity": "High",
+      "status": "CLOSED",
+      "title": "Analytics collection metrics truncated at 2000 rows",
+      "files": ["apps/backend/src/modules/analytics/service.ts"],
+      "fix": "SQL sum/count in recordedAt range"
+    },
+    {
+      "id": "FIN-004",
+      "severity": "High",
+      "status": "CLOSED",
+      "title": "Group detail bypassed SQL stats used in list view",
+      "files": ["apps/backend/src/modules/groups/service.ts"],
+      "fix": "Pass getGroupListStats() into buildGroupSummary"
+    },
+    {
+      "id": "FIN-005",
+      "severity": "High",
+      "status": "CLOSED",
+      "title": "Defaulter report N+1 and in-memory cap",
+      "files": ["apps/backend/src/repositories/defaulter.repository.ts"],
+      "fix": "SQL CTE aggregation (Phase 28 initial)"
+    },
+    {
+      "id": "SOD-001",
+      "severity": "High",
+      "status": "CLOSED",
+      "title": "Borrower self-approval by submitting officer",
+      "files": ["apps/backend/src/modules/borrowers/service.ts"],
+      "fix": "FORBIDDEN when registeredByOfficerId === actorId",
+      "test": "apps/backend/src/tests/borrowers/sod-self-approve.test.ts"
+    },
+    {
+      "id": "SOD-002",
+      "severity": "High",
+      "status": "CLOSED",
+      "title": "Loan self-approval lacked regression test",
+      "files": ["apps/backend/src/modules/loans/service.ts"],
+      "fix": "Existing guard + new test",
+      "test": "apps/backend/src/tests/loans/sod-self-approve.test.ts"
+    },
+    {
+      "id": "SOD-003",
+      "severity": "Medium",
+      "status": "CLOSED",
+      "title": "Reconciliation self-review by submitting collector",
+      "files": ["apps/backend/src/modules/reconciliation/service.ts"],
+      "fix": "FORBIDDEN when collectorUserId === reviewerUserId",
+      "test": "apps/backend/src/tests/reconciliation/sod-self-review.test.ts"
+    },
+    {
+      "id": "SOD-004",
+      "severity": "Medium",
+      "status": "CLOSED",
+      "title": "Sync conflict self-approval",
+      "files": ["apps/backend/src/modules/sync/service.ts"],
+      "fix": "FORBIDDEN when operation.actorUserId === resolverUserId",
+      "test": "apps/backend/src/tests/sync/sod-self-approve.test.ts"
+    },
+    {
+      "id": "SOD-005",
+      "severity": "Medium",
+      "status": "CLOSED",
+      "title": "Overpayment review self-resolve",
+      "files": ["apps/backend/src/modules/overpayment-reviews/service.ts"],
+      "fix": "FORBIDDEN when collectorId === resolverUserId",
+      "test": "apps/backend/src/tests/overpayment-reviews/sod-self-resolve.test.ts"
+    },
+    {
+      "id": "SEC-001",
+      "severity": "Medium",
+      "status": "CLOSED",
+      "title": "Open redirect on email click tracking",
+      "files": ["apps/backend/src/lib/safe-redirect-url.ts", "apps/backend/src/modules/tracking/routes.ts"],
+      "fix": "Host allowlist validation",
+      "test": "apps/backend/src/tests/security/safe-redirect-url.test.ts"
+    },
+    {
+      "id": "SEC-002",
+      "severity": "Medium",
+      "status": "CLOSED",
+      "title": "Upload signature exposed to any authenticated user",
+      "files": ["apps/backend/src/modules/uploads/routes.ts"],
+      "fix": "requirePermission(CAPTURE_DOCUMENTS)"
+    },
+    {
+      "id": "SEC-003",
+      "severity": "Medium",
+      "status": "CLOSED",
+      "title": "BFF leaked upstream connection errors",
+      "files": ["apps/frontend/src/app/api/wilms/[...path]/route.ts"],
+      "fix": "Generic 503 message"
+    },
+    {
+      "id": "ENG-001",
+      "severity": "Low",
+      "status": "CLOSED",
+      "title": "Dead orphan frontend components",
+      "files": [
+        "apps/frontend/src/features/messaging/components/CollectorMessagesPanel.tsx",
+        "apps/frontend/src/features/payment-collection/components/CollectorBorrowerMobileCards.tsx",
+        "apps/frontend/src/components/layout/shell/ConnectionStatusBar.tsx"
+      ],
+      "fix": "Removed unused files"
+    },
+    {
+      "id": "DEP-001",
+      "severity": "High",
+      "status": "ACCEPTED_RESIDUAL",
+      "title": "drizzle-orm SQL identifier advisory",
+      "exploitability": "Low — static schema identifiers only",
+      "upgradePlan": "Dedicated drizzle-orm 0.45.2 upgrade PR"
+    },
+    {
+      "id": "DEP-002",
+      "severity": "High",
+      "status": "ACCEPTED_RESIDUAL",
+      "title": "next@14 multiple CVEs",
+      "exploitability": "Medium — self-hosted Image Optimizer DoS",
+      "mitigation": "Restrict remotePatterns; plan Next 15/16 upgrade"
+    },
+    {
+      "id": "OPS-001",
+      "severity": "Blocked",
+      "status": "BLOCKED",
+      "title": "Authenticated staging smoke",
+      "owner": "Operations",
+      "requiredInput": ["STAGING_API_URL", "STAGING_*_CREDENTIALS"]
+    },
+    {
+      "id": "OPS-002",
+      "severity": "Blocked",
+      "status": "BLOCKED",
+      "title": "Backup/restore drill",
+      "owner": "Operations",
+      "requiredInput": ["DATABASE_URL", "pg_dump", "pg_restore"]
+    },
+    {
+      "id": "OPS-003",
+      "severity": "Blocked",
+      "status": "BLOCKED",
+      "title": "Live load test",
+      "owner": "SRE",
+      "requiredInput": ["STAGING_URL", "k6 or artillery"]
+    }
+  ],
+  "summary": {
+    "critical": 0,
+    "highOpen": 0,
+    "highClosed": 6,
+    "mediumOpen": 0,
+    "mediumClosed": 5,
+    "blocked": 9
+  }
+}

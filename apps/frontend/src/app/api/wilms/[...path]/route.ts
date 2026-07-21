@@ -70,10 +70,9 @@ async function proxyRequest(request: Request, pathSegments: string[]): Promise<R
       headers: sanitizeProxyResponseHeaders(upstreamResponse.headers),
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Upstream API request failed.';
+    console.error('[wilms-bff] upstream unavailable', error);
     return NextResponse.json(
-      { error: { message, code: 'UPSTREAM_UNAVAILABLE' } },
+      { error: { message: 'Upstream API unavailable.', code: 'UPSTREAM_UNAVAILABLE' } },
       { status: 503 },
     );
   }

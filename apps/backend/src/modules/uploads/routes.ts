@@ -18,6 +18,7 @@ import { getUploadConfig } from '../../infrastructure/uploads/config.js';
 import { PERMISSION, roleHasPermission } from '../../infrastructure/permissions/matrix.js';
 import type { SessionUser } from '../../middleware/authenticate.js';
 import { requireAuth } from '../../middleware/authenticate.js';
+import { requirePermission } from '../../middleware/require-permission.js';
 import { validateBody } from '../../middleware/validate-body.js';
 import { isDatabaseEnabled } from '../../db/client.js';
 import * as uploadRepository from '../../repositories/upload.repository.js';
@@ -88,6 +89,7 @@ uploadsRouter.use(requireAuth);
 
 uploadsRouter.get(
   '/uploads/signature',
+  requirePermission(PERMISSION.CAPTURE_DOCUMENTS),
   asyncHandler(async (_req, res) => {
     if (!isCloudinaryConfigured()) {
       throw new AppError('Cloudinary is not configured.', ERROR_CODE.NOT_FOUND, 404);
@@ -112,6 +114,7 @@ uploadsRouter.get(
 
 uploadsRouter.post(
   '/uploads',
+  requirePermission(PERMISSION.CAPTURE_DOCUMENTS),
   validateBody(uploadSchema),
   asyncHandler(async (req, res) => {
     const input = req.body as z.infer<typeof uploadSchema>;

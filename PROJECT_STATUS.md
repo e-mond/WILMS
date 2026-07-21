@@ -11,12 +11,13 @@
 | v1.4.0 Phase 25 platform foundation | **COMPLETE (software)** |
 | v1.4.1 UX + final-system + Phase 26 | **COMPLETE (software)** — PRs #132 / #136 / #137 / #138 |
 | **v1.4.2 Phase 27 residual Medium closure** | **COMPLETE** |
-| **v1.4.2 Phase 28 operator evidence closure** | **COMPLETE (software)** — operator gates still open |
+| **v1.4.2 Phase 28 multi-discipline closure** | **COMPLETE (software)** — 196 backend tests; operator gates open |
 
 **Verdict:** **READY WITH CONDITIONS**  
 **Production Certified:** **NOT ISSUED**
 
-**Phase 28 pack:** [`docs/certification/v1.4/phase-28/`](docs/certification/v1.4/phase-28/FINAL_PHASE_28_AUDIT.md)  
+**Phase 28 multi pack:** [`docs/certification/v1.4/phase-28-multi/`](docs/certification/v1.4/phase-28-multi/INDEX.md)  
+**Phase 28 initial pack:** [`docs/certification/v1.4/phase-28/`](docs/certification/v1.4/phase-28/FINAL_PHASE_28_AUDIT.md)  
 **Phase 27 pack:** [`docs/certification/v1.4/phase-27/`](docs/certification/v1.4/phase-27/FINAL_PHASE_27_AUDIT.md)  
 **Audit index:** [`docs/FINAL_AUDIT_INDEX.md`](docs/FINAL_AUDIT_INDEX.md)
 

@@ -341,3 +341,76 @@ export async function listPaymentsInDateRange(
 
   return { rows: rows.map(rowToRecord), total };
 }
+
+/** SQL sum of confirmed payments recorded within a timestamp range. */
+export async function sumConfirmedPaymentsInRecordedAtRangePesewas(
+  start: Date,
+  end: Date,
+  options: { collectorId?: string } = {},
+  tx: WilmsDb = getDb(),
+): Promise<number> {
+  const conditions = [
+    ne(payments.status, 'REVERSED'),
+    sql`${payments.recordedAt} >= ${start}`,
+    sql`${payments.recordedAt} <= ${end}`,
+  ];
+  if (options.collectorId) {
+    conditions.push(eq(payments.collectorUserId, options.collectorId));
+  }
+  const [row] = await tx
+    .select({
+      total: sql<number>`COALESCE(SUM(${payments.amountPesewas}), 0)::int`,
+    })
+    .from(payments)
+    .where(and(...conditions));
+  return Number(row?.total ?? 0);
+}
+
+/** SQL count of confirmed payments recorded within a timestamp range. */
+export async function countConfirmedPaymentsInRecordedAtRange(
+  start: Date,
+  end: Date,
+  options: { collectorId?: string } = {},
+  tx: WilmsDb = getDb(),
+): Promise<number> {
+  const conditions = [
+    ne(payments.status, 'REVERSED'),
+    sql`${payments.recordedAt} >= ${start}`,
+    sql`${payments.recordedAt} <= ${end}`,
+  ];
+  if (options.collectorId) {
+    conditions.push(eq(payments.collectorUserId, options.collectorId));
+  }
+  const [row] = await tx
+    .select({ total: count() })
+    .from(payments)
+    .where(and(...conditions));
+  return Number(row?.total ?? 0);
+}
+
+/** Collector user IDs with at least one confirmed payment on a calendar date. */
+export async function listCollectorIdsWithPaymentOnDate(
+  paymentDate: string,
+  tx: WilmsDb = getDb(),
+): Promise<Set<string>> {
+  const rows = await tx
+    .selectDistinct({ collectorId: payments.collectorUserId })
+    .from(payments)
+    .where(and(eq(payments.paymentDate, paymentDate), ne(payments.status, 'REVERSED')));
+  return new Set(rows.map((row) => row.collectorId));
+}
+
+/** Recent confirmed payments for a collector (most recent first). */
+export async function listRecentPaymentsForCollector(
+  collectorId: string,
+  limit = 5,
+  tx: WilmsDb = getDb(),
+): Promise<PaymentRecord[]> {
+  const rows = await tx
+    .select()
+    .from(payments)
+    .where(and(eq(payments.collectorUserId, collectorId), ne(payments.status, 'REVERSED')))
+    .orderBy(sql`${payments.recordedAt} DESC`)
+    .limit(Math.min(limit, MAX_LIST_PAGE_SIZE));
+  return rows.map(rowToRecord);
+}

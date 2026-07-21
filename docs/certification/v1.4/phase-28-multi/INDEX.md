@@ -1,0 +1,46 @@
+# Phase 28 Multi-Discipline Audit — Index
+
+**Version:** 1.4.2  
+**Date:** 2026-07-21  
+**Branch:** `feat/phase28-defaulter-sql-deps-8847`
+
+## Verdict
+
+**READY WITH CONDITIONS**  
+**Production Certified: NOT ISSUED**
+
+## Reports
+
+| # | Document |
+|---|----------|
+| 1 | [FINAL_MULTI_DISCIPLINE_AUDIT.md](FINAL_MULTI_DISCIPLINE_AUDIT.md) |
+| 2 | [ENGINEERING_CERTIFICATION_REPORT.md](ENGINEERING_CERTIFICATION_REPORT.md) |
+| 3 | [SECURITY_CERTIFICATION_REPORT.md](SECURITY_CERTIFICATION_REPORT.md) |
+| 4 | [FINANCIAL_ENGINE_CERTIFICATION.md](FINANCIAL_ENGINE_CERTIFICATION.md) |
+| 5 | [DATABASE_CERTIFICATION_REPORT.md](DATABASE_CERTIFICATION_REPORT.md) |
+| 6 | [PERFORMANCE_SCALE_REPORT.md](PERFORMANCE_SCALE_REPORT.md) |
+| 7 | [QA_TEST_CERTIFICATION.md](QA_TEST_CERTIFICATION.md) |
+| 8 | [ACCESSIBILITY_CERTIFICATION.md](ACCESSIBILITY_CERTIFICATION.md) |
+| 9 | [UX_PRODUCT_CERTIFICATION.md](UX_PRODUCT_CERTIFICATION.md) |
+| 10 | [OPERATIONS_SRE_CERTIFICATION.md](OPERATIONS_SRE_CERTIFICATION.md) |
+| 11 | [BACKUP_DR_CERTIFICATION.md](BACKUP_DR_CERTIFICATION.md) |
+| 12 | [DOCUMENTATION_CERTIFICATION.md](DOCUMENTATION_CERTIFICATION.md) |
+| 13 | [DEPENDENCY_SECURITY_REPORT.md](DEPENDENCY_SECURITY_REPORT.md) |
+| 14 | [PRODUCTION_CONFIGURATION_CERTIFICATION.md](PRODUCTION_CONFIGURATION_CERTIFICATION.md) |
+| 15 | [RELEASE_MANAGEMENT_CERTIFICATION.md](RELEASE_MANAGEMENT_CERTIFICATION.md) |
+| 16 | [FINAL_MANUAL_ACTIONS_REQUIRED.md](FINAL_MANUAL_ACTIONS_REQUIRED.md) |
+| 17 | [FINAL_PRODUCTION_CERTIFICATION.md](FINAL_PRODUCTION_CERTIFICATION.md) |
+| 18 | [FINAL_RELEASE_READINESS.md](FINAL_RELEASE_READINESS.md) |
+
+## Machine-readable artifacts
+
+| Artifact | Path |
+|----------|------|
+| Findings inventory | [findings-inventory.json](findings-inventory.json) |
+| Test evidence manifest | [test-evidence-manifest.json](test-evidence-manifest.json) |
+| Production gate manifest | [production-gate-manifest.json](production-gate-manifest.json) |
+
+## Prior phase packs
+
+- [Phase 28 initial](../phase-28/INDEX.md)
+- [Phase 27](../phase-27/FINAL_PHASE_27_AUDIT.md)
