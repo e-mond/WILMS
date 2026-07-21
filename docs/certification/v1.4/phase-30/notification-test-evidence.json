@@ -1,0 +1,8 @@
+{
+  "version": "1.4.2",
+  "generatedAt": "2026-07-21T14:45:00Z",
+  "backendTests": { "total": 202, "passed": 202 },
+  "frontendTests": { "total": 252, "passed": 252 },
+  "newTestFile": "apps/backend/src/tests/notifications/payment-notifications.test.ts",
+  "migration": "0030_v142_notification_dedupe"
+}

@@ -1,14 +1,15 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import { PERMISSION } from '@wilms/shared-rbac';
 import { asyncHandler } from '../../http/async-handler.js';
 import { sendData } from '../../http/response.js';
-import { PERMISSION } from '../../infrastructure/permissions/matrix.js';
 import { requireAuth } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/require-permission.js';
 import { validateBody } from '../../middleware/validate-body.js';
 import * as notificationService from './service.js';
 import * as pushService from './push.service.js';
 import * as preferencesService from './preferences.service.js';
+import * as paymentSchedulerService from './payment-scheduler.service.js';
 
 export const notificationsRouter = Router();
 
@@ -146,5 +147,15 @@ notificationsRouter.get(
   '/notifications/push/vapid-public-key',
   asyncHandler(async (_req, res) => {
     sendData(res, { publicKey: process.env.VAPID_PUBLIC_KEY?.trim() ?? null });
+  }),
+);
+
+notificationsRouter.post(
+  '/notifications/scheduler/run',
+  requirePermission(PERMISSION.MANAGE_COMMUNICATION_SCHEDULER),
+  asyncHandler(async (req, res) => {
+    const referenceDate =
+      typeof req.body?.referenceDate === 'string' ? req.body.referenceDate : undefined;
+    sendData(res, await paymentSchedulerService.processPaymentNotificationJobs(referenceDate));
   }),
 );

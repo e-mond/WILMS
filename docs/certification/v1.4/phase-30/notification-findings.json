@@ -1,0 +1,36 @@
+{
+  "version": "1.4.2",
+  "phase30Fixes": [
+    {
+      "id": "NOTIF-001",
+      "severity": "High",
+      "status": "CLOSED",
+      "title": "No scheduled payment reminders — notifyLoanReminder never wired"
+    },
+    {
+      "id": "NOTIF-002",
+      "severity": "High",
+      "status": "CLOSED",
+      "title": "Missed payment SMS on every payment context load without dedupe"
+    },
+    {
+      "id": "NOTIF-003",
+      "severity": "Medium",
+      "status": "CLOSED",
+      "title": "No collector/admin in-app missed-payment notifications"
+    },
+    {
+      "id": "NOTIF-004",
+      "severity": "Medium",
+      "status": "CLOSED",
+      "title": "No notification dedupe keys or delivery records"
+    }
+  ],
+  "openCodeFindings": { "critical": 0, "high": 0 },
+  "operatorGates": [
+    "production_scheduler_cron",
+    "live_sms_delivery",
+    "live_email_delivery",
+    "scheduler_scale_test"
+  ]
+}
