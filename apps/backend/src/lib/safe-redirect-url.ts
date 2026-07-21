@@ -1,3 +1,9 @@
+/**
+ * Validates outbound redirect URLs for email click tracking.
+ *
+ * Prevents open-redirect phishing by allowing only hosts derived from
+ * WILMS_APP_URL, WILMS_CORS_ORIGIN, and the default production hostname.
+ */
 import { env } from '../config/env.js';
 
 const DEFAULT_REDIRECT = 'https://wilms.vercel.app';
