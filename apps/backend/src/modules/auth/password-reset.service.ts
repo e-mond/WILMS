@@ -4,6 +4,7 @@ import { uuidv7 } from 'uuidv7';
 import { env } from '../../config/env.js';
 import { getDb, isDatabaseEnabled } from '../../db/client.js';
 import { passwordResetTokens } from '../../db/schema/communication-platform.js';
+import { assertPasswordStrength } from '../../lib/password-policy.js';
 import { hashPassword } from '../../lib/password.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import { notifyPasswordReset, notifyPasswordChanged } from '../../infrastructure/notifications/event-dispatch.js';
@@ -104,9 +105,10 @@ export async function resetPasswordWithToken(input: {
   newPassword: string;
   ipAddress?: string;
 }): Promise<{ ok: true }> {
-  if (!input.newPassword || input.newPassword.length < 8) {
-    throw new Error('VALIDATION:Password must be at least 8 characters.');
+  if (!input.newPassword?.trim()) {
+    throw new Error('VALIDATION:Password is required.');
   }
+  assertPasswordStrength(input.newPassword);
 
   if (!isDatabaseEnabled()) {
     throw new Error('VALIDATION:Invalid or expired reset token.');

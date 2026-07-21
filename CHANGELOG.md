@@ -2,13 +2,13 @@
 
 All notable changes to WILMS are documented in this file.
 
-## [1.4.1] — UX Shell Hardening
+## [1.4.1] — UX Shell Hardening + Phase 26 Closure
 
 **Release date:** July 2026
 
 ### Summary
 
-Shell, navigation, search, and permission-catalog hardening on top of v1.4.0. Fixes the critical Dashboard vs Operations routing collision, sticky enterprise chrome, floating-control overlap, and Permission Catalog readability. Financial controls and RBAC enforcement unchanged.
+Shell, navigation, search, and permission-catalog hardening on top of v1.4.0, plus Phase 26 closure remediations for invitation expiry, adjustment/loan SoD, upload magic bytes, password policy, LOAN_CREATE idempotency, and payment-by-id lookup. Verdict **READY WITH CONDITIONS**; Production Certified **not** issued.
 
 ### Fixed
 - `/ops` missing from route permission matrix redirected Super Admins to `/dashboard` (nav collision)
@@ -23,9 +23,18 @@ Shell, navigation, search, and permission-catalog hardening on top of v1.4.0. Fi
 - Collector payment GET / admin-fee status object scoping (assignment required)
 - Money reports fail closed when source lists would silently truncate past 2000 rows
 - Frontend security headers (CSP, frame deny, nosniff); deploy workflows on Node 22
+- Invitation expiry enforced from `invitedAt + 7 days` on login and accept-invitation; resend refreshes `invitedAt`
+- Adjustment maker-checker: requester cannot approve own adjustment; pool aggregates refreshed on approve
+- Loan create/approve SoD: creator cannot approve own loan
+- Upload magic-byte MIME verification (JPEG/PNG/WEBP/PDF)
+- Password policy: minimum 10 characters with letter + number (onboarding/reset + frontend)
+- `LOAN_CREATE` wrapped in `runWithIdempotency`
+- `getPaymentById` uses `findPaymentById` (no 2000-row list scan)
 
 ### Documentation
 - Final full-system audit pack under `docs/certification/v1.4/final-system-audit/` — verdict **READY WITH CONDITIONS** (Production Certified **not** issued)
+- Phase 26 certification pack under `docs/certification/v1.4/phase-26/` — verdict **READY WITH CONDITIONS** (Production Certified **NOT ISSUED**)
+- `docs/FINAL_AUDIT_INDEX.md` and `PROJECT_STATUS.md` updated for Phase 26 closure
 
 ### Changed
 - Sticky header in content column; full-height sticky sidebar
@@ -37,7 +46,7 @@ Shell, navigation, search, and permission-catalog hardening on top of v1.4.0. Fi
 - Help menu: role guide, shortcuts, my settings, restart tour (distinct panes)
 - Collector Messages removed from navigation (route redirects to collector dashboard)
 
-### Documentation
+### Documentation (UX / status)
 - README / docs hub / PROJECT_STATUS stamped to **1.4.1**
 - UX audit pack expanded (`UX_SHELL_AUDIT.md`, `NAVIGATION_AUDIT.md`, …)
 - `ROLES_AND_PERMISSIONS_GUIDE.md` — role defaults vs per-user overrides
