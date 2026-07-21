@@ -2,6 +2,22 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.4.2] — Phase 31 Final Certification Closure
+
+**Release date:** July 2026
+
+### Added
+
+- `WILMS_SCHEDULER_TOKEN` authentication for HTTP cron schedulers
+- Scheduler last-run state on `/ops/status` and Prometheus gauges
+- GitHub Actions workflow `notification-scheduler.yml` (optional daily cron)
+- Operator script `scripts/operator/run-notification-scheduler.sh`
+- Phase 31 certification pack under `docs/certification/v1.4/phase-31/`
+
+### Changed
+
+- Payment and communications scheduler routes accept shared-secret cron auth without a browser session
+
 ## [1.4.2] — Phase 30 Payment Notification System
 
 **Release date:** July 2026

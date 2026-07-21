@@ -7,9 +7,29 @@
 
 ---
 
-## Phase 29 certification pack (current)
+## Phase 31 final certification pack (current)
 
-Primary pack: [`certification/v1.4/phase-29/`](./certification/v1.4/phase-29/)
+Primary pack: [`certification/v1.4/phase-31/`](./certification/v1.4/phase-31/)
+
+| Doc | Path |
+|-----|------|
+| Index | [INDEX.md](./certification/v1.4/phase-31/INDEX.md) |
+| Production certification | [FINAL_PRODUCTION_CERTIFICATION_REPORT.md](./certification/v1.4/phase-31/FINAL_PRODUCTION_CERTIFICATION_REPORT.md) |
+| Manual actions | [FINAL_MANUAL_ACTIONS_REQUIRED.md](./certification/v1.4/phase-31/FINAL_MANUAL_ACTIONS_REQUIRED.md) |
+| Gate manifest | [production-gate-manifest.json](./certification/v1.4/phase-31/production-gate-manifest.json) |
+
+---
+
+## Phase 30 notification pack
+
+[`certification/v1.4/phase-30/`](./certification/v1.4/phase-30/INDEX.md)
+
+---
+
+## Phase 29 certification pack
+
+[`certification/v1.4/phase-29/`](./certification/v1.4/phase-29/INDEX.md)
+
 
 | Doc | Path |
 |-----|------|
