@@ -1,0 +1,20 @@
+{
+  "gate": "G12",
+  "status": "BLOCKED",
+  "reason": "Incident and rollback drills require operator participation on staging/production",
+  "owner": "Operations",
+  "scenarios": [
+    "API failure",
+    "database connectivity failure",
+    "mail provider failure",
+    "SMS provider failure",
+    "scheduler failure",
+    "migration failure",
+    "deployment rollback"
+  ],
+  "command": "Follow docs/operations/incident-response.md and docs/operations/rollback.md",
+  "expectedResult": "Alert fired; runbook followed; no financial corruption; recovery documented",
+  "evidenceFile": "evidence/operator/incident-drill.json",
+  "risk": "Untested incident response may prolong outages",
+  "timestamp": "2026-07-22T09:11:47Z"
+}

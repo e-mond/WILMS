@@ -1,0 +1,11 @@
+{
+  "gate": "G4",
+  "status": "BLOCKED",
+  "reason": "STAGING_API_URL, STAGING_ADMIN_EMAIL, STAGING_ADMIN_PASSWORD required",
+  "owner": "Finance / Operations",
+  "command": "Execute money-chain per docs/certification/v1.4/phase-29/templates/money-chain-evidence.md",
+  "expectedResult": "Full lifecycle with IDs, amounts, notifications, audit events",
+  "evidenceFile": "evidence/operator/money-chain.json",
+  "risk": "Financial workflow defects undetected until production",
+  "timestamp": "2026-07-22T09:00:30Z"
+}

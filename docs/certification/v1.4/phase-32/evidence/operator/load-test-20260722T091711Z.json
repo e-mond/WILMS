@@ -1,0 +1,17 @@
+{
+  "gate": "G8",
+  "status": "BLOCKED",
+  "mode": "local-health-only",
+  "target": "http://127.0.0.1:4000",
+  "requests": 100,
+  "concurrency": 10,
+  "errorCount": 0,
+  "errorRate": 0.0,
+  "p50Ms": 14,
+  "p95Ms": 19,
+  "p99Ms": 20,
+  "avgMs": 13.99,
+  "durationMs": 209,
+  "timestamp": "2026-07-22T09:17:11Z",
+  "note": "Health-only probe; full staging load test still required for certification"
+}
