@@ -1,0 +1,16 @@
+{
+  "gate": "G9",
+  "status": "BLOCKED",
+  "reason": "Manual browser matrix (Chrome, Edge, Firefox, mobile) and Lighthouse require operator execution",
+  "owner": "Product / QA",
+  "automatedAxe": false,
+  "command": "RUN_AXE_E2E=1 npm run test:e2e -w @wilms/frontend -- e2e/accessibility.spec.ts; plus manual WCAG checklist",
+  "expectedResult": "axe violations documented; Lighthouse scores; keyboard-only walkthrough",
+  "evidenceFiles": [
+    "evidence/operator/accessibility.json",
+    "evidence/operator/browser-matrix.json",
+    "evidence/operator/lighthouse.json"
+  ],
+  "risk": "WCAG and cross-browser defects undetected",
+  "timestamp": "2026-07-22T09:11:47Z"
+}

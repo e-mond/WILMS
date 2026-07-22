@@ -1,0 +1,6 @@
+{
+  "status": "BLOCKED",
+  "reason": "STAGING_API_URL, STAGING_ADMIN_EMAIL, STAGING_ADMIN_PASSWORD required",
+  "timestamp": "2026-07-22T09:11:43Z",
+  "logFile": null
+}

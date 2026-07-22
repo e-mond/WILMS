@@ -1,0 +1,11 @@
+{
+  "gate": "G11",
+  "status": "BLOCKED",
+  "reason": "DATABASE_URL required to query users table",
+  "owner": "Security / Operations",
+  "command": "psql $DATABASE_URL -c \"SELECT id, email FROM users WHERE email LIKE '%@wilms.demo';\"",
+  "expectedResult": "0 rows in production",
+  "evidenceFile": "evidence/operator/demo-purge.json",
+  "risk": "Demo accounts may authenticate in production",
+  "timestamp": "2026-07-22T09:17:11Z"
+}
