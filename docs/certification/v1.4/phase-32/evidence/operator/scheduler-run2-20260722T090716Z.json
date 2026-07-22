@@ -1,0 +1,1 @@
+{"data":{"referenceDate":"2026-07-22","correlationId":"019f8914-4e78-7a88-8ae8-a0571517b2de","activeLoansScanned":0,"remindersSent":0,"missedNotificationsSent":0,"skippedFullyPaid":0,"skippedInactiveSchedule":0,"errors":["DATABASE_URL not configured — scheduler requires PostgreSQL"],"durationMs":0}}

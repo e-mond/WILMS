@@ -1,0 +1,35 @@
+{
+  "generatedAt": "2026-07-22T09:13:01.487Z",
+  "status": "BLOCKED",
+  "note": "All sign-offs require human approval. Use templates/signoff-*.md",
+  "signoffs": [
+    {
+      "role": "Engineering sign-off",
+      "status": "BLOCKED",
+      "signedBy": null,
+      "signedAt": null,
+      "evidenceReferences": []
+    },
+    {
+      "role": "Security sign-off",
+      "status": "BLOCKED",
+      "signedBy": null,
+      "signedAt": null,
+      "evidenceReferences": []
+    },
+    {
+      "role": "Operations sign-off",
+      "status": "BLOCKED",
+      "signedBy": null,
+      "signedAt": null,
+      "evidenceReferences": []
+    },
+    {
+      "role": "Product sign-off",
+      "status": "BLOCKED",
+      "signedBy": null,
+      "signedAt": null,
+      "evidenceReferences": []
+    }
+  ]
+}

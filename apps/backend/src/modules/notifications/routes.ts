@@ -5,12 +5,11 @@ import { asyncHandler } from '../../http/async-handler.js';
 import { sendData } from '../../http/response.js';
 import { requireAuth } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/require-permission.js';
-import { requireSchedulerAccess } from '../../middleware/require-scheduler-access.js';
 import { validateBody } from '../../middleware/validate-body.js';
 import * as notificationService from './service.js';
+
 import * as pushService from './push.service.js';
 import * as preferencesService from './preferences.service.js';
-import * as paymentSchedulerService from './payment-scheduler.service.js';
 
 export const notificationsRouter = Router();
 
@@ -36,17 +35,6 @@ const preferencesSchema = z.object({
   registrationNotifications: z.boolean().optional(),
   digestFrequency: z.enum(['INSTANT', 'DAILY', 'WEEKLY']).optional(),
 });
-
-/** Cron-safe: token OR session+permission — registered before blanket requireAuth. */
-notificationsRouter.post(
-  '/notifications/scheduler/run',
-  requireSchedulerAccess,
-  asyncHandler(async (req, res) => {
-    const referenceDate =
-      typeof req.body?.referenceDate === 'string' ? req.body.referenceDate : undefined;
-    sendData(res, await paymentSchedulerService.processPaymentNotificationJobs(referenceDate));
-  }),
-);
 
 notificationsRouter.use(requireAuth);
 

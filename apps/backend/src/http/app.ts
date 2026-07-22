@@ -38,6 +38,7 @@ import { trackingRouter } from '../modules/tracking/routes.js';
 import { webhooksRouter } from '../modules/webhooks/routes.js';
 import { organizationHolidaysRouter } from '../modules/organization-holidays/routes.js';
 import { opsRouter } from '../modules/ops/routes.js';
+import { publicSchedulerRouter } from '../modules/scheduler/public-routes.js';
 import { requestIdMiddleware } from '../middleware/request-id.js';
 import { createApiRateLimiter } from '../middleware/api-rate-limit.js';
 
@@ -48,8 +49,11 @@ function mountBusinessRoutes(app: express.Application, basePath = '') {
   // Otherwise Express invokes the first mounted router for every /api/v1 request and
   // unauthenticated mobile capture / location lookups receive 401 before matching.
   app.use(`${prefix}`, photoCaptureRouter);
-  app.use(`${prefix}`, locationsRouter);
 
+  // Token-authenticated cron endpoints — must precede any blanket requireAuth router.
+  app.use(`${prefix}`, publicSchedulerRouter);
+
+  app.use(`${prefix}`, locationsRouter);
   app.use(`${prefix}`, loansRouter);
   app.use(`${prefix}`, loanPoolsRouter);
   app.use(`${prefix}`, adjustmentsRouter);

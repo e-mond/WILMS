@@ -1,0 +1,11 @@
+{
+  "gate": "G2",
+  "status": "BLOCKED",
+  "reason": "STAGING_DATABASE_URL or DATABASE_URL required",
+  "owner": "Operations",
+  "command": "DATABASE_URL=<staging> npm run db:migrate -w @wilms/api",
+  "expectedResult": "Migration 0030_v142_notification_dedupe applied; health watermark current",
+  "evidenceFile": "evidence/operator/migration-0030.json",
+  "risk": "Schema drift between code and deployed database",
+  "timestamp": "2026-07-22T09:00:29Z"
+}

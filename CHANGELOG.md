@@ -2,6 +2,22 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.4.2] — Phase 32 Operator Evidence Execution
+
+**Release date:** July 2026
+
+### Added
+
+- `npm run verify:phase32` — live gate tracker with `gate-status.json`
+- Operator gate scripts: `scripts/operator/run-*-gate.sh`
+- `publicSchedulerRouter` for cron-safe mount order
+- HTTP integration test for scheduler token auth
+- Phase 32 certification pack under `docs/certification/v1.4/phase-32/`
+
+### Fixed
+
+- Scheduler endpoints returned 401 with valid `WILMS_SCHEDULER_TOKEN` because Express evaluated blanket `requireAuth` routers first
+
 ## [1.4.2] — Phase 31 Final Certification Closure
 
 **Release date:** July 2026

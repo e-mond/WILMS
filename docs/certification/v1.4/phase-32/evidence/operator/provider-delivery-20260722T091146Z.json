@@ -1,0 +1,16 @@
+{
+  "gate": "G6",
+  "status": "BLOCKED",
+  "reason": "No mail/SMS provider credentials in environment; staging API not configured",
+  "owner": "Operations",
+  "mailProvider": "none",
+  "smsProvider": "none",
+  "mailConfigured": "ABSENT",
+  "smsConfigured": "ABSENT",
+  "command": "Configure providers on staging; send test messages; attach redacted provider message IDs",
+  "expectedResult": "Provider ACCEPTED or DELIVERED status with message ID",
+  "evidenceFile": "evidence/operator/provider-delivery.json",
+  "risk": "Borrower/collector notifications may fail silently",
+  "timestamp": "2026-07-22T09:11:46Z",
+  "note": "CREATED ≠ QUEUED ≠ ACCEPTED ≠ DELIVERED"
+}

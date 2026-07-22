@@ -1,0 +1,215 @@
+{
+  "version": "1.4.2",
+  "phase": 32,
+  "generatedAt": "2026-07-22T09:13:01.487Z",
+  "branch": "local",
+  "verdict": "READY WITH CONDITIONS",
+  "productionCertified": false,
+  "summary": {
+    "pass": 4,
+    "fail": 0,
+    "blocked": 14,
+    "advisory": 0,
+    "total": 18
+  },
+  "gates": [
+    {
+      "id": "G1",
+      "name": "Pre-flight automated verification",
+      "status": "PASS",
+      "owner": "Engineering",
+      "evidenceFile": "evidence/verify-all-2026-07-22T09-13-01-487Z.json",
+      "blockedReason": null,
+      "risk": null,
+      "expectedResult": null,
+      "command": null
+    },
+    {
+      "id": "G2",
+      "name": "Migration 0030 live execution",
+      "status": "BLOCKED",
+      "owner": "Operations",
+      "evidenceFile": "evidence/operator/migration-0030.json",
+      "blockedReason": "STAGING_DATABASE_URL not configured in this environment",
+      "risk": "Schema drift between code and staging/production",
+      "expectedResult": null,
+      "command": "bash scripts/operator/run-migration-gate.sh"
+    },
+    {
+      "id": "G3",
+      "name": "Authenticated staging smoke + RBAC",
+      "status": "BLOCKED",
+      "owner": "Operations / QA",
+      "evidenceFile": "evidence/operator/staging-smoke.json",
+      "blockedReason": "STAGING_API_URL, STAGING_ADMIN_EMAIL, STAGING_ADMIN_PASSWORD required",
+      "risk": "Undetected auth/RBAC regressions in deployed environment",
+      "expectedResult": null,
+      "command": "bash scripts/operator/run-staging-gates.sh"
+    },
+    {
+      "id": "G4",
+      "name": "Complete money-chain test",
+      "status": "BLOCKED",
+      "owner": "Finance / Operations",
+      "evidenceFile": "evidence/operator/money-chain.json",
+      "blockedReason": "Staging credentials and isolated test data required",
+      "risk": "Financial workflow defects undetected until production",
+      "expectedResult": null,
+      "command": "bash scripts/operator/run-money-chain-gate.sh"
+    },
+    {
+      "id": "G5",
+      "name": "Notification scheduler",
+      "status": "PASS",
+      "owner": "Operations",
+      "evidenceFile": "evidence/operator/notification-scheduler.json",
+      "blockedReason": "WILMS_API_BASE_URL and WILMS_SCHEDULER_TOKEN required for remote; local fallback attempted",
+      "risk": "Payment reminders and missed-payment alerts may not run",
+      "expectedResult": null,
+      "command": "bash scripts/operator/run-notification-scheduler-gate.sh"
+    },
+    {
+      "id": "G6",
+      "name": "Email and SMS provider evidence",
+      "status": "BLOCKED",
+      "owner": "Operations",
+      "evidenceFile": "evidence/operator/provider-delivery.json",
+      "blockedReason": "MAIL_PROVIDER and SMS_PROVIDER credentials not available in CI/agent environment",
+      "risk": "Notification delivery failures undetected",
+      "expectedResult": null,
+      "command": "bash scripts/operator/run-provider-gate.sh"
+    },
+    {
+      "id": "G7",
+      "name": "Backup and restore DR drill",
+      "status": "BLOCKED",
+      "owner": "Operations / DBA",
+      "evidenceFile": "evidence/operator/backup-restore.json",
+      "blockedReason": "WILMS_BACKUP_DATABASE_URL and WILMS_RESTORE_DATABASE_URL required",
+      "risk": "Recovery time/objectives unverified",
+      "expectedResult": null,
+      "command": "npm run drill:backup-restore"
+    },
+    {
+      "id": "G8",
+      "name": "Load test",
+      "status": "BLOCKED",
+      "owner": "Operations / Engineering",
+      "evidenceFile": "evidence/operator/load-test.json",
+      "blockedReason": "STAGING_API_URL required for realistic load test",
+      "risk": "Performance regressions under concurrency undetected",
+      "expectedResult": null,
+      "command": "bash scripts/operator/run-load-test-gate.sh"
+    },
+    {
+      "id": "G9",
+      "name": "Accessibility and browser QA",
+      "status": "BLOCKED",
+      "owner": "Product / QA",
+      "evidenceFile": "evidence/operator/accessibility.json",
+      "blockedReason": "Manual browser matrix and Lighthouse require human operator or staging URL",
+      "risk": "WCAG and cross-browser defects undetected",
+      "expectedResult": null,
+      "command": "bash scripts/operator/run-accessibility-gate.sh"
+    },
+    {
+      "id": "G10",
+      "name": "Production configuration verification",
+      "status": "BLOCKED",
+      "owner": "Operations",
+      "evidenceFile": "evidence/operator/production-config.json",
+      "blockedReason": "Production deployment secrets not accessible from agent environment",
+      "risk": "Misconfiguration in production undetected",
+      "expectedResult": null,
+      "command": "bash scripts/operator/run-production-config-gate.sh"
+    },
+    {
+      "id": "G11",
+      "name": "Demo user purge",
+      "status": "BLOCKED",
+      "owner": "Security / Operations",
+      "evidenceFile": "evidence/operator/demo-purge.json",
+      "blockedReason": "Production or staging DATABASE_URL required",
+      "risk": "Demo accounts may authenticate in production",
+      "expectedResult": null,
+      "command": "bash scripts/operator/run-demo-purge-gate.sh"
+    },
+    {
+      "id": "G12",
+      "name": "Incident and rollback drills",
+      "status": "BLOCKED",
+      "owner": "Operations",
+      "evidenceFile": "evidence/operator/incident-drill.json",
+      "blockedReason": "Requires staging/production access and operator participation",
+      "risk": "Incident response untested",
+      "expectedResult": null,
+      "command": "bash scripts/operator/run-incident-drill-gate.sh"
+    },
+    {
+      "id": "G13",
+      "name": "Final dependency decision",
+      "status": "PASS",
+      "owner": "Engineering / Security",
+      "evidenceFile": "evidence/npm-audit-2026-07-22T09-13-01-487Z.json",
+      "blockedReason": null,
+      "risk": null,
+      "expectedResult": null,
+      "command": null
+    },
+    {
+      "id": "G14",
+      "name": "Documentation closure",
+      "status": "PASS",
+      "owner": "Engineering",
+      "evidenceFile": "FINAL_DOCUMENTATION_REPORT.md",
+      "blockedReason": null,
+      "risk": null,
+      "expectedResult": null,
+      "command": null
+    },
+    {
+      "id": "G15-E",
+      "name": "Engineering sign-off",
+      "status": "BLOCKED",
+      "owner": "Engineering Lead",
+      "evidenceFile": "signoff-manifest.json",
+      "blockedReason": "Human sign-off required with evidence references",
+      "risk": "Production certification cannot be issued without formal approval",
+      "expectedResult": null,
+      "command": null
+    },
+    {
+      "id": "G15-S",
+      "name": "Security sign-off",
+      "status": "BLOCKED",
+      "owner": "Security Lead",
+      "evidenceFile": "signoff-manifest.json",
+      "blockedReason": "Human sign-off required with evidence references",
+      "risk": "Production certification cannot be issued without formal approval",
+      "expectedResult": null,
+      "command": null
+    },
+    {
+      "id": "G15-O",
+      "name": "Operations sign-off",
+      "status": "BLOCKED",
+      "owner": "Operations Lead",
+      "evidenceFile": "signoff-manifest.json",
+      "blockedReason": "Human sign-off required with evidence references",
+      "risk": "Production certification cannot be issued without formal approval",
+      "expectedResult": null,
+      "command": null
+    },
+    {
+      "id": "G15-P",
+      "name": "Product sign-off",
+      "status": "BLOCKED",
+      "owner": "Product Owner",
+      "evidenceFile": "signoff-manifest.json",
+      "blockedReason": "Human sign-off required with evidence references",
+      "risk": "Production certification cannot be issued without formal approval",
+      "expectedResult": null,
+      "command": null
+    }
+  ]
+}

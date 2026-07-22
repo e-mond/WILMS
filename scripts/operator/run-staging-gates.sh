@@ -20,7 +20,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-EVIDENCE_DIR="$ROOT/docs/certification/v1.4/phase-29/evidence/operator"
+EVIDENCE_DIR="${WILMS_EVIDENCE_DIR:-$ROOT/docs/certification/v1.4/phase-32/evidence/operator}"
 mkdir -p "$EVIDENCE_DIR"
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 LOG="$EVIDENCE_DIR/staging-gates-${STAMP}.log"
