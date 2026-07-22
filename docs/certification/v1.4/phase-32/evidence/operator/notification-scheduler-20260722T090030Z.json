@@ -1,0 +1,11 @@
+{
+  "gate": "G5",
+  "status": "BLOCKED",
+  "reason": "Remote credentials absent and local API failed to start",
+  "owner": "Operations",
+  "command": "WILMS_API_BASE_URL=... WILMS_SCHEDULER_TOKEN=... bash scripts/operator/run-notification-scheduler-gate.sh",
+  "expectedResult": "Invalid token rejected; valid token 200; duplicate run idempotent",
+  "evidenceFile": "evidence/operator/notification-scheduler.json",
+  "risk": "Payment reminders may not execute in production",
+  "timestamp": "2026-07-22T09:01:00Z"
+}

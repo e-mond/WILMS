@@ -1,0 +1,6 @@
+{
+  "status": "SKIPPED",
+  "reason": "WILMS_BACKUP_DATABASE_URL and WILMS_RESTORE_DATABASE_URL required",
+  "timestamp": "2026-07-22T09:11:46.962Z",
+  "note": "Do not fabricate restore evidence. Provide isolated Neon branch URLs to run the drill."
+}

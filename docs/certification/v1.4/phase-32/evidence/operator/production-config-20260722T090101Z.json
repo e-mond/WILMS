@@ -1,0 +1,19 @@
+{
+  "gate": "G10",
+  "status": "BLOCKED",
+  "reason": "Production deployment secrets not accessible from agent; operator must verify on hosting platform",
+  "owner": "Operations",
+  "checks": { "DATABASE_URL":"ABSENT",
+"WILMS_SESSION_SECRET":"ABSENT",
+"WILMS_SCHEDULER_TOKEN":"ABSENT",
+"MAIL_PROVIDER":"ABSENT",
+"SMS_PROVIDER":"ABSENT",
+"CLOUDINARY_CLOUD_NAME":"ABSENT",
+"NEXT_PUBLIC_USE_MOCK":"VERIFIED",
+"NEXT_PUBLIC_DEMO_MODE":"VERIFIED" },
+  "command": "Verify Railway/Vercel env vars; curl /health and /ops/status on production (redacted)",
+  "expectedResult": "All required vars PRESENT; mock/demo INVALID; migration watermark current",
+  "evidenceFile": "evidence/operator/production-config.json",
+  "risk": "Misconfiguration may expose demo mode or leave scheduler unprotected",
+  "timestamp": "2026-07-22T09:01:01Z"
+}

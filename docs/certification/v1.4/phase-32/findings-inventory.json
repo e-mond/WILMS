@@ -1,0 +1,17 @@
+{
+  "version": "1.4.2",
+  "phase": 32,
+  "generatedAt": "2026-07-22T09:17:00Z",
+  "findings": [
+    {
+      "id": "P32-F001",
+      "severity": "HIGH",
+      "status": "FIXED",
+      "title": "Scheduler token routes unreachable due to Express router mount order",
+      "description": "POST /notifications/scheduler/run returned 401 even with valid WILMS_SCHEDULER_TOKEN because routers with blanket requireAuth were evaluated first.",
+      "fix": "Extracted publicSchedulerRouter mounted before authenticated routers",
+      "evidence": "apps/backend/src/tests/notifications/scheduler-http.test.ts"
+    }
+  ],
+  "openCriticalHigh": 0
+}

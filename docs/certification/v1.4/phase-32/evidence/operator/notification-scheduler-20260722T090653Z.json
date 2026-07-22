@@ -1,0 +1,10 @@
+{
+  "gate": "G5",
+  "status": "FAILED",
+  "mode": "local-fallback",
+  "timestamp": "2026-07-22T09:06:53Z",
+  "invalidTokenHttpCode":401,"firstRunHttpCode":401,"duplicateRunHttpCode":401,
+  "run1ResponseFile": "/workspace/docs/certification/v1.4/phase-32/evidence/operator/scheduler-run1-20260722T090653Z.json",
+  "run2ResponseFile": "/workspace/docs/certification/v1.4/phase-32/evidence/operator/scheduler-run2-20260722T090653Z.json",
+  "opsStatusFile": "/workspace/docs/certification/v1.4/phase-32/evidence/operator/ops-status-20260722T090653Z.json"
+}
