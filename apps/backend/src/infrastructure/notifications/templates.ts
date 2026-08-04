@@ -75,6 +75,18 @@ export function buildBorrowerRegistrationApprovalSmsBody(input: { borrowerName: 
   return `WILMS: Hi ${input.borrowerName}, your registration has been approved. Your collector will contact you about next steps.`;
 }
 
+export function buildAdminFeeConfirmationSmsBody(input: {
+  amountPesewas: number;
+  loanDisplayId?: string;
+  paymentDate: string;
+}): string {
+  const amountGhs = formatGhsAmount(input.amountPesewas);
+  if (input.loanDisplayId) {
+    return `WILMS: We have received your admin fee of GHS ${amountGhs} for Loan ${input.loanDisplayId}. Your application can now proceed to approval.`;
+  }
+  return `WILMS: We have received your admin fee of GHS ${amountGhs} on ${input.paymentDate}. Your application can now proceed to approval.`;
+}
+
 export function buildRegistrationRejectedSmsBody(input: { borrowerName: string }): string {
   return `WILMS: Hi ${input.borrowerName}, your registration could not be approved. Contact your registration officer for details.`;
 }

@@ -1,5 +1,6 @@
 import { captureGps } from '@/utils/captureGps';
 import { apiClient } from '@/utils/apiClient';
+import { financialMutation } from '@/utils/financialMutation';
 import type { IPaymentService } from '@/types/services';
 import type { PaymentEntryContext } from '@/types/payment-entry';
 import type { PaymentTransaction, RecordPaymentInput } from '@/types/payment';
@@ -42,20 +43,34 @@ const paymentService: IPaymentService = {
   async recordPayment(input: RecordPaymentInput): Promise<PaymentTransaction> {
     const gps = input.gps ?? (await captureGps());
 
-    return apiClient.post<PaymentTransaction>('/payments', {
-      borrowerId: input.borrowerId,
-      amountPesewas: input.amountPesewas,
-      paymentDate: input.paymentDate,
-      collectorId: input.collectorId,
-      gps,
-    });
+    const { result } = await financialMutation(
+      (headers) =>
+        apiClient.post<PaymentTransaction>(
+          '/payments',
+          {
+            borrowerId: input.borrowerId,
+            amountPesewas: input.amountPesewas,
+            paymentDate: input.paymentDate,
+            collectorId: input.collectorId,
+            gps,
+          },
+          { headers },
+        ),
+      { domain: 'payment' },
+    );
+    return result;
   },
 
-  reversePayment(
+  async reversePayment(
     paymentId: string,
     input: { reason: string; actorId: string; actorDisplayName: string },
   ): Promise<PaymentTransaction> {
-    return apiClient.post<PaymentTransaction>(`/payments/${paymentId}/reverse`, input);
+    const { result } = await financialMutation(
+      (headers) =>
+        apiClient.post<PaymentTransaction>(`/payments/${paymentId}/reverse`, input, { headers }),
+      { domain: 'reversal' },
+    );
+    return result;
   },
 };
 

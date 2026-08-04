@@ -1,4 +1,5 @@
 import {
+  LOAN_LIFECYCLE,
   LOAN_STATUS,
   type BorrowerLoanHistoryEntry,
   type LoanDetail,
@@ -44,6 +45,7 @@ let mockLoans: LoanDetail[] = [
     durationWeeks: 10,
     weeklyPaymentPesewas: 5000,
     status: LOAN_STATUS.ACTIVE,
+    lifecycleStatus: LOAN_LIFECYCLE.ACTIVE,
     paymentDay: 'Friday',
     startDate: '2026-05-01',
     cycleBatch: 'Cycle 1 — January 2026',
@@ -56,6 +58,7 @@ let mockLoans: LoanDetail[] = [
     durationWeeks: 12,
     weeklyPaymentPesewas: 2500,
     status: LOAN_STATUS.PENDING_DISBURSEMENT,
+    lifecycleStatus: LOAN_LIFECYCLE.PENDING_DISBURSEMENT,
     paymentDay: 'Monday',
     startDate: '2026-06-10',
     cycleBatch: 'Cycle 2 — April 2026',
@@ -68,6 +71,7 @@ let mockLoans: LoanDetail[] = [
     durationWeeks: 8,
     weeklyPaymentPesewas: 3000,
     status: LOAN_STATUS.COMPLETED,
+    lifecycleStatus: LOAN_LIFECYCLE.COMPLETED,
     paymentDay: 'Thursday',
     startDate: '2025-11-01',
     cycleBatch: 'Cycle 4 — October 2025',
@@ -80,6 +84,7 @@ let mockLoans: LoanDetail[] = [
     durationWeeks: 12,
     weeklyPaymentPesewas: 4000,
     status: LOAN_STATUS.ACTIVE,
+    lifecycleStatus: LOAN_LIFECYCLE.ACTIVE,
     paymentDay: 'Tuesday',
     startDate: '2026-04-01',
     cycleBatch: 'Cycle 2 — April 2026',
@@ -92,6 +97,7 @@ let mockLoans: LoanDetail[] = [
     durationWeeks: 10,
     weeklyPaymentPesewas: 3500,
     status: LOAN_STATUS.ACTIVE,
+    lifecycleStatus: LOAN_LIFECYCLE.ACTIVE,
     paymentDay: 'Wednesday',
     startDate: '2026-04-15',
     cycleBatch: 'Cycle 2 — April 2026',
@@ -104,6 +110,7 @@ let mockLoans: LoanDetail[] = [
     durationWeeks: 16,
     weeklyPaymentPesewas: 6000,
     status: LOAN_STATUS.ACTIVE,
+    lifecycleStatus: LOAN_LIFECYCLE.ACTIVE,
     paymentDay: 'Friday',
     startDate: '2026-03-01',
     cycleBatch: 'Cycle 1 — January 2026',
@@ -157,6 +164,20 @@ function buildDisbursementEligibility(borrowerId: string) {
       borrowerId,
       canDisburse: false,
       reason: 'Admin fee must be recorded before loan disbursement.',
+    };
+  }
+
+  const pendingLoan = mockLoans.find(
+    (loan) =>
+      loan.borrowerId === borrowerId &&
+      loan.lifecycleStatus === LOAN_LIFECYCLE.PENDING_DISBURSEMENT,
+  );
+
+  if (!pendingLoan) {
+    return {
+      borrowerId,
+      canDisburse: false,
+      reason: 'No approved loan pending disbursement for this borrower.',
     };
   }
 
@@ -366,6 +387,7 @@ const loanServiceMock: ILoanService = {
       durationWeeks: input.durationWeeks,
       weeklyPaymentPesewas,
       status: LOAN_STATUS.PENDING_DISBURSEMENT,
+      lifecycleStatus: LOAN_LIFECYCLE.PENDING_APPROVAL,
       paymentDay: input.paymentDay,
       startDate: input.startDate,
       cycleBatch: input.cycleBatch,
@@ -399,7 +421,11 @@ const loanServiceMock: ILoanService = {
     if (loanIndex === -1) {
       throw new ApiError('Loan not found.', API_ERROR_CODE.NOT_FOUND, 404);
     }
-    const loan = { ...mockLoans[loanIndex], status: LOAN_STATUS.PENDING_DISBURSEMENT };
+    const loan = {
+      ...mockLoans[loanIndex],
+      status: LOAN_STATUS.PENDING_DISBURSEMENT,
+      lifecycleStatus: LOAN_LIFECYCLE.PENDING_DISBURSEMENT,
+    };
     mockLoans = [...mockLoans.slice(0, loanIndex), loan, ...mockLoans.slice(loanIndex + 1)];
     return loan;
   },
@@ -411,7 +437,11 @@ const loanServiceMock: ILoanService = {
     if (loanIndex === -1) {
       throw new ApiError('Loan not found.', API_ERROR_CODE.NOT_FOUND, 404);
     }
-    const loan = { ...mockLoans[loanIndex], status: LOAN_STATUS.WRITTEN_OFF };
+    const loan = {
+      ...mockLoans[loanIndex],
+      status: LOAN_STATUS.WRITTEN_OFF,
+      lifecycleStatus: LOAN_LIFECYCLE.REJECTED,
+    };
     mockLoans = [...mockLoans.slice(0, loanIndex), loan, ...mockLoans.slice(loanIndex + 1)];
     return loan;
   },
@@ -426,9 +456,9 @@ const loanServiceMock: ILoanService = {
 
     const loan = mockLoans[loanIndex];
 
-    if (loan.status !== LOAN_STATUS.PENDING_DISBURSEMENT) {
+    if (loan.lifecycleStatus !== LOAN_LIFECYCLE.PENDING_DISBURSEMENT) {
       throw new ApiError(
-        'Only loans pending disbursement can be disbursed.',
+        'This loan is not ready for disbursement yet. Complete approval and admin-fee requirements first.',
         API_ERROR_CODE.VALIDATION,
         422,
       );
@@ -447,6 +477,7 @@ const loanServiceMock: ILoanService = {
     const disbursedLoan: LoanDetail = {
       ...loan,
       status: LOAN_STATUS.ACTIVE,
+      lifecycleStatus: LOAN_LIFECYCLE.ACTIVE,
     };
 
     mockLoans = mockLoans.map((entry) => (entry.id === loanId ? disbursedLoan : entry));
@@ -516,6 +547,7 @@ export function resetMockLoans(): void {
       durationWeeks: 10,
       weeklyPaymentPesewas: 5000,
       status: LOAN_STATUS.ACTIVE,
+      lifecycleStatus: LOAN_LIFECYCLE.ACTIVE,
       paymentDay: 'Friday',
       startDate: '2026-05-01',
       cycleBatch: 'Cycle 1 — January 2026',
@@ -528,6 +560,7 @@ export function resetMockLoans(): void {
       durationWeeks: 12,
       weeklyPaymentPesewas: 2500,
       status: LOAN_STATUS.PENDING_DISBURSEMENT,
+      lifecycleStatus: LOAN_LIFECYCLE.PENDING_DISBURSEMENT,
       paymentDay: 'Monday',
       startDate: '2026-06-10',
       cycleBatch: 'Cycle 2 — April 2026',
@@ -540,6 +573,7 @@ export function resetMockLoans(): void {
       durationWeeks: 8,
       weeklyPaymentPesewas: 3000,
       status: LOAN_STATUS.COMPLETED,
+      lifecycleStatus: LOAN_LIFECYCLE.COMPLETED,
       paymentDay: 'Thursday',
       startDate: '2025-11-01',
       cycleBatch: 'Cycle 4 — October 2025',
@@ -552,6 +586,7 @@ export function resetMockLoans(): void {
       durationWeeks: 12,
       weeklyPaymentPesewas: 4000,
       status: LOAN_STATUS.ACTIVE,
+      lifecycleStatus: LOAN_LIFECYCLE.ACTIVE,
       paymentDay: 'Tuesday',
       startDate: '2026-04-01',
       cycleBatch: 'Cycle 2 — April 2026',
@@ -564,6 +599,7 @@ export function resetMockLoans(): void {
       durationWeeks: 10,
       weeklyPaymentPesewas: 3500,
       status: LOAN_STATUS.ACTIVE,
+      lifecycleStatus: LOAN_LIFECYCLE.ACTIVE,
       paymentDay: 'Wednesday',
       startDate: '2026-04-15',
       cycleBatch: 'Cycle 2 — April 2026',
@@ -576,6 +612,7 @@ export function resetMockLoans(): void {
       durationWeeks: 16,
       weeklyPaymentPesewas: 6000,
       status: LOAN_STATUS.ACTIVE,
+      lifecycleStatus: LOAN_LIFECYCLE.ACTIVE,
       paymentDay: 'Friday',
       startDate: '2026-03-01',
       cycleBatch: 'Cycle 1 — January 2026',
