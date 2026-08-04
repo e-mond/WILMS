@@ -11,6 +11,8 @@ export const RECONCILIATION_STATUS = {
   PENDING: 'PENDING',
   COMPLETE: 'COMPLETE',
   VARIANCE: 'VARIANCE',
+  REJECTED: 'REJECTED',
+  IN_REVIEW: 'IN_REVIEW',
 } as const;
 
 export type ReconciliationStatus =

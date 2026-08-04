@@ -1,8 +1,15 @@
 import { isLoanDueOnDate } from './weekday.js';
 
 export interface ExpectedDueLoanInput {
+  /** Present when matching schedule dues to loans (avoids double-counting). */
+  id?: string;
   paymentDay: string;
   weeklyPaymentPesewas: number;
+}
+
+export interface ScheduleDueInstallmentInput {
+  loanId: string;
+  installmentPesewas: number;
 }
 
 export interface SystemRecordedPaymentInput {
@@ -12,15 +19,30 @@ export interface SystemRecordedPaymentInput {
 
 /**
  * ExpectedCashFormula v1 (P14.3B.4B):
- * Sum weekly_payment for loans due on reconciliation_date (schedule-based).
+ * Prefer schedule weeks due on reconciliation_date (includes holiday shifts).
+ * Fall back to payment-day match for active loans with no schedule row that day.
  */
 export function calculateExpectedDuePesewas(
   loans: ExpectedDueLoanInput[],
   reconciliationDate: string,
+  scheduleDues: ScheduleDueInstallmentInput[] = [],
 ): number {
-  return loans
-    .filter((loan) => isLoanDueOnDate(loan.paymentDay, reconciliationDate))
+  const scheduleTotal = scheduleDues.reduce(
+    (total, week) => total + week.installmentPesewas,
+    0,
+  );
+  const scheduledLoanIds = new Set(scheduleDues.map((week) => week.loanId));
+
+  const paymentDayFallback = loans
+    .filter((loan) => {
+      if (loan.id && scheduledLoanIds.has(loan.id)) {
+        return false;
+      }
+      return isLoanDueOnDate(loan.paymentDay, reconciliationDate);
+    })
     .reduce((total, loan) => total + loan.weeklyPaymentPesewas, 0);
+
+  return scheduleTotal + paymentDayFallback;
 }
 
 /**

@@ -128,6 +128,21 @@ const nextConfig = {
       'ws',
       'cloudinary',
     ],
+    // Ensure bcrypt native prebuilds ship with the API route handler on Vercel.
+    outputFileTracingIncludes: {
+      '/api/wilms/[...path]': [
+        './node_modules/bcrypt/**/*',
+        '../../node_modules/bcrypt/**/*',
+        '../../packages/domain/package.json',
+        '../../packages/domain/src/db/migrations/**/*',
+      ],
+      '/api/cron/notifications': [
+        './node_modules/bcrypt/**/*',
+        '../../node_modules/bcrypt/**/*',
+        '../../packages/domain/package.json',
+        '../../packages/domain/src/db/migrations/**/*',
+      ],
+    },
 
   },
 

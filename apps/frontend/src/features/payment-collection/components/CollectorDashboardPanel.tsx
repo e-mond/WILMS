@@ -32,9 +32,13 @@ import { resolveQueryErrorPresentation } from '@/utils/query-error-presentation'
 function reconciliationLabel(status: string): string {
   switch (status) {
     case RECONCILIATION_STATUS.COMPLETE:
-      return 'Complete';
+      return 'Approved';
     case RECONCILIATION_STATUS.VARIANCE:
       return 'Variance flagged';
+    case RECONCILIATION_STATUS.REJECTED:
+      return 'Rejected';
+    case RECONCILIATION_STATUS.IN_REVIEW:
+      return 'In review';
     default:
       return 'Pending';
   }
@@ -433,7 +437,23 @@ export function CollectorDashboardPanel() {
         </section>
 
         {summary.reconciliationStatus !== RECONCILIATION_STATUS.COMPLETE ? (
-          <Alert title="Reconciliation pending" variant="warning" className="mt-wilms-4">
+          <Alert
+            title={
+              summary.reconciliationStatus === RECONCILIATION_STATUS.REJECTED
+                ? 'Reconciliation rejected'
+                : summary.reconciliationStatus === RECONCILIATION_STATUS.VARIANCE
+                  ? 'Reconciliation variance flagged'
+                  : summary.reconciliationStatus === RECONCILIATION_STATUS.IN_REVIEW
+                    ? 'Reconciliation in review'
+                    : 'Reconciliation pending'
+            }
+            variant={
+              summary.reconciliationStatus === RECONCILIATION_STATUS.REJECTED
+                ? 'error'
+                : 'warning'
+            }
+            className="mt-wilms-4"
+          >
             Reconciliation: {reconciliationLabel(summary.reconciliationStatus)}.
           </Alert>
         ) : null}

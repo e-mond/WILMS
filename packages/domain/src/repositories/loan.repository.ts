@@ -162,6 +162,7 @@ export async function listPortfolioLoansForCollector(
 
   const rows = await tx
     .select({
+      id: loans.id,
       paymentDay: loans.paymentDay,
       installmentAmount: loans.installmentAmount,
       externalStatus: loans.externalStatus,
@@ -178,6 +179,7 @@ export async function listPortfolioLoansForCollector(
   const { decimalToPesewas } = await import('../domain/money.js');
 
   return rows.map((row) => ({
+    id: row.id,
     paymentDay: row.paymentDay,
     weeklyPaymentPesewas: decimalToPesewas(row.installmentAmount),
     externalStatus: row.externalStatus,
