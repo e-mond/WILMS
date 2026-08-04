@@ -1,61 +1,20 @@
-# Performance Report — v1.3.5
+# Performance Report — v1.5.0
 
-**Date:** 2026-07-11  
-**Version:** 1.3.5
+## Frontend
 
----
+- Existing bundle/perf budget scripts retained (`bundle:budget-check`, `perf:budget-check`)
+- Route Handlers use Node runtime (not Edge) to support transactions, bcrypt, and Neon serverless pool
+- Client `apiClient` paths unchanged (no extra network hop when in-process)
 
-## Bundle Budget
+## Backend / data
 
-| Metric | Value | Budget | Status |
-|--------|-------|--------|--------|
-| JS total (gzip) | 168.6 KB | 350 KB | PASS |
-| CSS total (gzip) | 9.0 KB | 100 KB | PASS |
+- SQL aggregations preserved (no in-memory financial rollups)
+- Neon serverless `Pool` via `@neondatabase/serverless` + Drizzle
+- Production must use **pooled** `DATABASE_URL` to avoid connection exhaustion under concurrency
+- BullMQ workers disabled on serverless; mail/SMS use in-process enqueue fallback within the invocation
 
-Command: `npm run bundle:budget-check` — exit 0.
+## Infrastructure
 
----
-
-## Production Build
-
-| Metric | Value |
-|--------|-------|
-| Routes compiled | 55 |
-| Middleware | 30.4 KB |
-| Shared First Load JS | 87.9 KB |
-| Login route First Load | 185 KB |
-| Build time | ~38s |
-
-Command: `npm run build` — exit 0.
-
----
-
-## New Dependency Impact
-
-| Package | Version | Purpose |
-|---------|---------|---------|
-| `framer-motion` | 11.11.17 | Splash animation only |
-
-Splash component is client-only; does not block SSR. Reduced-motion path skips animation timers.
-
----
-
-## Runtime Performance
-
-| Area | Approach |
-|------|----------|
-| Splash | GPU `opacity`/`scale`; single mount |
-| Notification inbox | Pagination (20 items); staleTime 30s |
-| Route loader | CSS width transition; no layout thrash |
-
----
-
-## Lighthouse
-
-`npm run perf:budget-check` validates bundle budgets only. Lighthouse runs on staging deploy per script comment — **not executed** in agent environment.
-
----
-
-## Verdict
-
-No bundle budget regression. v1.3.5 remains within established performance envelopes.
+- Vercel function `maxDuration` 60s (API) / 300s (cron)
+- Redis-backed rate limits required in serverless production
+- Warm-start: rely on Vercel Fluid/provisioned concurrency where available; document cold-start risk for first request after idle

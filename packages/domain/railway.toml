@@ -1,0 +1,14 @@
+# Deprecated for primary production (v1.5+)
+# Primary deploy is Vercel (UI + API + Cron). Keep this file only for dual-run / rollback
+# Node process hosting of @wilms/domain.
+#
+# Root Directory in Railway dashboard MUST be "/" not "apps/backend".
+# Start command should run: npm run start:prod -w @wilms/domain
+
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
