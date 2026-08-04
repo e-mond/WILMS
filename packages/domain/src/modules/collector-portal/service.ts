@@ -3,9 +3,10 @@ import * as groupService from '../groups/service.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import * as paymentRepo from '../../repositories/payment.repository.js';
 import * as scheduleRepo from '../../repositories/loan-schedule.repository.js';
+import * as reconciliationRepo from '../../repositories/reconciliation.repository.js';
 import { isDatabaseEnabled } from '../../db/client.js';
 import { decimalToPesewas } from '../../domain/money.js';
-import { isLoanDueOnDate } from '../../domain/reconciliation/weekday.js';
+import { isLoanDueOnDate, localIsoDate } from '../../domain/reconciliation/weekday.js';
 
 export interface CollectorDashboardSummary {
   date: string;
@@ -19,7 +20,7 @@ export interface CollectorDashboardSummary {
   missedTodayCount: number;
   collectionRatePercent: number;
   missedAlertsCount: number;
-  reconciliationStatus: 'PENDING' | 'COMPLETE' | 'VARIANCE';
+  reconciliationStatus: 'PENDING' | 'COMPLETE' | 'VARIANCE' | 'REJECTED' | 'IN_REVIEW';
   reconciliationVariancePesewas: number;
 }
 
@@ -87,7 +88,29 @@ export interface CollectorDashboard {
 }
 
 function resolveReferenceDate(date?: string): string {
-  return date ?? new Date().toISOString().slice(0, 10);
+  return date ?? localIsoDate();
+}
+
+function mapDashboardReconciliationStatus(input: {
+  status?: string | null;
+  varianceFlagged?: boolean | null;
+  variancePesewas?: number | null;
+}): CollectorDashboardSummary['reconciliationStatus'] {
+  switch (input.status) {
+    case 'APPROVED':
+      return 'COMPLETE';
+    case 'REJECTED':
+      return 'REJECTED';
+    case 'PENDING_REVIEW':
+    case 'UNDER_INVESTIGATION':
+    case 'REOPENED':
+    case 'SUBMITTED':
+      return input.varianceFlagged || (input.variancePesewas ?? 0) !== 0
+        ? 'VARIANCE'
+        : 'IN_REVIEW';
+    default:
+      return 'PENDING';
+  }
 }
 
 function resolvePaymentStatus(input: {
@@ -156,12 +179,22 @@ export async function getCollectorDashboard(
     );
     const loanIds = [...loansByBorrower.values()].map((loan) => loan.id);
     const dueWeeks = await scheduleRepo.listScheduleWeeksForLoansOnDate(loanIds, referenceDate);
-    const weekStatusByLoanId = new Map(dueWeeks.map((week) => [week.loanId, week.status]));
+    const weekByLoanId = new Map(
+      dueWeeks.map((week) => [
+        week.loanId,
+        {
+          status: week.status,
+          expectedPesewas: decimalToPesewas(week.installmentAmount),
+        },
+      ] as const),
+    );
 
     for (const borrower of scopedBorrowers) {
       const loan = loansByBorrower.get(borrower.id);
-      const weeklyExpected =
-        loan && isLoanDueOnDate(loan.paymentDay, referenceDate)
+      const scheduleDue = loan ? weekByLoanId.get(loan.id) : undefined;
+      const weeklyExpected = scheduleDue
+        ? scheduleDue.expectedPesewas
+        : loan && isLoanDueOnDate(loan.paymentDay, referenceDate)
           ? decimalToPesewas(loan.installmentAmount)
           : 0;
       expectedPesewas += weeklyExpected;
@@ -172,7 +205,7 @@ export async function getCollectorDashboard(
       const paymentStatus = resolvePaymentStatus({
         weeklyExpected,
         collectedForBorrower,
-        scheduleStatus: loan ? weekStatusByLoanId.get(loan.id) : undefined,
+        scheduleStatus: scheduleDue?.status,
       });
 
       borrowerRows.push({
@@ -220,9 +253,34 @@ export async function getCollectorDashboard(
         : 0
       : Math.round((collectedPesewas / expectedPesewas) * 100);
 
+  let reconciliationStatus: CollectorDashboardSummary['reconciliationStatus'] = 'PENDING';
+  let reconciliationVariancePesewas = 0;
+
+  if (isDatabaseEnabled()) {
+    try {
+      const recon = await reconciliationRepo.findSubmittedReconciliationByCollectorAndDate(
+        collectorId,
+        referenceDate,
+      );
+      if (recon) {
+        reconciliationVariancePesewas = recon.primaryVariancePesewas ?? 0;
+        reconciliationStatus = mapDashboardReconciliationStatus({
+          status: recon.status,
+          varianceFlagged: recon.varianceFlagged,
+          variancePesewas: reconciliationVariancePesewas,
+        });
+      }
+    } catch {
+      // Keep pending if reconciliation lookup fails.
+    }
+  }
+
   const summary: CollectorDashboardSummary = {
     date: referenceDate,
-    paymentDayLabel: new Date(referenceDate).toLocaleDateString('en-GH', { weekday: 'long' }),
+    paymentDayLabel: new Date(`${referenceDate}T12:00:00Z`).toLocaleDateString('en-GH', {
+      weekday: 'long',
+      timeZone: 'UTC',
+    }),
     borrowersDueCount: dueBorrowers.length,
     expectedPesewas,
     collectedPesewas,
@@ -232,8 +290,8 @@ export async function getCollectorDashboard(
     missedTodayCount,
     collectionRatePercent,
     missedAlertsCount: missedTodayCount,
-    reconciliationStatus: 'PENDING',
-    reconciliationVariancePesewas: 0,
+    reconciliationStatus,
+    reconciliationVariancePesewas,
   };
 
   const todayGroups = assignedGroups.map((group) => {

@@ -19,17 +19,27 @@ import {
   DEFAULT_RECONCILIATION_THRESHOLD_PERCENT,
   type ReconciliationSummary,
 } from '../../domain/reconciliation/types.js';
+import { decimalToPesewas } from '../../domain/money.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import { createInAppNotification } from '../../infrastructure/notifications/in-app-notify.js';
+import { getMailProvider } from '../../infrastructure/mail/index.js';
+import {
+  buildEmailTemplate,
+  emailParagraph,
+  emailReceipt,
+} from '../../infrastructure/notifications/email-layout.js';
+import { formatGhsAmount } from '../../infrastructure/notifications/templates.js';
 import { sendPushToUser } from '../notifications/push.service.js';
 import { runWithIdempotency } from '../../infrastructure/idempotency/run-with-idempotency.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import * as paymentRepo from '../../repositories/payment.repository.js';
+import * as scheduleRepo from '../../repositories/loan-schedule.repository.js';
 import * as reconciliationHistoryRepo from '../../repositories/reconciliation-history.repository.js';
 import * as reconciliationRepo from '../../repositories/reconciliation.repository.js';
 
 const AUDIT_ACTION = {
   RECONCILIATION_SUBMITTED: 'reconciliation.submitted',
+  RECONCILIATION_REVIEWED: 'reconciliation.reviewed',
 } as const;
 
 const MIN_FLAGGED_COMMENT_LENGTH = 10;
@@ -59,10 +69,20 @@ async function loadReconciliationInputs(
     paymentRepo.listConfirmedPaymentsForCollectorOnDate(collectorUserId, reconciliationDate),
   ]);
 
+  const scheduleWeeks = await scheduleRepo.listScheduleWeeksForLoansOnDate(
+    dueLoans.map((loan) => loan.id),
+    reconciliationDate,
+  );
+
   return {
     dueLoans: dueLoans.map((loan) => ({
+      id: loan.id,
       paymentDay: loan.paymentDay,
       weeklyPaymentPesewas: loan.weeklyPaymentPesewas,
+    })),
+    scheduleDues: scheduleWeeks.map((week) => ({
+      loanId: week.loanId,
+      installmentPesewas: decimalToPesewas(week.installmentAmount),
     })),
     payments: paymentRows.map((payment) => ({
       amountPesewas: payment.amountPesewas,
@@ -86,13 +106,17 @@ export async function getReconciliationSummary(
     return mapReconciliationRowToSummary(existing);
   }
 
-  const { dueLoans, payments } = await loadReconciliationInputs(collectorId, reconciliationDate);
+  const { dueLoans, payments, scheduleDues } = await loadReconciliationInputs(
+    collectorId,
+    reconciliationDate,
+  );
   const preview = buildReconciliationSnapshot({
     collectorUserId: collectorId,
     reconciliationDate,
     physicalCashPesewas: 0,
     dueLoans,
     payments,
+    scheduleDues,
     thresholdPercent: DEFAULT_RECONCILIATION_THRESHOLD_PERCENT,
     comment: null,
     submittedAt: new Date(),
@@ -158,7 +182,7 @@ export async function submitReconciliation(
         throw new Error('VALIDATION:Reconciliation already submitted for this date.');
       }
 
-      const { dueLoans, payments } = await loadReconciliationInputs(
+      const { dueLoans, payments, scheduleDues } = await loadReconciliationInputs(
         input.collectorId,
         input.reconciliationDate,
       );
@@ -170,6 +194,7 @@ export async function submitReconciliation(
         physicalCashPesewas: input.physicalCashPesewas,
         dueLoans,
         payments,
+        scheduleDues,
         thresholdPercent,
         comment: input.comment?.trim() ?? null,
         submittedAt,
@@ -309,6 +334,7 @@ export async function reviewReconciliation(
 
   const db = getDb();
   const reviewedAt = new Date();
+  const resolutionNotes = input.resolutionNotes?.trim() ?? null;
 
   await db
     .update(financialReconciliations)
@@ -316,7 +342,7 @@ export async function reviewReconciliation(
       status: input.status,
       reviewedByUserId: input.reviewerUserId,
       reviewedAt,
-      resolutionNotes: input.resolutionNotes?.trim() ?? null,
+      resolutionNotes,
     })
     .where(eq(financialReconciliations.id, reconciliationId));
 
@@ -332,9 +358,9 @@ export async function reviewReconciliation(
     afterSnapshot: {
       status: input.status,
       reviewedByUserId: input.reviewerUserId,
-      resolutionNotes: input.resolutionNotes?.trim() ?? null,
+      resolutionNotes,
     },
-    reason: input.resolutionNotes?.trim(),
+    reason: resolutionNotes ?? undefined,
     createdAt: reviewedAt,
   });
 
@@ -344,5 +370,138 @@ export async function reviewReconciliation(
     .where(eq(financialReconciliations.id, reconciliationId))
     .limit(1);
 
-  return mapReconciliationRowToSummary(updated!);
+  const summary = mapReconciliationRowToSummary(updated!);
+
+  appendAuditEntry({
+    action: AUDIT_ACTION.RECONCILIATION_REVIEWED,
+    actorId: input.reviewerUserId,
+    targetEntityId: reconciliationId,
+    targetEntityType: 'reconciliation',
+    reason: `Status set to ${input.status}${resolutionNotes ? `: ${resolutionNotes}` : ''}`,
+  });
+
+  void notifyCollectorOfReconciliationReview({
+    collectorUserId: row.collectorUserId,
+    summary,
+    previousStatus: row.status,
+    nextStatus: input.status,
+    resolutionNotes,
+  });
+
+  return summary;
+}
+
+function formatReviewStatusLabel(status: string): string {
+  switch (status) {
+    case 'APPROVED':
+      return 'approved';
+    case 'REJECTED':
+      return 'rejected';
+    case 'UNDER_INVESTIGATION':
+      return 'marked under investigation';
+    case 'REOPENED':
+      return 'reopened';
+    case 'PENDING_REVIEW':
+      return 'returned to pending review';
+    default:
+      return `updated to ${status}`;
+  }
+}
+
+async function notifyCollectorOfReconciliationReview(input: {
+  collectorUserId: string;
+  summary: ReconciliationSummary;
+  previousStatus: string;
+  nextStatus: string;
+  resolutionNotes: string | null;
+}): Promise<void> {
+  if (!isDatabaseEnabled()) {
+    return;
+  }
+
+  const statusLabel = formatReviewStatusLabel(input.nextStatus);
+  const title = `Reconciliation ${statusLabel}`;
+  const expectedGhs = formatGhsAmount(input.summary.expectedPesewas);
+  const varianceGhs = formatGhsAmount(input.summary.variancePesewas ?? 0);
+  const notes = input.resolutionNotes?.trim();
+  const body = [
+    `Your reconciliation for ${input.summary.date} was ${statusLabel}.`,
+    `Expected GHS ${expectedGhs}; variance GHS ${varianceGhs}.`,
+    notes ? `Notes: ${notes}` : null,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  try {
+    const db = getDb();
+    const [collector] = await db
+      .select({ id: users.id, email: users.email, displayName: users.displayName })
+      .from(users)
+      .where(and(eq(users.id, input.collectorUserId), isNull(users.deletedAt)))
+      .limit(1);
+
+    if (!collector) {
+      return;
+    }
+
+    await createInAppNotification({
+      userId: collector.id,
+      event: 'COMMUNICATION',
+      title,
+      body,
+      href: '/collector/reconciliation',
+    });
+
+    await sendPushToUser(collector.id, {
+      title,
+      body,
+      url: '/collector/reconciliation',
+      category: 'RECONCILIATION',
+    });
+
+    if (collector.email?.trim()) {
+      const template = buildEmailTemplate({
+        subject: `WILMS reconciliation ${statusLabel} — ${input.summary.date}`,
+        greeting: collector.displayName || 'Collector',
+        preheader: `Reconciliation for ${input.summary.date} was ${statusLabel}`,
+        theme:
+          input.nextStatus === 'APPROVED'
+            ? 'success'
+            : input.nextStatus === 'REJECTED'
+              ? 'critical'
+              : 'info',
+        textLines: [
+          `Dear ${collector.displayName || 'Collector'},`,
+          '',
+          body,
+          '',
+          'Open WILMS to review the reconciliation details.',
+          '',
+          '— WILMS',
+        ],
+        htmlBody: [
+          emailParagraph(body),
+          emailReceipt([
+            { label: 'Date', value: input.summary.date },
+            { label: 'Status', value: input.nextStatus.replaceAll('_', ' ') },
+            { label: 'Expected', value: `GHS ${expectedGhs}` },
+            { label: 'Variance', value: `GHS ${varianceGhs}` },
+            ...(notes ? [{ label: 'Notes', value: notes }] : []),
+          ]),
+        ].join(''),
+      });
+
+      const mail = getMailProvider();
+      if (mail.isConfigured()) {
+        await mail.send({
+          to: collector.email,
+          subject: template.subject,
+          text: template.text,
+          html: template.html,
+        });
+      }
+    }
+  } catch {
+    // Notification delivery is best-effort.
+  }
 }

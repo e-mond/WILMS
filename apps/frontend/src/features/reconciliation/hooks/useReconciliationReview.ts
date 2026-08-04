@@ -1,6 +1,8 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { collectorDashboardQueryKey } from '@/features/payment-collection/hooks/useCollectorDashboard';
+import { reconciliationQueryKey } from '@/features/reconciliation/hooks/useReconciliation';
 import { reconciliationService } from '@/services';
 import type { ReviewReconciliationInput } from '@/types/services';
 
@@ -20,8 +22,17 @@ export function useReviewReconciliation() {
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: ReviewReconciliationInput }) =>
       reconciliationService.reviewReconciliation(id, input),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: reconciliationListQueryKey });
+    onSuccess: async (summary) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: reconciliationListQueryKey }),
+        queryClient.invalidateQueries({
+          queryKey: collectorDashboardQueryKey(summary.collectorId, summary.date),
+        }),
+        queryClient.invalidateQueries({ queryKey: ['collector', 'dashboard'] }),
+        queryClient.invalidateQueries({
+          queryKey: reconciliationQueryKey(summary.collectorId, summary.date),
+        }),
+      ]);
     },
   });
 }

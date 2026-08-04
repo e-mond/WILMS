@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   appendHistory: vi.fn(),
   listPortfolioLoans: vi.fn(),
   listPayments: vi.fn(),
+  listScheduleWeeks: vi.fn(),
   runInTransaction: vi.fn(),
   runWithIdempotency: vi.fn(),
   appendAuditEntry: vi.fn(),
@@ -35,6 +36,10 @@ vi.mock('../../repositories/payment.repository.js', () => ({
   listConfirmedPaymentsForCollectorOnDate: mocks.listPayments,
 }));
 
+vi.mock('../../repositories/loan-schedule.repository.js', () => ({
+  listScheduleWeeksForLoansOnDate: mocks.listScheduleWeeks,
+}));
+
 vi.mock('../../infrastructure/idempotency/run-with-idempotency.js', () => ({
   runWithIdempotency: mocks.runWithIdempotency,
 }));
@@ -53,8 +58,9 @@ describe('reconciliation service', () => {
     mocks.runInTransaction.mockImplementation(async (fn) => fn({}));
     mocks.findSubmitted.mockResolvedValue(undefined);
     mocks.listPortfolioLoans.mockResolvedValue([
-      { paymentDay: 'Tuesday', weeklyPaymentPesewas: 10000 },
+      { id: 'loan-1', paymentDay: 'Tuesday', weeklyPaymentPesewas: 10000 },
     ]);
+    mocks.listScheduleWeeks.mockResolvedValue([]);
     mocks.listPayments.mockResolvedValue([{ amountPesewas: 10000, status: 'CONFIRMED' }]);
     mocks.insertReconciliation.mockResolvedValue({
       id: 'rec-1',
@@ -108,7 +114,7 @@ describe('reconciliation service', () => {
 
   it('requires comment when variance is flagged', async () => {
     mocks.listPortfolioLoans.mockResolvedValue([
-      { paymentDay: 'Tuesday', weeklyPaymentPesewas: 20000 },
+      { id: 'loan-2', paymentDay: 'Tuesday', weeklyPaymentPesewas: 20000 },
     ]);
 
     await expect(

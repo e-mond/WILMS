@@ -47,6 +47,8 @@ export interface BuildCollectorDashboardInput {
     actualPesewas: number;
     variancePesewas: number;
     submitted: boolean;
+    status?: string;
+    varianceFlagged?: boolean;
   };
 }
 
@@ -79,11 +81,24 @@ function resolveReconciliationStatus(
     return RECONCILIATION_STATUS.PENDING;
   }
 
-  if (reconciliation.variancePesewas !== 0) {
-    return RECONCILIATION_STATUS.VARIANCE;
+  switch (reconciliation.status) {
+    case 'APPROVED':
+      return RECONCILIATION_STATUS.COMPLETE;
+    case 'REJECTED':
+      return RECONCILIATION_STATUS.REJECTED;
+    case 'PENDING_REVIEW':
+    case 'UNDER_INVESTIGATION':
+    case 'REOPENED':
+    case 'SUBMITTED':
+      return reconciliation.varianceFlagged || reconciliation.variancePesewas !== 0
+        ? RECONCILIATION_STATUS.VARIANCE
+        : RECONCILIATION_STATUS.IN_REVIEW;
+    default:
+      if (reconciliation.variancePesewas !== 0) {
+        return RECONCILIATION_STATUS.VARIANCE;
+      }
+      return RECONCILIATION_STATUS.COMPLETE;
   }
-
-  return RECONCILIATION_STATUS.COMPLETE;
 }
 
 function buildBorrowerRow(

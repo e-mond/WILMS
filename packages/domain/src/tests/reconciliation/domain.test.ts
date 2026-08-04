@@ -25,6 +25,22 @@ describe('expected-cash', () => {
     expect(total).toBe(5000);
   });
 
+  it('prefers schedule dues and avoids double-counting payment-day loans', () => {
+    const total = calculateExpectedDuePesewas(
+      [
+        { id: 'loan-1', paymentDay: 'Monday', weeklyPaymentPesewas: 5000 },
+        { id: 'loan-2', paymentDay: 'Wednesday', weeklyPaymentPesewas: 8000 },
+      ],
+      '2026-06-03', // Wednesday
+      [
+        { loanId: 'loan-1', installmentPesewas: 5000 }, // holiday-shifted Monday loan
+      ],
+    );
+
+    // Schedule due for loan-1 + payment-day due for loan-2
+    expect(total).toBe(13000);
+  });
+
   it('excludes REVERSED payments from system recorded', () => {
     const total = calculateSystemRecordedPesewas([
       { amountPesewas: 5000, status: 'CONFIRMED' },

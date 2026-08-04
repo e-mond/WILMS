@@ -7,16 +7,23 @@ import { getDb, isDatabaseEnabled } from '../../db/client.js';
 import { validateUploadEnvironment } from '../../infrastructure/uploads/env-validation.js';
 import { getIntegrationStatus } from '../../infrastructure/integrations/status.js';
 import { verifyCoreApplicationTables } from '../../db/schema-health.js';
+/** Bundled fallbacks for serverless (Vercel) where packageRoot file reads may miss traced assets. */
+import domainPackageJson from '../../../package.json';
+import migrationJournalJson from '../../db/migrations/meta/_journal.json';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const startedAt = Date.now();
 
 function readPackageVersion(): string {
+  const fromEnv = process.env.npm_package_version?.trim() || process.env.WILMS_APP_VERSION?.trim();
+  if (fromEnv) {
+    return fromEnv;
+  }
   try {
     const raw = readFileSync(path.join(packageRoot, 'package.json'), 'utf8');
     return (JSON.parse(raw) as { version?: string }).version ?? '0.0.0';
   } catch {
-    return '0.0.0';
+    return (domainPackageJson as { version?: string }).version ?? '0.0.0';
   }
 }
 
@@ -26,21 +33,24 @@ interface MigrationJournalSummary {
   latestWhen: number;
 }
 
+function summarizeJournal(journal: { entries?: { when?: number }[] }): MigrationJournalSummary {
+  const entries = journal.entries ?? [];
+  const latestWhen = entries.reduce(
+    (max, entry) => Math.max(max, Number(entry.when ?? 0)),
+    0,
+  );
+  return { expected: entries.length, latestWhen };
+}
+
 function readMigrationJournal(): MigrationJournalSummary {
   try {
     const raw = readFileSync(
       path.join(packageRoot, 'src/db/migrations/meta/_journal.json'),
       'utf8',
     );
-    const journal = JSON.parse(raw) as { entries?: { when?: number }[] };
-    const entries = journal.entries ?? [];
-    const latestWhen = entries.reduce(
-      (max, entry) => Math.max(max, Number(entry.when ?? 0)),
-      0,
-    );
-    return { expected: entries.length, latestWhen };
+    return summarizeJournal(JSON.parse(raw) as { entries?: { when?: number }[] });
   } catch {
-    return { expected: 0, latestWhen: 0 };
+    return summarizeJournal(migrationJournalJson as { entries?: { when?: number }[] });
   }
 }
 

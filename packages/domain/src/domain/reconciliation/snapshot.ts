@@ -1,5 +1,9 @@
 import { calculateExpectedDuePesewas, calculateSystemRecordedPesewas } from './expected-cash.js';
-import type { ExpectedDueLoanInput, SystemRecordedPaymentInput } from './expected-cash.js';
+import type {
+  ExpectedDueLoanInput,
+  ScheduleDueInstallmentInput,
+  SystemRecordedPaymentInput,
+} from './expected-cash.js';
 import { RECONCILIATION_STATUS, type ReconciliationSnapshot } from './types.js';
 import {
   calculateCollectionDeltaPesewas,
@@ -14,11 +18,16 @@ export function buildReconciliationSnapshot(input: {
   physicalCashPesewas: number;
   dueLoans: ExpectedDueLoanInput[];
   payments: SystemRecordedPaymentInput[];
+  scheduleDues?: ScheduleDueInstallmentInput[];
   thresholdPercent: number;
   comment: string | null;
   submittedAt: Date;
 }): ReconciliationSnapshot {
-  const expectedDuePesewas = calculateExpectedDuePesewas(input.dueLoans, input.reconciliationDate);
+  const expectedDuePesewas = calculateExpectedDuePesewas(
+    input.dueLoans,
+    input.reconciliationDate,
+    input.scheduleDues ?? [],
+  );
   const systemRecordedPesewas = calculateSystemRecordedPesewas(input.payments);
   const primaryVariancePesewas = calculatePrimaryVariancePesewas(
     input.physicalCashPesewas,

@@ -7,12 +7,13 @@ import {
 import { loadCollectorDashboardInputs } from '@/services/mock/collector-dashboard-inputs';
 import reconciliationServiceMock from '@/services/mock/reconciliationService.mock';
 import { simulateDelay } from '@/services/mock/delay';
+import { localIsoDate } from '@/utils/weekday';
 
 const collectorServiceMock: ICollectorService = {
   async getDashboard(collectorId: string, date?: string): Promise<CollectorDashboard> {
     await simulateDelay();
 
-    const referenceDate = date ?? new Date().toISOString().slice(0, 10);
+    const referenceDate = date ?? localIsoDate();
     const { loans, payments } = await loadCollectorDashboardInputs(referenceDate);
     const reconciliation = await reconciliationServiceMock.getCollectorReconciliation(
       collectorId,
@@ -31,7 +32,7 @@ const collectorServiceMock: ICollectorService = {
   async listAssignedBorrowers(collectorId: string, date?: string) {
     await simulateDelay();
 
-    const referenceDate = date ?? new Date().toISOString().slice(0, 10);
+    const referenceDate = date ?? localIsoDate();
     const { loans, payments } = await loadCollectorDashboardInputs(referenceDate);
     const reconciliation = await reconciliationServiceMock.getCollectorReconciliation(
       collectorId,
