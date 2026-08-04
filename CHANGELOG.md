@@ -2,6 +2,23 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.5.0] — Platform Consolidation (Vercel Full-Stack)
+
+**Release date:** August 2026  
+**Branch:** `v1.5-platform-consolidation`
+
+### Changed
+
+- Domain/API source moved to `@wilms/domain` (`packages/domain`); `@wilms/api` is a thin Node listen adapter
+- Browser API traffic served in-process by Next.js Route Handlers at `/api/wilms/*` (optional `WILMS_API_MODE=proxy` dual-run)
+- Notification scheduler primary trigger is Vercel Cron (`/api/cron/notifications`); GHA schedule disabled
+- Serverless production requires Redis for shared rate limiting; BullMQ workers disabled on Vercel
+- Custom HMAC sessions preserved (not Auth.js)
+
+### Added
+
+- Consolidation reports: `V15_PLATFORM_CONSOLIDATION_REPORT.md`, `ARCHITECTURE_MIGRATION_REPORT.md`, `VERCEL_DEPLOYMENT_REPORT.md`, `API_ROUTE_HANDLER_REPORT.md`, `SCHEDULER_MIGRATION_REPORT.md`, `UI_MODERNIZATION_REPORT.md`, `PERFORMANCE_REPORT.md`, `SECURITY_REPORT.md`, `DATABASE_REPORT.md`, `DOCUMENTATION_REPORT.md`, `FINAL_RELEASE_READINESS.md`
+
 ## [1.4.3] — Critical Financial Workflow Hotfix
 
 **Release date:** August 2026  

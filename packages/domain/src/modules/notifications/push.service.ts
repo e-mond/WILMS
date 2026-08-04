@@ -106,7 +106,7 @@ export async function sendPushToUser(
   for (const sub of subs) {
     try {
       // Dynamic import to avoid hard dependency when web-push not installed
-      const webpush = await import('web-push').catch(() => null);
+      const webpush = await import(/* webpackIgnore: true */ 'web-push').catch(() => null);
       if (!webpush) {
         console.info('[push] web-push package not installed');
         break;
