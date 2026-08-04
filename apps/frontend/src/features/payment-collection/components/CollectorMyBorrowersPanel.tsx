@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   CollectorPaymentStatusBadge,
   CurrencyAmount,
@@ -18,19 +19,39 @@ import { matchesAnySearchField } from '@/utils/search-match';
 import { ExecutiveKpiGrid, ManagementToolbar } from '@/components/layout/executive';
 import { Input } from '@/components/ui/Input';
 import { useCollectorBorrowers } from '@/features/payment-collection/hooks/useCollectorBorrowers';
-import { COLLECTOR_PAYMENT_STATUS, type CollectorDashboardBorrower } from '@/types/collector-dashboard';
+import {
+  COLLECTOR_PAYMENT_STATUS,
+  type CollectorDashboardBorrower,
+  type CollectorPaymentStatus,
+} from '@/types/collector-dashboard';
+
+function parseStatusFilter(value: string | null): CollectorPaymentStatus | null {
+  if (
+    value === COLLECTOR_PAYMENT_STATUS.COLLECTED ||
+    value === COLLECTOR_PAYMENT_STATUS.PENDING ||
+    value === COLLECTOR_PAYMENT_STATUS.MISSED
+  ) {
+    return value;
+  }
+  return null;
+}
 
 function filterBorrowers(
   borrowers: CollectorDashboardBorrower[],
   searchQuery: string,
+  statusFilter: CollectorPaymentStatus | null,
 ): CollectorDashboardBorrower[] {
+  const byStatus = statusFilter
+    ? borrowers.filter((borrower) => borrower.paymentStatus === statusFilter)
+    : borrowers;
+
   const normalizedQuery = searchQuery.trim();
 
   if (!normalizedQuery) {
-    return borrowers;
+    return byStatus;
   }
 
-  return borrowers.filter((borrower) =>
+  return byStatus.filter((borrower) =>
     matchesAnySearchField(searchQuery, [
       borrower.borrowerName,
       borrower.community,
@@ -60,13 +81,15 @@ function sortBorrowers(borrowers: CollectorDashboardBorrower[]): CollectorDashbo
 }
 
 export function CollectorMyBorrowersPanel() {
+  const searchParams = useSearchParams();
+  const statusFilter = parseStatusFilter(searchParams.get('status'));
   const { data, isLoading, isError, error, refetch } = useCollectorBorrowers();
   const [searchQuery, setSearchQuery] = useState('');
   const [showScanner, setShowScanner] = useState(false);
 
   const borrowers = useMemo(
-    () => sortBorrowers(filterBorrowers(data ?? [], searchQuery)),
-    [data, searchQuery],
+    () => sortBorrowers(filterBorrowers(data ?? [], searchQuery, statusFilter)),
+    [data, searchQuery, statusFilter],
   );
 
   const missedCount = useMemo(
@@ -106,6 +129,16 @@ export function CollectorMyBorrowersPanel() {
         />
         <KpiCard variant="executive" label="Showing" value={borrowers.length} />
       </ExecutiveKpiGrid>
+
+      {statusFilter ? (
+        <p className="text-small text-text-muted">
+          Filtered by status: <span className="font-semibold text-text-primary">{statusFilter}</span>
+          {' · '}
+          <Link href="/collector/my-borrowers" className="font-semibold text-brand-primary hover:underline">
+            Clear filter
+          </Link>
+        </p>
+      ) : null}
 
       <ManagementToolbar
         search={

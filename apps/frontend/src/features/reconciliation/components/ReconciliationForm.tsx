@@ -49,6 +49,10 @@ export function ReconciliationForm() {
   const { data, isLoading, isError, error, refetch } = useReconciliation(user?.id, date);
   const submitMutation = useSubmitReconciliation(user?.id ?? '', date);
 
+  const formLocked = Boolean(
+    data?.submitted && data.status !== 'REJECTED' && data.status !== 'REOPENED',
+  );
+
   const previewVariancePesewas = useMemo(() => {
     if (!data || !physicalCashGhs.trim()) {
       return null;
@@ -104,7 +108,7 @@ export function ReconciliationForm() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (data.submitted) {
+    if (formLocked) {
       return;
     }
 
@@ -168,7 +172,7 @@ export function ReconciliationForm() {
               setComment('');
               setCommentError(null);
             }}
-            disabled={data.submitted}
+            disabled={formLocked}
           />
         </FormField>
         <p className="text-body text-text-muted">{formatDisplayDate(date)}</p>
@@ -220,7 +224,7 @@ export function ReconciliationForm() {
         {data.reviewedAt ? ` · Reviewed ${formatDisplayDate(data.reviewedAt.slice(0, 10))}` : ''}
       </p>
 
-      {data.submitted ? (
+      {formLocked ? (
         <Alert
           title={`Reconciliation ${reconciliationLifecycleLabel(data.status, data.submitted).toLowerCase()}`}
           variant={data.varianceFlagged ? 'warning' : data.variancePesewas === 0 ? 'success' : 'info'}
@@ -238,14 +242,14 @@ export function ReconciliationForm() {
         </Alert>
       ) : null}
 
-      {!data.submitted && previewVarianceFlagged ? (
+      {!formLocked && previewVarianceFlagged ? (
         <Alert title="Variance will stay pending" variant="warning">
           Variance exceeds {RECONCILIATION_VARIANCE_THRESHOLD_PERCENT}% of expected collections.
           Submitting will mark this reconciliation as Pending for Super Admin approval.
         </Alert>
       ) : null}
 
-      {!data.submitted && previewVariancePesewas === 0 && physicalCashGhs.trim() ? (
+      {!formLocked && previewVariancePesewas === 0 && physicalCashGhs.trim() ? (
         <Alert title="Cash matches expected" variant="success">
           Physical cash matches expected collections for this date.
         </Alert>
@@ -262,8 +266,14 @@ export function ReconciliationForm() {
         </Alert>
       ) : null}
 
-      {!data.submitted ? (
+      {!formLocked ? (
         <form className="max-w-md space-y-wilms-4" onSubmit={handleSubmit}>
+          {(data.status === 'REJECTED' || data.status === 'REOPENED') && data.submitted ? (
+            <Alert title="Resubmit reconciliation" variant="info">
+              Previous submission was {data.status === 'REJECTED' ? 'rejected' : 'reopened'}. Enter
+              physical cash again to resubmit for this date.
+            </Alert>
+          ) : null}
           <FormField
             label="Physical cash counted (GHS)"
             htmlFor="physical-cash"

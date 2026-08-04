@@ -288,12 +288,13 @@ Each row represents one scoped, verifiable unit of work.
 | PC-04 | Same-day edit with audit log + Supervisor alert | ✅ Complete | 2026-06-06 | `editPayment`; `PaymentEditSection`; `isPaymentEditable`; audit `PAYMENT_EDITED`; supervisor alert; REQ-034/051 |
 | PC-05 | Offline payment capture + sync | ✅ Complete | 2026-06-06 | `useRecordPaymentOrQueue`; offline GPS + queue; `Save for sync` UI; periodic retry; REQ-069/084; 3 tests |
 | PC-06 | Duplicate transaction detection and blocking | ✅ Complete | 2026-06-07 | Mock service blocks duplicates; dedicated alert UX in PaymentEntryPanel; constants/payment-errors.ts; 3 tests |
+| PC-07 | Group collection sheet + mark-missed + SMS enrichment | ✅ Complete | 2026-08-04 | `GroupCollectionSheet` batch record/missed via APIs; `POST /payments/missed`; dashboard `groupId`/status; disbursement schedule + paid/missed SMS balance/weeks; hero tiles link to my-borrowers status filter |
 
 ### Reconciliation
 
 | Unit | Description | Status | Last Updated | Notes |
 |---|---|---|---|---|
-| RC-01 | Daily reconciliation form (Expected / Collected / Physical Cash / Variance) | ✅ Complete | 2026-06-06 | `/collector/reconciliation`; `ReconciliationForm`; `submitReconciliation`; locked after submit; REQ-047/049; 4 tests |
+| RC-01 | Daily reconciliation form (Expected / Collected / Physical Cash / Variance) | ✅ Complete | 2026-08-04 | `/collector/reconciliation`; expected from active loans due that weekday; Idempotency-Key submit; form reopens for REJECTED/REOPENED |
 | RC-02 | Variance flagging + Super Admin notification | ✅ Complete | 2026-06-06 | 10% threshold (AMB-004); `isVarianceAboveThreshold`; supervisor alert + audit on submit; REQ-048 |
 
 ### Group Management

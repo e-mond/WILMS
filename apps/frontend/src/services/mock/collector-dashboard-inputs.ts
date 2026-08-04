@@ -4,6 +4,7 @@ import type {
   CollectorDashboardLoanInput,
   CollectorDashboardPaymentInput,
 } from '@/features/payment-collection/collector-dashboard.utils';
+import { resolveBorrowerGroupId } from '@/services/mock/borrower-full-profile.builder';
 import { getBorrowerRegistryEntry } from '@/services/mock/borrower-registry.store';
 import { getStoredLoanSchedule } from '@/services/mock/loan-schedule.store';
 import loanServiceMock from '@/services/mock/loanService.mock';
@@ -18,6 +19,7 @@ export async function loadCollectorDashboardInputs(referenceDate: string): Promi
 
   const loans = activeLoans.map((loan) => {
     const borrower = getBorrowerRegistryEntry(loan.borrowerId);
+    const groupName = loan.groupName;
 
     return {
       id: loan.id,
@@ -25,7 +27,8 @@ export async function loadCollectorDashboardInputs(referenceDate: string): Promi
       borrowerName: borrower?.fullName ?? loan.borrowerName,
       phone: borrower?.phone ?? '—',
       community: borrower?.community ?? loan.community,
-      groupName: loan.groupName,
+      groupId: borrower ? resolveBorrowerGroupId(borrower, groupName) : '',
+      groupName,
       weeklyPaymentPesewas: loan.weeklyPaymentPesewas,
       paymentDay: loan.paymentDay,
       missedWeeks: countMissedWeeks(getStoredLoanSchedule(loan.id, referenceDate) ?? []),

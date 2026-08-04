@@ -51,15 +51,34 @@ function MetricTile({
   label,
   value,
   valueClassName,
+  href,
 }: {
   label: string;
   value: ReactNode;
   valueClassName?: string;
+  href?: string;
 }) {
-  return (
-    <div className="flex min-h-[72px] flex-col justify-center rounded-sm border border-border/70 bg-card/60 px-wilms-3 py-wilms-2">
+  const content = (
+    <>
       <p className="text-small text-text-muted">{label}</p>
       <p className={cn('mt-wilms-1 text-body font-bold text-text-primary', valueClassName)}>{value}</p>
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="flex min-h-[72px] flex-col justify-center rounded-sm border border-border/70 bg-card/60 px-wilms-3 py-wilms-2 transition-colors hover:border-brand-primary/50 hover:bg-card"
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <div className="flex min-h-[72px] flex-col justify-center rounded-sm border border-border/70 bg-card/60 px-wilms-3 py-wilms-2">
+      {content}
     </div>
   );
 }
@@ -211,9 +230,23 @@ export function CollectorDashboardPanel() {
           </div>
 
           <div className="grid grid-cols-2 gap-wilms-2 sm:grid-cols-3 xl:min-w-[28rem] xl:grid-cols-3">
-            <MetricTile label="Paid" value={hero.paidBorrowers} valueClassName="text-status-active" />
-            <MetricTile label="Pending" value={hero.pendingBorrowers} />
-            <MetricTile label="Overdue" value={hero.overdueBorrowers} valueClassName="text-danger" />
+            <MetricTile
+              label="Paid"
+              value={hero.paidBorrowers}
+              valueClassName="text-status-active"
+              href="/collector/my-borrowers?status=COLLECTED"
+            />
+            <MetricTile
+              label="Pending"
+              value={hero.pendingBorrowers}
+              href="/collector/my-borrowers?status=PENDING"
+            />
+            <MetricTile
+              label="Overdue"
+              value={hero.overdueBorrowers}
+              valueClassName="text-danger"
+              href="/collector/my-borrowers?status=MISSED"
+            />
             <MetricTile label="Groups today" value={hero.groupsToday} />
             <MetricTile label="Streak" value={`${hero.streakDays} days`} />
             <MetricTile

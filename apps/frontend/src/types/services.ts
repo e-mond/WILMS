@@ -130,7 +130,7 @@ import type {
   ReviewExpenseInput,
 } from '@/types/expense';
 import type { PaymentEntryContext } from '@/types/payment-entry';
-import type { EditPaymentInput, PaymentTransaction, RecordPaymentInput } from '@/types/payment';
+import type { EditPaymentInput, MarkMissedPaymentInput, MarkMissedPaymentResult, PaymentTransaction, RecordPaymentInput } from '@/types/payment';
 import type { RiskFlagDetail, RiskFlagListResponse, CreateRiskFlagInput, ResolveRiskFlagInput, AssignRiskFlagInput } from '@/types/risk-flag';
 import type {
   AdminFeeStatus,
@@ -239,6 +239,7 @@ export interface IPaymentService {
   ): Promise<PaymentTransaction | null>;
   getPayment(paymentId: string): Promise<PaymentTransaction>;
   recordPayment(input: RecordPaymentInput): Promise<PaymentTransaction>;
+  markMissedPayment(input: MarkMissedPaymentInput): Promise<MarkMissedPaymentResult>;
   editPayment(paymentId: string, input: EditPaymentInput): Promise<PaymentTransaction>;
   reversePayment(
     paymentId: string,

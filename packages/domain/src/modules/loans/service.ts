@@ -535,6 +535,8 @@ export async function disburseLoan(
       if (borrower) {
         const amountPesewas = Math.round(Number(amountDecimal) * 100);
         const collectorUserId = await resolveCollectorUserIdForBorrower(loan.borrowerId);
+        const weeks = await scheduleRepo.listScheduleWeeks(loanId);
+        const firstDue = weeks[0];
         void notifyLoanDisbursed({
           borrowerId: borrower.id,
           borrowerName: borrower.fullName,
@@ -544,6 +546,10 @@ export async function disburseLoan(
           loanDisplayId: dto.displayId ?? loanId,
           amountPesewas,
           collectorUserId,
+          weeklyAmountPesewas: dto.weeklyPaymentPesewas,
+          paymentDay: dto.paymentDay,
+          totalWeeks: weeks.length || dto.durationWeeks,
+          firstDueDate: firstDue?.dueDate,
         });
       }
 
