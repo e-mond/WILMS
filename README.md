@@ -6,7 +6,7 @@ WILMS is a production TypeScript monorepo that supports interest-free group lend
 
 | | |
 |---|---|
-| **Current version** | `1.5.0` |
+| **Current version** | `1.5.1` |
 | **Maturity** | Production platform; v1.5 consolidates UI and API onto a single Vercel deployment |
 | **Primary deploy** | [wilms.vercel.app](https://wilms.vercel.app) |
 | **Runtime** | Node.js 22+ |

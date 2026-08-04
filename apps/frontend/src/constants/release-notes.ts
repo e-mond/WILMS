@@ -6,13 +6,13 @@ export interface ReleaseNotes {
 }
 
 export const CURRENT_RELEASE_NOTES: ReleaseNotes = {
-  version: '1.4.3',
+  version: '1.5.1',
   summary:
-    'Critical financial workflow hotfix — disbursement lifecycle gating, Idempotency-Key on money mutations, review group display, and admin-fee confirmation notifications.',
+    'Vercel full-stack recovery — API Route Handlers no longer crash at import when domain secrets are missing; health and BFF return JSON errors instead of HTML 500 pages.',
   highlights: [
-    'Disburse only when the loan is approved and pending disbursement; workflow stepper shows progress.',
-    'Reconciliation, payments, disbursement, and adjustments send Idempotency-Key automatically.',
-    'Approver review shows Group as GRP-… — Name and Assign Group persists membership.',
-    'Admin fee recording sends confirmation SMS/email without duplicates.',
+    'Serverless bootstrap tolerates missing WILMS_SESSION_SECRET at import time (still fails closed for signed sessions until configured).',
+    '/api/wilms/* lazy-loads @wilms/domain and returns JSON 503 on handler failure.',
+    'Proxy mode activates only for a valid http(s) WILMS_API_UPSTREAM.',
+    'Set DATABASE_URL + WILMS_SESSION_SECRET on Vercel for production data and auth.',
   ],
 };
