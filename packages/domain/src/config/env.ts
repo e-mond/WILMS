@@ -9,9 +9,13 @@ function resolveSessionSecret(): string {
     return secret;
   }
 
-  // Next.js page-data collection runs with NODE_ENV=production; allow a non-usable
-  // placeholder so Route Handler modules can be analyzed. Runtime validation still fails closed.
-  if (process.env.NEXT_PHASE === 'phase-production-build') {
+  // Next.js page-data collection and serverless cold starts must not throw at import time.
+  // Runtime validation / request handlers still fail closed when the placeholder is in use.
+  if (
+    process.env.NEXT_PHASE === 'phase-production-build' ||
+    process.env.VERCEL === '1' ||
+    process.env.WILMS_RUNTIME?.trim().toLowerCase() === 'serverless'
+  ) {
     return 'wilms-build-placeholder-secret-do-not-use';
   }
 
