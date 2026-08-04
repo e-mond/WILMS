@@ -262,6 +262,12 @@ export function hasAdminFee(borrowerId: string): boolean {
   return adminFees.has(borrowerId);
 }
 
+export function listAdminFeesInMemory(collectorId?: string): AdminFeeRecord[] {
+  return [...adminFees.values()]
+    .filter((fee) => (collectorId ? fee.collectorId === collectorId : true))
+    .sort((left, right) => right.recordedAt.localeCompare(left.recordedAt));
+}
+
 export function listBorrowersAwaitingAdminFeeInMemory(requiredAmountPesewas: number): Array<{
   id: string;
   fullName: string;

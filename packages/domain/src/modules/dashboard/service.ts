@@ -202,6 +202,12 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
       valueTone: 'success',
     },
     {
+      id: 'admin-fees',
+      label: 'Admin Fees Collected',
+      amountPesewas: fo.adminFees.totalAdminFeesCollectedPesewas,
+      valueTone: 'gold',
+    },
+    {
       id: 'outstanding',
       label: 'Total Outstanding',
       amountPesewas: fo.collections.outstandingBalancePesewas,
