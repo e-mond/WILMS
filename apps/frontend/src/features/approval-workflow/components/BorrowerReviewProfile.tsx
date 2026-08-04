@@ -18,6 +18,33 @@ function formatField(value?: string | null): string {
   return trimmed ? trimmed : 'Not provided';
 }
 
+/** Never show raw UUIDs — prefer GRP-… display IDs. */
+export function formatGroupLabel(
+  groupDisplayId?: string | null,
+  groupName?: string | null,
+  groupId?: string | null,
+): string {
+  const displayId = groupDisplayId?.trim();
+  const name = groupName?.trim();
+  if (displayId && name) {
+    return `${displayId} — ${name}`;
+  }
+  if (displayId) {
+    return displayId;
+  }
+  if (name && groupId && !looksLikeUuid(groupId)) {
+    return `${groupId} — ${name}`;
+  }
+  if (name) {
+    return name;
+  }
+  return 'Unassigned';
+}
+
+function looksLikeUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+}
+
 function formatRegisteredBy(borrower: BorrowerReviewDetail): string {
   const officerName = borrower.registeredByOfficerName?.trim();
   const officerId = borrower.registeredByOfficerId?.trim();
@@ -145,6 +172,10 @@ export function BorrowerReviewProfile({
         title="Personal details"
         items={[
           ['Registration ID', formatField(borrower.displayId)],
+          [
+            'Group',
+            formatGroupLabel(borrower.groupDisplayId, borrower.groupName, borrower.groupId),
+          ],
           ['Date of birth', formatField(borrower.dateOfBirth)],
           ['Gender', formatField(borrower.gender)],
           ['Phone', formatField(borrower.phone)],

@@ -7,6 +7,7 @@ import {
   KpiCard,
   LoanScheduleTable,
   LoanStatusBadge,
+  TimelineStepper,
 } from '@/components/data-display';
 import { DetailSidebarCard, ExecutiveKpiGrid } from '@/components/layout/executive';
 import { ExecutiveDetailLayout } from '@/components/layout/ExecutiveDetailLayout';
@@ -14,15 +15,22 @@ import { EmptyState } from '@/components/feedback/EmptyState';
 import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { Button } from '@/components/ui/Button';
+import { useDisbursementEligibility } from '@/features/admin-fee/hooks/useDisbursementEligibility';
 import { LoanPaymentLogTable } from '@/features/loan-management/components/LoanPaymentLogTable';
 import { LoanProgressMetrics } from '@/features/loan-management/components/LoanProgressMetrics';
+import { useApproveLoan } from '@/features/loan-management/hooks/useApproveLoan';
 import { useDisburseLoan } from '@/features/loan-management/hooks/useDisburseLoan';
 import { useLoanPaymentLog } from '@/features/loan-management/hooks/useLoanPaymentLog';
 import { useLoanProgress } from '@/features/loan-management/hooks/useLoanProgress';
 import { useLoanSchedule } from '@/features/loan-management/hooks/useLoanSchedule';
+import {
+  buildLoanWorkflowSteps,
+  canApproveLoan,
+  canDisburseLoan,
+  workflowActionHint,
+} from '@/features/loan-management/utils/loan-workflow-steps';
 import { PERMISSION } from '@/constants/permissions';
 import { loanService } from '@/services';
-import { LOAN_STATUS } from '@/types/loan';
 import { resolveLoanDisplayId } from '@/utils/entity-display-id';
 import { formatDisplayDate } from '@/utils/format-date';
 
@@ -58,7 +66,19 @@ export function LoanDetailPanel({ loanId }: LoanDetailPanelProps) {
     refetch: refetchPaymentLog,
   } = useLoanPaymentLog(loanId);
 
+  const approveLoan = useApproveLoan(loanId);
   const disburseLoan = useDisburseLoan(loanId);
+
+  const needsWorkflowGate =
+    !!loan &&
+    (canApproveLoan(loan.lifecycleStatus) ||
+      canDisburseLoan(loan.lifecycleStatus) ||
+      loan.status === 'PENDING_DISBURSEMENT');
+
+  const { data: eligibility } = useDisbursementEligibility(
+    loan?.borrowerId ?? '',
+    Boolean(loan?.borrowerId) && needsWorkflowGate,
+  );
 
   if (isLoanLoading || isScheduleLoading || isProgressLoading || isPaymentLogLoading) {
     return <InlinePanelSkeleton />;
@@ -91,7 +111,30 @@ export function LoanDetailPanel({ loanId }: LoanDetailPanelProps) {
   }
 
   const loanLabel = resolveLoanDisplayId(loan);
-  const isPendingDisbursement = loan.status === LOAN_STATUS.PENDING_DISBURSEMENT;
+  const adminFeePaid = eligibility ? eligibility.canDisburse || !eligibility.reason?.includes('Admin fee') : false;
+  // Prefer explicit eligibility: canDisburse true means fee + pending lifecycle; if reason is about approval only, fee is paid
+  const feeSatisfied =
+    eligibility == null
+      ? false
+      : eligibility.canDisburse
+        ? true
+        : eligibility.reason?.toLowerCase().includes('admin fee')
+          ? false
+          : true;
+
+  const showApprove = canApproveLoan(loan.lifecycleStatus);
+  const showDisburse = canDisburseLoan(loan.lifecycleStatus);
+  const disburseEnabled = showDisburse && feeSatisfied && (eligibility?.canDisburse ?? false);
+  const workflowSteps = buildLoanWorkflowSteps({
+    lifecycleStatus: loan.lifecycleStatus,
+    status: loan.status,
+    adminFeePaid: feeSatisfied || adminFeePaid,
+  });
+  const actionHint = workflowActionHint({
+    lifecycleStatus: loan.lifecycleStatus,
+    adminFeePaid: feeSatisfied,
+    canDisburseEligibility: eligibility?.canDisburse,
+  });
 
   return (
     <div className="space-y-wilms-4">
@@ -104,17 +147,36 @@ export function LoanDetailPanel({ loanId }: LoanDetailPanelProps) {
         </div>
         <div className="flex flex-wrap items-center gap-wilms-2">
           <LoanStatusBadge status={loan.status} />
-          {isPendingDisbursement ? (
+          {showApprove ? (
+            <PermissionGate permission={PERMISSION.APPROVE_LOANS}>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                disabled={approveLoan.isPending || !feeSatisfied}
+                onClick={() =>
+                  void approveLoan.mutateAsync().then(() => {
+                    void refetchLoan();
+                  })
+                }
+              >
+                {approveLoan.isPending ? 'Approving…' : 'Approve loan'}
+              </Button>
+            </PermissionGate>
+          ) : null}
+          {showDisburse ? (
             <PermissionGate permission={PERMISSION.APPROVE_LOANS}>
               <Button
                 type="button"
                 variant="primary"
                 size="sm"
-                disabled={disburseLoan.isPending}
-                onClick={() => void disburseLoan.mutateAsync().then(() => {
-                  void refetchLoan();
-                  void refetchPaymentLog();
-                })}
+                disabled={disburseLoan.isPending || !disburseEnabled}
+                onClick={() =>
+                  void disburseLoan.mutateAsync().then(() => {
+                    void refetchLoan();
+                    void refetchPaymentLog();
+                  })
+                }
               >
                 {disburseLoan.isPending ? 'Disbursing…' : 'Disburse loan'}
               </Button>
@@ -123,12 +185,18 @@ export function LoanDetailPanel({ loanId }: LoanDetailPanelProps) {
         </div>
       </div>
 
-      {isPendingDisbursement ? (
-        <p className="rounded-sm border border-border bg-card px-wilms-4 py-wilms-3 text-body text-text-secondary">
-          This loan is pending disbursement. Confirm admin fee collection, then disburse to activate
-          the weekly repayment schedule.
-        </p>
-      ) : null}
+      <section
+        className="rounded-sm border border-border bg-card px-wilms-4 py-wilms-4"
+        aria-label="Loan workflow"
+      >
+        <h2 className="text-heading-2 font-semibold text-text-primary">Workflow status</h2>
+        {actionHint ? (
+          <p className="mt-wilms-1 text-body text-text-secondary">{actionHint}</p>
+        ) : null}
+        <div className="mt-wilms-3">
+          <TimelineStepper steps={workflowSteps} />
+        </div>
+      </section>
 
       <ExecutiveKpiGrid>
         <KpiCard
@@ -155,6 +223,10 @@ export function LoanDetailPanel({ loanId }: LoanDetailPanelProps) {
             <dl className="space-y-wilms-3 text-small">
               {[
                 ['Status', loan.status.replaceAll('_', ' ')],
+                [
+                  'Lifecycle',
+                  (loan.lifecycleStatus ?? '—').toString().replaceAll('_', ' '),
+                ],
                 ['Payment day', loan.paymentDay],
                 ['Start date', formatDisplayDate(loan.startDate)],
                 ['Cycle / batch', loan.cycleBatch],

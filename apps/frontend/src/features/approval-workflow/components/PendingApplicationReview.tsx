@@ -45,7 +45,8 @@ import { BORROWER_STATUS } from '@/types/borrower';
 
 import type { ApprovalDecisionAction } from '@/types/approval';
 
-import { ApiError } from '@/types/api';
+import { ApiError, API_ERROR_CODE } from '@/types/api';
+import { useAuth } from '@/hooks/useAuth';
 
 
 
@@ -62,6 +63,7 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
   const router = useRouter();
   const queryClient = useQueryClient();
   const generatedBy = useWilmsExportActor();
+  const { user } = useAuth();
 
   const { data, isLoading, isError, error, refetch } = useBorrowerReview(borrowerId);
 
@@ -116,6 +118,7 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
       setNewGroupName('');
       setWorkflowMessage(`Created group "${group.name}" and added ${data?.fullName ?? 'borrower'}.`);
       void queryClient.invalidateQueries({ queryKey: ['groups', 'list', 'approver-review'] });
+      void queryClient.invalidateQueries({ queryKey: ['borrowers', borrowerId, 'review'] });
     },
     onError: (error) => {
       setActionError(
@@ -126,7 +129,39 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
     },
   });
 
-  const groups = useMemo(() => (groupsQuery.data?.groups ?? []).slice(0, 8), [groupsQuery.data]);
+  const assignGroupMutation = useMutation({
+    mutationFn: () => {
+      if (!user?.id) {
+        throw new ApiError('You must be signed in to assign a group.', API_ERROR_CODE.UNAUTHORIZED, 401);
+      }
+      if (!selectedGroupId || !data) {
+        throw new ApiError('Select a group before assigning.', API_ERROR_CODE.VALIDATION, 422);
+      }
+      return groupService.addMember({
+        groupId: selectedGroupId,
+        fullName: data.fullName,
+        phone: data.phone,
+        reason: 'Approver review assignment',
+        actorUserId: user.id,
+      });
+    },
+    onSuccess: (group) => {
+      const label = group.groupSystemId
+        ? `${group.groupSystemId} — ${group.displayName || group.name}`
+        : group.displayName || group.name;
+      setWorkflowMessage(`Assigned ${data?.fullName ?? 'borrower'} to ${label}.`);
+      void queryClient.invalidateQueries({ queryKey: ['groups', 'list', 'approver-review'] });
+      void queryClient.invalidateQueries({ queryKey: ['borrowers', borrowerId, 'review'] });
+      void refetch();
+    },
+    onError: (error) => {
+      setActionError(
+        error instanceof ApiError ? error.message : 'Unable to assign this borrower to the group.',
+      );
+    },
+  });
+
+  const groups = useMemo(() => groupsQuery.data?.groups ?? [], [groupsQuery.data]);
 
   const collectors = useMemo(
     () => (collectorsQuery.data?.collectors ?? []).slice(0, 8),
@@ -373,12 +408,10 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
                   <Button
                     type="button"
                     variant="secondary"
-                    disabled={!selectedGroupId}
-                    onClick={() =>
-                      setWorkflowMessage(`Group assignment recorded for ${data.fullName}.`)
-                    }
+                    disabled={!selectedGroupId || assignGroupMutation.isPending || !user?.id}
+                    onClick={() => assignGroupMutation.mutate()}
                   >
-                    Assign Group
+                    {assignGroupMutation.isPending ? 'Assigning…' : 'Assign Group'}
                   </Button>
                 </PermissionGate>
               )}

@@ -13,6 +13,8 @@ export interface BlacklistBorrowerInput {
 }
 
 export interface BorrowerReviewDetail extends BorrowerDetail {
+  /** Readable group system ID (e.g. GRP-…) — never display raw UUID. */
+  groupDisplayId?: string;
   dateOfBirth: string;
   gender: BorrowerGender;
   email?: string;

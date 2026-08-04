@@ -21,3 +21,6 @@ test-final.txt
 docs/generated/*-evidence/
 docs/generated/rc1.*-evidence/
 docs/generated/
+!.env.example
+!**/.env.example
+!**/.env.*.example

@@ -1,14 +1,14 @@
 # WILMS
 
-**Women's Interest-Free Loan Management System** � a TypeScript monorepo for borrower onboarding, group lending, loan lifecycle management, weekly collections, expense tracking, audit trails, and role-based reporting.
+**Women's Interest-Free Loan Management System** � a TypeScript monorepo for borrower onboarding, group lending, loan lifecycle management, weekly collections, expense tracking, audit trails, and role-based reporting.
 
 | | |
 |---|---|
-| **Current version** | `1.4.2` (see root `package.json` / `NEXT_PUBLIC_APP_VERSION` in the UI) |
+| **Current version** | `1.4.3` (see root `package.json` / `NEXT_PUBLIC_APP_VERSION` in the UI) |
 | **Frontend** | Next.js 14 App Router, React, TanStack Query, Tailwind |
 | **API** | Express, Drizzle ORM, Neon PostgreSQL |
 | **Runtime** | Node.js 22+ (`engines`, `.nvmrc`, CI) |
-| **Production** | [wilms.vercel.app](https://wilms.vercel.app) � API on Railway |
+| **Production** | [wilms.vercel.app](https://wilms.vercel.app) � API on Railway |
 
 ---
 
@@ -16,12 +16,12 @@
 
 WILMS supports the full microfinance operations loop for interest-free group lending:
 
-1. **Registration** � officers capture borrower KYC, guarantor data, photos, and registration agreements.
-2. **Approval** � approvers review pending applications, assign groups/collectors, and export structured agreement documents.
-3. **Disbursement & loans** � loan pools, disbursements, schedules, fees, and portfolio reporting.
-4. **Collections** � collector dashboards, payment entry, reconciliation, GPS verification, and offline queueing.
-5. **Governance** � risk flags, adjustments, audit log, communication center, and executive reporting.
-6. **Administration** � user/role management, system settings, integrations (SMS/email), and expense approvals.
+1. **Registration** � officers capture borrower KYC, guarantor data, photos, and registration agreements.
+2. **Approval** � approvers review pending applications, assign groups/collectors, and export structured agreement documents.
+3. **Disbursement & loans** � loan pools, disbursements, schedules, fees, and portfolio reporting.
+4. **Collections** � collector dashboards, payment entry, reconciliation, GPS verification, and offline queueing.
+5. **Governance** � risk flags, adjustments, audit log, communication center, and executive reporting.
+6. **Administration** � user/role management, system settings, integrations (SMS/email), and expense approvals.
 
 ---
 
@@ -51,14 +51,21 @@ WILMS supports the full microfinance operations loop for interest-free group len
 
 ```text
 wilms/
-??? apps/
-?   ??? frontend/          # Next.js UI + /api/wilms BFF proxy
-?   ??? backend/           # Express API, Drizzle schema, verification harnesses
-??? packages/              # Shared RBAC, contracts, validation, utilities
-??? data/ghana-locations/  # Ghana region/district seed data
-??? docs/                  # Architecture, deployment, operations guides
-??? scripts/               # Verification, bundle budget, cleanup scripts
-??? package.json           # npm workspace root (version source of truth)
+├── apps/
+│   ├── frontend/          @wilms/frontend — Next.js 14 App Router UI
+│   └── backend/           @wilms/api — Express API + Drizzle + Neon
+├── packages/
+│   ├── shared-contracts/  Domain enums and contract constants
+│   ├── shared-rbac/       Roles and permission constants
+│   ├── shared-types/      Cross-cutting TypeScript types
+│   ├── shared-validation/ Zod schemas (login, API validation)
+│   └── shared-utils/      Shared helpers
+├── docs/
+│   └── page-validation/   Phase audit and certification reports
+├── .env.example           Monorepo environment reference
+├── package.json           npm workspaces root scripts
+├──turbo.json             Turbo task graph
+└── package.json           # npm workspace root (version source of truth)
 ```
 
 ---
@@ -84,14 +91,14 @@ Edit `.env` with your local values. **Never commit `.env` files.**
 
 ### Run the stack
 
-**Terminal 1 � API**
+**Terminal 1 � API**
 
 ```bash
 npm run dev:api
 # Default: http://127.0.0.1:4000
 ```
 
-**Terminal 2 � Frontend**
+**Terminal 2 � Frontend**
 
 ```bash
 npm run dev
@@ -191,9 +198,9 @@ Browser
                                       ??? Audit + messaging modules
 ```
 
-- **Readable display IDs** � borrowers, collectors, groups, loans, and payments show human-facing IDs in UI and exports; UUIDs stay internal.
-- **RBAC** � permissions enforced in UI (`PermissionGate`) and API middleware; route matrix in `apps/frontend/src/lib/rbac/permission-matrix.ts`.
-- **Exports** � unified WILMS export framework (CSV, Excel, PDF, Word, print) with branded registration agreement layouts.
+- **Readable display IDs** � borrowers, collectors, groups, loans, and payments show human-facing IDs in UI and exports; UUIDs stay internal.
+- **RBAC** � permissions enforced in UI (`PermissionGate`) and API middleware; route matrix in `apps/frontend/src/lib/rbac/permission-matrix.ts`.
+- **Exports** � unified WILMS export framework (CSV, Excel, PDF, Word, print) with branded registration agreement layouts.
 
 ---
 
@@ -205,7 +212,7 @@ Executive KPIs, group risk snapshot, quick actions, **financial overview** (coll
 
 ### Operations control centre (`/ops`)
 
-**Distinct from the executive Dashboard.** Platform health, API/worker/queue status, migration watermark, runtime metrics, and operational surfaces for Super Admins. Do not confuse with the �Daily Operations� sidebar group (applications, disbursements, collections).
+**Distinct from the executive Dashboard.** Platform health, API/worker/queue status, migration watermark, runtime metrics, and operational surfaces for Super Admins. Do not confuse with the �Daily Operations� sidebar group (applications, disbursements, collections).
 
 ### Expense management (`/expenses`)
 
@@ -328,10 +335,10 @@ Historical certification evidence is preserved under `docs/archive/`.
 
 | Symptom | Likely cause | Action |
 |---------|--------------|--------|
-| API health fails | API not running | `npm run dev:api` � check `http://127.0.0.1:4000/health` |
+| API health fails | API not running | `npm run dev:api` � check `http://127.0.0.1:4000/health` |
 | UI shows mock data unexpectedly | Mock mode default in frontend | Set `apps/frontend/.env.local` with `NEXT_PUBLIC_USE_MOCK=false` and `WILMS_API_UPSTREAM` |
 | BFF returns 403 | CSRF on `/api/wilms` | Use the browser UI session; do not raw-curl mutating BFF routes |
-| Demo login fails on production | Expected | Demo `@wilms.demo` accounts are blocked live � use invited users |
+| Demo login fails on production | Expected | Demo `@wilms.demo` accounts are blocked live � use invited users |
 | Operations nav opens Dashboard | Fixed in **1.4.1** | Upgrade; ensure `/ops` is in route permission matrix |
 
 ---
@@ -341,7 +348,7 @@ Historical certification evidence is preserved under `docs/archive/`.
 1. Branch from `main` with a descriptive name (agent workflows use `cursor/<description>-8847`).
 2. Run `npm run type-check`, `npm run lint`, and `npm test` before opening a PR.
 3. Keep display IDs and RBAC permissions aligned when adding routes or APIs.
-4. Prefer the shared UI primitives under `apps/frontend/src/components/ui/` � do not invent parallel button/modal systems.
+4. Prefer the shared UI primitives under `apps/frontend/src/components/ui/` � do not invent parallel button/modal systems.
 5. Report issues at [github.com/e-mond/WILMS/issues](https://github.com/e-mond/WILMS/issues).
 
 See also `CONTRIBUTING.md`.

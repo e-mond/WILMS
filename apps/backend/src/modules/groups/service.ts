@@ -643,6 +643,17 @@ export async function addMember(input: {
       .onConflictDoNothing();
   }
 
+  const { assignBorrowerToGroup } = await import('../../db/persistence.js');
+  await assignBorrowerToGroup(borrower.id, {
+    id: group.id,
+    systemId: group.groupSystemId,
+    name: group.name,
+    displayName: group.displayName || group.name,
+    community: group.community,
+    memberIds: group.members.map((member) => member.borrowerId),
+    formedAt: group.formedAt,
+  });
+
   return getGroupDetail(input.groupId);
 }
 

@@ -12,6 +12,9 @@ import * as memory from '../../db/store.js';
 import { isDatabaseEnabled } from '../../db/client.js';
 import { getSettings } from '../settings/service.js';
 import * as userRepo from '../../repositories/user.repository.js';
+import { notifyAdminFeeRecorded } from '../../infrastructure/notifications/admin-fee-notifications.js';
+import * as loanRepo from '../../repositories/loan.repository.js';
+import { formatLoanDisplayId } from '@wilms/shared-utils';
 
 export interface FinancialTransaction {
   id: string;
@@ -83,7 +86,44 @@ export async function recordAdminFee(input: {
     recordedAt: transaction.recordedAt,
   });
 
-  void borrower;
+  let loanDisplayId: string | undefined;
+  let loanId: string | undefined;
+  try {
+    const loans = await loanRepo.listBorrowerLoans(input.borrowerId);
+    const latest = loans[0];
+    if (latest) {
+      loanId = latest.id;
+      loanDisplayId = formatLoanDisplayId({
+        cycleBatch: latest.cycleBatch,
+        startDate: latest.startDate,
+        sequence: 1,
+      });
+    }
+  } catch {
+    // Loan lookup is best-effort for notification copy.
+  }
+
+  const collector = isDatabaseEnabled()
+    ? await userRepo.getUserById(input.collectorId).catch(() => null)
+    : null;
+
+  void notifyAdminFeeRecorded({
+    transactionId: transaction.id,
+    borrowerId: input.borrowerId,
+    borrowerName: borrower.fullName,
+    borrowerPhone: borrower.phone,
+    borrowerEmail: borrower.profile?.email,
+    amountPesewas: settings.adminFeePesewas,
+    paymentDate: transaction.recordedAt,
+    loanDisplayId,
+    loanId,
+    collectorUserId: input.collectorId,
+    actorUserId: input.collectorId,
+    actorDisplayName: collector?.displayName,
+  }).catch(() => {
+    // Notification failures must not roll back the recorded fee.
+  });
+
   return { ...transaction };
 }
 
