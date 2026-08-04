@@ -12,7 +12,7 @@ const frontendSrc = join(root, 'apps/frontend/src');
 const servicesDir = join(frontendSrc, 'services');
 const featuresDir = join(frontendSrc, 'features');
 const hooksDir = join(frontendSrc, 'hooks');
-const modulesDir = join(root, 'apps/backend/src/modules');
+const modulesDir = join(root, 'packages/domain/src/modules');
 const appDir = join(frontendSrc, 'app');
 
 const API_CALL_RE =

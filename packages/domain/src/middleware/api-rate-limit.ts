@@ -55,7 +55,7 @@ class RedisRateLimitStore implements Store {
   }
 }
 
-function tryCreateRedisStore(): Store | undefined {
+function tryCreateRedisStore(prefix = 'wilms:rl:'): Store | undefined {
   if (!env.redisUrl) {
     return undefined;
   }
@@ -63,12 +63,17 @@ function tryCreateRedisStore(): Store | undefined {
     const client = new IORedis(env.redisUrl, {
       maxRetriesPerRequest: 1,
       enableReadyCheck: false,
-      lazyConnect: false,
+      lazyConnect: true,
+      connectTimeout: 2_000,
+      retryStrategy: () => null,
     });
     client.on('error', () => {
       // Connection errors are logged by ioredis; limiter will surface as 500 if Redis dies mid-flight.
     });
-    return new RedisRateLimitStore(client);
+    void client.connect().catch(() => {
+      // Leave store installed; subsequent commands will fail closed via express-rate-limit errors.
+    });
+    return new RedisRateLimitStore(client, prefix);
   } catch {
     return undefined;
   }
@@ -94,12 +99,14 @@ function skipHealthAndMetrics(req: { path: string }): boolean {
 /**
  * Global API abuse protection (300 req / IP / minute by default).
  * Uses Redis when REDIS_URL is configured; otherwise in-memory (document for multi-instance).
+ * Production serverless deployments must set REDIS_URL / WILMS_REDIS_URL.
  */
 export function createApiRateLimiter(options?: {
   windowMs?: number;
   max?: number;
+  prefix?: string;
 }): RequestHandler {
-  const store = tryCreateRedisStore();
+  const store = tryCreateRedisStore(options?.prefix);
   return rateLimit({
     windowMs: options?.windowMs ?? 60_000,
     max: options?.max ?? 300,
@@ -112,15 +119,25 @@ export function createApiRateLimiter(options?: {
 }
 
 /** Tighter limiter for invitation accept abuse. */
-export const invitationAbuseLimiter = rateLimit({
+export const invitationAbuseLimiter = createApiRateLimiter({
   windowMs: 15 * 60 * 1000,
   max: 20,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: {
-    error: {
-      message: 'Too many invitation attempts. Please try again later.',
-      code: 'RATE_LIMITED',
-    },
-  },
+  prefix: 'wilms:rl:invite:',
 });
+
+export function createAuthRateLimiter(options: {
+  windowMs: number;
+  max: number;
+  prefix: string;
+  message: string;
+}): RequestHandler {
+  const store = tryCreateRedisStore(options.prefix);
+  return rateLimit({
+    windowMs: options.windowMs,
+    max: options.max,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: { message: options.message, code: 'RATE_LIMITED' } },
+    ...(store ? { store } : {}),
+  });
+}

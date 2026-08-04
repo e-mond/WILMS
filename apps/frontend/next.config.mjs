@@ -109,6 +109,7 @@ const nextConfig = {
   },
 
   transpilePackages: [
+    '@wilms/domain',
     '@wilms/shared-contracts',
     '@wilms/shared-rbac',
     '@wilms/shared-types',
@@ -119,6 +120,14 @@ const nextConfig = {
   experimental: {
 
     optimizePackageImports: ['lucide-react'],
+    serverComponentsExternalPackages: [
+      '@neondatabase/serverless',
+      'bcrypt',
+      'bullmq',
+      'ioredis',
+      'ws',
+      'cloudinary',
+    ],
 
   },
 
@@ -146,7 +155,17 @@ const nextConfig = {
 
     };
 
+    // @wilms/domain uses ESM .js import specifiers that map to .ts sources (Node/tsx).
+    config.resolve.extensionAlias = {
+      ...(config.resolve.extensionAlias ?? {}),
+      '.js': ['.ts', '.tsx', '.js'],
+      '.mjs': ['.mts', '.mjs'],
+    };
 
+    config.externals = config.externals || [];
+    if (Array.isArray(config.externals)) {
+      config.externals.push({ 'web-push': 'commonjs web-push' });
+    }
 
     return config;
 

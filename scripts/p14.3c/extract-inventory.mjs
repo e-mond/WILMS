@@ -43,7 +43,7 @@ for (const file of serviceFiles) {
 }
 
 // Backend route paths
-const routeFiles = walk(path.join(root, 'apps/backend/src/modules'), (f) => f.endsWith('routes.ts'));
+const routeFiles = walk(path.join(root, 'packages/domain/src/modules'), (f) => f.endsWith('routes.ts'));
 const endpoints = [];
 const routeRe = /Router\.(get|post|patch|put|delete)\(\s*\n?\s*['"`]([^'"`]+)/g;
 for (const file of routeFiles) {
@@ -56,7 +56,7 @@ for (const file of routeFiles) {
 }
 
 // Schema tables
-const schemaDir = path.join(root, 'apps/backend/src/db/schema');
+const schemaDir = path.join(root, 'packages/domain/src/db/schema');
 const tables = [];
 for (const file of fs.readdirSync(schemaDir)) {
   if (!file.endsWith('.ts') || file === 'index.ts' || file === 'enums.ts') continue;

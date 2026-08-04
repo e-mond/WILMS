@@ -1,14 +1,16 @@
 # WILMS
 
-**Women's Interest-Free Loan Management System** � a TypeScript monorepo for borrower onboarding, group lending, loan lifecycle management, weekly collections, expense tracking, audit trails, and role-based reporting.
+**Women's Interest-Free Loan Management System** — a TypeScript monorepo for borrower onboarding, group lending, loan lifecycle management, weekly collections, expense tracking, audit trails, and role-based reporting.
 
 | | |
 |---|---|
-| **Current version** | `1.4.3` (see root `package.json` / `NEXT_PUBLIC_APP_VERSION` in the UI) |
-| **Frontend** | Next.js 14 App Router, React, TanStack Query, Tailwind |
-| **API** | Express, Drizzle ORM, Neon PostgreSQL |
+| **Current version** | `1.5.0` (see root `package.json` / `NEXT_PUBLIC_APP_VERSION` in the UI) |
+| **Application** | Next.js 14 App Router (UI + Route Handlers) |
+| **Domain** | `@wilms/domain` — Drizzle ORM, Neon PostgreSQL, financial engine, RBAC |
 | **Runtime** | Node.js 22+ (`engines`, `.nvmrc`, CI) |
-| **Production** | [wilms.vercel.app](https://wilms.vercel.app) � API on Railway |
+| **Production** | [wilms.vercel.app](https://wilms.vercel.app) — single Vercel deployment (UI + API + Cron) |
+
+> Platform consolidation details: [`V15_PLATFORM_CONSOLIDATION_REPORT.md`](./V15_PLATFORM_CONSOLIDATION_REPORT.md)
 
 ---
 
@@ -105,7 +107,7 @@ npm run dev
 # Default: http://127.0.0.1:3000
 ```
 
-The frontend proxies API calls through `/api/wilms/*` to `WILMS_API_UPSTREAM`.
+By default the Next.js app serves `/api/wilms/*` in-process via `@wilms/domain`. Set `WILMS_API_MODE=proxy` and `WILMS_API_UPSTREAM` only for dual-run against a separate Node API process.
 
 ### Data modes
 
@@ -131,7 +133,11 @@ Copy from `.env.example`. Key groups:
 | `NEXT_PUBLIC_API_BASE_URL` | Leave empty to use same-origin BFF proxy |
 | `NEXT_PUBLIC_USE_MOCK` | Force API vs mock in non-production builds |
 | `NEXT_PUBLIC_WILMS_ENV` | Display label: `development` / `staging` / `production` |
-| `WILMS_API_UPSTREAM` | BFF proxy target (e.g. `http://127.0.0.1:4000`) |
+| `WILMS_API_MODE` | Optional `proxy` for dual-run; omit for in-process API |
+| `WILMS_API_UPSTREAM` | Dual-run only: Node API URL (e.g. `http://127.0.0.1:4000`) |
+| `DATABASE_URL` | Neon pooled URL (required for live API on Vercel) |
+| `REDIS_URL` / `WILMS_REDIS_URL` | Required for serverless production rate limiting |
+| `WILMS_SCHEDULER_TOKEN` / `CRON_SECRET` | Vercel Cron auth |
 
 ### Backend / database
 
@@ -141,14 +147,14 @@ Copy from `.env.example`. Key groups:
 | `WILMS_SESSION_SECRET` | Session signing secret (required in production) |
 | `WILMS_CORS_ORIGIN` | Allowed browser origin for direct API calls |
 
-### Integrations (configure in Railway/Vercel secrets)
+### Integrations (configure in Vercel Preview + Production secrets)
 
 | Variable | Purpose |
 |----------|---------|
 | `SMS_PROVIDER` / `SMSNOTIFYGH_*` | SMSNotifyGH outbound SMS |
 | `MAIL_PROVIDER` / `GMAIL_*` / `RESEND_API_KEY` | Transactional email |
 | `UPLOAD_PROVIDER` / `CLOUDINARY_*` | Photo and document uploads |
-| `WILMS_VERCEL_MAIL_URL` + `WILMS_INTERNAL_MAIL_SECRET` | Vercel Gmail relay from Railway API |
+| `WILMS_INTERNAL_MAIL_SECRET` | Internal mail relay secret (same-origin on Vercel) |
 
 Integration status is surfaced in **Settings ? Integrations** with setup hints when credentials are missing.
 
@@ -167,7 +173,7 @@ npm run test -w @wilms/api  # API unit tests
 npm run build               # Production Next.js build
 
 # Database
-npm run db:migrate -w @wilms/api
+npm run db:migrate -w @wilms/domain
 npm run seed:ghana-locations
 
 # Production verification (requires live URLs)
@@ -245,16 +251,16 @@ Registration review screens export structured **PDF / Word / Print** agreement d
 
 ## Deployment
 
-### API (Railway)
+### API (Vercel / optional Node dual-run)
 
 ```bash
 railway up --detach
 ```
 
-Set `DATABASE_URL`, `WILMS_SESSION_SECRET`, SMS/mail/upload secrets in Railway variables. Run migrations after deploy:
+Set `DATABASE_URL`, `WILMS_SESSION_SECRET`, `REDIS_URL`, SMS/mail/upload secrets in Vercel. Run migrations against Neon before/after promote:
 
 ```bash
-npm run db:migrate -w @wilms/api
+npm run db:migrate -w @wilms/domain
 ```
 
 ### Frontend (Vercel)
@@ -263,7 +269,7 @@ npm run db:migrate -w @wilms/api
 vercel deploy --prod --yes
 ```
 
-Set `WILMS_API_UPSTREAM` to the Railway API URL. Gmail credentials live on Vercel when using the mail relay.
+Prefer in-process API (no upstream). For dual-run only, set `WILMS_API_MODE=proxy` and `WILMS_API_UPSTREAM`. Configure mail/SMS on Vercel.
 
 ### Post-deploy checks
 
@@ -336,7 +342,7 @@ Historical certification evidence is preserved under `docs/archive/`.
 | Symptom | Likely cause | Action |
 |---------|--------------|--------|
 | API health fails | API not running | `npm run dev:api` � check `http://127.0.0.1:4000/health` |
-| UI shows mock data unexpectedly | Mock mode default in frontend | Set `apps/frontend/.env.local` with `NEXT_PUBLIC_USE_MOCK=false` and `WILMS_API_UPSTREAM` |
+| UI shows mock data unexpectedly | Mock mode default in frontend | Set `apps/frontend/.env.local` with `NEXT_PUBLIC_USE_MOCK=false` and `NEXT_PUBLIC_API_BASE_URL=/api/wilms` |
 | BFF returns 403 | CSRF on `/api/wilms` | Use the browser UI session; do not raw-curl mutating BFF routes |
 | Demo login fails on production | Expected | Demo `@wilms.demo` accounts are blocked live � use invited users |
 | Operations nav opens Dashboard | Fixed in **1.4.1** | Upgrade; ensure `/ops` is in route permission matrix |
