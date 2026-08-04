@@ -164,7 +164,16 @@ const nextConfig = {
 
     config.externals = config.externals || [];
     if (Array.isArray(config.externals)) {
-      config.externals.push({ 'web-push': 'commonjs web-push' });
+      config.externals.push({
+        'web-push': 'commonjs web-push',
+        bcrypt: 'commonjs bcrypt',
+        'bcryptjs': 'commonjs bcryptjs',
+        ioredis: 'commonjs ioredis',
+        bullmq: 'commonjs bullmq',
+        ws: 'commonjs ws',
+        cloudinary: 'commonjs cloudinary',
+        '@neondatabase/serverless': 'commonjs @neondatabase/serverless',
+      });
     }
 
     return config;
