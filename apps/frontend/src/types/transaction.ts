@@ -46,6 +46,19 @@ export interface AwaitingAdminFeeBorrower {
   requiredAmountPesewas: number;
 }
 
+export interface CollectedAdminFeeRecord {
+  borrowerId: string;
+  borrowerName: string;
+  phone: string;
+  community: string;
+  groupName: string;
+  amountPesewas: number;
+  collectorId: string;
+  collectorName?: string;
+  transactionId: string;
+  recordedAt: string;
+}
+
 export interface DisbursementEligibility {
   borrowerId: string;
   canDisburse: boolean;

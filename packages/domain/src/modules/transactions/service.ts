@@ -5,7 +5,9 @@ import {
   getAdminFee,
   getBorrower,
   hasAdminFee,
+  listAdminFees,
   listApprovedBorrowersWithoutAdminFee,
+  listBorrowers,
   saveAdminFee,
 } from '../../db/persistence.js';
 import * as memory from '../../db/store.js';
@@ -44,6 +46,19 @@ export interface AwaitingAdminFeeBorrower {
   community: string;
   groupName: string;
   requiredAmountPesewas: number;
+}
+
+export interface CollectedAdminFeeRecord {
+  borrowerId: string;
+  borrowerName: string;
+  phone: string;
+  community: string;
+  groupName: string;
+  amountPesewas: number;
+  collectorId: string;
+  collectorName?: string;
+  transactionId: string;
+  recordedAt: string;
 }
 
 function assertApprovedBorrower(borrowerId: string) {
@@ -167,6 +182,47 @@ export async function listBorrowersAwaitingAdminFee(): Promise<AwaitingAdminFeeB
   }
 
   return memory.listBorrowersAwaitingAdminFeeInMemory(requiredAmountPesewas);
+}
+
+export async function listCollectedAdminFees(filter?: {
+  collectorId?: string;
+}): Promise<CollectedAdminFeeRecord[]> {
+  const fees = await listAdminFees(filter);
+  if (fees.length === 0) {
+    return [];
+  }
+
+  const borrowers = await listBorrowers();
+  const borrowerById = new Map(borrowers.map((borrower) => [borrower.id, borrower]));
+
+  const collectorIds = [...new Set(fees.map((fee) => fee.collectorId))];
+  const collectorNames = new Map<string, string>();
+  if (isDatabaseEnabled()) {
+    await Promise.all(
+      collectorIds.map(async (collectorId) => {
+        const collector = await userRepo.getUserById(collectorId).catch(() => null);
+        if (collector?.displayName) {
+          collectorNames.set(collectorId, collector.displayName);
+        }
+      }),
+    );
+  }
+
+  return fees.map((fee) => {
+    const borrower = borrowerById.get(fee.borrowerId);
+    return {
+      borrowerId: fee.borrowerId,
+      borrowerName: borrower?.fullName ?? 'Borrower',
+      phone: borrower?.phone ?? '—',
+      community: borrower?.community ?? '—',
+      groupName: borrower?.groupName || '—',
+      amountPesewas: fee.amountPesewas,
+      collectorId: fee.collectorId,
+      collectorName: collectorNames.get(fee.collectorId),
+      transactionId: fee.transactionId,
+      recordedAt: fee.recordedAt,
+    };
+  });
 }
 
 /** Borrower admin fees are per borrower before first loan — never required on collector login. */
