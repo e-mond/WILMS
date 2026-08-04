@@ -1,6 +1,5 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { handleWilmsFetchRequest } from '@wilms/domain';
 import { resolveWilmsProxyUpstreamPath } from '@/lib/api/upstream-path';
 import { rejectInvalidCsrf } from '@/lib/auth/csrf-server';
 import { SESSION_COOKIE_NAME } from '@/lib/auth/session';
@@ -14,9 +13,29 @@ function isPhotoCapturePublicPath(path: string): boolean {
   return path.startsWith('photo-capture/sessions/');
 }
 
+function hasUsableUpstream(): boolean {
+  const raw = process.env.WILMS_API_UPSTREAM?.trim();
+  if (!raw) return false;
+  try {
+    const url = new URL(raw);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+function resolveApiMode(): 'proxy' | 'inprocess' {
+  const mode = process.env.WILMS_API_MODE?.trim().toLowerCase();
+  if (mode === 'proxy') return 'proxy';
+  if (mode === 'inprocess' || mode === 'in-process') return 'inprocess';
+  // Migration safety: valid Railway-style upstream still set → prefer proxy
+  // until operators explicitly set WILMS_API_MODE=inprocess.
+  if (hasUsableUpstream()) return 'proxy';
+  return 'inprocess';
+}
+
 /**
- * Same-origin Route Handler: runs @wilms/domain (Express app) in-process.
- * Falls back to WILMS_API_UPSTREAM proxy only when WILMS_API_MODE=proxy (dual-run).
+ * Same-origin Route Handler: runs @wilms/domain in-process, or proxies upstream when configured.
  */
 async function handleRequest(request: Request, pathSegments: string[]): Promise<Response> {
   const method = request.method.toUpperCase();
@@ -38,7 +57,7 @@ async function handleRequest(request: Request, pathSegments: string[]): Promise<
   const expressPathWithSearch = resolveWilmsProxyUpstreamPath(path, search);
   const expressPath = expressPathWithSearch.split('?')[0] ?? expressPathWithSearch;
 
-  if (process.env.WILMS_API_MODE?.trim().toLowerCase() === 'proxy') {
+  if (resolveApiMode() === 'proxy') {
     return proxyToUpstream(request, expressPathWithSearch);
   }
 
@@ -55,11 +74,19 @@ async function handleRequest(request: Request, pathSegments: string[]): Promise<
   });
 
   try {
+    const { handleWilmsFetchRequest } = await import('@wilms/domain');
     return await handleWilmsFetchRequest(forwarded, { expressPath });
   } catch (error) {
     console.error('[wilms-api] in-process handler failed', error);
     return NextResponse.json(
-      { error: { message: 'API temporarily unavailable.', code: 'API_UNAVAILABLE' } },
+      {
+        error: {
+          message: 'API temporarily unavailable.',
+          code: 'API_UNAVAILABLE',
+          detail:
+            error instanceof Error ? error.message : 'Unknown in-process API failure',
+        },
+      },
       { status: 503 },
     );
   }
@@ -70,7 +97,8 @@ async function proxyToUpstream(request: Request, upstreamPath: string): Promise<
     '@/lib/api/proxy-headers'
   );
 
-  const upstream = process.env.WILMS_API_UPSTREAM?.trim()?.replace(/\/$/, '') || 'http://127.0.0.1:4000';
+  const upstream =
+    process.env.WILMS_API_UPSTREAM?.trim()?.replace(/\/$/, '') || 'http://127.0.0.1:4000';
   const upstreamUrl = `${upstream}${upstreamPath}`;
   const sessionCookie = cookies().get(SESSION_COOKIE_NAME)?.value;
   const headers = sanitizeProxyRequestHeaders(request.headers);
