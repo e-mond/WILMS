@@ -31,9 +31,10 @@ import {
 } from '@/utils/reconciliation.schema';
 import { RECONCILIATION_FLAGGED_COMMENT_MIN_LENGTH } from '@/constants/reconciliation';
 import { formatDisplayDate } from '@/utils/format-date';
+import { getWeekdayNameFromIsoDate, localIsoDate } from '@/utils/weekday';
 
 function defaultReconciliationDate(): string {
-  return new Date().toISOString().slice(0, 10);
+  return localIsoDate();
 }
 
 export function ReconciliationForm() {
@@ -53,31 +54,40 @@ export function ReconciliationForm() {
     data?.submitted && data.status !== 'REJECTED' && data.status !== 'REOPENED',
   );
 
-  const previewVariancePesewas = useMemo(() => {
-    if (!data || !physicalCashGhs.trim()) {
+  const previewPhysicalPesewas = useMemo(() => {
+    if (!physicalCashGhs.trim()) {
       return null;
     }
-
     const parsed = reconciliationFormSchema.safeParse({ physicalCashGhs });
-
     if (!parsed.success) {
       return null;
     }
+    return ghsInputToPesewas(parsed.data.physicalCashGhs);
+  }, [physicalCashGhs]);
 
-    return calculatePrimaryVariancePesewas(
-      ghsInputToPesewas(parsed.data.physicalCashGhs),
-      data.expectedPesewas,
-    );
-  }, [data, physicalCashGhs]);
+  const previewVariancePesewas = useMemo(() => {
+    if (!data || previewPhysicalPesewas === null) {
+      return null;
+    }
+
+    return calculatePrimaryVariancePesewas(previewPhysicalPesewas, data.expectedPesewas);
+  }, [data, previewPhysicalPesewas]);
 
   const previewVarianceFlagged = useMemo(() => {
-    if (!data || previewVariancePesewas === null) {
+    if (!data || previewVariancePesewas === null || previewPhysicalPesewas === null) {
       return false;
     }
 
-    return isVarianceAboveThreshold(previewVariancePesewas, data.expectedPesewas);
-  }, [data, previewVariancePesewas]);
+    const collectionDeltaPesewas = previewPhysicalPesewas - data.actualPesewas;
+    return isVarianceAboveThreshold(
+      previewVariancePesewas,
+      data.expectedPesewas,
+      RECONCILIATION_VARIANCE_THRESHOLD_PERCENT,
+      collectionDeltaPesewas,
+    );
+  }, [data, previewVariancePesewas, previewPhysicalPesewas]);
 
+  const paymentDayLabel = getWeekdayNameFromIsoDate(date);
   if (!user?.id) {
     return (
       <EmptyState
@@ -181,7 +191,7 @@ export function ReconciliationForm() {
       <ExecutiveKpiGrid>
         <KpiCard
           variant="executive"
-          label="Expected collections"
+          label={`Expected (${paymentDayLabel})`}
           value={<CurrencyAmount value={data.expectedPesewas} />}
         />
         <KpiCard
@@ -195,6 +205,8 @@ export function ReconciliationForm() {
           value={
             data.submitted && data.physicalCashPesewas !== undefined ? (
               <CurrencyAmount value={data.physicalCashPesewas} />
+            ) : previewPhysicalPesewas !== null ? (
+              <CurrencyAmount value={previewPhysicalPesewas} />
             ) : (
               '—'
             )
@@ -216,13 +228,21 @@ export function ReconciliationForm() {
       </ExecutiveKpiGrid>
 
       <p className="text-small text-text-muted">
-        Status:{' '}
+        Expected is the sum of weekly installments for active loans due on {paymentDayLabel}. Status:{' '}
         <span className="font-semibold text-text-primary">
           {reconciliationLifecycleLabel(data.status, data.submitted)}
         </span>
         {data.submittedAt ? ` · Submitted ${formatDisplayDate(data.submittedAt.slice(0, 10))}` : ''}
         {data.reviewedAt ? ` · Reviewed ${formatDisplayDate(data.reviewedAt.slice(0, 10))}` : ''}
       </p>
+
+      {!formLocked && data.expectedPesewas === 0 ? (
+        <Alert title="No collections due this weekday" variant="info">
+          There are no active loans assigned to you with payment day {paymentDayLabel}. Enter{' '}
+          <strong>0</strong> physical cash if you collected nothing, or add a short explanation if you
+          are holding cash anyway.
+        </Alert>
+      ) : null}
 
       {formLocked ? (
         <Alert
@@ -243,9 +263,10 @@ export function ReconciliationForm() {
       ) : null}
 
       {!formLocked && previewVarianceFlagged ? (
-        <Alert title="Variance will stay pending" variant="warning">
-          Variance exceeds {RECONCILIATION_VARIANCE_THRESHOLD_PERCENT}% of expected collections.
-          Submitting will mark this reconciliation as Pending for Super Admin approval.
+        <Alert title="Explanation required" variant="warning">
+          {data.expectedPesewas === 0
+            ? 'No collections were due today, so any physical cash other than 0 must be explained (at least 10 characters) before submit.'
+            : `Variance exceeds the auto-approve rules (absolute mismatch ≥ GH₵1.00 or more than ${RECONCILIATION_VARIANCE_THRESHOLD_PERCENT}% of expected). Add a short explanation for Super Admin review.`}
         </Alert>
       ) : null}
 

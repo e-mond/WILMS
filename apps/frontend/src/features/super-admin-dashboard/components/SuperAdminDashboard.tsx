@@ -44,6 +44,7 @@ const KPI_ICON_NAMES: Record<string, DashboardKpiIconName> = {
   pool: 'pool',
   disbursed: 'outstanding',
   collected: 'collected',
+  'admin-fees': 'collected',
   outstanding: 'outstanding',
   'collected-today': 'collected',
   'collected-total': 'collected',

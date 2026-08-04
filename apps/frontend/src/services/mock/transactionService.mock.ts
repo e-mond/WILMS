@@ -4,12 +4,18 @@ import { getCollectorDisplayName } from '@/services/mock/collector-display-name'
 import {
   appendFinancialTransaction,
   findAdminFeeForBorrower,
+  getFinancialTransactions,
   resetFinancialTransactions,
 } from '@/services/mock/transaction-log.store';
 import { simulateDelay } from '@/services/mock/delay';
 import { BORROWER_STATUS } from '@/types/borrower';
 import { API_ERROR_CODE, ApiError } from '@/types/api';
-import { TRANSACTION_TYPE, type FinancialTransaction, type RecordAdminFeeInput } from '@/types/transaction';
+import {
+  TRANSACTION_TYPE,
+  type CollectedAdminFeeRecord,
+  type FinancialTransaction,
+  type RecordAdminFeeInput,
+} from '@/types/transaction';
 import type { ITransactionService } from '@/types/services';
 
 function assertApprovedBorrower(borrowerId: string) {
@@ -87,6 +93,35 @@ const transactionServiceMock: ITransactionService = {
         requiredAmountPesewas: MOCK_ADMIN_FEE_PESEWAS,
       }))
       .sort((left, right) => left.fullName.localeCompare(right.fullName));
+  },
+
+  async listCollectedAdminFees(filter?: {
+    collectorId?: string;
+  }): Promise<CollectedAdminFeeRecord[]> {
+    await simulateDelay();
+
+    return getFinancialTransactions()
+      .filter(
+        (transaction) =>
+          transaction.type === TRANSACTION_TYPE.ADMIN_FEE &&
+          (!filter?.collectorId || transaction.collectorId === filter.collectorId),
+      )
+      .map((transaction) => {
+        const borrower = getBorrowerRegistryEntry(transaction.borrowerId);
+        return {
+          borrowerId: transaction.borrowerId,
+          borrowerName: borrower?.fullName ?? 'Borrower',
+          phone: borrower?.phone ?? '—',
+          community: borrower?.community ?? '—',
+          groupName: borrower?.groupName ?? '—',
+          amountPesewas: transaction.amountPesewas,
+          collectorId: transaction.collectorId,
+          collectorName: getCollectorDisplayName(transaction.collectorId),
+          transactionId: transaction.id,
+          recordedAt: transaction.recordedAt,
+        };
+      })
+      .sort((left, right) => right.recordedAt.localeCompare(left.recordedAt));
   },
 };
 

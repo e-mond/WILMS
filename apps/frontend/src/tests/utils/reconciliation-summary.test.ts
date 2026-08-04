@@ -48,13 +48,18 @@ describe('reconciliation-summary utils', () => {
     expect(calculatePrimaryVariancePesewas(4500, 5000)).toBe(-500);
   });
 
-  it('flags variance above the default threshold', () => {
+  it('flags variance above the absolute floor or percent threshold', () => {
     expect(isVarianceAboveThreshold(600, 5000)).toBe(true);
-    expect(isVarianceAboveThreshold(400, 5000)).toBe(false);
+    expect(isVarianceAboveThreshold(100, 5000)).toBe(true);
+    expect(isVarianceAboveThreshold(50, 5000)).toBe(false);
   });
 
-  it('does not flag variance when no collections were expected', () => {
-    expect(isVarianceAboveThreshold(100, 0)).toBe(false);
+  it('flags variance when expected is zero but physical cash is not', () => {
+    expect(isVarianceAboveThreshold(100, 0)).toBe(true);
     expect(isVarianceAboveThreshold(0, 0)).toBe(false);
+  });
+
+  it('flags variance when physical cash differs from system-recorded collections', () => {
+    expect(isVarianceAboveThreshold(0, 5000, 10, 100)).toBe(true);
   });
 });
