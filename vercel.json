@@ -10,16 +10,6 @@
       "schedule": "0 6 * * *"
     }
   ],
-  "functions": {
-    "apps/frontend/src/app/api/wilms/[...path]/route.ts": {
-      "maxDuration": 60,
-      "memory": 1024
-    },
-    "apps/frontend/src/app/api/cron/notifications/route.ts": {
-      "maxDuration": 300,
-      "memory": 1024
-    }
-  },
   "headers": [
     {
       "source": "/_next/static/(.*)",
