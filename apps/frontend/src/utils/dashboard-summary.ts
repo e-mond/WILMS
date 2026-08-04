@@ -1,6 +1,6 @@
 import { DEMO_OPERATING_POOL_PESEWAS } from '@/constants/dashboard';
 import { resolveDashboardCollectorName } from '@/constants/dashboard-demo-collectors';
-import { MOCK_ADMIN_FEE_PESEWAS } from '@/mocks/system-settings';
+import { DEFAULT_ADMIN_FEE_PESEWAS } from '@/constants/admin-fee';
 import { BORROWER_STATUS, type BorrowerStatus } from '@/types/borrower';
 import { DASHBOARD_ALERT_CATEGORY_META } from '@/constants/dashboard-alerts';
 import type {
@@ -413,7 +413,7 @@ export function buildDashboardSummary(input: BuildDashboardSummaryInput): Dashbo
   const approvedBorrowerCount = input.borrowers.filter(
     (borrower) => borrower.status === BORROWER_STATUS.APPROVED,
   ).length;
-  const adminFeesExpectedPesewas = approvedBorrowerCount * MOCK_ADMIN_FEE_PESEWAS;
+  const adminFeesExpectedPesewas = approvedBorrowerCount * DEFAULT_ADMIN_FEE_PESEWAS;
   const adminFeesOutstandingPesewas = Math.max(
     0,
     adminFeesExpectedPesewas - adminFeesCollectedPesewas,
