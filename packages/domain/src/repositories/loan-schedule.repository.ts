@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import type { WilmsDb } from '../db/client.js';
 import { getDb } from '../db/client.js';
 import { loanSchedules } from '../db/schema/loan-schedules.js';
@@ -33,6 +33,27 @@ export async function listScheduleWeeks(loanId: string, tx: WilmsDb = getDb()) {
     .orderBy(loanSchedules.weekNumber);
 }
 
+/** Batch lookup of schedule weeks due on a date for many loans (collector dashboard). */
+export async function listScheduleWeeksForLoansOnDate(
+  loanIds: string[],
+  dueDate: string,
+  tx: WilmsDb = getDb(),
+) {
+  if (loanIds.length === 0) {
+    return [];
+  }
+
+  return tx
+    .select({
+      loanId: loanSchedules.loanId,
+      weekNumber: loanSchedules.weekNumber,
+      dueDate: loanSchedules.dueDate,
+      status: loanSchedules.status,
+    })
+    .from(loanSchedules)
+    .where(and(inArray(loanSchedules.loanId, loanIds), eq(loanSchedules.dueDate, dueDate)));
+}
+
 export async function markWeekPaid(
   input: {
     loanId: string;
@@ -46,6 +67,38 @@ export async function markWeekPaid(
     .set({
       status: 'PAID',
       paidAt: new Date(),
+      updatedAt: new Date(),
+      version: input.expectedVersion + 1,
+    })
+    .where(
+      and(
+        eq(loanSchedules.loanId, input.loanId),
+        eq(loanSchedules.weekNumber, input.weekNumber),
+        eq(loanSchedules.version, input.expectedVersion),
+      ),
+    )
+    .returning();
+
+  if (result.length === 0) {
+    throw new Error('CONFLICT:Schedule week was modified by another request.');
+  }
+
+  return result[0]!;
+}
+
+/** Explicit collector mark of a PENDING week as MISSED (same-day collection sheet). */
+export async function markWeekMissed(
+  input: {
+    loanId: string;
+    weekNumber: number;
+    expectedVersion: number;
+  },
+  tx: WilmsDb = getDb(),
+) {
+  const result = await tx
+    .update(loanSchedules)
+    .set({
+      status: 'MISSED',
       updatedAt: new Date(),
       version: input.expectedVersion + 1,
     })

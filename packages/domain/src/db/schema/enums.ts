@@ -89,6 +89,7 @@ export const auditActionEnum = pgEnum('audit_action', [
   'BORROWER_BLACKLISTED',
   'PAYMENT_RECORDED',
   'PAYMENT_EDITED',
+  'PAYMENT_MISSED_MARKED',
   'OVERPAYMENT_FLAGGED',
   'OVERPAYMENT_REVIEWED',
   'ADJUSTMENT_REQUESTED',
@@ -211,6 +212,7 @@ export const idempotencyScopeEnum = pgEnum('idempotency_scope', [
   'ADJUSTMENT_APPROVE',
   'REVERSAL_EXECUTE',
   'RECONCILIATION_SUBMIT',
+  'PAYMENT_MISSED_MARK',
 ]);
 
 export const loanPoolStatusEnum = pgEnum('loan_pool_status', [

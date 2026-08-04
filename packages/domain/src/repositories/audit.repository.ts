@@ -12,6 +12,7 @@ const ACTION_MAP = {
   'borrower.registration-deleted': 'BORROWER_REGISTERED',
   'payment.recorded': 'PAYMENT_RECORDED',
   'payment.edited': 'PAYMENT_EDITED',
+  'payment.missed_marked': 'PAYMENT_MISSED_MARKED',
   'loan.created': 'LOAN_CREATED',
   'loan.approved': 'LOAN_APPROVED',
   'loan.rejected': 'LOAN_REJECTED',

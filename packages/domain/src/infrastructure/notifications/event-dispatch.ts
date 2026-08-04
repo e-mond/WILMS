@@ -22,6 +22,7 @@ import {
   buildLoanDefaultEmail,
   buildLoanDisbursedEmail,
   buildLoanDisbursedSmsBody,
+  buildLoanDisbursedScheduleSmsBody,
   buildLoanFullyPaidEmail,
   buildLoanRejectedEmail,
   buildLoanRejectedSmsBody,
@@ -761,6 +762,10 @@ export async function notifyLoanDisbursed(input: {
   amountPesewas: number;
   disbursedDate?: string;
   collectorUserId?: string;
+  weeklyAmountPesewas?: number;
+  paymentDay?: string;
+  totalWeeks?: number;
+  firstDueDate?: string;
 }): Promise<void> {
   const settings = await getSettings();
   const disbursedDate = input.disbursedDate ?? new Date().toISOString().slice(0, 10);
@@ -774,6 +779,29 @@ export async function notifyLoanDisbursed(input: {
       borrowerId: input.borrowerId,
       loanId: input.loanId,
     });
+
+    if (
+      typeof input.weeklyAmountPesewas === 'number' &&
+      input.paymentDay &&
+      typeof input.totalWeeks === 'number' &&
+      input.firstDueDate
+    ) {
+      await dispatchSms({
+        event: 'LOAN_DISBURSED',
+        to: input.borrowerPhone,
+        body: buildLoanDisbursedScheduleSmsBody({
+          borrowerName: input.borrowerName,
+          loanDisplayId: input.loanDisplayId,
+          weeklyAmountPesewas: input.weeklyAmountPesewas,
+          paymentDay: input.paymentDay,
+          totalWeeks: input.totalWeeks,
+          firstDueDate: input.firstDueDate,
+        }),
+        enabled: settings.smsNotificationsEnabled,
+        borrowerId: input.borrowerId,
+        loanId: input.loanId,
+      });
+    }
   }
 
   if (input.borrowerEmail) {

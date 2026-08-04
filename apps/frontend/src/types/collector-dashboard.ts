@@ -87,6 +87,7 @@ export interface CollectorDashboardBorrower {
   borrowerPhotoUrl?: string;
   phone: string;
   community: string;
+  groupId: string;
   groupName: string;
   loanId: string;
   expectedPesewas: number;
