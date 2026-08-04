@@ -4,6 +4,8 @@ import { AUDIT_ACTION, AUDIT_TARGET_ENTITY } from '@/constants/audit';
 import {
   PAYMENT_TRANSACTION_STATUS,
   type EditPaymentInput,
+  type MarkMissedPaymentInput,
+  type MarkMissedPaymentResult,
   type PaymentTransaction,
   type RecordPaymentInput,
 } from '@/types/payment';
@@ -281,6 +283,49 @@ const paymentServiceMock: IPaymentService = {
     }
 
     return transaction;
+  },
+
+  async markMissedPayment(input: MarkMissedPaymentInput): Promise<MarkMissedPaymentResult> {
+    await simulateDelay();
+
+    const context = await buildContextForBorrower(input.borrowerId, input.paymentDate);
+    const scheduleWeeks = getStoredLoanSchedule(context.loanId, input.paymentDate) ?? [];
+    const payable =
+      scheduleWeeks.find(
+        (week) =>
+          (week.status === 'PENDING' || week.status === 'MISSED') &&
+          week.dueDate === input.paymentDate,
+      ) ?? scheduleWeeks.find((week) => week.status === 'PENDING' || week.status === 'MISSED');
+
+    if (!payable) {
+      throw new ApiError(
+        'No unpaid schedule week to mark as missed.',
+        API_ERROR_CODE.VALIDATION,
+        422,
+      );
+    }
+
+    if (payable.status !== 'MISSED') {
+      const updated = scheduleWeeks.map((week) =>
+        week.weekNumber === payable.weekNumber ? { ...week, status: 'MISSED' as const } : week,
+      );
+      saveLoanSchedule(context.loanId, updated);
+    }
+
+    const weeksRemaining = (getStoredLoanSchedule(context.loanId, input.paymentDate) ?? []).filter(
+      (week) => week.status === 'PENDING' || week.status === 'MISSED',
+    ).length;
+
+    return {
+      loanId: context.loanId,
+      borrowerId: input.borrowerId,
+      weekNumber: payable.weekNumber,
+      dueDate: payable.dueDate,
+      status: 'MISSED',
+      amountPesewas: payable.amountPesewas,
+      remainingBalancePesewas: context.totalOutstandingObligationsPesewas,
+      weeksRemaining,
+    };
   },
 
   async getPayment(paymentId: string) {

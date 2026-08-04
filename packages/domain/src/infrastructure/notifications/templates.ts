@@ -16,6 +16,8 @@ import {
 export interface PaymentConfirmationSmsInput {
   amountPesewas: number;
   paymentDate: string;
+  remainingBalancePesewas?: number;
+  weeksRemaining?: number;
 }
 
 export interface LoanApprovalSmsInput {
@@ -30,6 +32,17 @@ export interface MissedPaymentSmsInput {
   dueDate?: string;
   /** Legacy aggregate count when dueDate is unavailable. */
   weeksOverdue?: number;
+  remainingBalancePesewas?: number;
+  weeksRemaining?: number;
+}
+
+export interface LoanDisbursedScheduleSmsInput {
+  borrowerName: string;
+  loanDisplayId: string;
+  weeklyAmountPesewas: number;
+  paymentDay: string;
+  totalWeeks: number;
+  firstDueDate: string;
 }
 
 export interface PaymentConfirmationEmailInput {
@@ -54,7 +67,17 @@ export function formatGhsAmount(amountPesewas: number): string {
 
 export function buildPaymentConfirmationSmsBody(input: PaymentConfirmationSmsInput): string {
   const amountGhs = formatGhsAmount(input.amountPesewas);
-  return `WILMS: Payment of GHS ${amountGhs} received on ${input.paymentDate}. Thank you.`;
+  const parts = [`WILMS: Payment of GHS ${amountGhs} received on ${input.paymentDate}.`];
+  if (typeof input.remainingBalancePesewas === 'number') {
+    parts.push(`Balance GHS ${formatGhsAmount(input.remainingBalancePesewas)}.`);
+  }
+  if (typeof input.weeksRemaining === 'number') {
+    parts.push(`${input.weeksRemaining} week${input.weeksRemaining === 1 ? '' : 's'} remaining.`);
+  }
+  if (parts.length === 1) {
+    parts.push('Thank you.');
+  }
+  return parts.join(' ');
 }
 
 export function buildLoanApprovalSmsBody(input: LoanApprovalSmsInput): string {
@@ -65,10 +88,25 @@ export function buildLoanApprovalSmsBody(input: LoanApprovalSmsInput): string {
 export function buildMissedPaymentSmsBody(input: MissedPaymentSmsInput): string {
   const amountGhs = formatGhsAmount(input.amountPesewas);
   if (input.dueDate) {
-    return `WILMS: Hi ${input.borrowerName}, your scheduled payment of GHS ${amountGhs} was not recorded for ${input.dueDate}. Please contact your collector to arrange payment.`;
+    const parts = [
+      `WILMS: Hi ${input.borrowerName}, your scheduled payment of GHS ${amountGhs} was not recorded for ${input.dueDate}.`,
+    ];
+    if (typeof input.remainingBalancePesewas === 'number') {
+      parts.push(`Balance GHS ${formatGhsAmount(input.remainingBalancePesewas)}.`);
+    }
+    if (typeof input.weeksRemaining === 'number') {
+      parts.push(`${input.weeksRemaining} week${input.weeksRemaining === 1 ? '' : 's'} remaining.`);
+    }
+    parts.push('Please contact your collector.');
+    return parts.join(' ');
   }
   const weeks = input.weeksOverdue ?? 1;
   return `WILMS: Hi ${input.borrowerName}, you have ${weeks} missed payment(s). Outstanding: GHS ${amountGhs}. Please contact your collector.`;
+}
+
+export function buildLoanDisbursedScheduleSmsBody(input: LoanDisbursedScheduleSmsInput): string {
+  const weeklyGhs = formatGhsAmount(input.weeklyAmountPesewas);
+  return `WILMS: Hi ${input.borrowerName}, repay loan ${input.loanDisplayId} every ${input.paymentDay}: GHS ${weeklyGhs} for ${input.totalWeeks} weeks. First due ${input.firstDueDate}.`;
 }
 
 export function buildBorrowerRegistrationApprovalSmsBody(input: { borrowerName: string }): string {

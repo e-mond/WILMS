@@ -171,6 +171,50 @@ paymentsRouter.get(
 );
 
 paymentsRouter.post(
+  '/payments/missed',
+  requirePermission(PERMISSION.RECORD_COLLECTIONS),
+  validateBody(paymentService.markMissedPaymentSchema),
+  asyncHandler(async (req, res) => {
+    const raw = req.body as z.infer<typeof paymentService.markMissedPaymentSchema>;
+    const input = {
+      ...raw,
+      collectorId:
+        req.session!.role === 'COLLECTOR' ? req.session!.userId : raw.collectorId,
+    };
+    const idempotencyKey = req.header('Idempotency-Key') ?? undefined;
+
+    if (req.session!.role === 'COLLECTOR') {
+      try {
+        await assertBorrowerReadAccess(req.session!, input.borrowerId);
+      } catch (error) {
+        if (error instanceof Error && error.message === 'FORBIDDEN') {
+          throw new AppError(
+            'You may only mark missed payments for assigned borrowers.',
+            ERROR_CODE.UNAUTHORIZED,
+            403,
+          );
+        }
+        throw error;
+      }
+    }
+
+    if (!isDatabaseEnabled()) {
+      throw new AppError(
+        'Marking missed payments requires the database.',
+        ERROR_CODE.SERVER,
+        503,
+      );
+    }
+
+    try {
+      sendData(res, await paymentService.markMissedPayment(input, req.session!.userId, idempotencyKey));
+    } catch (error) {
+      mapPaymentError(error);
+    }
+  }),
+);
+
+paymentsRouter.post(
   '/payments',
   requirePermission(PERMISSION.RECORD_COLLECTIONS),
   validateBody(legacyRecordPaymentSchema),

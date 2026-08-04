@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildLoanApprovalEmail,
   buildLoanApprovalSmsBody,
+  buildLoanDisbursedScheduleSmsBody,
   buildMissedPaymentSmsBody,
   buildBorrowerRegistrationApprovalSmsBody,
   buildPaymentConfirmationEmail,
@@ -16,6 +17,19 @@ describe('notification templates', () => {
         paymentDate: '2026-06-20',
       }),
     ).toBe('WILMS: Payment of GHS 125.00 received on 2026-06-20. Thank you.');
+  });
+
+  it('builds payment confirmation SMS with balance and weeks remaining', () => {
+    expect(
+      buildPaymentConfirmationSmsBody({
+        amountPesewas: 5_000,
+        paymentDate: '2026-08-04',
+        remainingBalancePesewas: 45_000,
+        weeksRemaining: 9,
+      }),
+    ).toBe(
+      'WILMS: Payment of GHS 50.00 received on 2026-08-04. Balance GHS 450.00. 9 weeks remaining.',
+    );
   });
 
   it('builds loan approval SMS with borrower name and amount', () => {
@@ -36,6 +50,35 @@ describe('notification templates', () => {
       }),
     ).toBe(
       'WILMS: Hi Kwame Osei, you have 2 missed payment(s). Outstanding: GHS 150.00. Please contact your collector.',
+    );
+  });
+
+  it('builds missed payment SMS with due date, balance, and weeks remaining', () => {
+    expect(
+      buildMissedPaymentSmsBody({
+        borrowerName: 'Ama Mensah',
+        amountPesewas: 5_000,
+        dueDate: '2026-08-04',
+        remainingBalancePesewas: 40_000,
+        weeksRemaining: 8,
+      }),
+    ).toBe(
+      'WILMS: Hi Ama Mensah, your scheduled payment of GHS 50.00 was not recorded for 2026-08-04. Balance GHS 400.00. 8 weeks remaining. Please contact your collector.',
+    );
+  });
+
+  it('builds disbursement schedule SMS with payment day and weeks', () => {
+    expect(
+      buildLoanDisbursedScheduleSmsBody({
+        borrowerName: 'Efua Boateng',
+        loanDisplayId: 'LOAN-001',
+        weeklyAmountPesewas: 5_000,
+        paymentDay: 'Tuesday',
+        totalWeeks: 20,
+        firstDueDate: '2026-08-11',
+      }),
+    ).toBe(
+      'WILMS: Hi Efua Boateng, repay loan LOAN-001 every Tuesday: GHS 50.00 for 20 weeks. First due 2026-08-11.',
     );
   });
 

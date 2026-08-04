@@ -22,6 +22,7 @@ export interface CollectorDashboardLoanInput {
   borrowerName: string;
   phone: string;
   community: string;
+  groupId?: string;
   groupName: string;
   weeklyPaymentPesewas: number;
   paymentDay: string;
@@ -110,6 +111,7 @@ function buildBorrowerRow(
     borrowerPhotoUrl: resolvePersonPhotoUrl({ name: loan.borrowerName, id: loan.borrowerId }),
     phone: loan.phone,
     community: loan.community,
+    groupId: loan.groupId ?? '',
     groupName: loan.groupName,
     loanId: loan.id,
     expectedPesewas: loan.weeklyPaymentPesewas,

@@ -15,7 +15,8 @@ export type IdempotencyScope =
   | 'ADJUSTMENT_CREATE'
   | 'ADJUSTMENT_APPROVE'
   | 'REVERSAL_EXECUTE'
-  | 'RECONCILIATION_SUBMIT';
+  | 'RECONCILIATION_SUBMIT'
+  | 'PAYMENT_MISSED_MARK';
 
 export function hashIdempotencyPayload(payload: unknown): string {
   return createHash('sha256').update(JSON.stringify(payload ?? null)).digest('hex');
