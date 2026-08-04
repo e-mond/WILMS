@@ -14,7 +14,7 @@ WILMS (Women's Interest-Free Loan Management System) is an npm-workspaces + Turb
 - `apps/backend` (`@wilms/api`, folder is `apps/backend`) — Express API, dev on port `4000`.
 - `packages/shared-*` — shared contracts, rbac, types, utils, validation.
 
-Standard commands live in the root `package.json` and `apps/*/package.json` scripts; see also `CONTRIBUTING.md` and `apps/backend/README.md`.
+Standard commands live in the root `package.json` and `apps/*/package.json` scripts; see also `CONTRIBUTING.md`, `apps/backend/README.md`, and `packages/domain/README.md`.
 
 ## Cloud development environment notes
 
@@ -27,8 +27,8 @@ Standard commands live in the root `package.json` and `apps/*/package.json` scri
   WILMS_API_UPSTREAM=http://127.0.0.1:4000
   ```
   Then `npm run dev` (serves `http://127.0.0.1:3000`). The frontend proxies API calls via its BFF route at `/api/wilms/[...path]` to `WILMS_API_UPSTREAM`; that proxy enforces CSRF, so hit the API through the browser UI rather than raw curl against `:3000/api/wilms`.
-- In-memory demo login accounts are defined in `apps/backend/src/seed/demo-users.ts`. Super Admin: `admin@wilms.demo` / `DemoAdmin1!` (other roles: collector/officer/approver/auditor `@wilms.demo`). Passwords are stored as plaintext for demo users and matched via a fallback in `verifyPassword`.
-- `npm run lint` and `npm run test` (frontend) only cover `@wilms/frontend`; run backend tests explicitly with `npm run test -w @wilms/api`. `npm run type-check` covers both.
+- In-memory demo login accounts are defined in `packages/domain/src/seed/demo-users.ts`. Super Admin: `admin@wilms.demo` / `DemoAdmin1!` (other roles: collector/officer/approver/auditor `@wilms.demo`). Passwords are stored as plaintext for demo users and matched via a fallback in `verifyPassword`.
+- `npm run lint` and `npm run test` (frontend) only cover `@wilms/frontend`; run domain/API tests explicitly with `npm run test -w @wilms/domain`. `npm run type-check` covers both.
 
 
 

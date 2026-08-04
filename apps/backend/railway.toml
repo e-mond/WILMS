@@ -1,3 +1,0 @@
-# DEPRECATED — Railway must deploy from monorepo root.
-# Use /railway.toml at repository root and run: railway up (from repo root)
-# Root Directory in Railway dashboard MUST be "/" not "apps/backend".

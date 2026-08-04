@@ -1,24 +1,25 @@
-# Daily payment + communications notification scheduler.
+# Notification scheduler (legacy GitHub Actions trigger)
+#
+# Prefer Vercel Cron (`/api/cron/notifications`) on the consolidated deployment.
+# This workflow remains as a dual-run / rollback trigger until Phase E checkpoint
+# sign-off. After cutover, disable the schedule trigger and keep workflow_dispatch only.
 #
 # Requires repository secrets:
-#   WILMS_API_BASE_URL          e.g. https://api.example.com  (no trailing slash)
+#   WILMS_API_BASE_URL          e.g. https://wilms.vercel.app/api/wilms
 #   WILMS_SCHEDULER_TOKEN       matches API env WILMS_SCHEDULER_TOKEN
-#
-# Does not use session cookies. Safe to enable on main after secrets are set.
-# Disable by deleting secrets or commenting out the schedule trigger.
 
 name: Notification scheduler
 
 on:
-  schedule:
-    # 06:00 UTC daily — adjust for Ghana operations as needed
-    - cron: '0 6 * * *'
   workflow_dispatch:
     inputs:
       reference_date:
         description: Optional ISO date (yyyy-mm-dd) for payment scheduler backfill
         required: false
         type: string
+  # schedule disabled during Vercel Cron dual-run — re-enable only for Railway rollback
+  # schedule:
+  #   - cron: '0 6 * * *'
 
 jobs:
   run-schedulers:

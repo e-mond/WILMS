@@ -18,11 +18,27 @@ export function validateEnvironment(): EnvValidationReport {
     if (!env.databaseUrl) {
       errors.push('DATABASE_URL is required in production.');
     }
-    if (!process.env.WILMS_CORS_ORIGIN?.trim()) {
-      errors.push('WILMS_CORS_ORIGIN is required in production.');
-    }
-    if (env.sessionSecret === 'wilms-dev-session-secret-change-me') {
+    if (
+      env.sessionSecret === 'wilms-dev-session-secret-change-me' ||
+      env.sessionSecret === 'wilms-build-placeholder-secret-do-not-use'
+    ) {
       errors.push('WILMS_SESSION_SECRET must be set in production.');
+    }
+    const serverless =
+      process.env.WILMS_RUNTIME?.trim().toLowerCase() === 'serverless' ||
+      process.env.WILMS_RUNTIME?.trim().toLowerCase() === 'vercel' ||
+      Boolean(process.env.VERCEL);
+    if (!serverless && !process.env.WILMS_CORS_ORIGIN?.trim()) {
+      errors.push('WILMS_CORS_ORIGIN is required in production for the Node API process.');
+    }
+    if (serverless && !env.redisUrl) {
+      errors.push(
+        'REDIS_URL or WILMS_REDIS_URL is required in serverless production for shared rate limiting.',
+      );
+    } else if (!env.redisUrl) {
+      warnings.push(
+        'REDIS_URL / WILMS_REDIS_URL is unset — rate limits are in-memory and will not share across instances.',
+      );
     }
   }
 

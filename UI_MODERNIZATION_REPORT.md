@@ -1,25 +1,15 @@
-# UI Modernization Report — v1.2.3
+# UI Modernization Report — v1.5.0
 
-## Loading Experience
+## Scope for this release
 
-- `QueryStatePanel` with table/card skeleton variants
-- `useQueryLoadingPolicy` debounce to prevent flicker
-- `LoadingSpinner` for inline states
+Incremental polish on the existing shadcn-based shell while the platform consolidates. No wholesale redesign that would block API cutover.
 
-## v1.2.3 UI Fixes
+## Changes
 
-| Area | Change |
-|------|--------|
-| Failed messages | Human-readable failure summaries |
-| User management | Lifecycle status labels (Invited / Pending setup / Active) |
-| Upload previews | Safe blob URL lifecycle |
-| User profile modal | Error states, null-safe arrays |
-| Borrower status badges | Fallback for unknown statuses |
+- Sticky app navbar retains backdrop blur; added `motion-safe` transition respect for reduced-motion users
+- Shell already provides sticky sidebar, mobile bar, global search, breadcrumbs
+- Financial workflow friendly errors from v1.4.3 remain in place
 
-## Auditor Reports & Collector Reconciliation
+## Follow-on (post-DoD)
 
-Existing executive layout components (`ExecutiveKpiGrid`, `FilterPillBar`, `ManagementToolbar`) provide modernized cards, filters, and responsive tables. Dark mode supported via theme tokens.
-
-## Email UI
-
-Transactional emails use shared layout with WILMS branding, accessible typography, summary cards, and security notices in `templates.ts` / `email-layout.ts`.
+Continue replacing any remaining manual primitives with shadcn components: permission catalog density, empty states, table skeletons, onboarding tour pacing (Hick’s / Jakob’s Law).

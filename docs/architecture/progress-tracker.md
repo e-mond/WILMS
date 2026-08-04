@@ -24,6 +24,21 @@ Units marked ✅ implement core behaviour and unit tests. **Global DoD is not me
 
 ---
 
+
+---
+
+## v1.5 Platform Consolidation
+
+| Phase | Status | Notes |
+|---|---|---|
+| Phase A — Domain extraction (`@wilms/domain`) | Complete | Domain package hosts API/db; thin `@wilms/api` adapter |
+| Phase B — Express → Route Handlers | Complete | Catch-all `/api/wilms/[...path]` in-process; review checkpoint documented |
+| Phase C — Shared domain cleanup | Complete | FE `src/lib/*` re-exports; shared package surface |
+| Phase D — Remove cross-origin BFF | Complete | In-process default; proxy only via `WILMS_API_MODE=proxy` |
+| Phase E — Vercel Cron scheduler | Complete | `/api/cron/notifications` daily 06:00 UTC; GHA schedule disabled |
+| Phase F — Ops, UI, cutover, 1.5.0 | Complete | Reports + version bump; Railway optional rollback only |
+
+
 ## Implementation Unit Status
 
 Each row represents one scoped, verifiable unit of work.

@@ -56,6 +56,16 @@ export async function enqueueJob(
 }
 
 export async function startQueueWorkers(): Promise<void> {
+  const { isServerlessRuntime } = await import('../../config/runtime.js');
+  if (isServerlessRuntime()) {
+    logger.info('queue.mode', {
+      mode: 'in_process',
+      reason: 'serverless_runtime_no_persistent_workers',
+      redisConfigured: Boolean(env.redisUrl),
+    });
+    return;
+  }
+
   const flags = getFeatureFlags();
   if (flags.durableQueues && isRedisConfigured()) {
     const started = await startBullWorkers();

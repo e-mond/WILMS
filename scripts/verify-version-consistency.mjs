@@ -23,7 +23,12 @@ async function main() {
 
   const checks = [];
 
-  for (const pkg of ['package.json', 'apps/frontend/package.json', 'apps/backend/package.json']) {
+  for (const pkg of [
+    'package.json',
+    'apps/frontend/package.json',
+    'apps/backend/package.json',
+    'packages/domain/package.json',
+  ]) {
     const version = readJson(pkg).version;
     checks.push({ name: pkg, pass: version === expected, detail: version });
   }

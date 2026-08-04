@@ -9,6 +9,12 @@ function resolveSessionSecret(): string {
     return secret;
   }
 
+  // Next.js page-data collection runs with NODE_ENV=production; allow a non-usable
+  // placeholder so Route Handler modules can be analyzed. Runtime validation still fails closed.
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return 'wilms-build-placeholder-secret-do-not-use';
+  }
+
   if (nodeEnv === 'production') {
     throw new Error('WILMS_SESSION_SECRET is required in production.');
   }
