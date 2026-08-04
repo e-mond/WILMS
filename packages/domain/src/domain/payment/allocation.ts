@@ -1,4 +1,5 @@
 import type { ScheduleWeekDto } from '../loan/mappers.js';
+import { normalizePaymentDay } from '../reconciliation/weekday.js';
 
 export function isWeekPayable(week: ScheduleWeekDto, referenceDate: string): boolean {
   if (week.status === 'PAID') {
@@ -51,8 +52,8 @@ export function validatePaymentSubmission(input: {
   }).format(new Date(`${oldestPayable.dueDate}T00:00:00.000Z`));
 
   const weekdayAllowed =
-    referenceWeekday === input.paymentDay ||
-    referenceWeekday === dueWeekday ||
+    normalizePaymentDay(referenceWeekday) === normalizePaymentDay(input.paymentDay) ||
+    normalizePaymentDay(referenceWeekday) === normalizePaymentDay(dueWeekday) ||
     input.referenceDate === oldestPayable.dueDate;
 
   if (!weekdayAllowed) {

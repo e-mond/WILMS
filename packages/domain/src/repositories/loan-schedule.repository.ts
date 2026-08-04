@@ -49,6 +49,7 @@ export async function listScheduleWeeksForLoansOnDate(
       weekNumber: loanSchedules.weekNumber,
       dueDate: loanSchedules.dueDate,
       status: loanSchedules.status,
+      installmentAmount: loanSchedules.installmentAmount,
     })
     .from(loanSchedules)
     .where(and(inArray(loanSchedules.loanId, loanIds), eq(loanSchedules.dueDate, dueDate)));

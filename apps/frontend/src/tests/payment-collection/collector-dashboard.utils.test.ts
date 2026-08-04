@@ -50,6 +50,7 @@ describe('collector-dashboard.utils', () => {
         actualPesewas: 5000,
         variancePesewas: 0,
         submitted: true,
+        status: 'APPROVED',
       },
     });
 
@@ -65,5 +66,24 @@ describe('collector-dashboard.utils', () => {
       paymentStatus: COLLECTOR_PAYMENT_STATUS.COLLECTED,
     });
     expect(dashboard.missedAlerts).toHaveLength(1);
+  });
+
+  it('maps rejected reconciliation review onto the dashboard', () => {
+    const dashboard = buildCollectorDashboard({
+      referenceDate: '2026-05-22',
+      collectorId: 'user-collector',
+      loans: [],
+      payments: [],
+      reconciliation: {
+        expectedPesewas: 5000,
+        actualPesewas: 4000,
+        variancePesewas: -1000,
+        submitted: true,
+        status: 'REJECTED',
+        varianceFlagged: true,
+      },
+    });
+
+    expect(dashboard.summary.reconciliationStatus).toBe(RECONCILIATION_STATUS.REJECTED);
   });
 });

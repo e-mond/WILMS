@@ -24,6 +24,7 @@ const ACTION_MAP = {
   'reversal.executed': 'REVERSAL_EXECUTED',
   'reversal.rejected': 'REVERSAL_REJECTED',
   'reconciliation.submitted': 'RECONCILIATION_SUBMITTED',
+  'reconciliation.reviewed': 'RECONCILIATION_SUBMITTED',
   'user.logged-in': 'USER_LOGGED_IN',
   'user.login-failed': 'USER_LOGIN_FAILED',
   'user.logged-out': 'USER_LOGGED_OUT',
