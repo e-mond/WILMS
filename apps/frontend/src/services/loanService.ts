@@ -1,4 +1,5 @@
 import { apiClient } from '@/utils/apiClient';
+import { financialMutation } from '@/utils/financialMutation';
 import type {
   BorrowerLoanHistoryEntry,
   CreateLoanInput,
@@ -51,8 +52,12 @@ const loanService: ILoanService = {
     return apiClient.get<LoanPaymentLogEntry[]>(`/loans/${loanId}/payments`);
   },
 
-  createLoan(input: CreateLoanInput): Promise<LoanDetail> {
-    return apiClient.post<LoanDetail>('/loans', input);
+  async createLoan(input: CreateLoanInput): Promise<LoanDetail> {
+    const { result } = await financialMutation(
+      (headers) => apiClient.post<LoanDetail>('/loans', input, { headers }),
+      { domain: 'loan_create' },
+    );
+    return result;
   },
 
   approveLoan(loanId: string): Promise<LoanDetail> {
@@ -63,8 +68,12 @@ const loanService: ILoanService = {
     return apiClient.patch<LoanDetail>(`/loans/${loanId}/reject`, input);
   },
 
-  disburseLoan(loanId: string): Promise<LoanDetail> {
-    return apiClient.post<LoanDetail>(`/loans/${loanId}/disburse`, {});
+  async disburseLoan(loanId: string): Promise<LoanDetail> {
+    const { result } = await financialMutation(
+      (headers) => apiClient.post<LoanDetail>(`/loans/${loanId}/disburse`, {}, { headers }),
+      { domain: 'disbursement' },
+    );
+    return result;
   },
 
   getDisbursementEligibility(borrowerId: string): Promise<DisbursementEligibility> {

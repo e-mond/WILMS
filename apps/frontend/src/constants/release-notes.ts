@@ -6,13 +6,13 @@ export interface ReleaseNotes {
 }
 
 export const CURRENT_RELEASE_NOTES: ReleaseNotes = {
-  version: '1.4.2',
+  version: '1.4.3',
   summary:
-    'Phase 27 hardening — signed invitation tokens, expense maker-checker, SQL-scoped financial reports, and API rate limiting.',
+    'Critical financial workflow hotfix — disbursement lifecycle gating, Idempotency-Key on money mutations, review group display, and admin-fee confirmation notifications.',
   highlights: [
-    'Invitation accept links require a one-time signed token (not email alone).',
-    'Expenses submit as pending and need a different reviewer before affecting operating cash.',
-    'Daily collection and ledger reports use date-scoped database queries.',
-    'Global API rate limiting protects against abuse (Redis-backed when configured).',
+    'Disburse only when the loan is approved and pending disbursement; workflow stepper shows progress.',
+    'Reconciliation, payments, disbursement, and adjustments send Idempotency-Key automatically.',
+    'Approver review shows Group as GRP-… — Name and Assign Group persists membership.',
+    'Admin fee recording sends confirmation SMS/email without duplicates.',
   ],
 };

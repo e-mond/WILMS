@@ -11,6 +11,8 @@ export interface LoanDetailDto {
   durationWeeks: number;
   weeklyPaymentPesewas: number;
   status: string;
+  /** Internal lifecycle — use for action gating; `status` remains external. */
+  lifecycleStatus: string;
   paymentDay: string;
   startDate: string;
   cycleBatch: string;
@@ -37,6 +39,7 @@ export function mapLoanRowToDetail(
     durationWeeks: row.durationWeeks,
     weeklyPaymentPesewas,
     status: row.externalStatus,
+    lifecycleStatus: row.lifecycleStatus,
     paymentDay: row.paymentDay,
     startDate: row.startDate,
     cycleBatch: row.cycleBatch,

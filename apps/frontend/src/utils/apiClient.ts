@@ -5,8 +5,9 @@ import { isPublicPath } from '@/lib/auth/routes';
 import { triggerUnauthorizedHandler } from '@/lib/auth/unauthorized-handler';
 import { API_ERROR_CODE, ApiError } from '@/types/api';
 
-interface RequestOptions {
+export interface RequestOptions {
   timeoutMs?: number;
+  headers?: Record<string, string>;
 }
 
 interface ApiErrorBody {
@@ -62,6 +63,17 @@ function mapStatusToError(status: number, body: ApiErrorBody | null): ApiError {
     return new ApiError('The requested resource was not found.', API_ERROR_CODE.NOT_FOUND, status);
   }
 
+  if (
+    status === 400 &&
+    (code === 'IDEMPOTENCY_REQUIRED' || /Idempotency-Key/i.test(message))
+  ) {
+    return new ApiError(
+      'We could not complete this financial operation. Please try again. If the problem continues, contact your administrator.',
+      API_ERROR_CODE.IDEMPOTENCY_REQUIRED,
+      400,
+    );
+  }
+
   if (status === 409 && (code === API_ERROR_CODE.DUPLICATE_TRANSACTION || body?.code === API_ERROR_CODE.DUPLICATE_TRANSACTION)) {
     return new ApiError(
       'This payment was already recorded for this borrower, date, and amount.',
@@ -77,6 +89,18 @@ function mapStatusToError(status: number, body: ApiErrorBody | null): ApiError {
         : message,
       API_ERROR_CODE.CONFLICT,
       status,
+    );
+  }
+
+  if (
+    status === 422 &&
+    (code === 'LOAN_NOT_READY_FOR_DISBURSEMENT' ||
+      /pending disbursement|not ready for disbursement|complete approval/i.test(message))
+  ) {
+    return new ApiError(
+      'This loan is not ready for disbursement yet. Complete approval and admin-fee requirements first.',
+      API_ERROR_CODE.LOAN_NOT_READY_FOR_DISBURSEMENT,
+      422,
     );
   }
 
@@ -140,6 +164,7 @@ async function request<T>(
       headers: {
         'Content-Type': 'application/json',
         ...csrf,
+        ...options.headers,
         ...init.headers,
       },
     });

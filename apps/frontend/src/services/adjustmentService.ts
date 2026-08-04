@@ -5,6 +5,7 @@ import type {
 } from '@/types/adjustment';
 import type { IAdjustmentService } from '@/types/services';
 import { apiClient } from '@/utils/apiClient';
+import { financialMutation } from '@/utils/financialMutation';
 
 const adjustmentService: IAdjustmentService = {
   listPendingAdjustments(): Promise<AdjustmentListResponse> {
@@ -19,19 +20,37 @@ const adjustmentService: IAdjustmentService = {
     return apiClient.get<AdjustmentRequest>(`/adjustments/${id}`);
   },
 
-  createAdjustment(input, actorId, actorDisplayName): Promise<AdjustmentRequest> {
-    return apiClient.post<AdjustmentRequest>('/adjustments', {
-      ...input,
-      actorId,
-      actorDisplayName,
-    });
+  async createAdjustment(input, actorId, actorDisplayName): Promise<AdjustmentRequest> {
+    const { result } = await financialMutation(
+      (headers) =>
+        apiClient.post<AdjustmentRequest>(
+          '/adjustments',
+          {
+            ...input,
+            actorId,
+            actorDisplayName,
+          },
+          { headers },
+        ),
+      { domain: 'adjustment' },
+    );
+    return result;
   },
 
-  approveAdjustment(id, actorId, actorDisplayName): Promise<AdjustmentRequest> {
-    return apiClient.post<AdjustmentRequest>(`/adjustments/${id}/approve`, {
-      actorId,
-      actorDisplayName,
-    });
+  async approveAdjustment(id, actorId, actorDisplayName): Promise<AdjustmentRequest> {
+    const { result } = await financialMutation(
+      (headers) =>
+        apiClient.post<AdjustmentRequest>(
+          `/adjustments/${id}/approve`,
+          {
+            actorId,
+            actorDisplayName,
+          },
+          { headers },
+        ),
+      { domain: 'adjustment' },
+    );
+    return result;
   },
 
   rejectAdjustment(id, input, actorId, actorDisplayName): Promise<AdjustmentRequest> {

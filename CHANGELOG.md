@@ -2,6 +2,26 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.4.3] — Critical Financial Workflow Hotfix
+
+**Release date:** August 2026  
+**Branch:** `hotfix/v1.4.3-financial-workflow`
+
+### Fixed
+
+- Loan Disburse UI gated on internal `lifecycleStatus` (approve → pending disbursement → disburse); workflow stepper and friendly 422 messages
+- Reconciliation and other money POSTs now send `Idempotency-Key` via shared `financialMutation()` helper
+- Approver review shows Group as `GRP-… — Name`; Assign Group persists membership
+- Admin fee recording emits deduped SMS/email/in-app confirmation and audit log
+- Domain-safe financial error mapping; network errors offer Retry / Refresh / Return to Dashboard
+
+### Added
+
+- `lifecycleStatus` on loan API DTOs (additive)
+- `financialMutation()` frontend helper
+- Hotfix reports: `V1.4.3_HOTFIX_REPORT.md`, `FINANCIAL_WORKFLOW_FIXES.md`, `RECONCILIATION_IDEMPOTENCY_REPORT.md`, `DISBURSEMENT_STATE_MACHINE_REPORT.md`, `NOTIFICATION_DELIVERY_VERIFICATION.md`, `RELEASE_NOTES_v1.4.3.md`
+- Console/CSP noise guidance under `docs/engineering/CONSOLE_AND_CSP_NOISE.md`
+
 ## [1.4.2] — Phase 32 Operator Evidence Execution
 
 **Release date:** July 2026
