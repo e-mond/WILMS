@@ -1,23 +1,9 @@
-# Deleted Files
+# Deleted files
 
-**Date:** 2026-07-05 (v1.1.1 post-release cleanup)
+The v1.5 documentation overhaul **preferred archival over deletion**.
 
-## Summary
+Files removed from the repository root or `docs/` active trees were moved under `docs/archive/**` so audit history remains recoverable via git and the archive folders.
 
-No source files were permanently deleted in this pass. Cleanup used **archive moves** only to preserve traceability.
+If a path was deleted outright in a future cleanup, record it here with reason and replacement. No force-deletes of unique certification content were performed in this overhaul pass.
 
-## Prior deletions (v1.0.1 maintenance)
-
-| File | Reason |
-|------|--------|
-| `apps/frontend/src/components/auth/AppLockRequiredGate.tsx` | Unused; no imports |
-
-## Not deleted (moved to archive)
-
-See [ARCHIVED_FILES.md](./ARCHIVED_FILES.md) for the full list of relocated documentation and scripts.
-
-## Generated / ephemeral (gitignored, not tracked)
-
-- `coverage/`, `test-results/`, `docs/generated/`
-- `perf-*-output.txt`, `vitest-*.txt`, `test-output.*`
-- `.next/`, `node_modules/`, `.env*`
+See [`DOCUMENTATION_REPORT.md`](DOCUMENTATION_REPORT.md).

@@ -1,77 +1,9 @@
-# WILMS API Overview
+# API overview
 
-**Version:** 1.3.0  
-**Base URL (production):** `https://wilms-production.up.railway.app`
+WILMS v1.5 exposes the domain HTTP API through Next.js Route Handlers at **`/api/wilms/*`**.
 
-The frontend BFF proxies authenticated requests to the API via `/api/wilms/*`.
+Path mapping and transport details: [`ARCHITECTURE.md`](ARCHITECTURE.md).  
+Auth: [`authentication.md`](authentication.md).  
+Release transport notes: [`v1.5/API_ROUTE_HANDLER_REPORT.md`](v1.5/API_ROUTE_HANDLER_REPORT.md).
 
-## Authentication
-
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/auth/login` | Email + password |
-| POST | `/auth/verify-otp` | 2FA verification |
-| POST | `/auth/complete-onboarding` | Invited user profile setup |
-| POST | `/auth/accept-invitation` | Record invitation acceptance |
-| POST | `/auth/forgot-password` | Request reset email |
-| POST | `/auth/reset-password` | Complete password reset |
-
-Session: HMAC-signed cookie with `sessionVersion` for invalidation.
-
-## Core Domains
-
-| Domain | Prefix | Notes |
-|--------|--------|-------|
-| Borrowers | `/borrowers` | Registration, approval, profiles |
-| Loans | `/loans` | Lifecycle, schedule, progress |
-| Payments | `/payments` | Collections, reversals |
-| Groups | `/groups` | Group lending |
-| Collectors | `/collectors` | Performance, assignments |
-| Settings | `/settings` | Users, roles, system config |
-| Communications | `/communications` | Broadcasts, templates, analytics |
-| Sync | `/sync` | Offline batch + conflict resolution |
-| Uploads | `/uploads` | Cloudinary-backed files |
-
-## Offline Sync (v1.3.0)
-
-```
-POST /sync/offline/batch
-GET  /sync/conflicts
-POST /sync/conflicts/:id/approve
-POST /sync/conflicts/:id/reject
-```
-
-## Readable IDs
-
-API responses include `displayId` fields where applicable (borrowers, collectors, loans, payments, users). Internal UUIDs remain for foreign keys.
-
-## Error Format
-
-```json
-{
-  "message": "Human-readable error",
-  "code": "VALIDATION"
-}
-```
-
-## Health
-
-```
-GET /health
-```
-
-## Migrations
-
-Run from monorepo root:
-
-```bash
-npm run db:migrate -w @wilms/api
-```
-
-Latest: `0020_v130_field_operations.sql` (cadence, holidays, fees, penalties).
-
-## Related
-
-- [Authentication](./authentication.md)
-- [Synchronization Guide](./synchronization-guide.md)
-- [Deployment Guide](./deployment-guide.md)
+The browser uses `apps/frontend/src/utils/apiClient.ts` against `NEXT_PUBLIC_API_BASE_URL` (typically `/api/wilms`).

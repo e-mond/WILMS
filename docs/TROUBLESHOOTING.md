@@ -1,68 +1,75 @@
-# WILMS Troubleshooting — v1.4.1
+# Troubleshooting
 
-**Date:** 2026-07-20  
-**Related:** [PRODUCTION_ROLLOUT_RUNBOOK.md](./PRODUCTION_ROLLOUT_RUNBOOK.md), [FINAL_AUDIT_INDEX.md](./FINAL_AUDIT_INDEX.md)
-
----
-
-## Health and migrations
-
-| Symptom | Likely cause | Action |
-|---------|--------------|--------|
-| `/health` degraded, migrations behind | Deploy image ahead of applied migrations or failed migrate | Run migrate; confirm journal watermark; do not ignore soft-fail |
-| `/health` ok but features missing | Wrong environment / old frontend | Check version strings FE + API |
-| DB unknown | `DATABASE_URL` missing or query failure | Fix connection; in-memory is not production |
+**Purpose:** Concrete diagnosis steps for common WILMS v1.5 failures.
 
 ---
 
-## Authentication
+## UI shows mock data in local development
 
-| Symptom | Likely cause | Action |
-|---------|--------------|--------|
-| `@wilms.demo` login fails in production | **Expected** — demo blocked | Use real staff accounts |
-| Session endpoint returns unauthenticated | Revoked/suspended user or inactive session | Re-login; check user status |
-| CSRF errors via browser BFF | Missing/invalid CSRF cookie | Use UI flows; avoid raw curl to `:3000/api/wilms` |
-
----
-
-## Payments and collectors
-
-| Symptom | Likely cause | Action |
-|---------|--------------|--------|
-| Collector cannot open payment-entry / same-day / payment-by-id | Borrower not assigned (IDOR guard) | Assign borrower or use privileged role |
-| Admin fee status denied for collector | Scope guard | Confirm assignment |
+**Problem:** Lists and dashboards show demo/mock records.  
+**Cause:** Frontend mock provider is active when `NEXT_PUBLIC_API_BASE_URL` is empty or `NEXT_PUBLIC_USE_MOCK` is not `false`.  
+**Diagnosis:** Inspect `apps/frontend/.env.local`.  
+**Resolution:** Set `NEXT_PUBLIC_API_BASE_URL=/api/wilms` and `NEXT_PUBLIC_USE_MOCK=false`, restart `npm run dev`.
 
 ---
 
-## Money reports
+## `UPSTREAM_UNAVAILABLE` or proxy 503
 
-| Symptom | Likely cause | Action |
-|---------|--------------|--------|
-| HTTP **422** on daily-collection / defaulters / financial-ledger | Result set would exceed safety cap (2000) — fail closed | Narrow date range / filters; do not bypass |
-| Totals look “too small” historically | Pre-fix truncation risk | Prefer post-fix builds; use SQL KPI dashboard for org totals |
-
----
-
-## API errors
-
-| Symptom | Likely cause | Action |
-|---------|--------------|--------|
-| Generic “unexpected error” to client | Unhandled server error (message hidden by design) | Inspect API logs / stack — raw message is server-side only |
-| 422 validation | Mapped DB / AppError validation | Fix payload |
+**Problem:** `/api/wilms` returns upstream unavailable.  
+**Cause:** `WILMS_API_MODE=proxy` but Node API is down / wrong `WILMS_API_UPSTREAM`.  
+**Diagnosis:** Check env mode; curl upstream `/health`.  
+**Resolution:** Start `npm run dev:api`, or remove proxy mode to use in-process handlers.
 
 ---
 
-## Deploy / Node
+## Production build fails: unmatched `functions` pattern
 
-| Symptom | Likely cause | Action |
-|---------|--------------|--------|
-| Staging workflow skipped | `ENABLE_STAGING_DEPLOY` not true | Set deliberately |
-| Engine mismatch | Node < 22 | Align to Node 22 everywhere |
+**Problem:** Vercel error referencing `apps/frontend/src/app/api/...` in `functions`.  
+**Cause:** Invalid `vercel.json` `functions` globs for this monorepo.  
+**Diagnosis:** Inspect root `vercel.json`.  
+**Resolution:** Remove the `functions` map; keep `maxDuration` on Route Handler exports. Fixed on `main` via PR #149.
 
 ---
 
-## Escalation
+## Health reports old version after deploy
 
-1. Capture `/health` JSON, request id, timestamp, environment.  
-2. Do not seed demo users into production.  
-3. For financial disputes, freeze affected workflows and engage Finance with ledger exports.
+**Problem:** UI is new but `/api/wilms/health` shows prior version.  
+**Cause:** Stale deployment or still proxying to an old upstream process.  
+**Diagnosis:** Confirm Vercel deployment commit; confirm `WILMS_API_MODE` is unset; compare `gitCommit` in health.  
+**Resolution:** Redeploy Vercel; disable proxy; stop obsolete Node API if any.
+
+---
+
+## Rate limit inconsistencies across requests
+
+**Problem:** Limits appear random under load on Vercel.  
+**Cause:** In-memory rate limiter without Redis on serverless.  
+**Diagnosis:** Check whether `REDIS_URL` / `WILMS_REDIS_URL` is set; health/bootstrap warnings.  
+**Resolution:** Provision Redis and set the URL on Preview and Production.
+
+---
+
+## Scheduler did not run
+
+**Problem:** No due-soon / missed-payment notifications.  
+**Cause:** Cron misconfigured, unauthorized, or function timeout.  
+**Diagnosis:** Vercel Cron logs; manually `GET /api/cron/notifications` with bearer token; check domain notification dedupe tables/events.  
+**Resolution:** Ensure Cron path `/api/cron/notifications`, secrets `CRON_SECRET` or `WILMS_SCHEDULER_TOKEN`, and `maxDuration` adequate for volume.
+
+---
+
+## CSRF failures on mutations
+
+**Problem:** 403 CSRF on POST/PATCH from the browser.  
+**Cause:** Missing/invalid CSRF cookie or header.  
+**Diagnosis:** Confirm request goes through same-origin `/api/wilms` with credentials.  
+**Resolution:** Use the app's `apiClient` (includes CSRF); avoid raw cross-origin calls.
+
+---
+
+## Database connection exhaustion
+
+**Problem:** Intermittent 500s / DB errors under concurrency.  
+**Cause:** Direct (unpooled) Neon URL on serverless.  
+**Diagnosis:** Neon dashboard connections; confirm URL is pooled.  
+**Resolution:** Switch `DATABASE_URL` to Neon pooled connection string.
