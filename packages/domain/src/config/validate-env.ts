@@ -32,8 +32,8 @@ export function validateEnvironment(): EnvValidationReport {
       errors.push('WILMS_CORS_ORIGIN is required in production for the Node API process.');
     }
     if (serverless && !env.redisUrl) {
-      errors.push(
-        'REDIS_URL or WILMS_REDIS_URL is required in serverless production for shared rate limiting.',
+      warnings.push(
+        'REDIS_URL / WILMS_REDIS_URL is unset in serverless production — rate limits are in-memory per instance. Set Redis before certifying multi-instance abuse protection.',
       );
     } else if (!env.redisUrl) {
       warnings.push(

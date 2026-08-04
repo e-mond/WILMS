@@ -17,7 +17,6 @@ function bootstrapOnce(): void {
   if (bootstrapped) {
     return;
   }
-  bootstrapped = true;
 
   process.env.WILMS_RUNTIME ??= 'serverless';
   process.env.WILMS_DEPLOYED_AT ??= new Date().toISOString();
@@ -39,6 +38,8 @@ function bootstrapOnce(): void {
     runtime: isServerlessRuntime() ? 'serverless' : 'node',
     vercel: Boolean(process.env.VERCEL),
   });
+
+  bootstrapped = true;
 }
 
 export function getWilmsExpressApp(): Express {
