@@ -135,6 +135,7 @@ import type { RiskFlagDetail, RiskFlagListResponse, CreateRiskFlagInput, Resolve
 import type {
   AdminFeeStatus,
   AwaitingAdminFeeBorrower,
+  CollectedAdminFeeRecord,
   DisbursementEligibility,
   FinancialTransaction,
   RecordAdminFeeInput,
@@ -228,6 +229,7 @@ export interface ITransactionService {
   recordAdminFee(input: RecordAdminFeeInput): Promise<FinancialTransaction>;
   getAdminFeeStatus(borrowerId: string): Promise<AdminFeeStatus>;
   listBorrowersAwaitingAdminFee(): Promise<AwaitingAdminFeeBorrower[]>;
+  listCollectedAdminFees(filter?: { collectorId?: string }): Promise<CollectedAdminFeeRecord[]>;
 }
 
 export interface IPaymentService {

@@ -1,5 +1,6 @@
 import { DEMO_OPERATING_POOL_PESEWAS } from '@/constants/dashboard';
 import { resolveDashboardCollectorName } from '@/constants/dashboard-demo-collectors';
+import { MOCK_ADMIN_FEE_PESEWAS } from '@/mocks/system-settings';
 import { BORROWER_STATUS, type BorrowerStatus } from '@/types/borrower';
 import { DASHBOARD_ALERT_CATEGORY_META } from '@/constants/dashboard-alerts';
 import type {
@@ -267,6 +268,7 @@ function buildKpis(
   totalCollectedPesewas: number,
   totalOutstandingPesewas: number,
   repaymentRatePercent: number,
+  adminFeesCollectedPesewas = 0,
 ): DashboardKpi[] {
   const outstandingTrend: DashboardValueTone = 'danger';
   const collectedTrend: DashboardValueTone = 'success';
@@ -295,6 +297,14 @@ function buildKpis(
       trendLabel: `Repayment rate ${repaymentRatePercent}%`,
       trendDirection: repaymentRatePercent >= 80 ? 'up' : 'neutral',
       valueTone: collectedTrend,
+    },
+    {
+      id: 'admin-fees',
+      label: 'Admin Fees Collected',
+      amountPesewas: adminFeesCollectedPesewas,
+      trendLabel: 'Registration fees',
+      trendDirection: 'neutral',
+      valueTone: 'gold',
     },
     {
       id: 'outstanding',
@@ -396,6 +406,18 @@ export function buildDashboardSummary(input: BuildDashboardSummaryInput): Dashbo
     input.transactions,
     TRANSACTION_TYPE.REPAYMENT,
   );
+  const adminFeesCollectedPesewas = sumTransactionsByType(
+    input.transactions,
+    TRANSACTION_TYPE.ADMIN_FEE,
+  );
+  const approvedBorrowerCount = input.borrowers.filter(
+    (borrower) => borrower.status === BORROWER_STATUS.APPROVED,
+  ).length;
+  const adminFeesExpectedPesewas = approvedBorrowerCount * MOCK_ADMIN_FEE_PESEWAS;
+  const adminFeesOutstandingPesewas = Math.max(
+    0,
+    adminFeesExpectedPesewas - adminFeesCollectedPesewas,
+  );
   const totalOutstandingPesewas = input.loans
     .filter((loan) => loan.status === LOAN_STATUS.ACTIVE)
     .reduce((total, loan) => total + loan.outstandingPesewas, 0);
@@ -448,6 +470,7 @@ export function buildDashboardSummary(input: BuildDashboardSummaryInput): Dashbo
         totalCollectedPesewas,
         totalOutstandingPesewas,
         repaymentRatePercent,
+        adminFeesCollectedPesewas,
       ),
     borrowerSegments:
       input.overrides?.borrowerSegments ??
@@ -490,9 +513,9 @@ export function buildDashboardSummary(input: BuildDashboardSummaryInput): Dashbo
         collectionRatePercent: Math.round(repaymentRatePercent),
       },
       adminFees: {
-        totalAdminFeesExpectedPesewas: 0,
-        totalAdminFeesCollectedPesewas: 0,
-        outstandingAdminFeesPesewas: 0,
+        totalAdminFeesExpectedPesewas: adminFeesExpectedPesewas,
+        totalAdminFeesCollectedPesewas: adminFeesCollectedPesewas,
+        outstandingAdminFeesPesewas: adminFeesOutstandingPesewas,
       },
       expenses: {
         totalExpensesPesewas: 0,
@@ -502,10 +525,10 @@ export function buildDashboardSummary(input: BuildDashboardSummaryInput): Dashbo
       cashFlow: {
         moneyIn: {
           loanCollectionsPesewas: totalCollectedPesewas,
-          adminFeesPesewas: 0,
+          adminFeesPesewas: adminFeesCollectedPesewas,
           capitalDepositsPesewas: DEMO_OPERATING_POOL_PESEWAS,
           otherIncomePesewas: 0,
-          totalPesewas: totalCollectedPesewas + DEMO_OPERATING_POOL_PESEWAS,
+          totalPesewas: totalCollectedPesewas + adminFeesCollectedPesewas + DEMO_OPERATING_POOL_PESEWAS,
         },
         moneyOut: {
           loanDisbursementsPesewas: totalDisbursedPesewas,
@@ -515,8 +538,11 @@ export function buildDashboardSummary(input: BuildDashboardSummaryInput): Dashbo
           totalPesewas: totalDisbursedPesewas,
         },
         netPositionPesewas:
-          totalCollectedPesewas + DEMO_OPERATING_POOL_PESEWAS - totalDisbursedPesewas,
-        netOperatingCashPesewas: totalCollectedPesewas,
+          totalCollectedPesewas +
+          adminFeesCollectedPesewas +
+          DEMO_OPERATING_POOL_PESEWAS -
+          totalDisbursedPesewas,
+        netOperatingCashPesewas: totalCollectedPesewas + adminFeesCollectedPesewas,
       },
     },
   };

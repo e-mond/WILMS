@@ -10,6 +10,9 @@ export interface ReconciliationTotals {
   actualPesewas: number;
 }
 
+/** Absolute floor (1 GHS) — mirrors domain ABSOLUTE_VARIANCE_FLOOR_PESEWAS. */
+export const ABSOLUTE_VARIANCE_FLOOR_PESEWAS = 100;
+
 /**
  * ExpectedCashFormula v1 — matches backend `calculateExpectedDuePesewas`.
  */
@@ -39,16 +42,28 @@ export function calculatePrimaryVariancePesewas(
   return physicalCashPesewas - expectedDuePesewas;
 }
 
+/**
+ * Matches domain `isVarianceFlagged` so FE preview shows the comment field
+ * before submit (including expected=0 with any physical cash).
+ */
 export function isVarianceAboveThreshold(
   primaryVariancePesewas: number,
   expectedDuePesewas: number,
   thresholdPercent: number = RECONCILIATION_VARIANCE_THRESHOLD_PERCENT,
+  collectionDeltaPesewas = 0,
 ): boolean {
+  if (collectionDeltaPesewas !== 0) {
+    return true;
+  }
+
   if (expectedDuePesewas === 0) {
-    return false;
+    return primaryVariancePesewas !== 0;
+  }
+
+  if (Math.abs(primaryVariancePesewas) >= ABSOLUTE_VARIANCE_FLOOR_PESEWAS) {
+    return true;
   }
 
   const variancePercent = (Math.abs(primaryVariancePesewas) / expectedDuePesewas) * 100;
-
   return variancePercent > thresholdPercent;
 }

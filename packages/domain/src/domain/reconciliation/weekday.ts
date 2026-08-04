@@ -13,6 +13,15 @@ export function getWeekdayNameFromIsoDate(isoDate: string): string {
   return WEEKDAY_NAMES[date.getUTCDay()]!;
 }
 
+/** Normalize payment-day labels so MONDAY / monday / Monday all match. */
+export function normalizePaymentDay(paymentDay: string): string {
+  const trimmed = paymentDay.trim();
+  if (!trimmed) {
+    return trimmed;
+  }
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+}
+
 export function isLoanDueOnDate(paymentDay: string, reconciliationDate: string): boolean {
-  return paymentDay === getWeekdayNameFromIsoDate(reconciliationDate);
+  return normalizePaymentDay(paymentDay) === getWeekdayNameFromIsoDate(reconciliationDate);
 }

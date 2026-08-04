@@ -41,3 +41,29 @@ transactionsRouter.post(
     }
   }),
 );
+
+transactionsRouter.get(
+  '/transactions/admin-fees',
+  requirePermission(
+    PERMISSION.ACCESS_ADMIN_PORTAL,
+    PERMISSION.RECORD_COLLECTIONS,
+    PERMISSION.MANAGE_SYSTEM_SETTINGS,
+  ),
+  asyncHandler(async (req, res) => {
+    try {
+      const requestedCollectorId = req.query.collectorId
+        ? String(req.query.collectorId)
+        : undefined;
+      const collectorId =
+        req.session!.role === 'COLLECTOR' ? req.session!.userId : requestedCollectorId;
+      sendData(
+        res,
+        await transactionService.listCollectedAdminFees(
+          collectorId ? { collectorId } : undefined,
+        ),
+      );
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);

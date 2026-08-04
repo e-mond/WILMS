@@ -177,3 +177,28 @@ export async function saveAdminFee(record: memory.AdminFeeRecord) {
 export async function hasAdminFee(borrowerId: string) {
   return Boolean(await getAdminFee(borrowerId));
 }
+
+export async function listAdminFees(filter?: { collectorId?: string }) {
+  if (isDatabaseEnabled()) {
+    const db = getDb();
+    const rows = filter?.collectorId
+      ? await db
+          .select()
+          .from(borrowerAdminFees)
+          .where(eq(borrowerAdminFees.collectorUserId, filter.collectorId))
+      : await db.select().from(borrowerAdminFees);
+
+    return rows
+      .map((row) => ({
+        borrowerId: row.borrowerId,
+        transactionId: row.transactionId,
+        collectorId: row.collectorUserId,
+        amountPesewas: row.amountPesewas,
+        recordedAt: row.recordedAt.toISOString(),
+      }))
+      .sort((left, right) => right.recordedAt.localeCompare(left.recordedAt));
+  }
+
+  return memory.listAdminFeesInMemory(filter?.collectorId);
+}
+
