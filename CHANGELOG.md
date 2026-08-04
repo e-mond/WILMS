@@ -2,6 +2,29 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.5.1] — Vercel API Runtime Recovery
+
+**Release date:** August 2026  
+**Branch:** `release/v1.5.1`
+
+### Fixed
+
+- Production `/api/wilms/*` HTML 500s caused by `@wilms/domain` throwing at module import when `WILMS_SESSION_SECRET` was unset on Vercel
+- Serverless mock-flag guard no longer calls `process.exit` (opaque Next `/500` pages)
+- Route Handler lazy-loads `@wilms/domain` so failures return JSON `503` instead of HTML
+- Skip dotenv file probing on Vercel (unreliable `import.meta.url` paths in webpack bundles)
+- Prefer upstream proxy only when `WILMS_API_UPSTREAM` is a valid `http(s)` URL
+
+### Changed
+
+- Redis absence in serverless production is a warning (in-memory rate limits) rather than a hard bootstrap error
+- Removed deprecated TypeScript `downlevelIteration` from frontend `tsconfig.json`
+
+### Ops notes
+
+- Vercel Production must set `WILMS_SESSION_SECRET` and `DATABASE_URL` (Neon pooled) for real auth/data after consolidation
+- Set `WILMS_API_MODE=inprocess` once secrets are present; remove or correct invalid upstream values
+
 ## [1.5.0] — Platform Consolidation (Vercel Full-Stack)
 
 **Release date:** August 2026  
