@@ -1,366 +1,205 @@
 # WILMS
 
-**Women's Interest-Free Loan Management System** — a TypeScript monorepo for borrower onboarding, group lending, loan lifecycle management, weekly collections, expense tracking, audit trails, and role-based reporting.
+**Women's Interest-Free Loan Management System**
+
+WILMS is a production TypeScript monorepo that supports interest-free group lending operations: borrower registration, approval, disbursement, weekly collections, reconciliation, expenses, notifications, audit, and role-based reporting.
 
 | | |
 |---|---|
-| **Current version** | `1.5.0` (see root `package.json` / `NEXT_PUBLIC_APP_VERSION` in the UI) |
-| **Application** | Next.js 14 App Router (UI + Route Handlers) |
-| **Domain** | `@wilms/domain` — Drizzle ORM, Neon PostgreSQL, financial engine, RBAC |
-| **Runtime** | Node.js 22+ (`engines`, `.nvmrc`, CI) |
-| **Production** | [wilms.vercel.app](https://wilms.vercel.app) — single Vercel deployment (UI + API + Cron) |
-
-> Platform consolidation details: [`V15_PLATFORM_CONSOLIDATION_REPORT.md`](./V15_PLATFORM_CONSOLIDATION_REPORT.md)
+| **Current version** | `1.5.0` |
+| **Maturity** | Production platform; v1.5 consolidates UI and API onto a single Vercel deployment |
+| **Primary deploy** | [wilms.vercel.app](https://wilms.vercel.app) |
+| **Runtime** | Node.js 22+ |
+| **Database** | Neon PostgreSQL (Drizzle ORM) |
 
 ---
 
-## What WILMS Does
+## Architecture summary
 
-WILMS supports the full microfinance operations loop for interest-free group lending:
+```text
+Browser (staff portals)
+        │
+        ▼
+Next.js 14 App Router  (@wilms/frontend on Vercel)
+  │  UI (RSC + Client Components)
+  │  /api/auth/*          session cookies
+  │  /api/wilms/*         domain HTTP via Route Handlers
+  │  /api/cron/*          Vercel Cron (notifications)
+        │
+        ▼
+@wilms/domain
+  services · repositories · RBAC · financial engine
+  Express router hosted in-process (not a separate Railway process)
+        │
+        ▼
+Neon PostgreSQL  (+ Redis for rate limiting in production)
+```
 
-1. **Registration** � officers capture borrower KYC, guarantor data, photos, and registration agreements.
-2. **Approval** � approvers review pending applications, assign groups/collectors, and export structured agreement documents.
-3. **Disbursement & loans** � loan pools, disbursements, schedules, fees, and portfolio reporting.
-4. **Collections** � collector dashboards, payment entry, reconciliation, GPS verification, and offline queueing.
-5. **Governance** � risk flags, adjustments, audit log, communication center, and executive reporting.
-6. **Administration** � user/role management, system settings, integrations (SMS/email), and expense approvals.
+Optional dual-run: set `WILMS_API_MODE=proxy` and `WILMS_API_UPSTREAM` to call a separate Node process (`npm run dev:api`) during migration or rollback. Production target is **in-process** Route Handlers only.
+
+Authentication is **custom HMAC session cookies** (`wilms_session`), not Auth.js/NextAuth.
 
 ---
 
-## Portals & Roles
+## Technology stack
 
-| Role | Home route | Primary capabilities |
-|------|------------|----------------------|
-| **Super Admin** | `/dashboard` | Full portfolio, collectors, groups, risk, reports, settings, communication center, **expense management** |
-| **Collector** | `/collector/dashboard` | Payments, reconciliation, expenses, borrowers, offline sync |
-| **Registration Officer** | `/officer/register` | Borrower registration wizard, my registrations queue |
-| **Approver** | `/approver/pending` | Application review, sync conflict resolution |
-| **Auditor** | `/auditor/reports` | Read-only reports and audit log |
+| Layer | Technology |
+|---|---|
+| UI | Next.js 14, React 18, TanStack Query, Tailwind, shadcn/ui |
+| API | Next.js Route Handlers + `@wilms/domain` |
+| Data | Drizzle ORM, Neon PostgreSQL |
+| Auth | HMAC-signed `wilms_session` cookie / Bearer |
+| Jobs | Vercel Cron → `/api/cron/notifications` |
+| Rate limits | Redis (`REDIS_URL` / `WILMS_REDIS_URL`) in serverless production |
+| Packages | npm workspaces (`apps/*`, `packages/*`) |
 
-### Demo accounts (development / seeded environments)
+---
+
+## Repository structure
+
+```text
+wilms/
+├── apps/frontend/     @wilms/frontend — UI + Route Handlers + Cron
+├── apps/backend/      @wilms/api — thin Node listen adapter (optional dual-run)
+├── packages/domain/   @wilms/domain — services, DB, HTTP app, migrations
+├── packages/shared-*  contracts, RBAC, types, validation, utils
+├── docs/              current documentation hub + archives
+├── vercel.json        Vercel build + Cron
+├── CHANGELOG.md
+└── VERSION.md
+```
+
+---
+
+## Quick start
+
+### Prerequisites
+
+- Node.js **22+** (see `.nvmrc`)
+- npm (workspaces)
+- Optional: Neon `DATABASE_URL` for persistent data (otherwise in-memory domain mode)
+
+### Install
+
+```bash
+git clone https://github.com/e-mond/WILMS.git
+cd WILMS
+npm ci
+```
+
+### Local full-stack (recommended)
+
+Create `apps/frontend/.env.local`:
+
+```bash
+NEXT_PUBLIC_API_BASE_URL=/api/wilms
+NEXT_PUBLIC_USE_MOCK=false
+DATABASE_URL=           # optional; omit for in-memory
+WILMS_SESSION_SECRET=dev-only-change-me
+```
+
+```bash
+npm run dev
+```
+
+Open `http://127.0.0.1:3000`. API calls stay same-origin on `/api/wilms/*`.
+
+### Optional dual-run API process
+
+```bash
+# Terminal A
+npm run dev:api
+
+# Terminal B — apps/frontend/.env.local
+# WILMS_API_MODE=proxy
+# WILMS_API_UPSTREAM=http://127.0.0.1:4000
+npm run dev
+```
+
+### Demo accounts (seed / in-memory)
 
 | Email | Password | Role |
-|-------|----------|------|
+|---|---|---|
 | `admin@wilms.demo` | `DemoAdmin1!` | Super Admin |
 | `collector@wilms.demo` | `DemoCollect1!` | Collector |
 | `officer@wilms.demo` | `DemoOfficer1!` | Registration Officer |
 | `approver@wilms.demo` | `DemoApprove1!` | Approver |
 | `auditor@wilms.demo` | `DemoAudit1!` | Auditor |
 
----
-
-## Repository Structure
-
-```text
-wilms/
-├── apps/
-│   ├── frontend/          @wilms/frontend — Next.js 14 App Router UI
-│   └── backend/           @wilms/api — Express API + Drizzle + Neon
-├── packages/
-│   ├── shared-contracts/  Domain enums and contract constants
-│   ├── shared-rbac/       Roles and permission constants
-│   ├── shared-types/      Cross-cutting TypeScript types
-│   ├── shared-validation/ Zod schemas (login, API validation)
-│   └── shared-utils/      Shared helpers
-├── docs/
-│   └── page-validation/   Phase audit and certification reports
-├── .env.example           Monorepo environment reference
-├── package.json           npm workspaces root scripts
-├──turbo.json             Turbo task graph
-└── package.json           # npm workspace root (version source of truth)
-```
+Defined in `packages/domain/src/seed/demo-users.ts`.
 
 ---
 
-## Quick Start (Local Development)
+## Documentation map
 
-### Prerequisites
+| Topic | Location |
+|---|---|
+| Docs hub | [`docs/README.md`](docs/README.md) |
+| Architecture | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) |
+| Environment variables | [`docs/environment.md`](docs/environment.md) |
+| Authentication | [`docs/authentication.md`](docs/authentication.md) |
+| Permissions / RBAC | [`docs/PERMISSIONS_AND_ROLES.md`](docs/PERMISSIONS_AND_ROLES.md) |
+| Financial model | [`docs/FINANCIAL_MODEL.md`](docs/FINANCIAL_MODEL.md) |
+| Deployment | [`docs/deployment-guide.md`](docs/deployment-guide.md) |
+| Operations | [`docs/operations.md`](docs/operations.md) |
+| Troubleshooting | [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) |
+| Contributing | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
+| v1.5 consolidation | [`docs/v1.5/`](docs/v1.5/) |
+| Historical archives | [`docs/archive/README.md`](docs/archive/README.md) |
 
-- **Node.js 22+** (see `.nvmrc` / `engines.node`)
-- **npm** (workspaces)
-- Optional: PostgreSQL connection string for persistent API mode
+---
 
-### Install & configure
+## Testing
 
 ```bash
-git clone https://github.com/e-mond/WILMS.git
-cd WILMS
-npm install
-cp .env.example .env
+npm run type-check
+npm run lint
+npm run test                 # frontend
+npm run test -w @wilms/domain
+npm run build
+npm run verify:version
 ```
 
-Edit `.env` with your local values. **Never commit `.env` files.**
-
-### Run the stack
-
-**Terminal 1 � API**
-
-```bash
-npm run dev:api
-# Default: http://127.0.0.1:4000
-```
-
-**Terminal 2 � Frontend**
-
-```bash
-npm run dev
-# Default: http://127.0.0.1:3000
-```
-
-By default the Next.js app serves `/api/wilms/*` in-process via `@wilms/domain`. Set `WILMS_API_MODE=proxy` and `WILMS_API_UPSTREAM` only for dual-run against a separate Node API process.
-
-### Data modes
-
-| Mode | When | Behaviour |
-|------|------|-----------|
-| **Mock (default dev)** | `NEXT_PUBLIC_USE_MOCK` unset in dev webpack alias | In-browser mock services, no DB required |
-| **API + memory** | `DATABASE_URL` unset on API | Backend in-memory persistence |
-| **API + PostgreSQL** | `DATABASE_URL` set | Full production persistence |
-
-Production builds **always** use the API data provider; mock mode is blocked at compile time.
+Financial / RBAC / notification verification scripts live under `@wilms/domain` (`npm run verify:financial -w @wilms/domain`, `smoke:rbac`, `smoke:notifications`, etc.).
 
 ---
 
-## Environment Variables
+## Deployment overview
 
-Copy from `.env.example`. Key groups:
-
-### Frontend
-
-| Variable | Purpose |
-|----------|---------|
-| `NEXT_PUBLIC_APP_URL` | Canonical app URL (links, callbacks) |
-| `NEXT_PUBLIC_API_BASE_URL` | Leave empty to use same-origin BFF proxy |
-| `NEXT_PUBLIC_USE_MOCK` | Force API vs mock in non-production builds |
-| `NEXT_PUBLIC_WILMS_ENV` | Display label: `development` / `staging` / `production` |
-| `WILMS_API_MODE` | Optional `proxy` for dual-run; omit for in-process API |
-| `WILMS_API_UPSTREAM` | Dual-run only: Node API URL (e.g. `http://127.0.0.1:4000`) |
-| `DATABASE_URL` | Neon pooled URL (required for live API on Vercel) |
-| `REDIS_URL` / `WILMS_REDIS_URL` | Required for serverless production rate limiting |
-| `WILMS_SCHEDULER_TOKEN` / `CRON_SECRET` | Vercel Cron auth |
-
-### Backend / database
-
-| Variable | Purpose |
-|----------|---------|
-| `DATABASE_URL` | Neon PostgreSQL connection string |
-| `WILMS_SESSION_SECRET` | Session signing secret (required in production) |
-| `WILMS_CORS_ORIGIN` | Allowed browser origin for direct API calls |
-
-### Integrations (configure in Vercel Preview + Production secrets)
-
-| Variable | Purpose |
-|----------|---------|
-| `SMS_PROVIDER` / `SMSNOTIFYGH_*` | SMSNotifyGH outbound SMS |
-| `MAIL_PROVIDER` / `GMAIL_*` / `RESEND_API_KEY` | Transactional email |
-| `UPLOAD_PROVIDER` / `CLOUDINARY_*` | Photo and document uploads |
-| `WILMS_INTERNAL_MAIL_SECRET` | Internal mail relay secret (same-origin on Vercel) |
-
-Integration status is surfaced in **Settings ? Integrations** with setup hints when credentials are missing.
+- **Platform:** Vercel (UI + API + Cron)
+- **Database:** Neon (use the **pooled** connection string on Vercel)
+- **Secrets:** configure Preview and Production separately (see [`docs/environment.md`](docs/environment.md))
+- **Migrations:** `npm run db:migrate -w @wilms/domain` against Neon before/after promote
+- **Scheduler:** Vercel Cron `0 6 * * *` → `/api/cron/notifications`
+- **Rollback:** keep prior Vercel deployment / `main` history; optional Node dual-run — see [`docs/v1.5/FINAL_RELEASE_READINESS.md`](docs/v1.5/FINAL_RELEASE_READINESS.md)
 
 ---
 
-## Core Commands
+## Security considerations
 
-```bash
-# Quality gates
-npm run type-check          # Frontend + API TypeScript
-npm run lint                # ESLint (frontend)
-npm test                    # Vitest (frontend, 230+ tests)
-npm run test -w @wilms/api  # API unit tests
-
-# Build
-npm run build               # Production Next.js build
-
-# Database
-npm run db:migrate -w @wilms/domain
-npm run seed:ghana-locations
-
-# Production verification (requires live URLs)
-WILMS_APP_URL=https://wilms.vercel.app \
-WILMS_API_URL=https://wilms-production.up.railway.app \
-npm run smoke:production
-
-npm run smoke:rbac
-npm run verify:api-integrity
-npm run verify:mock-guard
-npm run verify:deploy-sync
-npm run verify:empty-db
-```
+- Never commit `.env` / `.env.local`
+- Production requires non-default `WILMS_SESSION_SECRET`
+- Serverless production requires Redis for shared rate limiting
+- CSRF enforced on mutating `/api/wilms/*` (except designated public capture paths)
+- Clients never receive stack traces, SQL, or ORM internals
 
 ---
 
-## Architecture
+## Contributing
 
-```text
-Browser
-  ??? Next.js frontend (Vercel)
-        ??? React UI (role-based shells, executive layout system)
-        ??? BFF /api/wilms/*  ???  Express API (Railway)
-                                      ??? Drizzle ORM
-                                      ??? Neon PostgreSQL
-                                      ??? Cloudinary uploads
-                                      ??? SMS / mail providers
-                                      ??? Audit + messaging modules
-```
-
-- **Readable display IDs** � borrowers, collectors, groups, loans, and payments show human-facing IDs in UI and exports; UUIDs stay internal.
-- **RBAC** � permissions enforced in UI (`PermissionGate`) and API middleware; route matrix in `apps/frontend/src/lib/rbac/permission-matrix.ts`.
-- **Exports** � unified WILMS export framework (CSV, Excel, PDF, Word, print) with branded registration agreement layouts.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md). Branch from `main`, validate, open a PR. Do not merge platform cutovers without the review checkpoints described in the v1.5 readiness doc.
 
 ---
 
-## Key Features by Area
+## Versioning & changelog
 
-### Super Admin dashboard (`/dashboard`)
-
-Executive KPIs, group risk snapshot, quick actions, **financial overview** (collections vs expenses), borrower status distribution, collector performance, and recent activity alerts.
-
-### Operations control centre (`/ops`)
-
-**Distinct from the executive Dashboard.** Platform health, API/worker/queue status, migration watermark, runtime metrics, and operational surfaces for Super Admins. Do not confuse with the �Daily Operations� sidebar group (applications, disbursements, collections).
-
-### Expense management (`/expenses`)
-
-Dedicated sidebar entry for super admins. Review collector-submitted expenses, approve/reject pending items, and monitor spend totals. Collectors submit via `/collector/expenses`.
-
-### Settings (`/settings`)
-
-Organisation branding, user management, roles & permissions, security, notifications, loan rules, SMS, integrations, and audit controls. Toggle switches use a visible outer frame when off for clearer affordance.
-
-### Field operations (collectors)
-
-- Offline payment and expense queue (IndexedDB)
-- PWA installable shell
-- Background photo uploads
-- Device health in collector settings
-- QR/barcode borrower lookup
-- Thermal receipt printing
-
-See `docs/offline-architecture.md`, `docs/mobile-guide.md`, and `docs/synchronization-guide.md`.
-
-### Communication Center (`/communication-center`)
-
-Broadcasts, templates, delivery analytics, and failed-message review across Email, SMS, and In-App channels.
-
-### Registration & approval exports
-
-Registration review screens export structured **PDF / Word / Print** agreement documents (not raw CSV dumps). Approver and officer review pages use `buildRegistrationAgreementExportDocument`.
+- [`VERSION.md`](VERSION.md) — current release metadata  
+- [`CHANGELOG.md`](CHANGELOG.md) — release history  
 
 ---
 
-## Deployment
+## Ownership & license
 
-### API (Vercel / optional Node dual-run)
+This is a paid client project for the WILMS product organization. Package metadata is private (`"private": true`). Do not add personal contributor branding to project artifacts unless the project owner requests it.
 
-```bash
-railway up --detach
-```
-
-Set `DATABASE_URL`, `WILMS_SESSION_SECRET`, `REDIS_URL`, SMS/mail/upload secrets in Vercel. Run migrations against Neon before/after promote:
-
-```bash
-npm run db:migrate -w @wilms/domain
-```
-
-### Frontend (Vercel)
-
-```bash
-vercel deploy --prod --yes
-```
-
-Prefer in-process API (no upstream). For dual-run only, set `WILMS_API_MODE=proxy` and `WILMS_API_UPSTREAM`. Configure mail/SMS on Vercel.
-
-### Post-deploy checks
-
-```bash
-# Health
-curl -sS "${WILMS_API_URL}/health" | jq .
-
-# Photo capture public route (must not 401)
-curl -sS -o /dev/null -w "%{http_code}\n" \
-  "${WILMS_APP_URL}/api/wilms/photo-capture/sessions/pcs_invalid00000001"
-```
-
-Full procedures: `docs/deployment-guide.md`, `docs/production-guide.md`.
-
----
-
-## Release History (recent)
-
-| Version | Highlights |
-|---------|------------|
-| **v1.4.2** | Phase 27: signed invite tokens, expense SoD, SQL-scoped reports, API rate limiting |
-| **v1.4.1** | UX shell hardening: Dashboard?Operations routing fix, sticky chrome, float stack, permission catalog, command search |
-| **v1.4.0** | Platform foundation: Node 22, BullMQ/Redis optional queues, idempotency, cursor pagination, outbox, feature flags |
-| **v1.3.8** | Final hardening, enterprise certification packs, ops dashboard, request IDs / Prometheus metrics |
-| **v1.3.7** | Stable release: financial KPI integrity, recon lifecycle, display IDs, dashboard polish |
-| **v1.3.6** | Production stabilisation, messaging memory fallback, health diagnostics, UI filter/toolbar polish |
-| **v1.3.5** | Premium splash, branded OTP email, notification center refresh |
-| **v1.3.4** | Mobile photo capture routes, session invalidation on password reset |
-| **v1.3.3** | Service worker fixes, sign-in redesign |
-| **v1.3.0** | Offline PWA, sync conflicts, device health, advanced lending |
-
-See `CHANGELOG.md`, `PROJECT_STATUS.md`, and `docs/version-history.md`.
-
----
-
-## Documentation Index
-
-| Topic | Path |
-|-------|------|
-| Docs hub | `docs/README.md` |
-| Project status | `PROJECT_STATUS.md` |
-| Changelog | `CHANGELOG.md` |
-| System architecture (SSoT) | `docs/certification/v1.3.8/enterprise-architecture/SYSTEM_ARCHITECTURE.md` |
-| Architecture (legacy index) | `docs/architecture/architecture.md` |
-| API overview | `docs/api-overview.md` |
-| Authentication | `docs/authentication.md` |
-| Permission matrix | `docs/permission-matrix.md` |
-| Security | `docs/security-guide.md` |
-| Offline / PWA | `docs/offline-architecture.md` |
-| Sync & conflicts | `docs/synchronization-guide.md` |
-| Mobile / field ops | `docs/mobile-guide.md` |
-| Advanced lending | `docs/advanced-lending.md` |
-| Financial calculations | `docs/financial-calculations.md` |
-| Deployment | `docs/deployment-guide.md` |
-| Production ops (day-to-day) | `docs/operations/` |
-| Production ops pack (v1.3.8) | `docs/certification/v1.3.8/production-operations/` |
-| Product acceptance (v1.3.8) | `docs/certification/v1.3.8/product-acceptance/` |
-| Go-live / production certification (v1.3.8) | `docs/certification/v1.3.8/go-live/` |
-| Production cutover (v1.3.8) | `docs/certification/v1.3.8/production-cutover/` |
-| **v1.4 planning (Phase 24)** | `docs/planning/v1.4/` |
-| **v1.4 Phase 25 foundation** | `docs/certification/v1.4/phase-25/` |
-| **v1.4 UX modernisation** | `docs/certification/v1.4/ux-modernisation/` |
-
-Historical certification evidence is preserved under `docs/archive/`.
-
----
-
-## Troubleshooting (local)
-
-| Symptom | Likely cause | Action |
-|---------|--------------|--------|
-| API health fails | API not running | `npm run dev:api` � check `http://127.0.0.1:4000/health` |
-| UI shows mock data unexpectedly | Mock mode default in frontend | Set `apps/frontend/.env.local` with `NEXT_PUBLIC_USE_MOCK=false` and `NEXT_PUBLIC_API_BASE_URL=/api/wilms` |
-| BFF returns 403 | CSRF on `/api/wilms` | Use the browser UI session; do not raw-curl mutating BFF routes |
-| Demo login fails on production | Expected | Demo `@wilms.demo` accounts are blocked live � use invited users |
-| Operations nav opens Dashboard | Fixed in **1.4.1** | Upgrade; ensure `/ops` is in route permission matrix |
-
----
-
-## Contributing & Support
-
-1. Branch from `main` with a descriptive name (agent workflows use `cursor/<description>-8847`).
-2. Run `npm run type-check`, `npm run lint`, and `npm test` before opening a PR.
-3. Keep display IDs and RBAC permissions aligned when adding routes or APIs.
-4. Prefer the shared UI primitives under `apps/frontend/src/components/ui/` � do not invent parallel button/modal systems.
-5. Report issues at [github.com/e-mond/WILMS/issues](https://github.com/e-mond/WILMS/issues).
-
-See also `CONTRIBUTING.md`.
-
----
-
-## License
-
-Private / organisation use. See repository owner for licensing terms.
+License: proprietary / private unless a `LICENSE` file states otherwise. No open-source license file was verified in this repository at documentation time.

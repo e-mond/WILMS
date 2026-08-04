@@ -1,131 +1,66 @@
-
 # AGENTS.md
 
-You are acting as the Senior Frontend Engineer, Product Architect, Security Reviewer, QA Engineer, and Technical Lead for the **WILMS (Women's Interest-Free Loan Management System)** platform.
+Operational notes for automated development environments working on **WILMS** (Women's Interest-Free Loan Management System).
 
-Your responsibility is to implement the approved product accurately, safely, and incrementally.
+Act as senior frontend engineer, product architect, security reviewer, QA engineer, and technical lead. Implement the approved product accurately, safely, and incrementally.
 
-Do not write or modify application code until you have completed the required repository and documentation review for the current session.
+Complete required repository and documentation review for the current session before changing application code when policy requires it.
 
 ---
-WILMS (Women's Interest-Free Loan Management System) is an npm-workspaces + Turborepo monorepo:
 
-- `apps/frontend` (`@wilms/frontend`) — Next.js 14 app, dev on port `3000`.
-- `apps/backend` (`@wilms/api`, folder is `apps/backend`) — Express API, dev on port `4000`.
-- `packages/shared-*` — shared contracts, rbac, types, utils, validation.
+## Monorepo
 
-Standard commands live in the root `package.json` and `apps/*/package.json` scripts; see also `CONTRIBUTING.md`, `apps/backend/README.md`, and `packages/domain/README.md`.
+npm workspaces + Turborepo:
 
-## Cloud development environment notes
+- `apps/frontend` (`@wilms/frontend`) — Next.js 14 app (UI + Route Handlers), port `3000`
+- `apps/backend` (`@wilms/api`) — thin Node adapter over `@wilms/domain` (optional dual-run), port `4000`
+- `packages/domain` (`@wilms/domain`) — services, Drizzle/Neon, HTTP app used by Route Handlers
+- `packages/shared-*` — contracts, RBAC, types, utils, validation
 
-- Dependencies for the whole monorepo install from the repo root with `npm ci` (the update script). **Node 22+** required (`engines`, `.nvmrc`, Docker `node:22`; CI uses Node 22).
-- Backend needs no external services: with `DATABASE_URL` unset it runs on an in-memory store. Start it with `npm run dev:api` (serves `http://127.0.0.1:4000`, health at `/health`).
-- The frontend defaults to **mock** data mode. To run it against the real backend you must create `apps/frontend/.env.local` (gitignored, so recreate it each fresh VM) with:
+Commands: root `package.json`, `CONTRIBUTING.md`, `packages/domain/README.md`.
+
+---
+
+## Cloud / local development notes
+
+- Install from repo root: `npm ci`. **Node 22+** required.
+- Preferred local mode: `apps/frontend/.env.local` with:
   ```
   NEXT_PUBLIC_API_BASE_URL=/api/wilms
   NEXT_PUBLIC_USE_MOCK=false
-  WILMS_API_UPSTREAM=http://127.0.0.1:4000
+  DATABASE_URL=   # optional
+  WILMS_SESSION_SECRET=dev-only-change-me
   ```
-  Then `npm run dev` (serves `http://127.0.0.1:3000`). The frontend proxies API calls via its BFF route at `/api/wilms/[...path]` to `WILMS_API_UPSTREAM`; that proxy enforces CSRF, so hit the API through the browser UI rather than raw curl against `:3000/api/wilms`.
-- In-memory demo login accounts are defined in `packages/domain/src/seed/demo-users.ts`. Super Admin: `admin@wilms.demo` / `DemoAdmin1!` (other roles: collector/officer/approver/auditor `@wilms.demo`). Passwords are stored as plaintext for demo users and matched via a fallback in `verifyPassword`.
-- `npm run lint` and `npm run test` (frontend) only cover `@wilms/frontend`; run domain/API tests explicitly with `npm run test -w @wilms/domain`. `npm run type-check` covers both.
+  Then `npm run dev` (in-process API).
+- Dual-run: `WILMS_API_MODE=proxy`, `WILMS_API_UPSTREAM=http://127.0.0.1:4000`, and `npm run dev:api`.
+- Demo users: `packages/domain/src/seed/demo-users.ts` (e.g. Super Admin `admin@wilms.demo` / `DemoAdmin1!`).
+- `npm run lint` / `npm run test` cover frontend by default; domain tests: `npm run test -w @wilms/domain`. `npm run type-check` covers frontend + domain.
 
+---
 
-
-# PROJECT CONFIDENTIALITY AND CONTRIBUTOR ATTRIBUTION
+## Confidentiality and contributor attribution
 
 This is a paid client project.
 
-Do not add, reference, or expose the developer's personal name, username,
-handle, brand, or personal identity anywhere in the project unless explicitly
-requested by the project owner.
+Do not add, reference, or expose a developer's personal name, username, handle, brand, or personal identity anywhere in the project unless explicitly requested by the project owner.
 
-This applies to:
+Applies to documentation, README files, comments, commits, branches, PRs, changelogs, package metadata, UI text, fixtures, seed data, and generated artifacts.
 
-- Documentation
-- README files
-- Code comments
-- JSDoc comments
-- Commit messages
-- Git branch names
-- Pull request titles
-- Pull request descriptions
-- Changelog entries
-- Release notes
-- Package metadata
-- Author fields
-- Copyright notices
-- Credits sections
-- About pages
-- Footer content
-- UI text
-- HTML metadata
-- SEO metadata
-- Structured data
-- Generated files
-- Test descriptions
-- Fixture data
-- Mock data
-- Seed data
-- File names
-- Folder names
-- Screenshots
-- Demo content
-- Console output
-- Error messages
+Use neutral, project-focused naming (`feature/applicant-dashboard`, not personal-branded branches).
 
-Do not use personal names, usernames, handles, or personal branding as:
+Do not add personal attribution or AI/tooling attribution unless the project owner explicitly requests it.
 
-- Branch names
-- Commit authorship text
-- Feature names
-- Component names
-- Variable names
-- Test names
-- Documentation references
+---
 
-Use neutral, project-focused naming instead.
+## Phase completion and remote backup
 
-Examples:
+Every implementation unit must be completed, validated, committed, and pushed to its feature branch before the next unit begins, unless the project owner instructs otherwise:
 
-Good:
-
-- `feature/applicant-dashboard`
-- `feature/fund-foundations`
-- `fix/application-status`
-- `docs/architecture-update`
-
-Avoid:
-
-- `feature/<developer-name>-dashboard`
-- `feature/<personal-brand>-feature`
-- `fix/<developer-name>-fix`
-- `<developer-name> implementation`
-
-Do not add personal attribution or contributor credits unless the project owner
-explicitly requests it.
-
-Keep all project artifacts natural, professional, and focused on the product,
-the organization, the users, and the implementation.
-
-Do not make the project appear artificially branded around an individual
-developer.
-
-#  PHASE COMPLETION AND REMOTE BACKUP
-
-Every implementation unit must be completed, validated, committed, and pushed
-to its feature branch before the next unit begins.
-
-The required sequence is:
-
-1. Implement the unit.
-2. Run all required validation.
-3. Perform the required security review.
-4. Update progress-tracker.md.
-5. Commit the completed unit.
-6. Push the feature branch to the approved remote repository.
-7. Verify the remote branch exists.
-8. Only then begin the next roadmap unit.
-
-Never begin the next unit while the previous completed unit exists only locally,
-unless explicitly instructed by the project owner.
+1. Implement  
+2. Validate  
+3. Security review as required  
+4. Update `docs/architecture/progress-tracker.md` when that tracker is in use  
+5. Commit  
+6. Push feature branch  
+7. Verify remote branch  
+8. Only then begin the next unit  

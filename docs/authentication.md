@@ -1,37 +1,83 @@
-# Authentication
+# Authentication and session security
 
-**Version:** 1.3.0
+**Purpose:** Document the authentication and route-protection behavior implemented in WILMS v1.5.  
+**Not used:** Auth.js / NextAuth (not present in dependencies or routes).
 
-## Session model
+---
 
-- HMAC-signed cookie (`wilms_session`) issued by the Next.js BFF after `POST /api/auth/login`.
-- Payload includes `userId`, `role`, `displayName`, `expiresAt`, `status`, and `sessionVersion`.
-- API `requireAuth` validates signature, expiry, account status, role match, and session version.
+## Overview
 
-## Flows
+WILMS uses a **custom HMAC-signed session token** stored in an HTTP-only cookie named `wilms_session`. The same token is accepted as `Authorization: Bearer <token>` by the domain HTTP layer.
 
-| Endpoint | Purpose |
-|----------|---------|
-| `POST /auth/login` | Email/password; optional 2FA OTP challenge |
-| `POST /auth/verify-otp` | Complete 2FA when enabled |
-| `POST /auth/complete-onboarding` | Invited users set password and profile |
-| `POST /auth/accept-invitation` | Record invitation acceptance from email link |
-| `POST /auth/logout` | Client cookie clear |
-| `POST /auth/forgot-password` | Email + SMS reset notice |
-| `POST /auth/reset-password` | Token-based password reset |
+---
 
-## Session invalidation
+## Login flow
 
-When an administrator suspends, deletes, or changes a user's role, `users.session_version` increments. Existing tokens fail on the next API call with `401 Session has been revoked`.
+```text
+Browser
+  POST /api/auth/login  (Next Route Handler)
+        │
+        ▼
+  Domain POST /auth/login
+  (password verify → issue token signed with WILMS_SESSION_SECRET)
+        │
+        ▼
+  Next sets cookie wilms_session (httpOnly, SameSite=Lax, Secure in production)
+        │
+        ▼
+  Subsequent /api/wilms/* calls include cookie;
+  Route Handler copies cookie → Authorization Bearer for domain middleware
+```
 
-## Timeouts
+Primary files:
 
-- Session duration: configured via `sessionDurationMs` / system settings.
-- App lock idle timeout: separate PIN overlay for collectors (not an administration fee).
+- `apps/frontend/src/app/api/auth/login/route.ts`
+- `apps/frontend/src/lib/auth/cookies.ts`, `session.ts`
+- `packages/domain/src/modules/auth/routes.ts`
+- `packages/domain/src/middleware/authenticate.ts`
 
-## Related
+Session duration is configured in domain env as 24 hours (`sessionDurationMs`).
 
-- [security-guide.md](./security-guide.md)
-- [synchronization-guide.md](./synchronization-guide.md)
-- [offline-architecture.md](./offline-architecture.md)
-- [USER_LIFECYCLE_REPORT.md](../USER_LIFECYCLE_REPORT.md)
+---
+
+## CSRF
+
+Mutating requests to `/api/wilms/*` require a valid CSRF cookie/header pair (`wilms_csrf` / `x-wilms-csrf`), enforced in the Route Handler. Public photo-capture session paths are exempt by design.
+
+---
+
+## Frontend middleware (route authorization)
+
+`apps/frontend/src/middleware.ts` resolves the session and applies role → path rules (`canRoleAccessPath`). Unauthenticated users are redirected to login for protected routes. Public paths include login, password reset, session-expired, invitation accept, and capture token routes.
+
+Roles implemented in product portals: Super Admin, Collector, Registration Officer, Approver, Auditor.
+
+---
+
+## Domain RBAC
+
+API handlers use `requireAuth` / `requirePermission` middleware against `@wilms/shared-rbac` permissions, plus optional permission overrides stored in the database (settings module). Maker-checker rules (e.g. cannot approve own loan) are enforced in domain services.
+
+See [PERMISSIONS_AND_ROLES.md](PERMISSIONS_AND_ROLES.md).
+
+---
+
+## Scheduler / Cron authentication
+
+- `POST …/scheduler/run` routes: `WILMS_SCHEDULER_TOKEN` via `Authorization: Bearer` or `x-wilms-scheduler-token`
+- `GET /api/cron/notifications`: `WILMS_SCHEDULER_TOKEN` or `CRON_SECRET` bearer
+
+No browser session is required for these endpoints.
+
+---
+
+## Metrics authentication
+
+`GET /ops/metrics` accepts `WILMS_METRICS_TOKEN` or an admin session.
+
+---
+
+## Gaps / verification notes
+
+- Invitation, OTP, and password-reset flows exist under auth modules; operational runbooks should be validated against `packages/domain/src/modules/auth` when changing providers.
+- Cookie `Domain` is host-only (no shared parent domain). Same-origin Vercel deployment matches this design.

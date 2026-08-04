@@ -22,7 +22,8 @@
 |-------|-------|
 | Verdict | **CONSOLIDATION — HUMAN CHECKPOINTS REQUIRED** |
 | Production Certified | **NOT ISSUED** until Preview dual-run + cron + financial/RBAC/notification sign-off |
-| Consolidation pack | [`V15_PLATFORM_CONSOLIDATION_REPORT.md`](./V15_PLATFORM_CONSOLIDATION_REPORT.md) |
+| Consolidation pack | [`docs/v1.5/V15_PLATFORM_CONSOLIDATION_REPORT.md`](docs/v1.5/V15_PLATFORM_CONSOLIDATION_REPORT.md) |
+| Documentation overhaul | [`DOCUMENTATION_REPORT.md`](DOCUMENTATION_REPORT.md) |
 
 ## Promotion criteria
 
@@ -31,11 +32,10 @@
 3. Financial, RBAC, and notification suites pass against Route Handlers.
 4. Vercel Cron (or manual cron route) succeeds with scheduler token.
 5. Redis configured on Vercel Production for rate limiting.
-6. Human sign-off at final DoD checkpoint; then merge to `main`.
+6. Human sign-off at final DoD checkpoint.
 
 ## References
 
-- [V15_PLATFORM_CONSOLIDATION_REPORT.md](./V15_PLATFORM_CONSOLIDATION_REPORT.md)
-- [FINAL_RELEASE_READINESS.md](./FINAL_RELEASE_READINESS.md)
-- [CHANGELOG.md](./CHANGELOG.md)
-- [ARCHITECTURE_MIGRATION_REPORT.md](./ARCHITECTURE_MIGRATION_REPORT.md)
+- [docs/v1.5/](docs/v1.5/)
+- [CHANGELOG.md](CHANGELOG.md)
+- [docs/deployment-guide.md](docs/deployment-guide.md)
