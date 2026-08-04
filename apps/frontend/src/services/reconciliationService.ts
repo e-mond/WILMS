@@ -5,6 +5,7 @@ import type {
   ReviewReconciliationInput,
 } from '@/types/services';
 import { apiClient } from '@/utils/apiClient';
+import { financialMutation } from '@/utils/financialMutation';
 
 const reconciliationService: IReconciliationService = {
   getCollectorReconciliation(collectorId: string, date: string): Promise<ReconciliationSummary> {
@@ -13,8 +14,13 @@ const reconciliationService: IReconciliationService = {
     );
   },
 
-  submitReconciliation(input: SubmitReconciliationInput): Promise<ReconciliationSummary> {
-    return apiClient.post<ReconciliationSummary>('/reconciliations', input);
+  async submitReconciliation(input: SubmitReconciliationInput): Promise<ReconciliationSummary> {
+    const { result } = await financialMutation(
+      (headers) =>
+        apiClient.post<ReconciliationSummary>('/reconciliations', input, { headers }),
+      { domain: 'reconciliation' },
+    );
+    return result;
   },
 
   listReconciliations(filter?: { collectorId?: string }): Promise<ReconciliationSummary[]> {

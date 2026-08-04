@@ -7,6 +7,7 @@ import {
   deleteBorrower,
   getBorrower,
   listBorrowers,
+  listGroups,
   nextBorrowerId,
   saveBorrower,
   type BorrowerRecord,
@@ -171,12 +172,20 @@ async function toReview(record: BorrowerRecord, officerDisplayName: string, sequ
     resolvePhotoUrl(record.profile.idDocumentUploadId),
   ]);
 
+  let groupDisplayId: string | undefined;
+  if (record.groupId) {
+    const groups = await listGroups();
+    const matched = groups.find((group) => group.id === record.groupId);
+    groupDisplayId = matched?.systemId;
+  }
+
   return {
     ...detail,
     displayId: formatBorrowerDisplayId(
       { community: record.community, registeredAt: record.registeredAt },
       sequence ?? 1,
     ),
+    groupDisplayId,
     dateOfBirth: record.profile.dateOfBirth ?? '',
     gender: record.profile.gender ?? '',
     email: record.profile.email,

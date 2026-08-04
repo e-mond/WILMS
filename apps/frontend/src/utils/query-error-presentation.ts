@@ -56,6 +56,22 @@ export function resolveQueryErrorPresentation(error: unknown): QueryErrorPresent
           canRetry: false,
           variant: 'not-found',
         };
+      case API_ERROR_CODE.LOAN_NOT_READY_FOR_DISBURSEMENT:
+        return {
+          title: 'Loan not ready for disbursement',
+          description:
+            'This loan cannot be disbursed yet because it has not completed the approval process.',
+          canRetry: false,
+          variant: 'error',
+        };
+      case API_ERROR_CODE.IDEMPOTENCY_REQUIRED:
+        return {
+          title: 'Unable to complete this operation',
+          description:
+            'We could not submit this financial request. Please try again. If the problem continues, contact your administrator.',
+          canRetry: true,
+          variant: 'error',
+        };
       case API_ERROR_CODE.SERVER:
         return {
           title: 'Server error',

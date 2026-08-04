@@ -23,6 +23,16 @@ export function mapFinancialRouteError(error: unknown): never {
         409,
       );
     }
+    if (
+      error.message === 'VALIDATION:LOAN_NOT_READY_FOR_DISBURSEMENT' ||
+      error.message.includes('Only approved loans pending disbursement')
+    ) {
+      throw new AppError(
+        'Only approved loans pending disbursement can be disbursed. Complete approval first.',
+        ERROR_CODE.LOAN_NOT_READY_FOR_DISBURSEMENT,
+        422,
+      );
+    }
     if (error.message.startsWith('VALIDATION')) {
       throw new AppError(
         error.message.replace(/^VALIDATION:?/, '') || 'Validation failed.',

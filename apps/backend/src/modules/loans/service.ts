@@ -416,9 +416,7 @@ export async function disburseLoan(
         throw new Error('NOT_FOUND');
       }
       if (loan.lifecycleStatus !== LOAN_LIFECYCLE.PENDING_DISBURSEMENT) {
-        throw new Error(
-          'VALIDATION:Only approved loans pending disbursement can be disbursed. Complete approval first.',
-        );
+        throw new Error('VALIDATION:LOAN_NOT_READY_FOR_DISBURSEMENT');
       }
 
       await assertAdminFeeRecorded(loan.borrowerId);

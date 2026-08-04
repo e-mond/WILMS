@@ -14,7 +14,7 @@ export interface TimelineStepperProps {
 
 export function TimelineStepper({ steps, className }: TimelineStepperProps) {
   return (
-    <ol className={cn('space-y-wilms-3', className)} aria-label="Flag timeline">
+    <ol className={cn('space-y-wilms-3', className)} aria-label="Workflow timeline">
       {steps.map((step, index) => (
         <li key={step.id} className="flex gap-wilms-3">
           <div className="flex flex-col items-center">

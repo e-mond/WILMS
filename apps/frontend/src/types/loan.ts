@@ -8,6 +8,22 @@ export const LOAN_STATUS = {
 
 export type LoanStatus = (typeof LOAN_STATUS)[keyof typeof LOAN_STATUS];
 
+/** Internal lifecycle — authoritative for action gating (approve / disburse). */
+export const LOAN_LIFECYCLE = {
+  DRAFT: 'DRAFT',
+  PENDING_APPROVAL: 'PENDING_APPROVAL',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  PENDING_DISBURSEMENT: 'PENDING_DISBURSEMENT',
+  DISBURSED: 'DISBURSED',
+  ACTIVE: 'ACTIVE',
+  COMPLETED: 'COMPLETED',
+  DEFAULTED: 'DEFAULTED',
+  WRITTEN_OFF: 'WRITTEN_OFF',
+} as const;
+
+export type LoanLifecycleStatus = (typeof LOAN_LIFECYCLE)[keyof typeof LOAN_LIFECYCLE];
+
 export interface LoanSummary {
   id: string;
   displayId?: string;
@@ -16,6 +32,7 @@ export interface LoanSummary {
   durationWeeks: number;
   weeklyPaymentPesewas: number;
   status: LoanStatus;
+  lifecycleStatus?: LoanLifecycleStatus;
 }
 
 export interface LoanDetail extends LoanSummary {
