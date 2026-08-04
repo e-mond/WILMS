@@ -3,7 +3,12 @@ import { apiClient } from '@/utils/apiClient';
 import { financialMutation } from '@/utils/financialMutation';
 import type { IPaymentService } from '@/types/services';
 import type { PaymentEntryContext } from '@/types/payment-entry';
-import type { PaymentTransaction, RecordPaymentInput } from '@/types/payment';
+import type {
+  MarkMissedPaymentInput,
+  MarkMissedPaymentResult,
+  PaymentTransaction,
+  RecordPaymentInput,
+} from '@/types/payment';
 
 const paymentService: IPaymentService = {
   getPaymentEntryContext(borrowerId: string, referenceDate?: string): Promise<PaymentEntryContext> {
@@ -53,6 +58,24 @@ const paymentService: IPaymentService = {
             paymentDate: input.paymentDate,
             collectorId: input.collectorId,
             gps,
+          },
+          { headers },
+        ),
+      { domain: 'payment' },
+    );
+    return result;
+  },
+
+  async markMissedPayment(input: MarkMissedPaymentInput): Promise<MarkMissedPaymentResult> {
+    const { result } = await financialMutation(
+      (headers) =>
+        apiClient.post<MarkMissedPaymentResult>(
+          '/payments/missed',
+          {
+            borrowerId: input.borrowerId,
+            paymentDate: input.paymentDate,
+            collectorId: input.collectorId,
+            loanId: input.loanId,
           },
           { headers },
         ),

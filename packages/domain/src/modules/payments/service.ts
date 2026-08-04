@@ -17,7 +17,9 @@ import * as borrowerRepo from '../../repositories/borrower.repository.js';
 import { notifyLoanFullyPaid } from '../../infrastructure/notifications/event-dispatch.js';
 import {
   emitPaymentConfirmedNotification,
+  emitPaymentMissedNotification,
   resolveNextDueDate,
+  resolveWeeksRemaining,
 } from '../../infrastructure/notifications/payment-notifications.js';
 import * as ledgerRepo from '../../repositories/ledger.repository.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
@@ -289,6 +291,7 @@ async function postPayment(
   const borrower = await borrowerRepo.getBorrower(input.borrowerId);
   if (borrower) {
     const nextDueDate = await resolveNextDueDate(loan.id);
+    const weeksRemaining = await resolveWeeksRemaining(loan.id);
     void emitPaymentConfirmedNotification({
       paymentId: result.id,
       borrowerId: borrower.id,
@@ -300,6 +303,7 @@ async function postPayment(
       loanDisplayId: loan.displayId ?? loan.id,
       loanId: loan.id,
       outstandingBalancePesewas: newBalancePesewas,
+      weeksRemaining,
       nextDueDate,
       collectorUserId: input.collectorId,
     });
@@ -331,6 +335,119 @@ async function postPayment(
     gps: result.gps,
     weekNumber,
   };
+}
+
+export const markMissedPaymentSchema = z.object({
+  borrowerId: z.string().min(1),
+  paymentDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  loanId: z.string().optional(),
+  collectorId: z.string().min(1),
+});
+
+/**
+ * Collector marks today's payable week as MISSED and notifies the borrower.
+ */
+export async function markMissedPayment(
+  input: z.infer<typeof markMissedPaymentSchema>,
+  actorId: string,
+  idempotencyKey?: string,
+) {
+  requireDatabase();
+
+  return runWithIdempotency({
+    scope: 'PAYMENT_MISSED_MARK',
+    actorUserId: actorId,
+    idempotencyKey,
+    requestPayload: input,
+    responseStatus: 200,
+    execute: async () => {
+      const loanRows = await loanRepo.listBorrowerLoans(input.borrowerId);
+      const activeLoan = loanRows.find((row) => row.externalStatus === 'ACTIVE');
+      if (!activeLoan) {
+        throw new Error('NOT_FOUND');
+      }
+      if (input.loanId && input.loanId !== activeLoan.id) {
+        throw new Error('VALIDATION:Loan does not match the borrower active loan.');
+      }
+
+      const loan = mapLoanRowToDetail(activeLoan);
+      const scheduleRows = await scheduleRepo.listScheduleWeeks(loan.id);
+      const payable =
+        scheduleRows.find(
+          (week) =>
+            (week.status === 'PENDING' || week.status === 'MISSED') &&
+            week.dueDate === input.paymentDate,
+        ) ??
+        scheduleRows.find((week) => week.status === 'PENDING' || week.status === 'MISSED');
+
+      if (!payable) {
+        throw new Error('VALIDATION:No unpaid schedule week to mark as missed.');
+      }
+
+      if (payable.status === 'MISSED') {
+        const weeksRemaining = scheduleRows.filter(
+          (week) => week.status === 'PENDING' || week.status === 'MISSED',
+        ).length;
+        return {
+          loanId: loan.id,
+          borrowerId: input.borrowerId,
+          weekNumber: payable.weekNumber,
+          dueDate: payable.dueDate,
+          status: 'MISSED' as const,
+          amountPesewas: Math.round(Number(payable.installmentAmount) * 100),
+          remainingBalancePesewas: loan.outstandingPesewas,
+          weeksRemaining,
+        };
+      }
+
+      await scheduleRepo.markWeekMissed({
+        loanId: loan.id,
+        weekNumber: payable.weekNumber,
+        expectedVersion: payable.version,
+      });
+
+      appendAuditEntry({
+        action: 'payment.missed_marked',
+        actorId,
+        targetEntityId: loan.id,
+        targetEntityType: 'loan',
+      });
+
+      const weeksAfter = await scheduleRepo.listScheduleWeeks(loan.id);
+      const weeksRemaining = weeksAfter.filter(
+        (week) => week.status === 'PENDING' || week.status === 'MISSED',
+      ).length;
+      const amountPesewas = Math.round(Number(payable.installmentAmount) * 100);
+
+      const borrower = await borrowerRepo.getBorrower(input.borrowerId);
+      if (borrower) {
+        void emitPaymentMissedNotification({
+          borrowerId: borrower.id,
+          borrowerName: borrower.fullName,
+          borrowerPhone: borrower.phone,
+          borrowerEmail: borrower.profile?.email,
+          loanId: loan.id,
+          loanDisplayId: loan.displayId ?? loan.id,
+          dueDate: payable.dueDate,
+          amountPesewas,
+          remainingBalancePesewas: loan.outstandingPesewas,
+          weeksRemaining,
+          collectorUserId: input.collectorId,
+        });
+      }
+
+      return {
+        loanId: loan.id,
+        borrowerId: input.borrowerId,
+        weekNumber: payable.weekNumber,
+        dueDate: payable.dueDate,
+        status: 'MISSED' as const,
+        amountPesewas,
+        remainingBalancePesewas: loan.outstandingPesewas,
+        weeksRemaining,
+      };
+    },
+  });
 }
 
 export async function getPaymentById(paymentId: string) {

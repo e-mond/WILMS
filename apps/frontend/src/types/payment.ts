@@ -22,6 +22,24 @@ export interface RecordPaymentInput {
   gps?: GpsCoordinates;
 }
 
+export interface MarkMissedPaymentInput {
+  borrowerId: string;
+  paymentDate: string;
+  collectorId: string;
+  loanId?: string;
+}
+
+export interface MarkMissedPaymentResult {
+  loanId: string;
+  borrowerId: string;
+  weekNumber: number;
+  dueDate: string;
+  status: 'MISSED';
+  amountPesewas: number;
+  remainingBalancePesewas: number;
+  weeksRemaining: number;
+}
+
 export interface PaymentTransaction {
   id: string;
   borrowerId: string;

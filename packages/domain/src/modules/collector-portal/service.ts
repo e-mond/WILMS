@@ -2,6 +2,7 @@ import { listBorrowers, listPayments } from '../../db/persistence.js';
 import * as groupService from '../groups/service.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import * as paymentRepo from '../../repositories/payment.repository.js';
+import * as scheduleRepo from '../../repositories/loan-schedule.repository.js';
 import { isDatabaseEnabled } from '../../db/client.js';
 import { decimalToPesewas } from '../../domain/money.js';
 import { isLoanDueOnDate } from '../../domain/reconciliation/weekday.js';
@@ -70,6 +71,7 @@ export interface CollectorDashboard {
     borrowerPhotoUrl?: string;
     phone: string;
     community: string;
+    groupId: string;
     groupName: string;
     loanId: string;
     expectedPesewas: number;
@@ -88,6 +90,23 @@ function resolveReferenceDate(date?: string): string {
   return date ?? new Date().toISOString().slice(0, 10);
 }
 
+function resolvePaymentStatus(input: {
+  weeklyExpected: number;
+  collectedForBorrower: number;
+  scheduleStatus?: string | null;
+}): 'COLLECTED' | 'PENDING' | 'MISSED' {
+  if (input.weeklyExpected > 0 && input.collectedForBorrower >= input.weeklyExpected) {
+    return 'COLLECTED';
+  }
+  if (input.scheduleStatus === 'MISSED') {
+    return 'MISSED';
+  }
+  if (input.weeklyExpected > 0) {
+    return 'PENDING';
+  }
+  return 'PENDING';
+}
+
 export async function getCollectorDashboard(
   collectorId: string,
   date?: string,
@@ -102,10 +121,17 @@ export async function getCollectorDashboard(
     groupService.getGroupsForCollector(collectorId),
   ]);
 
-  const borrowerIds = assignedGroups.flatMap((group) => group.memberIds);
+  const borrowerGroupId = new Map<string, { groupId: string; groupName: string }>();
+  for (const group of assignedGroups) {
+    for (const memberId of group.memberIds) {
+      borrowerGroupId.set(memberId, { groupId: group.id, groupName: group.displayName });
+    }
+  }
+
+  const borrowerIds = [...borrowerGroupId.keys()];
   const scopedBorrowers =
     borrowerIds.length > 0
-      ? borrowers.filter((borrower) => borrowerIds.includes(borrower.id))
+      ? borrowers.filter((borrower) => borrowerGroupId.has(borrower.id))
       : borrowers;
 
   const collectorPayments = useDb
@@ -123,8 +149,17 @@ export async function getCollectorDashboard(
 
   if (isDatabaseEnabled()) {
     const activeLoans = await loanRepo.listLoans({ externalStatus: 'ACTIVE' });
+    const loansByBorrower = new Map(
+      activeLoans
+        .filter((loan) => scopedBorrowers.some((borrower) => borrower.id === loan.borrowerId))
+        .map((loan) => [loan.borrowerId, loan] as const),
+    );
+    const loanIds = [...loansByBorrower.values()].map((loan) => loan.id);
+    const dueWeeks = await scheduleRepo.listScheduleWeeksForLoansOnDate(loanIds, referenceDate);
+    const weekStatusByLoanId = new Map(dueWeeks.map((week) => [week.loanId, week.status]));
+
     for (const borrower of scopedBorrowers) {
-      const loan = activeLoans.find((entry) => entry.borrowerId === borrower.id);
+      const loan = loansByBorrower.get(borrower.id);
       const weeklyExpected =
         loan && isLoanDueOnDate(loan.paymentDay, referenceDate)
           ? decimalToPesewas(loan.installmentAmount)
@@ -133,21 +168,20 @@ export async function getCollectorDashboard(
       const collectedForBorrower = collectorPayments
         .filter((payment) => payment.borrowerId === borrower.id)
         .reduce((sum, payment) => sum + payment.amountPesewas, 0);
-      const paymentStatus =
-        weeklyExpected > 0 && collectedForBorrower >= weeklyExpected
-          ? 'COLLECTED'
-          : collectedForBorrower > 0
-            ? 'PENDING'
-            : weeklyExpected > 0
-              ? 'PENDING'
-              : 'PENDING';
+      const groupMeta = borrowerGroupId.get(borrower.id);
+      const paymentStatus = resolvePaymentStatus({
+        weeklyExpected,
+        collectedForBorrower,
+        scheduleStatus: loan ? weekStatusByLoanId.get(loan.id) : undefined,
+      });
 
       borrowerRows.push({
         borrowerId: borrower.id,
         borrowerName: borrower.fullName,
         phone: borrower.phone,
         community: borrower.community,
-        groupName: borrower.groupName || '—',
+        groupId: groupMeta?.groupId ?? borrower.groupId ?? '',
+        groupName: groupMeta?.groupName ?? (borrower.groupName || '—'),
         loanId: loan?.id ?? '',
         expectedPesewas: weeklyExpected,
         collectedPesewas: collectedForBorrower,
@@ -159,12 +193,14 @@ export async function getCollectorDashboard(
       const collectedForBorrower = collectorPayments
         .filter((payment) => payment.borrowerId === borrower.id)
         .reduce((sum, payment) => sum + payment.amountPesewas, 0);
+      const groupMeta = borrowerGroupId.get(borrower.id);
       borrowerRows.push({
         borrowerId: borrower.id,
         borrowerName: borrower.fullName,
         phone: borrower.phone,
         community: borrower.community,
-        groupName: borrower.groupName || '—',
+        groupId: groupMeta?.groupId ?? '',
+        groupName: groupMeta?.groupName ?? (borrower.groupName || '—'),
         loanId: '',
         expectedPesewas: 0,
         collectedPesewas: collectedForBorrower,
@@ -173,8 +209,10 @@ export async function getCollectorDashboard(
     }
   }
 
-  const paidTodayCount = borrowerRows.filter((row) => row.paymentStatus === 'COLLECTED').length;
-  const pendingTodayCount = borrowerRows.filter((row) => row.paymentStatus === 'PENDING').length;
+  const dueBorrowers = borrowerRows.filter((row) => row.expectedPesewas > 0);
+  const paidTodayCount = dueBorrowers.filter((row) => row.paymentStatus === 'COLLECTED').length;
+  const missedTodayCount = dueBorrowers.filter((row) => row.paymentStatus === 'MISSED').length;
+  const pendingTodayCount = dueBorrowers.filter((row) => row.paymentStatus === 'PENDING').length;
   const collectionRatePercent =
     expectedPesewas === 0
       ? collectedPesewas > 0
@@ -185,24 +223,30 @@ export async function getCollectorDashboard(
   const summary: CollectorDashboardSummary = {
     date: referenceDate,
     paymentDayLabel: new Date(referenceDate).toLocaleDateString('en-GH', { weekday: 'long' }),
-    borrowersDueCount: borrowerRows.length,
+    borrowersDueCount: dueBorrowers.length,
     expectedPesewas,
     collectedPesewas,
     outstandingPesewas: Math.max(expectedPesewas - collectedPesewas, 0),
     paidTodayCount,
     pendingTodayCount,
-    missedTodayCount: 0,
+    missedTodayCount,
     collectionRatePercent,
-    missedAlertsCount: 0,
+    missedAlertsCount: missedTodayCount,
     reconciliationStatus: 'PENDING',
     reconciliationVariancePesewas: 0,
   };
 
   const todayGroups = assignedGroups.map((group) => {
-    const groupBorrowers = borrowerRows.filter((row) => row.groupName === group.displayName);
-    const groupExpected = groupBorrowers.reduce((sum, row) => sum + row.expectedPesewas, 0);
+    const groupBorrowers = borrowerRows.filter((row) => row.groupId === group.id);
+    const dueGroupBorrowers = groupBorrowers.filter((row) => row.expectedPesewas > 0);
+    const groupExpected = dueGroupBorrowers.reduce((sum, row) => sum + row.expectedPesewas, 0);
     const groupCollected = groupBorrowers.reduce((sum, row) => sum + row.collectedPesewas, 0);
-    const collectedCount = groupBorrowers.filter((row) => row.paymentStatus === 'COLLECTED').length;
+    const collectedCount = dueGroupBorrowers.filter(
+      (row) => row.paymentStatus === 'COLLECTED',
+    ).length;
+    const pendingCount = dueGroupBorrowers.filter(
+      (row) => row.paymentStatus === 'PENDING',
+    ).length;
 
     return {
       groupId: group.id,
@@ -211,8 +255,8 @@ export async function getCollectorDashboard(
       leaderName: '—',
       groupPhotoUrl: '',
       collectedCount,
-      expectedCount: groupBorrowers.length,
-      pendingCount: groupBorrowers.length - collectedCount,
+      expectedCount: dueGroupBorrowers.length,
+      pendingCount,
       expectedPesewas: groupExpected,
       amountCollectedPesewas: groupCollected,
       progressPercent:
@@ -234,15 +278,24 @@ export async function getCollectorDashboard(
     };
   });
 
+  const missedAlerts = dueBorrowers
+    .filter((row) => row.paymentStatus === 'MISSED')
+    .map((row) => ({
+      borrowerId: row.borrowerId,
+      borrowerName: row.borrowerName,
+      loanId: row.loanId,
+      missedWeeks: 1,
+    }));
+
   return {
     summary,
     hero: {
       targetPesewas: expectedPesewas,
       progressPercent: collectionRatePercent,
-      groupsToday: todayGroups.length,
+      groupsToday: todayGroups.filter((group) => group.expectedCount > 0).length,
       paidBorrowers: paidTodayCount,
       pendingBorrowers: pendingTodayCount,
-      overdueBorrowers: 0,
+      overdueBorrowers: missedTodayCount,
       streakDays: collectorPayments.length > 0 ? 1 : 0,
       weeklyTrendPercent: 0,
     },
@@ -256,7 +309,7 @@ export async function getCollectorDashboard(
       groupsAssigned: assignedGroups.length,
     },
     borrowers: borrowerRows,
-    missedAlerts: [],
+    missedAlerts,
   };
 }
 

@@ -105,7 +105,9 @@ function buildTodayGroups(
   assignedGroups: ReturnType<typeof getGroupsDemoSources>,
 ): CollectorTodayGroup[] {
   return assignedGroups.map((group) => {
-    const groupBorrowers = core.borrowers.filter((borrower) => borrower.groupName === group.name);
+    const groupBorrowers = core.borrowers.filter(
+      (borrower) => borrower.groupId === group.id || borrower.groupName === group.name,
+    );
     const fallbackExpectedCount = Math.max(
       Math.round(group.activeMemberCount / 5),
       groupBorrowers.length,

@@ -353,6 +353,8 @@ export async function emitPaymentMissedNotification(input: {
   loanDisplayId: string;
   dueDate: string;
   amountPesewas: number;
+  remainingBalancePesewas?: number;
+  weeksRemaining?: number;
   collectorUserId?: string;
   correlationId?: string;
 }): Promise<void> {
@@ -370,6 +372,8 @@ export async function emitPaymentMissedNotification(input: {
         borrowerName: input.borrowerName,
         amountPesewas: input.amountPesewas,
         dueDate: input.dueDate,
+        remainingBalancePesewas: input.remainingBalancePesewas,
+        weeksRemaining: input.weeksRemaining,
       }),
       enabled: settings.smsNotificationsEnabled && settings.missedPaymentSmsEnabled,
       borrowerId: input.borrowerId,
@@ -410,6 +414,7 @@ export async function emitPaymentConfirmedNotification(input: {
   loanDisplayId: string;
   loanId: string;
   outstandingBalancePesewas?: number;
+  weeksRemaining?: number;
   nextDueDate?: string;
   collectorUserId?: string;
   correlationId?: string;
@@ -427,6 +432,8 @@ export async function emitPaymentConfirmedNotification(input: {
       body: buildPaymentConfirmationSmsBody({
         amountPesewas: input.amountPesewas,
         paymentDate: input.paymentDate,
+        remainingBalancePesewas: input.outstandingBalancePesewas,
+        weeksRemaining: input.weeksRemaining,
       }),
       enabled: settings.smsNotificationsEnabled,
       borrowerId: input.borrowerId,
@@ -516,6 +523,12 @@ export async function resolveNextDueDate(loanId: string): Promise<string | undef
   const weeks = await scheduleRepo.listScheduleWeeks(loanId);
   const next = weeks.find((week) => week.status === 'PENDING' || week.status === 'MISSED');
   return next?.dueDate;
+}
+
+/** Count unpaid schedule weeks (pending + missed). */
+export async function resolveWeeksRemaining(loanId: string): Promise<number> {
+  const weeks = await scheduleRepo.listScheduleWeeks(loanId);
+  return weeks.filter((week) => week.status === 'PENDING' || week.status === 'MISSED').length;
 }
 
 /** Weekly installment in pesewas from loan row. */
