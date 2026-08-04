@@ -1,4 +1,6 @@
-# Final Release Readiness — v1.5.0
+# Final Release Readiness — v1.5
+
+Primary consolidation target: **v1.5.0**. Follow-up production recovery: **v1.5.1** (`docs/v1.5/RELEASE_NOTES_v1.5.1.md`).
 
 ## Definition of Done checklist
 
