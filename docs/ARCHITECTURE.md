@@ -1,58 +1,110 @@
-# WILMS Architecture — v1.4.1
+# Architecture
 
-**Date:** 2026-07-20  
-**Audit index:** [FINAL_AUDIT_INDEX.md](./FINAL_AUDIT_INDEX.md)  
-**Deeper enterprise diagram pack:** [`certification/v1.3.8/enterprise-architecture/`](./certification/v1.3.8/enterprise-architecture/)
+**Purpose:** Describe the implemented WILMS v1.5 system for engineers and reviewers.  
+**Verified against:** `apps/frontend`, `packages/domain`, root `vercel.json` (August 2026).
 
 ---
 
-## System shape
+## Purpose and scope
+
+WILMS runs staff-facing portals for interest-free group lending. There is **no** borrower self-service login in the current codebase.
+
+In scope: registration, approval, loans/disbursement, collections, reconciliation, expenses, notifications, settings, ops/health.
+
+Out of scope unless explicitly implemented later: Auth.js migration, separate Railway production API, Edge runtime for financial routes.
+
+---
+
+## Runtime topology
 
 ```text
-Browser (staff portals)
-  → Next.js 14 frontend (:3000)
-       → BFF /api/wilms/[...path]  (CSRF, proxy)
-            → Express API (:4000)  @wilms/api
-                 → Drizzle / PostgreSQL   (or in-memory if DATABASE_URL unset)
-                 → optional Redis / BullMQ queues
+                    ┌─────────────────────────────┐
+                    │     Vercel (Production)     │
+                    │  @wilms/frontend (Next.js)  │
+                    │                             │
+  Staff browsers ──►│  App Router UI              │
+                    │  /api/auth/*                │
+                    │  /api/wilms/[...path]  ──┐   │
+                    │  /api/cron/notifications│   │
+                    └───────────┬─────────────┘   │
+                                │                 │
+                     handleWilmsFetchRequest      │
+                                │                 │
+                    ┌───────────▼─────────────┐   │
+                    │     @wilms/domain       │◄──┘
+                    │  HTTP app (Express)     │
+                    │  services/repos/RBAC    │
+                    │  financial engine       │
+                    └───────────┬─────────────┘
+                                │
+              ┌─────────────────┼─────────────────┐
+              ▼                 ▼                 ▼
+           Neon PG           Redis            Mail/SMS
+         (pooled URL)   (rate limits)       providers
 ```
 
-Monorepo: npm workspaces + Turborepo — `apps/frontend`, `apps/backend`, `packages/shared-*`.
+### Packages
+
+| Package | Role |
+|---|---|
+| `@wilms/frontend` | Next.js UI, middleware, BFF-style Route Handlers, Cron route |
+| `@wilms/domain` | Domain services, Drizzle schema/migrations, HTTP router, schedulers |
+| `@wilms/api` | Thin adapter that starts the domain Node listen loop (optional dual-run) |
+| `@wilms/shared-*` | Shared RBAC constants, types, validation, utils, contracts |
+
+### Express status
+
+Express is an **in-process HTTP router** inside `@wilms/domain`, invoked from Next.js Route Handlers. It is not the primary production process boundary. A standalone listen mode remains for local dual-run and emergency rollback.
 
 ---
 
-## Trust boundaries
+## Request path (API)
 
-| Boundary | Rule |
-|----------|------|
-| RBAC | Server enforces permissions from `packages/shared-rbac`; UI hides is not security |
-| Sessions | Authenticated middleware + `assertSessionActive` (revoke/suspend) |
-| Demo accounts | Production runtime rejects `@wilms.demo` login; seed gated off |
-| Money | Server-authoritative; balances derived from transactions — see [FINANCIAL_MODEL.md](./FINANCIAL_MODEL.md) |
-| BFF | Prefer browser UI through BFF; CSRF enforced |
+1. Browser calls `/api/wilms/<path>` with `credentials: 'include'`.
+2. Route Handler enforces CSRF on mutating methods (except public photo-capture session paths).
+3. Session cookie `wilms_session` is copied to `Authorization: Bearer …` when present.
+4. Path mapping (`apps/frontend/src/lib/api/upstream-path.ts`):
+   - `health` → `/health`
+   - `auth/*` → `/auth/*`
+   - otherwise → `/api/v1/<path>`
+5. `handleWilmsFetchRequest` runs the domain Express app and returns the Web Response.
 
----
-
-## Major modules (API)
-
-Auth, borrowers, payments, loans / pools, reports, dashboard, reconciliation, expenses, communications, uploads, health/ops, settings/roles.
+Dual-run: `WILMS_API_MODE=proxy` forwards to `WILMS_API_UPSTREAM` instead.
 
 ---
 
-## Environments
+## Data and financial integrity
 
-| Mode | Database | Demo seed | Use |
-|------|----------|-----------|-----|
-| Local / CI without DB | In-memory | Allowed | Dev/test |
-| Staging / Production | Postgres | Blocked | Real operations |
-
-Node **22** required (`engines`). Staging deploy gated by `ENABLE_STAGING_DEPLOY`.
+- Persistence: Drizzle + Neon; migrations under `packages/domain/src/db/migrations`.
+- Without `DATABASE_URL`, domain uses in-memory stores (local demo only).
+- Financial balances and reports use **SQL aggregation** in repositories/services—not client-side rollups of ledgers.
+- Idempotency keys are required on financial mutation POSTs from the browser helper path.
+- Maker-checker / separation-of-duties checks live in domain services (loans, reconciliation, expenses, sync conflicts, etc.).
 
 ---
 
-## Related docs
+## Background work
 
-- Permissions: [PERMISSIONS_AND_ROLES.md](./PERMISSIONS_AND_ROLES.md)  
-- Frontend architecture folder: [`architecture/`](./architecture/)  
-- Phase 25 platform (queues, idempotency, flags): [`certification/v1.4/phase-25/`](./certification/v1.4/phase-25/)  
-- Final system audit: [`certification/v1.4/final-system-audit/FINAL_FULL_SYSTEM_AUDIT.md`](./certification/v1.4/final-system-audit/FINAL_FULL_SYSTEM_AUDIT.md)
+| Mechanism | Implementation |
+|---|---|
+| Notification scheduler | Vercel Cron → `GET /api/cron/notifications` (auth via `WILMS_SCHEDULER_TOKEN` or `CRON_SECRET`) |
+| Domain scheduler POSTs | Still available under `/api/wilms/notifications/scheduler/run` and communications equivalent (token auth) |
+| Mail/SMS jobs | In-process enqueue on serverless; BullMQ workers are not started when `WILMS_RUNTIME`/Vercel indicates serverless |
+
+---
+
+## Portals
+
+Route groups under `apps/frontend/src/app/`: `(super-admin)`, `(collector)`, `(registration-officer)`, `(approver)`, `(auditor)`, `(auth)`.
+
+Frontend middleware enforces role → path access using the shared permission model.
+
+---
+
+## Related documents
+
+- [environment.md](environment.md)
+- [authentication.md](authentication.md)
+- [deployment-guide.md](deployment-guide.md)
+- [v1.5/ARCHITECTURE_MIGRATION_REPORT.md](v1.5/ARCHITECTURE_MIGRATION_REPORT.md)
+- ADRs under [adr/](adr/)

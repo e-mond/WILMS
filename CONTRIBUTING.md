@@ -1,84 +1,67 @@
 # Contributing to WILMS
 
-Thank you for contributing to the WILMS financial platform.
+Thank you for contributing to the Women's Interest-Free Loan Management System.
 
-## Development workflow
+---
 
-1. Branch from `main` using the team branch prefix policy (Cloud agents: `cursor/<descriptive-name>-####`).
-2. Implement with validation gates after each major block.
-3. Update documentation when behaviour or architecture changes.
-4. Push and open a PR against `main`.
+## Workflow
 
-See [docs/engineering/branching-strategy.md](docs/engineering/branching-strategy.md) for branch naming and merge policy.
+1. Branch from up-to-date `main` using a neutral, project-focused name (`feature/…`, `fix/…`, `docs/…`).  
+2. Implement the change; keep financial, RBAC, idempotency, and audit controls intact.  
+3. Update documentation when behavior or operations change.  
+4. Run validation gates locally.  
+5. Open a pull request to `main`.  
+6. Do not merge platform cutovers without the human review checkpoints documented in `docs/v1.5/FINAL_RELEASE_READINESS.md`.
 
-**Architecture SSoT:** [docs/certification/v1.3.8/enterprise-architecture/SYSTEM_ARCHITECTURE.md](docs/certification/v1.3.8/enterprise-architecture/SYSTEM_ARCHITECTURE.md)
-
-**Permission matrix:** [docs/permission-matrix.md](docs/permission-matrix.md)
-
-## Code quality
-
-Every new backend file should include:
-
-- **File header** — module purpose.
-- **Architectural comments** — persistence boundaries, transaction scope, RBAC expectations.
-- **Business-rule comments** — financial calculations, state transitions, invariants.
-- **Transaction comments** — what is atomic and what rolls back together.
-- **Repository comments** — query intent and index assumptions.
-
-Complex financial logic must be explained inline. Never leave undocumented balance or ledger calculations.
+---
 
 ## Validation gates
-
-Run after every major implementation block:
 
 ```bash
 npm run type-check
 npm run lint
-npm run build
 npm run test
+npm run test -w @wilms/domain
+npm run build
+npm run verify:version
 ```
 
-Backend domain verification (when applicable):
+Add targeted financial / RBAC / notification verification when touching those areas:
 
 ```bash
-npm run verify:financial -w @wilms/api
-npm run verify:pools -w @wilms/api
-npm run verify:adjustments -w @wilms/api
+npm run verify:financial -w @wilms/domain
+npm run smoke:rbac -w @wilms/domain
+npm run smoke:notifications -w @wilms/domain
 ```
 
-Backend unit tests:
+---
 
-```bash
-npm run test -w @wilms/api
-```
+## Code standards
 
-If any gate fails: stop, fix, re-run, then continue.
+- TypeScript strict mode.  
+- Prefer shared packages (`@wilms/shared-*`, `@wilms/domain`) over duplicating domain rules in the UI.  
+- Do not weaken maker-checker, idempotency, SQL financial aggregation, or audit logging.  
+- Do not expose stack traces, SQL, or internal IDs to clients.  
+- Do not add personal names, handles, or AI/tool attribution to commits, docs, UI, or metadata.
 
-## Documentation
+Architecture context: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), ADRs under [`docs/adr/`](docs/adr/).
 
-When merging financially or architecturally significant work, update:
+---
 
-- `docs/financial-calculations.md` — if formulas change
-- `docs/certification/v1.3.8/enterprise-architecture/` — for architecture decisions
-- `docs/certification/v1.3.8/enterprise-financial/` — for control remediations
-- Root `README.md` / `CHANGELOG.md` when user-facing
+## Documentation expectations
 
-## Git and PR standards
+- Update the single source of truth under `docs/` (see [`docs/README.md`](docs/README.md)).  
+- Do not edit frozen archives under `docs/archive/` or historical certification packs to “catch up” to current code—add a new current doc instead.  
+- Record major documentation campaigns in [`DOCUMENTATION_REPORT.md`](DOCUMENTATION_REPORT.md).
 
-- **Never commit directly to** `main`.
-- Prefer clear conventional titles: `fix:`, `feat:`, `docs:`, `security:`.
-- Include test plan for money-moving changes.
+---
 
-## Financial safety
+## Release process
 
-All financial mutations must:
+1. Version bump across root + workspace packages (keep `npm run verify:version` green).  
+2. Update `CHANGELOG.md` and `VERSION.md`.  
+3. Deploy Preview; run health + smoke.  
+4. Promote Production; confirm Cron and health version.  
+5. Only then merge if the work lived on a long-lived branch with checkpoints.
 
-- Generate audit records.
-- Generate ledger records (where applicable).
-- Record actor, timestamp, reason, before/after values, and delta where relevant.
-- Execute atomically inside a database transaction.
-- Use existing idempotency and optimistic locking — do not introduce a second concurrency model.
-
-## API contracts
-
-Maintain existing frontend envelopes (`{ data: T }`). Do not break mock-compatible DTO field names or enum values without an explicit migration plan.
+Details: [`docs/deployment-guide.md`](docs/deployment-guide.md).

@@ -1,48 +1,26 @@
-# WILMS Domain (@wilms/domain)
+# WILMS Domain (`@wilms/domain`)
 
-Shared domain + HTTP application layer for WILMS (`packages/domain`). Hosted in-process by Next.js Route Handlers on Vercel; optional Node listen via `npm run dev:api`.
+Shared domain and HTTP application layer for WILMS.
 
-## Run (from repository root)
+## Responsibilities
 
-```bash
-npm run dev:api
-```
+- Drizzle schema and SQL migrations (`src/db/migrations`)
+- Domain services and repositories (loans, payments, reconciliation, notifications, …)
+- Express HTTP app invoked in-process by Next.js Route Handlers
+- Optional long-lived listen mode for local dual-run / rollback (`npm run dev` in this package)
 
-Default: `http://127.0.0.1:4000`
-
-Without `DATABASE_URL`, the API uses the in-memory store (`src/db/store.ts`). With `DATABASE_URL` set to a Neon PostgreSQL connection string, repositories persist to PostgreSQL via Drizzle.
-
-## Database (Neon + Drizzle)
+## Commands
 
 ```bash
-# From repository root
-cd packages/domain
-export DATABASE_URL=postgresql://...
-
-npm run db:migrate   # apply migrations
-npm run db:seed      # seed demo users + RBAC catalog
+npm run dev -w @wilms/domain          # listen on :4000
+npm run db:migrate -w @wilms/domain
+npm run test -w @wilms/domain
+npm run type-check -w @wilms/domain
 ```
 
-Schema: `src/db/schema/`  
-Migrations: `src/db/migrations/`  
-Repositories: `src/repositories/`
+## Consumption
 
-## Frontend integration
+- Next.js: `import { handleWilmsFetchRequest, … } from '@wilms/domain'`
+- Thin adapter: `@wilms/api` re-exports the listen entry
 
-Set in `.env.local`:
-
-```
-NEXT_PUBLIC_API_BASE_URL=/api/wilms
-WILMS_API_UPSTREAM=http://127.0.0.1:4000
-```
-
-Next.js BFF proxy: `apps/frontend/src/app/api/wilms/[...path]/route.ts`
-
-## Shared packages
-
-- `@wilms/shared-rbac` — permissions and roles
-- `@wilms/shared-contracts` — canonical enums
-- `@wilms/shared-types` — API envelope types
-- `@wilms/shared-validation` — Zod schemas (e.g. login API)
-
-See `docs/archive/page-validation/P14.2-frontend-contract-verification.md` for schema traceability.
+See root [README](../../README.md) and [docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md).

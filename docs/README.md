@@ -1,70 +1,61 @@
-# WILMS Documentation Hub
+# WILMS documentation hub
 
-**Current version:** v1.4.2  
-**Last updated:** 2026-07-21
+**Audience:** engineers, operators, security reviewers, auditors  
+**Current product version:** `1.5.0`  
+**Architecture:** Next.js full-stack on Vercel + Neon (+ Redis for rate limits)
 
-Start here. Prefer certification packs for current system truth; older guides remain for depth but may lag version stamps.
+This hub is the entry point for **current** documentation. Historical certification packs and phase notes live under [`archive/`](archive/README.md) and [`certification/`](certification/) and are frozen evidence—not day-to-day runbooks.
 
-**v1.4.2 Phase 31 final certification (READY WITH CONDITIONS — not Production Certified):** [`certification/v1.4/phase-31/`](./certification/v1.4/phase-31/INDEX.md)  
-**v1.4.2 Phase 30 payment notifications:** [`certification/v1.4/phase-30/`](./certification/v1.4/phase-30/INDEX.md)  
-**v1.4.2 Phase 29 certification (READY WITH CONDITIONS — not Production Certified):** [`FINAL_AUDIT_INDEX.md`](./FINAL_AUDIT_INDEX.md) · [`certification/v1.4/phase-29/`](./certification/v1.4/phase-29/INDEX.md)
+---
 
-## Day-to-day engineering
+## Start here
 
-| Topic | Path |
-|-------|------|
-| Contributing | [`../CONTRIBUTING.md`](../CONTRIBUTING.md) |
-| Agent environment notes | [`../AGENTS.md`](../AGENTS.md), [`AGENTS.md`](./AGENTS.md) |
-| Architecture index | [`architecture/README.md`](./architecture/README.md) |
-| System architecture (SSoT) | [`certification/v1.3.8/enterprise-architecture/SYSTEM_ARCHITECTURE.md`](./certification/v1.3.8/enterprise-architecture/SYSTEM_ARCHITECTURE.md) |
-| API overview | [`api-overview.md`](./api-overview.md) |
-| Authentication | [`authentication.md`](./authentication.md) |
-| Permission matrix | [`permission-matrix.md`](./permission-matrix.md) |
-| Financial calculations | [`financial-calculations.md`](./financial-calculations.md) |
-| Deployment | [`deployment-guide.md`](./deployment-guide.md) |
-| Operations (monitoring, backups, runbook) | [`operations/`](./operations/) |
+| Doc | Purpose |
+|---|---|
+| [Root README](../README.md) | Product overview, quick start, structure |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | System architecture (verified against v1.5 code) |
+| [environment.md](environment.md) | Environment variables |
+| [authentication.md](authentication.md) | Sessions, cookies, middleware |
+| [PERMISSIONS_AND_ROLES.md](PERMISSIONS_AND_ROLES.md) | RBAC and permission overrides |
+| [FINANCIAL_MODEL.md](FINANCIAL_MODEL.md) | Financial domain rules |
+| [deployment-guide.md](deployment-guide.md) | Vercel + Neon deployment |
+| [operations.md](operations.md) | Health, metrics, scheduler, incidents |
+| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Concrete failure diagnosis |
+| [../CONTRIBUTING.md](../CONTRIBUTING.md) | Branching, PR, validation gates |
+| [../DOCUMENTATION_REPORT.md](../DOCUMENTATION_REPORT.md) | Documentation audit trail |
 
-## v1.3.8 certification packs
+---
+
+## Release packs (current)
 
 | Pack | Path |
-|------|------|
-| Enterprise financial | [`certification/v1.3.8/enterprise-financial/`](./certification/v1.3.8/enterprise-financial/) |
-| Enterprise architecture | [`certification/v1.3.8/enterprise-architecture/`](./certification/v1.3.8/enterprise-architecture/) |
-| Enterprise excellence | [`certification/v1.3.8/enterprise-excellence/`](./certification/v1.3.8/enterprise-excellence/) |
-| RC validation | [`certification/v1.3.8/rc-validation/`](./certification/v1.3.8/rc-validation/) |
-| Production operations | [`certification/v1.3.8/production-operations/`](./certification/v1.3.8/production-operations/) |
-| Product acceptance (Phase 21) | [`certification/v1.3.8/product-acceptance/`](./certification/v1.3.8/product-acceptance/) |
-| Go-live closure (Phase 22) | [`certification/v1.3.8/go-live/`](./certification/v1.3.8/go-live/) |
-| Production cutover (Phase 23) | [`certification/v1.3.8/production-cutover/`](./certification/v1.3.8/production-cutover/) |
+|---|---|
+| v1.5 platform consolidation | [`v1.5/`](v1.5/) |
+| v1.4.3 financial workflow hotfix notes | [`v1.5/V1.4.3_HOTFIX_REPORT.md`](v1.5/V1.4.3_HOTFIX_REPORT.md) (archived with active cross-links) |
 
-## v1.4 (active development)
+---
 
-| Topic | Path |
-|-------|------|
-| **Final system audit pack (v1.4.1)** | [`FINAL_AUDIT_INDEX.md`](./FINAL_AUDIT_INDEX.md) → [`certification/v1.4/final-system-audit/`](./certification/v1.4/final-system-audit/) |
-| Production rollout runbook | [`PRODUCTION_ROLLOUT_RUNBOOK.md`](./PRODUCTION_ROLLOUT_RUNBOOK.md) |
-| Troubleshooting | [`TROUBLESHOOTING.md`](./TROUBLESHOOTING.md) |
-| Architecture / financial model / permissions | [`ARCHITECTURE.md`](./ARCHITECTURE.md), [`FINANCIAL_MODEL.md`](./FINANCIAL_MODEL.md), [`PERMISSIONS_AND_ROLES.md`](./PERMISSIONS_AND_ROLES.md) |
-| Planning hub | [`planning/v1.4/INDEX.md`](./planning/v1.4/INDEX.md) |
-| Phase 25 platform foundation | [`certification/v1.4/phase-25/`](./certification/v1.4/phase-25/INDEX.md) |
-| UX / UI modernisation audit pack (v1.4.1) | [`certification/v1.4/ux-modernisation/FULL_AUDIT_INDEX.md`](./certification/v1.4/ux-modernisation/FULL_AUDIT_INDEX.md) |
-| Final UX modernisation report | [`certification/v1.4/ux-modernisation/FINAL_UX_MODERNISATION_REPORT.md`](./certification/v1.4/ux-modernisation/FINAL_UX_MODERNISATION_REPORT.md) |
-| v1.3.x maintenance strategy | [`planning/v1.4/V13_MAINTENANCE_STRATEGY.md`](./planning/v1.4/V13_MAINTENANCE_STRATEGY.md) |
-| v1.4 roadmap | [`planning/v1.4/WILMS_V14_ROADMAP.md`](./planning/v1.4/WILMS_V14_ROADMAP.md) |
-| Long-term architecture | [`planning/v1.4/LONG_TERM_ARCHITECTURE.md`](./planning/v1.4/LONG_TERM_ARCHITECTURE.md) |
-| Master roadmap | [`planning/v1.4/MASTER_ROADMAP.md`](./planning/v1.4/MASTER_ROADMAP.md) |
+## Engineering notes
 
-## Field / product guides
+| Doc | Purpose |
+|---|---|
+| [architecture/](architecture/) | Progress tracker, UI context, standards |
+| [adr/](adr/) | Architecture decision records |
+| [engineering/](engineering/) | Feature engineering notes (e.g. communication platform) |
+| [operations/](operations/) | Additional ops materials when present |
 
-| Topic | Path |
-|-------|------|
-| Offline / PWA | [`offline-architecture.md`](./offline-architecture.md) |
-| Sync | [`synchronization-guide.md`](./synchronization-guide.md) |
-| Mobile | [`mobile-guide.md`](./mobile-guide.md) |
-| Advanced lending | [`advanced-lending.md`](./advanced-lending.md) |
-| Security | [`security-guide.md`](./security-guide.md) |
-| Production guide (legacy stamp) | [`production-guide.md`](./production-guide.md) — prefer [`operations/`](./operations/) |
+---
 
-## Archive
+## Historical material
 
-Historical RC and page-validation evidence: [`archive/`](./archive/).
+| Location | Policy |
+|---|---|
+| [`archive/`](archive/README.md) | Frozen. Do not “update to match production.” |
+| [`certification/`](certification/) | Versioned certification evidence. Treat as immutable. |
+| [`planning/`](planning/) | Roadmaps may describe **future** work—do not treat as shipped features. |
+
+---
+
+## Agent / environment notes
+
+Root [`AGENTS.md`](../AGENTS.md) describes monorepo commands for automated development environments. It is operational configuration, not product marketing.
