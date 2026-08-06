@@ -2,6 +2,31 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.6.1] — Product Excellence UI & Workflow Polish
+
+**Date:** August 2026  
+**Branch:** `feature/v1.6.1-product-excellence-ui`
+
+### Changed
+
+- Sticky elevated navbar, collapsible sidebar groups, and command palette recent searches
+- Dashboard KPI cards: trend icons, sparklines, loading skeleton, card-lift motion
+- Activity timeline rail on Super Admin dashboard; collector progress bar
+- Notification inbox: broader categories, clear-read, wider drawer
+- Communication Center: compose counters, Campaigns history view
+- Shared `DataTable` sticky headers and richer empty states
+- Loan workflow stepper progress track and completed checkmarks
+- Design tokens for elevation, density, focus; motion utilities with reduced-motion support
+
+### Docs
+
+- `docs/v1.6.1/*` release pack and `docs/ui/*` guidelines
+
+### Notes
+
+- No financial, RBAC, or notification business-rule changes
+- No new database migrations
+
 ## [1.6.0-rc.1] — Communication Center audiences & notification automation
 
 **Date:** August 2026  

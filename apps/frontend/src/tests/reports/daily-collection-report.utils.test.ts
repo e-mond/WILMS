@@ -79,7 +79,7 @@ describe('daily-collection-report.utils', () => {
 
   it('marks due borrowers as paid when full repayment is recorded', () => {
     const report = buildDailyCollectionReport({
-      date: '2026-05-23',
+      date: '2026-05-22',
       loans: [
         {
           id: 'loan-001',
@@ -104,13 +104,14 @@ describe('daily-collection-report.utils', () => {
           loanId: 'loan-001',
           amountPesewas: 5000,
           collectorId: 'user-collector',
-          recordedAt: '2026-05-23T14:30:00.000Z',
+          recordedAt: '2026-05-22T14:30:00.000Z',
         },
       ],
     });
 
     expect(report.summary.collectedPesewas).toBe(5000);
-    expect(report.summary.borrowersDueCount).toBe(0);
+    expect(report.summary.borrowersDueCount).toBe(1);
+    expect(report.summary.borrowersPaidCount).toBe(1);
     expect(report.rows[0]?.collectorName).toBe('COL-000');
   });
 

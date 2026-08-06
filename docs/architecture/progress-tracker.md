@@ -21,6 +21,7 @@ Units marked ✅ implement core behaviour and unit tests. **Global DoD is not me
 | Phase 2 — Context Documentation | ✅ Complete |
 | Phase 3 — Frontend Architecture | ✅ Complete |
 | Phase 4 — Frontend Development | 🔄 In Progress (~70% core BRD flows) |
+| **v1.6.1 Product Excellence UI** | ✅ Complete — branch `feature/v1.6.1-product-excellence-ui`; reports in `docs/v1.6.1/` |
 
 ---
 
@@ -388,6 +389,7 @@ Each row represents one scoped, verifiable unit of work.
 |---|---|---|---|---|
 | 2026-08-06 | Prod invite / locations / expected | Accept-invitation 403; locations 500; recon Expected GH₵0; group add-member 403 | CSRF missing on invite accept; Ghana locations FS read on Vercel; stale `expected_due_pesewas` snapshot; Approver lacked add-member permission | CSRF on accept-invitation; bundled Ghana JSON imports + slug/UUID fallthrough; live expected enrichment + migration `0032_recon_expected_backfill`; Approvers can add group members |
 | 2026-08-06 | Communication Center audiences | Borrowers/groups missing from compose; SMS used email | Audience resolver staff-only; send path bug | v1.6 unit — borrowers/groups/leaders audiences, preview/segments, due-today + ops alerts, quiet hours, migration `0033` |
+| 2026-08-06 | Product excellence UI | Enterprise polish gap after v1.6 | Visual/UX debt across dashboards/nav/inbox | v1.6.1 UI polish — tokens, KPI sparklines, nav/search/inbox/comms UX; no financial/RBAC changes |
 | — | — | — | — | — |
 
 ---

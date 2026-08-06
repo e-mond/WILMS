@@ -231,6 +231,19 @@ export function CollectorDashboardPanel() {
               Target <CurrencyAmount value={hero.targetPesewas} /> · {hero.progressPercent}% achieved ·{' '}
               {formatDisplayDate(summary.date)}
             </p>
+            <div
+              className="mt-wilms-3 h-2.5 max-w-md overflow-hidden rounded-full bg-background"
+              role="progressbar"
+              aria-valuenow={hero.progressPercent}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="Today collection progress"
+            >
+              <div
+                className="h-full rounded-full bg-brand-primary motion-safe:transition-[width] motion-safe:duration-500"
+                style={{ width: `${Math.min(100, Math.max(0, hero.progressPercent))}%` }}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-wilms-2 sm:grid-cols-3 xl:min-w-[28rem] xl:grid-cols-3">

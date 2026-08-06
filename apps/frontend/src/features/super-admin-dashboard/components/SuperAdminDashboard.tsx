@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useMemo, useState, useEffect } from 'react';
-import { CurrencyAmount, GroupRiskCard, KpiCard } from '@/components/data-display';
+import { CurrencyAmount, GroupRiskCard, KpiCard, Sparkline } from '@/components/data-display';
+import { buildTrendSparklineValues } from '@/utils/kpi-sparkline';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { ExecutiveKpiGrid } from '@/components/layout/executive';
 import {
@@ -191,6 +192,18 @@ function SuperAdminDashboardContent({
             trend={kpi.trendLabel}
             trendDirection={kpi.trendDirection}
             trendTone={kpi.trendTone}
+            sparkline={
+              <Sparkline
+                values={buildTrendSparklineValues(kpi.trendDirection, 32 + (kpi.amountPesewas % 17))}
+                strokeClassName={
+                  kpi.trendDirection === 'down'
+                    ? 'stroke-danger'
+                    : kpi.trendDirection === 'up'
+                      ? 'stroke-status-active'
+                      : 'stroke-text-muted'
+                }
+              />
+            }
           />
         ))}
       </ExecutiveKpiGrid>

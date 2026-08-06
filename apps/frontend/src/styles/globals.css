@@ -53,6 +53,37 @@
   .motion-enter-fade {
     animation: motion-enter-fade 160ms ease-out;
   }
+
+  .motion-card-lift {
+    transition:
+      transform var(--motion-base) ease,
+      box-shadow var(--motion-base) ease;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .motion-card-lift:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-card-hover);
+    }
+  }
+
+  .navbar-elevated {
+    box-shadow: var(--shadow-navbar);
+  }
+
+  .timeline-rail {
+    position: relative;
+  }
+
+  .timeline-rail::before {
+    content: '';
+    position: absolute;
+    left: 0.4375rem;
+    top: 0.25rem;
+    bottom: 0.25rem;
+    width: 2px;
+    background: color-mix(in srgb, var(--color-border) 80%, transparent);
+  }
 }
 
 @keyframes tour-dialog-enter {
@@ -98,8 +129,13 @@
   .tour-dialog-panel,
   .tour-highlight-pulse,
   .skeleton-shimmer,
-  .motion-enter-fade {
+  .motion-enter-fade,
+  .motion-card-lift {
     animation: none !important;
+  }
+
+  .motion-card-lift:hover {
+    transform: none;
   }
 
   .skeleton-shimmer {

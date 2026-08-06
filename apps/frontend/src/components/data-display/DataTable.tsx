@@ -61,8 +61,8 @@ export function DataTable<T>({
         {caption ? <caption className="sr-only">{caption}</caption> : null}
         <thead
           className={cn(
-            'border-b border-border',
-            isExecutive ? 'bg-card' : 'bg-background',
+            'sticky top-0 z-10 border-b border-border shadow-[0_1px_0_0_var(--color-border)]',
+            isExecutive ? 'bg-card/95 backdrop-blur-sm' : 'bg-background/95 backdrop-blur-sm',
           )}
         >
           <tr>
@@ -71,7 +71,8 @@ export function DataTable<T>({
                 key={column.id}
                 scope="col"
                 className={cn(
-                  'px-wilms-4 py-wilms-3 text-small font-semibold uppercase tracking-wide text-text-muted',
+                  'px-wilms-4 text-small font-semibold uppercase tracking-wide text-text-muted',
+                  'py-[var(--density-table-cell-y)]',
                   isExecutive && !column.allowWrap && 'whitespace-nowrap',
                   column.className,
                 )}
@@ -86,9 +87,20 @@ export function DataTable<T>({
             <tr>
               <td
                 colSpan={columns.length}
-                className="px-wilms-4 py-wilms-6 text-center text-body text-text-muted"
+                className="px-wilms-4 py-wilms-10 text-center text-body text-text-muted"
               >
-                {emptyMessage}
+                <div className="mx-auto flex max-w-sm flex-col items-center gap-wilms-2">
+                  <div
+                    className="flex h-12 w-12 items-center justify-center rounded-full border border-dashed border-border bg-background"
+                    aria-hidden="true"
+                  >
+                    <span className="text-heading-2 text-text-muted">∅</span>
+                  </div>
+                  <p className="font-medium text-text-primary">{emptyMessage}</p>
+                  <p className="text-small text-text-muted">
+                    Adjust filters or check back after new records are created.
+                  </p>
+                </div>
               </td>
             </tr>
           ) : (
