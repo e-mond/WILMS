@@ -18,10 +18,17 @@ export const SEARCH_NAVIGATION_DESTINATIONS: SearchNavigationDestination[] = [
     roles: [USER_ROLE.SUPER_ADMIN],
   },
   {
+    href: '/executive',
+    label: 'Executive Intelligence',
+    description: 'Financial, operational, and risk intelligence with forecast',
+    keywords: ['executive', 'intelligence', 'forecast', 'kpi', 'par'],
+    roles: [USER_ROLE.SUPER_ADMIN],
+  },
+  {
     href: '/ops',
     label: 'Operations',
     description: 'System health, workers, queues, and runtime status',
-    keywords: ['ops', 'health', 'system', 'queue', 'workers', 'metrics', 'platform'],
+    keywords: ['ops', 'health', 'system', 'queue', 'workers', 'metrics', 'platform', 'incidents'],
     roles: [USER_ROLE.SUPER_ADMIN],
   },
   {
@@ -44,6 +51,13 @@ export const SEARCH_NAVIGATION_DESTINATIONS: SearchNavigationDestination[] = [
     description: 'Operational and financial reports',
     keywords: ['analytics', 'export'],
     roles: [USER_ROLE.SUPER_ADMIN, USER_ROLE.AUDITOR],
+  },
+  {
+    href: '/exports',
+    label: 'Export Center',
+    description: 'Create and track data export jobs',
+    keywords: ['export', 'csv', 'excel', 'pdf', 'download'],
+    roles: [USER_ROLE.SUPER_ADMIN],
   },
   {
     href: '/settings',

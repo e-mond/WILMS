@@ -30,3 +30,4 @@ export * from './communications';
 export * from './communication-platform';
 export * from './organization-holidays';
 export * from './enterprise-workflows';
+export * from './intelligence';
