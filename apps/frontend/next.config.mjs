@@ -135,12 +135,14 @@ const nextConfig = {
         '../../node_modules/bcrypt/**/*',
         '../../packages/domain/package.json',
         '../../packages/domain/src/db/migrations/**/*',
+        '../../data/ghana-locations/**/*',
       ],
       '/api/cron/notifications': [
         './node_modules/bcrypt/**/*',
         '../../node_modules/bcrypt/**/*',
         '../../packages/domain/package.json',
         '../../packages/domain/src/db/migrations/**/*',
+        '../../data/ghana-locations/**/*',
       ],
     },
 

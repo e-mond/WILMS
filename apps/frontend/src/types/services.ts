@@ -306,6 +306,7 @@ export interface ReconciliationSummary {
   collectorId: string;
   date: string;
   expectedPesewas: number;
+  liveExpectedPesewas?: number;
   actualPesewas: number;
   physicalCashPesewas?: number;
   variancePesewas: number;

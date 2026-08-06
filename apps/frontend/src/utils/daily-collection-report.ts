@@ -85,7 +85,11 @@ export function buildDailyCollectionReport(
       repayment.loanId,
       activeLoans,
     );
-    const expectedPesewas = expectedByBorrower.get(repayment.borrowerId) ?? 0;
+    const loan =
+      (repayment.loanId ? activeLoans.find((entry) => entry.id === repayment.loanId) : undefined) ??
+      activeLoans.find((entry) => entry.borrowerId === repayment.borrowerId);
+    const expectedPesewas =
+      expectedByBorrower.get(repayment.borrowerId) ?? loan?.weeklyPaymentPesewas ?? 0;
 
     return {
       id: repayment.id,
@@ -139,7 +143,17 @@ export function buildDailyCollectionReport(
     return left.borrowerName.localeCompare(right.borrowerName);
   });
 
-  const expectedPesewas = dueLoans.reduce((total, loan) => total + loan.weeklyPaymentPesewas, 0);
+  const dueExpectedPesewas = dueLoans.reduce((total, loan) => total + loan.weeklyPaymentPesewas, 0);
+  const paidOutsideDueExpected = repayments.reduce((total, repayment) => {
+    if (expectedByBorrower.has(repayment.borrowerId)) {
+      return total;
+    }
+    const loan =
+      (repayment.loanId ? activeLoans.find((entry) => entry.id === repayment.loanId) : undefined) ??
+      activeLoans.find((entry) => entry.borrowerId === repayment.borrowerId);
+    return total + (loan?.weeklyPaymentPesewas ?? 0);
+  }, 0);
+  const expectedPesewas = dueExpectedPesewas + paidOutsideDueExpected;
   const collectedPesewas = repayments.reduce(
     (total, repayment) => total + repayment.amountPesewas,
     0,
@@ -157,7 +171,13 @@ export function buildDailyCollectionReport(
     summary: {
       date: input.date,
       paymentDayLabel: getWeekdayNameFromIsoDate(input.date),
-      borrowersDueCount: dueLoans.length,
+      borrowersDueCount:
+        dueLoans.length +
+        new Set(
+          repayments
+            .filter((repayment) => !expectedByBorrower.has(repayment.borrowerId))
+            .map((repayment) => repayment.borrowerId),
+        ).size,
       borrowersPaidCount,
       expectedPesewas,
       collectedPesewas,

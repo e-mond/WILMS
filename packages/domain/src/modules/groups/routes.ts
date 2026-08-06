@@ -132,7 +132,7 @@ groupsRouter.post(
 
 groupsRouter.post(
   '/groups/:id/add-member',
-  requirePermission(PERMISSION.MANAGE_GROUPS),
+  requirePermission(PERMISSION.MANAGE_GROUPS, PERMISSION.APPROVE_BORROWERS),
   asyncHandler(async (req, res) => {
     try {
       sendData(res, await groupService.addMember({ groupId: req.params.id!, ...req.body }));

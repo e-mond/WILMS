@@ -43,6 +43,8 @@ export interface ReconciliationSummary {
   collectorId: string;
   date: string;
   expectedPesewas: number;
+  /** Live recomputed expected (schedule + payment-day). Prefer for open reviews when snapshot is stale. */
+  liveExpectedPesewas?: number;
   actualPesewas: number;
   physicalCashPesewas?: number;
   variancePesewas?: number;

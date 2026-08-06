@@ -250,6 +250,7 @@ export async function listConfirmedPaymentsForCollectorOnDate(
 ) {
   return tx
     .select({
+      loanId: payments.loanId,
       amountPesewas: payments.amountPesewas,
       status: payments.status,
     })
