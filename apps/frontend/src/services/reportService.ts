@@ -55,6 +55,14 @@ const reportService: IReportService = {
     const query = searchParams.toString();
     return apiClient.get(`/reports/financial-ledger${query ? `?${query}` : ''}`);
   },
+
+  getWriteOffsReport() {
+    return apiClient.get('/reports/write-offs');
+  },
+
+  getAgingAnalysisReport() {
+    return apiClient.get('/reports/aging-analysis');
+  },
 };
 
 export default reportService;

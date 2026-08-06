@@ -66,6 +66,22 @@ const groupService: IGroupService = {
   recordAdjustment(input: RecordGroupAdjustmentInput): Promise<GroupDetail> {
     return apiClient.post<GroupDetail>(`/groups/${input.groupId}/record-adjustment`, input);
   },
+
+  dissolveGroup(input) {
+    return apiClient.post(`/groups/${input.groupId}/dissolve`, {
+      reason: input.reason,
+      allowWithOutstanding: input.allowWithOutstanding,
+    });
+  },
+
+  replaceMember(input) {
+    return apiClient.post(`/groups/${input.groupId}/replace-member`, {
+      outgoingBorrowerId: input.outgoingBorrowerId,
+      incomingBorrowerId: input.incomingBorrowerId,
+      reason: input.reason,
+      autoApprove: input.autoApprove,
+    });
+  },
 };
 
 export default groupService;

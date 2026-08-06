@@ -73,6 +73,10 @@ const borrowerService: IBorrowerService = {
     return apiClient.get<BorrowerReviewDetail>(`/borrowers/${id}/review`);
   },
 
+  relocateBorrower(id, input) {
+    return apiClient.post(`/borrowers/${id}/relocate`, input);
+  },
+
   approveBorrower(id: string): Promise<BorrowerSummary> {
     return apiClient.patch<BorrowerSummary>(`/borrowers/${id}/approve`, {});
   },

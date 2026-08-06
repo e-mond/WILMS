@@ -26,10 +26,14 @@ export interface OpsStatusReport {
   };
   surfaces: OpsSurface[];
   workers: {
-    redis: 'not_used';
-    queue: 'in_process';
+    redis: 'not_used' | 'configured' | 'connected' | 'unavailable';
+    queue: 'in_process' | 'bullmq' | 'disabled';
     scheduler: 'http_triggered';
     note: string;
+    lastRuns?: {
+      paymentNotifications: OpsWorkerLastRun | null;
+      communications: OpsWorkerLastRun | null;
+    };
   };
   financial: {
     availableCapitalPesewas: number;
@@ -52,6 +56,17 @@ export interface OpsStatusReport {
     degradedReasons: string[];
     uptimeSeconds: number;
   };
+}
+
+export interface OpsWorkerLastRun {
+  kind: string;
+  startedAt: string;
+  finishedAt: string;
+  durationMs: number;
+  success: boolean;
+  correlationId?: string;
+  summary?: Record<string, unknown>;
+  error?: string;
 }
 
 export const opsService = {

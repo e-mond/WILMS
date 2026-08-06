@@ -189,6 +189,10 @@ export interface IBorrowerService {
   approveBorrower(id: string): Promise<BorrowerSummary>;
   rejectBorrower(id: string, input: RejectBorrowerInput): Promise<BorrowerSummary>;
   blacklistBorrower(id: string, input: BlacklistBorrowerInput): Promise<BorrowerSummary>;
+  relocateBorrower(
+    id: string,
+    input: import('@/types/enterprise').RelocateBorrowerInput,
+  ): Promise<unknown>;
   registerBorrower(payload: RegisterBorrowerPayload): Promise<BorrowerSummary>;
   deleteRegistration(id: string, officerId: string): Promise<void>;
   checkPhone(phone: string): Promise<PhoneCheckResult>;
@@ -223,6 +227,10 @@ export interface ILoanService {
   rejectLoan(loanId: string, input: RejectLoanInput): Promise<LoanDetail>;
   disburseLoan(loanId: string): Promise<LoanDetail>;
   getDisbursementEligibility(borrowerId: string): Promise<DisbursementEligibility>;
+  requestScheduleChange(
+    loanId: string,
+    input: Omit<import('@/types/enterprise').RequestScheduleChangeInput, 'loanId'>,
+  ): Promise<unknown>;
 }
 
 export interface ITransactionService {
@@ -273,6 +281,8 @@ export interface IGroupService {
   replaceLeader(input: ReplaceGroupLeaderInput): Promise<GroupDetail>;
   updateDisplayName(input: UpdateGroupDisplayNameInput): Promise<GroupDetail>;
   recordAdjustment(input: RecordGroupAdjustmentInput): Promise<GroupDetail>;
+  dissolveGroup(input: import('@/types/enterprise').DissolveGroupInput): Promise<unknown>;
+  replaceMember(input: import('@/types/enterprise').ReplaceGroupMemberInput): Promise<unknown>;
 }
 
 export interface ICollectorManagementService {
@@ -370,6 +380,8 @@ export interface IReportService {
   getCollectorPerformanceReport(): Promise<CollectorPerformanceReport>;
   getGroupRiskReport(): Promise<GroupRiskReport>;
   getFinancialLedgerReport(params?: FinancialLedgerReportParams): Promise<FinancialLedgerReport>;
+  getWriteOffsReport(): Promise<import('@/types/enterprise').WriteOffReport>;
+  getAgingAnalysisReport(): Promise<import('@/types/enterprise').AgingAnalysisReport>;
 }
 
 export interface IAdjustmentService {
@@ -417,6 +429,8 @@ export interface ISettingsService {
   updateUser(id: string, input: UpdateSettingsUserInput): Promise<SettingsUserRecord>;
   disableUser(id: string): Promise<SettingsUserRecord>;
   activateUser(id: string): Promise<SettingsUserRecord>;
+  forceLogoutUser(id: string): Promise<import('@/types/enterprise').ForceLogoutResult>;
+  getUserLoginHistory(id: string): Promise<import('@/types/enterprise').LoginHistoryEvent[]>;
   deleteUser(id: string): Promise<void>;
   getRegistrationLegalConfig(): Promise<RegistrationLegalConfig>;
   listUserPermissionOverrides(userId: string): Promise<import('@/types/rbac').UserPermissionOverride[]>;

@@ -97,6 +97,29 @@ const reportServiceMock: IReportService = {
     await simulateDelay();
     return buildFinancialLedgerReport(getFinancialTransactions(), params);
   },
+
+  async getWriteOffsReport() {
+    await simulateDelay();
+    return {
+      generatedAt: new Date().toISOString(),
+      summary: {
+        totalWriteOffs: 0,
+        approvedCount: 0,
+        pendingCount: 0,
+        totalWrittenOffPesewas: 0,
+      },
+      rows: [],
+    };
+  },
+
+  async getAgingAnalysisReport() {
+    await simulateDelay();
+    return {
+      generatedAt: new Date().toISOString(),
+      summary: { current: 0, days1to7: 0, days8to30: 0, days31plus: 0 },
+      rows: [],
+    };
+  },
 };
 
 export default reportServiceMock;
