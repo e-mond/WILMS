@@ -4,7 +4,9 @@ import {
   useCallback,
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
+  useState,
   type ReactNode,
 } from 'react';
 import { createPortal } from 'react-dom';
@@ -23,6 +25,10 @@ export interface ModalProps {
   className?: string;
 }
 
+/**
+ * Portal modal with stable mount lifecycle to avoid React removeChild races
+ * when focus restore and portal unmount interleave (Strict Mode / rapid open-close).
+ */
 export function Modal({
   isOpen,
   onClose,
@@ -36,10 +42,15 @@ export function Modal({
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const onCloseRef = useRef(onClose);
   const wasOpenRef = useRef(false);
+  const [portalReady, setPortalReady] = useState(false);
 
   useEffect(() => {
     onCloseRef.current = onClose;
   }, [onClose]);
+
+  useEffect(() => {
+    setPortalReady(true);
+  }, []);
 
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     if (event.key === 'Escape') {
@@ -72,7 +83,7 @@ export function Modal({
     }
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isOpen) {
       wasOpenRef.current = false;
       return;
@@ -81,14 +92,17 @@ export function Modal({
     const shouldAutofocus = !wasOpenRef.current;
     wasOpenRef.current = true;
 
-    previousFocusRef.current = document.activeElement as HTMLElement | null;
+    if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+      previousFocusRef.current = document.activeElement;
+    }
+
     document.addEventListener('keydown', handleKeyDown);
 
     let focusTimer: number | undefined;
     if (shouldAutofocus) {
       focusTimer = window.setTimeout(() => {
         const panel = panelRef.current;
-        if (!panel) {
+        if (!panel?.isConnected) {
           return;
         }
 
@@ -100,7 +114,7 @@ export function Modal({
           panel.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
 
         if (target?.isConnected) {
-          target.focus();
+          target.focus({ preventScroll: true });
         }
       }, 0);
     }
@@ -110,15 +124,22 @@ export function Modal({
         window.clearTimeout(focusTimer);
       }
       document.removeEventListener('keydown', handleKeyDown);
+
       const previous = previousFocusRef.current;
       previousFocusRef.current = null;
-      if (previous?.isConnected) {
-        previous.focus();
+
+      // Defer focus restore so React can finish portal unmount without removeChild races.
+      if (previous) {
+        window.setTimeout(() => {
+          if (previous.isConnected) {
+            previous.focus({ preventScroll: true });
+          }
+        }, 0);
       }
     };
   }, [handleKeyDown, isOpen]);
 
-  if (!isOpen || typeof document === 'undefined') {
+  if (!portalReady || !isOpen || typeof document === 'undefined') {
     return null;
   }
 
@@ -126,6 +147,7 @@ export function Modal({
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-wilms-4"
       role="presentation"
+      data-wilms-modal="true"
     >
       <div
         aria-hidden="true"

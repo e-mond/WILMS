@@ -2,6 +2,25 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.7.1] — Market Readiness, Executive Intelligence & Product Packaging
+
+**Date:** August 2026  
+**Branch:** `feature/v1.7.1-market-readiness`
+
+### Added / Changed
+
+- Operational Dashboard vs Executive Intelligence separation (task queues vs board KPIs)
+- Authoritative Recent Activity timeline from audit log (time-grouped, role-aware)
+- Modal portal lifecycle hardening to eliminate React `removeChild` races
+- PDF exports gain branded cover pages for executive presentation
+- Collector field dashboard and navigation packaging continued for market readiness
+- Release documentation pack under `docs/v1.7.1/`
+
+### Notes
+
+- Financial formulas, RBAC, reconciliation, and notification guarantees unchanged
+- Auth remains custom HMAC sessions
+
 ## [1.7.0] — Enterprise Finance, Reporting & Operational Intelligence
 
 **Date:** August 2026  
