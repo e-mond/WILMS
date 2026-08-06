@@ -230,7 +230,22 @@ export function CollectorDashboardPanel() {
   const pendingBorrowers = borrowers.filter((entry) => entry.paymentStatus !== 'COLLECTED');
 
   return (
-    <div className="min-w-0 space-y-wilms-4">
+    <div className="min-w-0 space-y-wilms-4" data-testid="collector-field-dashboard">
+      <div className="sticky top-0 z-20 -mx-wilms-1 flex gap-wilms-2 bg-background/95 px-wilms-1 py-wilms-2 backdrop-blur md:static md:bg-transparent md:p-0 md:backdrop-blur-none">
+        <Link
+          href="/collector/my-borrowers?status=PENDING"
+          className="inline-flex min-h-[48px] flex-1 items-center justify-center rounded-sm bg-brand-primary px-wilms-4 text-small font-semibold text-card"
+        >
+          Quick payment
+        </Link>
+        <Link
+          href="/collector/reconciliation"
+          className="inline-flex min-h-[48px] flex-1 items-center justify-center rounded-sm border border-brand-primary px-wilms-4 text-small font-semibold text-brand-primary"
+        >
+          Reconcile
+        </Link>
+      </div>
+
       <section className="overflow-hidden rounded-sm border border-brand-primary bg-gradient-to-br from-brand-primary-light via-card to-card p-wilms-4 sm:p-wilms-5">
         <div className="flex flex-col gap-wilms-4">
           <div className="min-w-0">

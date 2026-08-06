@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { CurrencyAmount, DataTable, KpiCard } from '@/components/data-display';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
@@ -53,10 +54,17 @@ export function ExecutiveIntelligencePanel() {
     <div className="space-y-wilms-6 print:space-y-4" data-testid="executive-intelligence">
       <div className="flex flex-wrap items-end justify-between gap-wilms-3 border-b border-border pb-wilms-4 print:border-0">
         <div>
-          <h1 className="text-heading-2 font-semibold text-text-primary">Executive Intelligence</h1>
+          <p className="text-small font-semibold uppercase tracking-wide text-warning">
+            Executive intelligence
+          </p>
+          <h1 className="text-heading-2 font-semibold text-text-primary">Organisation performance</h1>
           <p className="mt-wilms-1 max-w-2xl text-small text-text-muted">
-            Portfolio, operations, and risk KPIs with collection forecast. Filter by community and
-            as-of date, then refresh.
+            Board-ready portfolio, cash, risk, and forecast view for directors and finance committees.
+            Day-to-day approvals and queues remain on the{' '}
+            <Link href="/dashboard" className="font-semibold text-brand-primary hover:underline">
+              Operational Dashboard
+            </Link>
+            .
           </p>
         </div>
         <div className="flex flex-wrap items-end gap-wilms-2 print:hidden">

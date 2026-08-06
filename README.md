@@ -1,6 +1,6 @@
 # WILMS — Women’s Interest-Free Loan Management System
 
-[![Version](https://img.shields.io/badge/version-v1.7.0-0F766E?style=flat-square)](VERSION.md)
+[![Version](https://img.shields.io/badge/version-v1.7.1-0F766E?style=flat-square)](VERSION.md)
 [![Status](https://img.shields.io/badge/status-production-059669?style=flat-square)](#2-executive-overview)
 [![Node](https://img.shields.io/badge/node-22.x-339933?style=flat-square&logo=node.js&logoColor=white)](package.json)
 [![Next.js](https://img.shields.io/badge/Next.js-14-000000?style=flat-square&logo=next.js&logoColor=white)](apps/frontend/package.json)
@@ -15,8 +15,8 @@
 
 | Field | Value |
 | --- | --- |
-| **Current release** | [`v1.7.0`](VERSION.md) |
-| **Maturity** | Production operational platform |
+| **Current release** | [`v1.7.1`](VERSION.md) |
+| **Maturity** | Production operational platform (market packaging) |
 | **Primary deployment** | [wilms.vercel.app](https://wilms.vercel.app) |
 | **Runtime** | Node.js **22.x** |
 | **Data store** | Neon PostgreSQL (Drizzle ORM) |
