@@ -71,7 +71,7 @@ export const SUPER_ADMIN_NAV: ShellNavItem[] = [
     href: '/executive',
     label: 'Executive',
     exact: true,
-    icon: 'dashboard',
+    icon: 'reports',
     group: 'overview',
   },
   { href: '/borrowers', label: 'Borrowers', icon: 'borrowers', group: 'people' },

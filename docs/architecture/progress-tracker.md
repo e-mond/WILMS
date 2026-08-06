@@ -24,7 +24,8 @@ Units marked ✅ implement core behaviour and unit tests. **Global DoD is not me
 | **v1.6.1 Product Excellence UI** | ✅ Complete — PR #160 |
 | **v1.6.2 Enterprise Readiness** | ✅ Complete — PR #161 |
 | **v1.7.0 Finance & Intelligence** | ✅ Complete — PR #162; reports in `docs/v1.7/` |
-| **v1.7.0 Ops/UX hardening** | ✅ Complete — PR #163 (expense inbox, ops mobile, collector dashboard, CSP, executive route, search keys, ops soft-fail) |
+| **v1.7.0 Ops/UX hardening** | ✅ Complete — PR #163 |
+| **v1.7.1 Market Readiness** | 🔄 In progress — branch `feature/v1.7.1-market-readiness`; pack in `docs/v1.7.1/` |
 
 ---
 
