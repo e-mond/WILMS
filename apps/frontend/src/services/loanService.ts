@@ -79,6 +79,10 @@ const loanService: ILoanService = {
   getDisbursementEligibility(borrowerId: string): Promise<DisbursementEligibility> {
     return apiClient.get<DisbursementEligibility>(`/borrowers/${borrowerId}/disbursement-eligibility`);
   },
+
+  requestScheduleChange(loanId, input) {
+    return apiClient.post(`/loans/${loanId}/schedule-change`, input);
+  },
 };
 
 export default loanService;

@@ -14,7 +14,7 @@ import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import { notifyGroupCreated, notifyCollectorAssigned } from '../../infrastructure/notifications/event-dispatch.js';
 
 type GroupRiskLevel = 'LOW_RISK' | 'AT_RISK' | 'FLAGGED' | 'SUSPENDED';
-type GroupStatus = 'ACTIVE' | 'AT_RISK' | 'FLAGGED' | 'SUSPENDED';
+type GroupStatus = 'ACTIVE' | 'AT_RISK' | 'FLAGGED' | 'SUSPENDED' | 'DISSOLVED';
 type GroupMemberRole = 'LEADER' | 'MEMBER';
 type GroupMemberLoanStatus = 'ACTIVE' | 'COMPLETED' | 'DEFAULTED' | 'NONE';
 

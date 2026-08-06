@@ -116,6 +116,24 @@ const REPORTS = [
     recordCount: 0,
     route: '/reports/audit-log',
   },
+  {
+    id: 'write-offs',
+    title: 'Write-offs Report',
+    generatedAt: new Date().toISOString(),
+    category: 'compliance' as ReportCategory,
+    description: 'Pending and approved loan write-off adjustments.',
+    recordCount: 0,
+    route: '/reports/write-offs',
+  },
+  {
+    id: 'aging-analysis',
+    title: 'Aging Analysis Report',
+    generatedAt: new Date().toISOString(),
+    category: 'risk' as ReportCategory,
+    description: 'Active loans bucketed by days past due.',
+    recordCount: 0,
+    route: '/reports/aging-analysis',
+  },
 ];
 
 function buildCategoryBreakdown() {

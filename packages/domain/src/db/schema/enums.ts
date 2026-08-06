@@ -157,6 +157,7 @@ export const groupStatusEnum = pgEnum('group_status', [
   'AT_RISK',
   'FLAGGED',
   'SUSPENDED',
+  'DISSOLVED',
 ]);
 
 export const approvalDecisionEnum = pgEnum('approval_decision', [

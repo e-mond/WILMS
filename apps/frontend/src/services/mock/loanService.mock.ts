@@ -415,6 +415,14 @@ const loanServiceMock: ILoanService = {
     return buildDisbursementEligibility(borrowerId);
   },
 
+  async requestScheduleChange() {
+    throw new ApiError(
+      'Loan schedule change is not available in mock mode.',
+      API_ERROR_CODE.VALIDATION,
+      501,
+    );
+  },
+
   async approveLoan(loanId: string): Promise<LoanDetail> {
     await simulateDelay();
     const loanIndex = mockLoans.findIndex((entry) => entry.id === loanId);

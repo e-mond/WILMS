@@ -239,6 +239,13 @@
       "when": 1785026400000,
       "tag": "0033_communication_audience_segments",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1785112800000,
+      "tag": "0034_enterprise_readiness_workflows",
+      "breakpoints": true
     }
   ]
 }

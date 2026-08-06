@@ -104,6 +104,14 @@ const settingsService: ISettingsService = {
     return apiClient.post(`/settings/users/${id}/activate`, {});
   },
 
+  forceLogoutUser(id: string) {
+    return apiClient.post(`/settings/users/${id}/force-logout`, {});
+  },
+
+  getUserLoginHistory(id: string) {
+    return apiClient.get(`/settings/users/${id}/login-history`);
+  },
+
   deleteUser(id: string) {
     return apiClient.post(`/settings/users/${id}/delete`, {});
   },

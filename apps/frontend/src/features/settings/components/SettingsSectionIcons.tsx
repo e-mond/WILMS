@@ -2,6 +2,7 @@ import type { LucideIcon } from 'lucide-react';
 import {
   Bell,
   Building2,
+  CalendarDays,
   Camera,
   ClipboardList,
   FileText,
@@ -52,6 +53,10 @@ export function SettingsPermissionsIcon() {
 
 export function SettingsExpensesIcon() {
   return <SettingsSectionIcon icon={FileText} />;
+}
+
+export function SettingsHolidaysIcon() {
+  return <SettingsSectionIcon icon={CalendarDays} />;
 }
 
 export function SettingsSyncIcon() {

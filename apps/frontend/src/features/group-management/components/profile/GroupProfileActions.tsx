@@ -32,6 +32,8 @@ export function GroupProfileActions({ group, onUpdated }: GroupProfileActionsPro
   );
   const [flagModalOpen, setFlagModalOpen] = useState(false);
   const [flagReason, setFlagReason] = useState('');
+  const [dissolveModalOpen, setDissolveModalOpen] = useState(false);
+  const [dissolveReason, setDissolveReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleFlagGroup() {
@@ -58,6 +60,33 @@ export function GroupProfileActions({ group, onUpdated }: GroupProfileActionsPro
     }
   }
 
+  async function handleDissolveGroup() {
+    if (!dissolveReason.trim()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await groupService.dissolveGroup({
+        groupId: group.id,
+        reason: dissolveReason.trim(),
+      });
+      toast.success('Group dissolved', {
+        message: 'Members were removed and the group was marked dissolved.',
+      });
+      setDissolveModalOpen(false);
+      setDissolveReason('');
+      onUpdated();
+    } catch (error) {
+      toast.error('Unable to dissolve group', {
+        message: error instanceof Error ? error.message : 'Try again shortly.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <>
       <div className="flex flex-wrap items-center gap-wilms-2 print:hidden">
@@ -69,6 +98,9 @@ export function GroupProfileActions({ group, onUpdated }: GroupProfileActionsPro
         <PermissionGate permission={PERMISSION.MANAGE_GROUPS}>
           <Button type="button" variant="secondary" size="sm" onClick={() => setFlagModalOpen(true)}>
             Flag Group
+          </Button>
+          <Button type="button" variant="danger" size="sm" onClick={() => setDissolveModalOpen(true)}>
+            Dissolve Group
           </Button>
         </PermissionGate>
         <Link
@@ -114,6 +146,39 @@ export function GroupProfileActions({ group, onUpdated }: GroupProfileActionsPro
           placeholder="Enter reason..."
           value={flagReason}
           onChange={(event) => setFlagReason(event.target.value)}
+        />
+      </Modal>
+
+      <Modal
+        isOpen={dissolveModalOpen}
+        onClose={() => setDissolveModalOpen(false)}
+        title="Dissolve Group"
+        footer={
+          <>
+            <Button variant="ghost" size="sm" onClick={() => setDissolveModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              size="sm"
+              disabled={!dissolveReason.trim() || isSubmitting}
+              onClick={() => void handleDissolveGroup()}
+            >
+              Confirm dissolve
+            </Button>
+          </>
+        }
+      >
+        <p className="text-body text-text-muted">
+          Dissolving {group.name} removes active membership and marks the group as dissolved. Groups
+          with outstanding obligations may be rejected unless settled first.
+        </p>
+        <Textarea
+          aria-label="Reason for dissolving group"
+          className="mt-wilms-3"
+          placeholder="Enter reason..."
+          value={dissolveReason}
+          onChange={(event) => setDissolveReason(event.target.value)}
         />
       </Modal>
     </>

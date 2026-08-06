@@ -1262,6 +1262,15 @@ export async function activateUser(id: string): Promise<SettingsUserRecord> {
   return record;
 }
 
+export async function forceLogoutUser(id: string): Promise<{ ok: true; userId: string }> {
+  const row = await userRepo.getUserById(id);
+  if (!row && isDatabaseEnabled()) {
+    throw new Error('NOT_FOUND');
+  }
+  await invalidateUserSessions(id);
+  return { ok: true, userId: id };
+}
+
 export async function deleteUser(id: string, currentUserId?: string): Promise<void> {
   if (id === currentUserId) {
     throw new Error('VALIDATION:Cannot delete the current user');
