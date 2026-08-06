@@ -133,9 +133,9 @@ export function OperationsDashboardPanel() {
   }, [load]);
 
   return (
-    <div className="space-y-wilms-6" data-tour="operations-dashboard">
-      <div className="flex flex-wrap items-end justify-between gap-wilms-3 border-b border-border pb-wilms-4">
-        <div>
+    <div className="min-w-0 space-y-wilms-6" data-tour="operations-dashboard">
+      <div className="flex flex-col gap-wilms-3 border-b border-border pb-wilms-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+        <div className="min-w-0">
           <h1 className="text-heading-2 font-semibold text-text-primary">Operations</h1>
           <p className="mt-wilms-1 max-w-2xl text-small text-text-muted">
             Super Admin platform control centre for operators (health, workers, queues, migrations,
@@ -144,7 +144,13 @@ export function OperationsDashboardPanel() {
             secrets are exposed.
           </p>
         </div>
-        <Button type="button" variant="secondary" onClick={load} disabled={isPending}>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={load}
+          disabled={isPending}
+          className="w-full shrink-0 sm:w-auto"
+        >
           {isPending ? 'Refreshing…' : 'Refresh'}
         </Button>
       </div>
@@ -343,6 +349,7 @@ function OpsIncidentsSection() {
   const incidentsQuery = useQuery({
     queryKey: ['ops', 'incidents'] as const,
     queryFn: () => intelligenceService.listIncidents(),
+    retry: 1,
   });
 
   const createMutation = useMutation({
@@ -405,7 +412,7 @@ function OpsIncidentsSection() {
 
       <PermissionGate permission={PERMISSION.MANAGE_SYSTEM_SETTINGS}>
         <form
-          className="grid gap-wilms-3 rounded-sm border border-border bg-card p-wilms-4 sm:grid-cols-2"
+          className="grid gap-wilms-3 rounded-sm border border-border bg-card p-wilms-3 sm:grid-cols-2 sm:p-wilms-4"
           onSubmit={(event) => {
             event.preventDefault();
             if (!title.trim()) return;
@@ -415,7 +422,7 @@ function OpsIncidentsSection() {
           <label className="block text-small text-text-muted sm:col-span-2">
             Title
             <Input
-              className="mt-1"
+              className="mt-1 min-h-[44px]"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               required
@@ -424,7 +431,7 @@ function OpsIncidentsSection() {
           <label className="block text-small text-text-muted">
             Severity
             <Select
-              className="mt-1"
+              className="mt-1 min-h-[44px]"
               value={severity}
               onChange={(event) => setSeverity(event.target.value)}
             >
@@ -435,7 +442,11 @@ function OpsIncidentsSection() {
             </Select>
           </label>
           <div className="flex items-end">
-            <Button type="submit" disabled={createMutation.isPending || !title.trim()}>
+            <Button
+              type="submit"
+              className="min-h-[44px] w-full sm:w-auto"
+              disabled={createMutation.isPending || !title.trim()}
+            >
               {createMutation.isPending ? 'Opening…' : 'Open incident'}
             </Button>
           </div>
@@ -467,8 +478,8 @@ function OpsIncidentsSection() {
         <ul className="divide-y divide-border border-y border-border">
           {(incidentsQuery.data as OperationalIncident[]).map((incident) => (
             <li key={incident.id} className="space-y-wilms-2 py-wilms-3">
-              <div className="flex flex-wrap items-start justify-between gap-wilms-2">
-                <div>
+              <div className="flex flex-col gap-wilms-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+                <div className="min-w-0">
                   <p className="font-medium text-text-primary">{incident.title}</p>
                   <p className="text-small text-text-muted">
                     {incident.severity} · {incident.status}
@@ -481,12 +492,13 @@ function OpsIncidentsSection() {
                   ) : null}
                 </div>
                 <PermissionGate permission={PERMISSION.MANAGE_SYSTEM_SETTINGS}>
-                  <div className="flex flex-wrap gap-wilms-2">
+                  <div className="flex w-full flex-col gap-wilms-2 sm:w-auto sm:flex-row sm:flex-wrap">
                     {incident.status === 'OPEN' ? (
                       <Button
                         type="button"
                         variant="secondary"
                         size="sm"
+                        className="min-h-[44px] w-full sm:w-auto"
                         onClick={() => acknowledgeMutation.mutate(incident.id)}
                         disabled={acknowledgeMutation.isPending}
                       >
@@ -494,9 +506,9 @@ function OpsIncidentsSection() {
                       </Button>
                     ) : null}
                     {incident.status !== 'RESOLVED' ? (
-                      <div className="flex flex-wrap items-center gap-wilms-2">
+                      <div className="flex w-full flex-col gap-wilms-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
                         <Input
-                          className="w-48"
+                          className="min-h-[44px] w-full sm:w-48"
                           placeholder="Resolution note"
                           value={resolveDrafts[incident.id] ?? ''}
                           onChange={(event) =>
@@ -509,6 +521,7 @@ function OpsIncidentsSection() {
                         <Button
                           type="button"
                           size="sm"
+                          className="min-h-[44px] w-full sm:w-auto"
                           onClick={() => {
                             const resolution = (resolveDrafts[incident.id] ?? '').trim();
                             if (!resolution) return;
@@ -545,6 +558,7 @@ function OpsMaintenanceSection() {
   const maintenanceQuery = useQuery({
     queryKey: ['ops', 'maintenance'] as const,
     queryFn: () => intelligenceService.listMaintenanceWindows(),
+    retry: 1,
   });
 
   const createMutation = useMutation({
@@ -578,7 +592,7 @@ function OpsMaintenanceSection() {
 
       <PermissionGate permission={PERMISSION.MANAGE_SYSTEM_SETTINGS}>
         <form
-          className="grid gap-wilms-3 rounded-sm border border-border bg-card p-wilms-4 sm:grid-cols-2"
+          className="grid gap-wilms-3 rounded-sm border border-border bg-card p-wilms-3 sm:grid-cols-2 sm:p-wilms-4"
           onSubmit={(event) => {
             event.preventDefault();
             if (!title.trim() || !message.trim() || !startsAt || !endsAt) return;
@@ -588,7 +602,7 @@ function OpsMaintenanceSection() {
           <label className="block text-small text-text-muted sm:col-span-2">
             Title
             <Input
-              className="mt-1"
+              className="mt-1 min-h-[44px]"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               required
@@ -598,7 +612,7 @@ function OpsMaintenanceSection() {
             Starts
             <Input
               type="datetime-local"
-              className="mt-1"
+              className="mt-1 min-h-[44px]"
               value={startsAt}
               onChange={(event) => setStartsAt(event.target.value)}
               required
@@ -608,7 +622,7 @@ function OpsMaintenanceSection() {
             Ends
             <Input
               type="datetime-local"
-              className="mt-1"
+              className="mt-1 min-h-[44px]"
               value={endsAt}
               onChange={(event) => setEndsAt(event.target.value)}
               required
@@ -624,7 +638,7 @@ function OpsMaintenanceSection() {
               required
             />
           </label>
-          <Button type="submit" disabled={createMutation.isPending}>
+          <Button type="submit" className="min-h-[44px] w-full sm:w-auto" disabled={createMutation.isPending}>
             {createMutation.isPending ? 'Scheduling…' : 'Schedule window'}
           </Button>
         </form>

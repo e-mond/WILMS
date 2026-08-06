@@ -1,6 +1,10 @@
 const EXACT_DESCRIPTIONS: Record<string, string> = {
   '/dashboard':
     'Monitor portfolio health, collections, risk signals, and quick actions across the programme.',
+  '/executive':
+    'Review financial, operational, and risk intelligence with forecasts and early-warning signals.',
+  '/exports':
+    'Create and track CSV, Excel, and PDF export jobs for audits and portfolio reporting.',
   '/borrowers':
     'Review registered borrowers, track approval status, and open profiles for loan servicing.',
   '/loan-pools':

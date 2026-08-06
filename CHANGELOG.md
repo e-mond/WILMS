@@ -23,6 +23,15 @@ All notable changes to WILMS are documented in this file.
 - Auth remains custom HMAC sessions (not Auth.js)
 - Financial ledger formulas unchanged
 
+### Follow-up hardening (same release line)
+
+- Soft-fail ops incident/maintenance reads when migration `0035` tables are not yet applied
+- Restore `/executive` and `/exports` middleware route access
+- Expense submit/review in-app notifications
+- Operations mobile layout, collector dashboard revamp, global search keyboard navigation
+- CSP allowlist for `vercel.live` feedback scripts
+- Enterprise root README rewrite
+
 ## [1.6.2] — Enterprise Readiness & Workflow Completion
 
 **Date:** August 2026  

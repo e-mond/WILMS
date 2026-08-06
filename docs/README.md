@@ -1,7 +1,7 @@
 # WILMS documentation hub
 
 **Audience:** engineers, operators, security reviewers, auditors  
-**Current product version:** `1.5.0`  
+**Current product version:** `1.7.0`  
 **Architecture:** Next.js full-stack on Vercel + Neon (+ Redis for rate limits)
 
 This hub is the entry point for **current** documentation. Historical certification packs and phase notes live under [`archive/`](archive/README.md) and [`certification/`](certification/) and are frozen evidence—not day-to-day runbooks.
@@ -12,8 +12,8 @@ This hub is the entry point for **current** documentation. Historical certificat
 
 | Doc | Purpose |
 |---|---|
-| [Root README](../README.md) | Product overview, quick start, structure |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | System architecture (verified against v1.5 code) |
+| [Root README](../README.md) | Product overview, architecture, install, security, roadmap |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | System architecture |
 | [environment.md](environment.md) | Environment variables |
 | [authentication.md](authentication.md) | Sessions, cookies, middleware |
 | [PERMISSIONS_AND_ROLES.md](PERMISSIONS_AND_ROLES.md) | RBAC and permission overrides |
@@ -30,8 +30,10 @@ This hub is the entry point for **current** documentation. Historical certificat
 
 | Pack | Path |
 |---|---|
+| v1.7.0 finance & intelligence | [`v1.7/`](v1.7/) |
+| v1.6.2 enterprise readiness | [`v1.6.2/`](v1.6.2/) |
+| v1.6 communication center | [`v1.6/`](v1.6/) |
 | v1.5 platform consolidation | [`v1.5/`](v1.5/) |
-| v1.4.3 financial workflow hotfix notes | [`v1.5/V1.4.3_HOTFIX_REPORT.md`](v1.5/V1.4.3_HOTFIX_REPORT.md) (archived with active cross-links) |
 
 ---
 

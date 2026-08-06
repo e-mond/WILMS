@@ -174,7 +174,7 @@ export function GlobalSearchPanel() {
 
   useEffect(() => {
     setActiveIndex(0);
-  }, [query, results]);
+  }, [query]);
 
   const selectActive = useCallback(() => {
     const items = commandItemsRef.current;
@@ -193,63 +193,55 @@ export function GlobalSearchPanel() {
       setRecentSearches(readRecentSearches());
     }
   }, [isOpen]);
-  const handleCommandKeyDown = useCallback(
-    (event: React.KeyboardEvent) => {
-      const items = commandItemsRef.current;
-      if (event.key === 'ArrowDown') {
-        event.preventDefault();
-        event.stopPropagation();
-        setActiveIndex((index) => Math.min(index + 1, Math.max(items.length - 1, 0)));
-        return;
+
+  const moveActive = useCallback((direction: 1 | -1) => {
+    setActiveIndex((index) => {
+      const last = Math.max(commandItemsRef.current.length - 1, 0);
+      if (direction > 0) {
+        return Math.min(index + 1, last);
       }
-      if (event.key === 'ArrowUp') {
-        event.preventDefault();
-        event.stopPropagation();
-        setActiveIndex((index) => Math.max(index - 1, 0));
-        return;
-      }
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        event.stopPropagation();
-        selectActive();
-      }
-    },
-    [selectActive],
-  );
+      return Math.max(index - 1, 0);
+    });
+  }, []);
 
   useEffect(() => {
     if (!isOpen) {
       return;
     }
 
-    const handleWindowKeyDown = (event: KeyboardEvent) => {
+    const handleDocumentKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp' && event.key !== 'Enter') {
         return;
       }
-      // Prefer the focused input handler; this catches focus outside the input.
-      const target = event.target as HTMLElement | null;
-      if (target?.closest('[data-global-search-panel="true"]')) {
+      // Capture-phase so native search inputs and focus traps cannot swallow navigation.
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.key === 'ArrowDown') {
+        moveActive(1);
         return;
       }
-      if (event.key === 'ArrowDown') {
-        event.preventDefault();
-        setActiveIndex((index) =>
-          Math.min(index + 1, Math.max(commandItemsRef.current.length - 1, 0)),
-        );
-      }
       if (event.key === 'ArrowUp') {
-        event.preventDefault();
-        setActiveIndex((index) => Math.max(index - 1, 0));
+        moveActive(-1);
+        return;
       }
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        selectActive();
-      }
+      selectActive();
     };
 
-    window.addEventListener('keydown', handleWindowKeyDown);
-    return () => window.removeEventListener('keydown', handleWindowKeyDown);
-  }, [isOpen, selectActive]);
+    document.addEventListener('keydown', handleDocumentKeyDown, true);
+    return () => document.removeEventListener('keydown', handleDocumentKeyDown, true);
+  }, [isOpen, moveActive, selectActive]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    const active = commandItems[activeIndex];
+    if (!active) {
+      return;
+    }
+    const option = document.getElementById(`search-option-${active.id}`);
+    option?.scrollIntoView({ block: 'nearest' });
+  }, [activeIndex, commandItems, isOpen]);
 
   if (!user) {
     return null;
@@ -264,21 +256,24 @@ export function GlobalSearchPanel() {
       title="Search WILMS"
       className="max-w-3xl"
     >
-      <div
-        data-global-search-panel="true"
-        className="space-y-wilms-4 motion-enter-fade"
-        onKeyDown={handleCommandKeyDown}
-      >
+      <div data-global-search-panel="true" className="space-y-wilms-4 motion-enter-fade">
         <label className="block" htmlFor={`${titleId}-search`}>
           <span className="sr-only">Search WILMS records and navigation</span>
           <Input
             id={`${titleId}-search`}
-            type="search"
+            type="text"
             value={query}
             placeholder={getGlobalSearchPlaceholder(user.role)}
             autoComplete="off"
+            autoFocus
+            role="combobox"
+            aria-autocomplete="list"
+            aria-controls={`${titleId}-results`}
+            aria-expanded={commandItems.length > 0}
+            aria-activedescendant={
+              commandItems[activeIndex] ? `search-option-${commandItems[activeIndex]!.id}` : undefined
+            }
             onChange={(event) => setQuery(event.target.value)}
-            onKeyDown={handleCommandKeyDown}
             className="h-12 text-body"
           />
         </label>
@@ -311,6 +306,7 @@ export function GlobalSearchPanel() {
         ) : null}
 
         <div
+          id={`${titleId}-results`}
           aria-live="polite"
           aria-labelledby={`${titleId}-hint`}
           className="max-h-[min(32rem,60vh)] space-y-wilms-3 overflow-auto"
