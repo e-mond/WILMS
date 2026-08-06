@@ -32,8 +32,12 @@ const audienceSchema = z.enum([
   'ALL_OFFICERS',
   'ALL_APPROVERS',
   'ALL_ADMINS',
+  'ALL_AUDITORS',
+  'ALL_GROUP_LEADERS',
   'SPECIFIC_USER',
+  'SPECIFIC_BORROWERS',
   'SPECIFIC_GROUP',
+  'SPECIFIC_GROUPS',
   'CUSTOM',
 ]);
 
@@ -67,6 +71,25 @@ const createMessageSchema = z.object({
   recurrenceRule: z.string().optional(),
   recurrenceTimezone: z.string().optional(),
   attachmentIds: z.array(z.string()).optional(),
+});
+
+const audiencePreviewSchema = z.object({
+  audienceType: audienceSchema,
+  audienceFilter: z.record(z.unknown()).optional(),
+  sampleLimit: z.number().int().min(1).max(100).optional(),
+});
+
+const createSegmentSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().optional(),
+  audienceType: audienceSchema,
+  audienceFilter: z.record(z.unknown()).optional(),
+});
+
+const updateSegmentSchema = createSegmentSchema.partial();
+
+const markReadSchema = z.object({
+  messageId: z.string().min(1),
 });
 
 const attachmentSchema = z.object({
@@ -175,6 +198,98 @@ communicationsRouter.get(
   asyncHandler(async (req, res) => {
     const status = req.query.status as communicationsService.MessageStatus | undefined;
     sendData(res, await communicationsService.listMessages({ status }));
+  }),
+);
+
+communicationsRouter.post(
+  '/communications/audience/preview',
+  requireAuth,
+  requirePermission(PERMISSION.MANAGE_COMMUNICATIONS),
+  validateBody(audiencePreviewSchema),
+  asyncHandler(async (req, res) => {
+    const body = req.body as z.infer<typeof audiencePreviewSchema>;
+    sendData(
+      res,
+      await communicationsService.previewAudience(
+        body.audienceType,
+        body.audienceFilter,
+        body.sampleLimit,
+      ),
+    );
+  }),
+);
+
+communicationsRouter.get(
+  '/communications/audience-segments',
+  requireAuth,
+  requirePermission(PERMISSION.MANAGE_COMMUNICATIONS),
+  asyncHandler(async (_req, res) => {
+    sendData(res, await communicationsService.segmentsService.listAudienceSegments());
+  }),
+);
+
+communicationsRouter.post(
+  '/communications/audience-segments',
+  requireAuth,
+  requirePermission(PERMISSION.MANAGE_COMMUNICATIONS),
+  validateBody(createSegmentSchema),
+  asyncHandler(async (req, res) => {
+    const body = req.body as z.infer<typeof createSegmentSchema>;
+    sendData(
+      res,
+      await communicationsService.segmentsService.createAudienceSegment({
+        ...body,
+        createdByUserId: req.session!.userId,
+      }),
+      201,
+    );
+  }),
+);
+
+communicationsRouter.patch(
+  '/communications/audience-segments/:id',
+  requireAuth,
+  requirePermission(PERMISSION.MANAGE_COMMUNICATIONS),
+  validateBody(updateSegmentSchema),
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(
+        res,
+        await communicationsService.segmentsService.updateAudienceSegment(
+          req.params.id!,
+          req.body as z.infer<typeof updateSegmentSchema>,
+        ),
+      );
+    } catch (error) {
+      mapServiceError(error);
+    }
+  }),
+);
+
+communicationsRouter.delete(
+  '/communications/audience-segments/:id',
+  requireAuth,
+  requirePermission(PERMISSION.MANAGE_COMMUNICATIONS),
+  asyncHandler(async (req, res) => {
+    try {
+      await communicationsService.segmentsService.deleteAudienceSegment(req.params.id!);
+      sendData(res, { ok: true });
+    } catch (error) {
+      mapServiceError(error);
+    }
+  }),
+);
+
+communicationsRouter.post(
+  '/communications/messages/:id/read',
+  requireAuth,
+  validateBody(markReadSchema.partial().extend({ messageId: z.string().optional() })),
+  asyncHandler(async (req, res) => {
+    await communicationsService.segmentsService.markMessageRead({
+      messageId: req.params.id!,
+      userId: req.session!.userId,
+    });
+    sendData(res, { ok: true });
   }),
 );
 

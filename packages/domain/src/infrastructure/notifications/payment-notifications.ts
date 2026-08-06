@@ -33,10 +33,12 @@ import { logMessageDelivery } from './delivery-log.js';
 
 export const DEDUPE = {
   paymentDueSoon: (loanId: string, dueDate: string) => `payment-due-soon:${loanId}:${dueDate}`,
+  paymentDueToday: (loanId: string, dueDate: string) => `payment-due-today:${loanId}:${dueDate}`,
   paymentMissed: (loanId: string, dueDate: string) => `payment-missed:${loanId}:${dueDate}`,
   paymentConfirmed: (paymentId: string) => `payment-confirmed:${paymentId}`,
   paymentReversed: (paymentId: string) => `payment-reversed:${paymentId}`,
   adminMissedSummary: (date: string) => `admin-missed-summary:${date}`,
+  scheduleChanged: (loanId: string, version: string) => `schedule-changed:${loanId}:${version}`,
 } as const;
 
 function addDays(isoDate: string, days: number): string {
@@ -341,6 +343,67 @@ export async function emitPaymentDueSoonNotification(input: {
   }
 
   recordNotificationMetric('payment_due_soon');
+}
+
+/** Notify borrower on the morning of a scheduled payment due date. */
+export async function emitPaymentDueTodayNotification(input: {
+  borrowerId: string;
+  borrowerName: string;
+  borrowerPhone?: string;
+  borrowerEmail?: string;
+  loanId: string;
+  loanDisplayId: string;
+  amountPesewas: number;
+  dueDate: string;
+  correlationId?: string;
+}): Promise<void> {
+  const dedupeKey = DEDUPE.paymentDueToday(input.loanId, input.dueDate);
+  const settings = await getSettings();
+
+  const smsBody = buildLoanReminderSmsBody({
+    borrowerName: input.borrowerName,
+    loanDisplayId: input.loanDisplayId,
+    amountPesewas: input.amountPesewas,
+    dueDate: input.dueDate,
+    dueTomorrow: false,
+  });
+
+  if (input.borrowerPhone) {
+    await dispatchBorrowerSms({
+      dedupeKey,
+      notificationType: 'PAYMENT_DUE_TODAY',
+      event: 'PAYMENT_REMINDER',
+      to: input.borrowerPhone,
+      body: smsBody,
+      enabled: settings.smsNotificationsEnabled,
+      borrowerId: input.borrowerId,
+      loanId: input.loanId,
+      correlationId: input.correlationId,
+    });
+  }
+
+  if (input.borrowerEmail) {
+    const template = buildLoanReminderEmail({
+      borrowerName: input.borrowerName,
+      loanDisplayId: input.loanDisplayId,
+      amountPesewas: input.amountPesewas,
+      dueDate: input.dueDate,
+    });
+    await dispatchBorrowerEmail({
+      dedupeKey,
+      notificationType: 'PAYMENT_DUE_TODAY',
+      event: 'PAYMENT_REMINDER',
+      to: input.borrowerEmail,
+      subject: template.subject.replace('soon', 'today'),
+      text: template.text,
+      html: template.html,
+      borrowerId: input.borrowerId,
+      loanId: input.loanId,
+      correlationId: input.correlationId,
+    });
+  }
+
+  recordNotificationMetric('payment_due_today');
 }
 
 /** Notify borrower, assigned collector, and admins when a payment is missed. */

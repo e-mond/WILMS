@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { DataTable, KpiCard } from '@/components/data-display';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
@@ -15,12 +15,21 @@ import { PERMISSION } from '@/constants/permissions';
 import { communicationService } from '@/services';
 import { formatDeliveryFailure } from '@/utils/format-delivery-failure';
 import { useToast } from '@/hooks/useToast';
-import type { AudienceType, CommunicationChannel, MessageAttachment, MessageStatus } from '@/types/communication';
+import type {
+  AudiencePreviewResult,
+  CommunicationChannel,
+  MessageAttachment,
+  MessageStatus,
+} from '@/types/communication';
 import { formatDisplayDate } from '@/utils/format-date';
 import { RichTextEditor } from '@/features/communication-center/components/RichTextEditor';
 import { AttachmentUploader } from '@/features/communication-center/components/AttachmentUploader';
 import { AnalyticsCharts } from '@/features/communication-center/components/AnalyticsCharts';
 import { TemplateBuilderModal } from '@/features/communication-center/components/TemplateBuilderModal';
+import {
+  AudienceComposer,
+  type AudienceComposerValue,
+} from '@/features/communication-center/components/AudienceComposer';
 
 const TABS = [
   { id: 'compose', label: 'Compose' },
@@ -31,14 +40,6 @@ const TABS = [
 ] as const;
 
 type TabId = (typeof TABS)[number]['id'];
-
-const AUDIENCE_OPTIONS: { value: AudienceType; label: string }[] = [
-  { value: 'ALL_USERS', label: 'All Users' },
-  { value: 'ALL_COLLECTORS', label: 'All Collectors' },
-  { value: 'ALL_OFFICERS', label: 'All Registration Officers' },
-  { value: 'ALL_APPROVERS', label: 'All Approvers' },
-  { value: 'ALL_ADMINS', label: 'All Super Admins' },
-];
 
 const RECURRENCE_OPTIONS = [
   { value: '', label: 'Send immediately' },
@@ -77,8 +78,11 @@ export function CommunicationCenterPanel() {
   const [showTemplateBuilder, setShowTemplateBuilder] = useState(false);
   const [subject, setSubject] = useState('');
   const [bodyHtml, setBodyHtml] = useState('');
-  const [audienceType, setAudienceType] = useState<AudienceType>('ALL_USERS');
-  const [channels, setChannels] = useState<CommunicationChannel[]>(['EMAIL', 'IN_APP']);
+  const [audience, setAudience] = useState<AudienceComposerValue>({
+    audienceType: 'ALL_COLLECTORS',
+  });
+  const [audiencePreview, setAudiencePreview] = useState<AudiencePreviewResult | null>(null);
+  const [channels, setChannels] = useState<CommunicationChannel[]>(['EMAIL', 'IN_APP', 'SMS']);
   const [scheduleMode, setScheduleMode] = useState('');
   const [scheduledAt, setScheduledAt] = useState('');
   const [attachments, setAttachments] = useState<MessageAttachment[]>([]);
@@ -108,6 +112,17 @@ export function CommunicationCenterPanel() {
     enabled: activeTab === 'failed',
   });
 
+  const requestPreview = useCallback(() => {
+    void communicationService
+      .previewAudience({
+        audienceType: audience.audienceType,
+        audienceFilter: audience.audienceFilter,
+        sampleLimit: 20,
+      })
+      .then((data) => setAudiencePreview(data))
+      .catch(() => setAudiencePreview(null));
+  }, [audience.audienceFilter, audience.audienceType]);
+
   const createMessage = useMutation({
     mutationFn: async () => {
       const isScheduled = scheduleMode === 'SCHEDULED';
@@ -119,7 +134,8 @@ export function CommunicationCenterPanel() {
         bodyHtml,
         bodyText: htmlToText(bodyHtml),
         channels,
-        audienceType,
+        audienceType: audience.audienceType,
+        audienceFilter: audience.audienceFilter,
         scheduledAt: isScheduled && scheduledAt ? new Date(scheduledAt).toISOString() : undefined,
         recurrenceRule,
         recurrenceTimezone: 'Africa/Accra',
@@ -140,6 +156,8 @@ export function CommunicationCenterPanel() {
       setAttachments([]);
       setScheduleMode('');
       setScheduledAt('');
+      setAudience({ audienceType: 'ALL_COLLECTORS' });
+      setAudiencePreview(null);
       void queryClient.invalidateQueries({ queryKey: ['communications'] });
     },
     onError: () => toastError('Failed to send message'),
@@ -296,12 +314,7 @@ export function CommunicationCenterPanel() {
                 header: 'Reason',
                 cell: (row) => {
                   const failure = formatDeliveryFailure(row.failureReason);
-                  return (
-                    <div>
-                      <p className="font-semibold text-text-primary">{failure.summary}</p>
-                      <p className="text-small text-text-muted">{failure.details}</p>
-                    </div>
-                  );
+                  return <span title={failure.details || undefined}>{failure.summary}</span>;
                 },
               },
             ]}
@@ -311,7 +324,9 @@ export function CommunicationCenterPanel() {
 
       {activeTab === 'compose' && !showCompose ? (
         <div className="rounded-lg border border-dashed border-border bg-card p-wilms-8 text-center">
-          <p className="text-body text-text-muted">Compose a new message or broadcast to your audience.</p>
+          <p className="text-body text-text-muted">
+            Compose broadcasts to staff, borrowers, groups, or group leaders.
+          </p>
           <Button type="button" className="mt-wilms-4" onClick={() => setShowCompose(true)}>
             Start Composing
           </Button>
@@ -334,20 +349,13 @@ export function CommunicationCenterPanel() {
             <RichTextEditor value={bodyHtml} onChange={setBodyHtml} draftKey="communication-compose" />
           </div>
           <AttachmentUploader attachments={attachments} onChange={setAttachments} />
-          <div>
-            <label className="mb-wilms-2 block text-small font-medium text-text-primary">Audience</label>
-            <Select
-              value={audienceType}
-              onChange={(e) => setAudienceType(e.target.value as AudienceType)}
-              aria-label="Audience"
-            >
-              {AUDIENCE_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </Select>
-          </div>
+          <AudienceComposer
+            value={audience}
+            onChange={setAudience}
+            preview={audiencePreview}
+            onRequestPreview={requestPreview}
+            previewPending={false}
+          />
           <div>
             <label className="mb-wilms-2 block text-small font-medium text-text-primary">Schedule</label>
             <Select value={scheduleMode} onChange={(e) => setScheduleMode(e.target.value)} aria-label="Schedule">

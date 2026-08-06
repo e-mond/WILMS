@@ -8,6 +8,7 @@ const counters = {
   failed: 0,
   duplicate_prevented: 0,
   payment_due_soon: 0,
+  payment_due_today: 0,
   payment_missed: 0,
   payment_confirmed: 0,
   payment_reversed: 0,

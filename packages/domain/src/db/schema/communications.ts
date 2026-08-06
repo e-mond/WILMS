@@ -1,4 +1,4 @@
-import { boolean, jsonb, pgTable, text, timestamp, integer } from 'drizzle-orm/pg-core';
+import { boolean, jsonb, pgTable, text, timestamp, integer, uuid } from 'drizzle-orm/pg-core';
 
 export const communicationTemplates = pgTable('communication_templates', {
   id: text('id').primaryKey(),
@@ -38,4 +38,23 @@ export const communicationMessages = pgTable('communication_messages', {
   createdByUserId: text('created_by_user_id').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const communicationAudienceSegments = pgTable('communication_audience_segments', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  description: text('description'),
+  audienceType: text('audience_type').notNull(),
+  audienceFilter: jsonb('audience_filter'),
+  createdByUserId: text('created_by_user_id').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  deletedAt: timestamp('deleted_at', { withTimezone: true }),
+});
+
+export const communicationMessageReads = pgTable('communication_message_reads', {
+  id: text('id').primaryKey(),
+  messageId: text('message_id').notNull(),
+  userId: uuid('user_id').notNull(),
+  readAt: timestamp('read_at', { withTimezone: true }).notNull().defaultNow(),
 });
