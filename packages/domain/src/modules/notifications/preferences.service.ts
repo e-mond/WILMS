@@ -1,7 +1,9 @@
 import { eq } from 'drizzle-orm';
-import { uuidv7 } from 'uuidv7';
 import { getDb, isDatabaseEnabled } from '../../db/client.js';
 import { userNotificationPreferences } from '../../db/schema/communication-platform.js';
+import { isWithinQuietHours } from './quiet-hours.js';
+
+export { isWithinQuietHours } from './quiet-hours.js';
 
 export interface NotificationPreferencesDto {
   emailEnabled: boolean;
@@ -16,6 +18,10 @@ export interface NotificationPreferencesDto {
   approvalNotifications: boolean;
   registrationNotifications: boolean;
   digestFrequency: 'INSTANT' | 'DAILY' | 'WEEKLY';
+  quietHoursEnabled: boolean;
+  quietHoursStart: string | null;
+  quietHoursEnd: string | null;
+  quietHoursTimezone: string;
 }
 
 const DEFAULTS: NotificationPreferencesDto = {
@@ -31,6 +37,10 @@ const DEFAULTS: NotificationPreferencesDto = {
   approvalNotifications: true,
   registrationNotifications: true,
   digestFrequency: 'INSTANT',
+  quietHoursEnabled: false,
+  quietHoursStart: null,
+  quietHoursEnd: null,
+  quietHoursTimezone: 'Africa/Accra',
 };
 
 const memoryPrefs = new Map<string, NotificationPreferencesDto>();
@@ -49,6 +59,10 @@ function mapRow(row: typeof userNotificationPreferences.$inferSelect): Notificat
     approvalNotifications: row.approvalNotifications,
     registrationNotifications: row.registrationNotifications,
     digestFrequency: row.digestFrequency as NotificationPreferencesDto['digestFrequency'],
+    quietHoursEnabled: row.quietHoursEnabled ?? false,
+    quietHoursStart: row.quietHoursStart ?? null,
+    quietHoursEnd: row.quietHoursEnd ?? null,
+    quietHoursTimezone: row.quietHoursTimezone ?? 'Africa/Accra',
   };
 }
 
@@ -87,13 +101,43 @@ export async function updateNotificationPreferences(
     .insert(userNotificationPreferences)
     .values({
       userId,
-      ...merged,
+      emailEnabled: merged.emailEnabled,
+      smsEnabled: merged.smsEnabled,
+      pushEnabled: merged.pushEnabled,
+      inAppEnabled: merged.inAppEnabled,
+      marketingEnabled: merged.marketingEnabled,
+      announcementsEnabled: merged.announcementsEnabled,
+      remindersEnabled: merged.remindersEnabled,
+      loanNotifications: merged.loanNotifications,
+      paymentNotifications: merged.paymentNotifications,
+      approvalNotifications: merged.approvalNotifications,
+      registrationNotifications: merged.registrationNotifications,
+      digestFrequency: merged.digestFrequency,
+      quietHoursEnabled: merged.quietHoursEnabled,
+      quietHoursStart: merged.quietHoursStart,
+      quietHoursEnd: merged.quietHoursEnd,
+      quietHoursTimezone: merged.quietHoursTimezone,
       updatedAt: new Date(),
     })
     .onConflictDoUpdate({
       target: userNotificationPreferences.userId,
       set: {
-        ...merged,
+        emailEnabled: merged.emailEnabled,
+        smsEnabled: merged.smsEnabled,
+        pushEnabled: merged.pushEnabled,
+        inAppEnabled: merged.inAppEnabled,
+        marketingEnabled: merged.marketingEnabled,
+        announcementsEnabled: merged.announcementsEnabled,
+        remindersEnabled: merged.remindersEnabled,
+        loanNotifications: merged.loanNotifications,
+        paymentNotifications: merged.paymentNotifications,
+        approvalNotifications: merged.approvalNotifications,
+        registrationNotifications: merged.registrationNotifications,
+        digestFrequency: merged.digestFrequency,
+        quietHoursEnabled: merged.quietHoursEnabled,
+        quietHoursStart: merged.quietHoursStart,
+        quietHoursEnd: merged.quietHoursEnd,
+        quietHoursTimezone: merged.quietHoursTimezone,
         updatedAt: new Date(),
       },
     });
@@ -104,7 +148,15 @@ export async function updateNotificationPreferences(
 export async function shouldSendChannel(
   userId: string,
   channel: 'EMAIL' | 'SMS' | 'PUSH' | 'IN_APP',
-  category?: 'marketing' | 'announcement' | 'reminder' | 'loan' | 'payment' | 'approval' | 'registration',
+  category?:
+    | 'marketing'
+    | 'announcement'
+    | 'reminder'
+    | 'loan'
+    | 'payment'
+    | 'approval'
+    | 'registration',
+  options?: { critical?: boolean },
 ): Promise<boolean> {
   const prefs = await getNotificationPreferences(userId);
 
@@ -120,6 +172,12 @@ export async function shouldSendChannel(
   if (category === 'payment' && !prefs.paymentNotifications) return false;
   if (category === 'approval' && !prefs.approvalNotifications) return false;
   if (category === 'registration' && !prefs.registrationNotifications) return false;
+
+  if (!options?.critical && (category === 'announcement' || category === 'reminder' || category === 'marketing')) {
+    if (isWithinQuietHours(prefs)) {
+      return false;
+    }
+  }
 
   return true;
 }

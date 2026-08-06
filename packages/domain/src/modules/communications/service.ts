@@ -1,6 +1,5 @@
 import { and, desc, eq, ilike, isNull, or, sql } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
-import { USER_ROLE } from '@wilms/shared-rbac';
 import { isDatabaseEnabled, getDb } from '../../db/client.js';
 import {
   communicationMessages,
@@ -10,7 +9,6 @@ import {
   communicationTemplateVersions,
 } from '../../db/schema/communication-platform.js';
 import { messageDeliveries } from '../../db/schema/message-deliveries.js';
-import { users } from '../../db/schema/users.js';
 import { dispatchMail } from '../../infrastructure/mail/dispatch.js';
 import { createInAppNotification, createInAppNotificationsForUsers } from '../../infrastructure/notifications/in-app-notify.js';
 import { getSmsProvider } from '../../infrastructure/sms/index.js';
@@ -27,19 +25,18 @@ import { sendPushToUser } from '../notifications/push.service.js';
 import { computeNextRunAt } from './scheduler.js';
 import * as attachmentsService from './attachments.service.js';
 import * as userRepo from '../../repositories/user.repository.js';
+import {
+  previewAudience,
+  resolveAudienceRecipients,
+  type AudienceRecipient,
+  type AudienceType,
+} from './audience.js';
+import * as segmentsService from './segments.service.js';
 
 export type CommunicationChannel = 'EMAIL' | 'SMS' | 'IN_APP';
 export type MessageStatus = 'DRAFT' | 'SCHEDULED' | 'SENDING' | 'SENT' | 'FAILED';
-export type AudienceType =
-  | 'ALL_USERS'
-  | 'ALL_BORROWERS'
-  | 'ALL_COLLECTORS'
-  | 'ALL_OFFICERS'
-  | 'ALL_APPROVERS'
-  | 'ALL_ADMINS'
-  | 'SPECIFIC_USER'
-  | 'SPECIFIC_GROUP'
-  | 'CUSTOM';
+export type { AudienceType, AudienceRecipient };
+export { resolveAudienceRecipients, previewAudience, segmentsService };
 
 export interface CommunicationTemplateDto {
   id: string;
@@ -412,57 +409,6 @@ export async function updateTemplate(
   return mapTemplate(row!);
 }
 
-export async function resolveAudienceRecipients(
-  audienceType: AudienceType,
-  filter?: Record<string, unknown>,
-): Promise<Array<{ userId: string; email: string; phone?: string; displayName: string }>> {
-  if (!isDatabaseEnabled()) {
-    return [{ userId: 'user-super-admin', email: 'admin@wilms.demo', displayName: 'Admin' }];
-  }
-
-  const db = getDb();
-  const baseQuery = db
-    .select({
-      id: users.id,
-      email: users.email,
-      displayName: users.displayName,
-      role: users.role,
-    })
-    .from(users)
-    .where(and(isNull(users.deletedAt), eq(users.status, 'ACTIVE')));
-
-  let rows = await baseQuery;
-
-  switch (audienceType) {
-    case 'ALL_COLLECTORS':
-      rows = rows.filter((r) => r.role === USER_ROLE.COLLECTOR);
-      break;
-    case 'ALL_OFFICERS':
-      rows = rows.filter((r) => r.role === USER_ROLE.REGISTRATION_OFFICER);
-      break;
-    case 'ALL_APPROVERS':
-      rows = rows.filter((r) => r.role === USER_ROLE.APPROVER);
-      break;
-    case 'ALL_ADMINS':
-      rows = rows.filter((r) => r.role === USER_ROLE.SUPER_ADMIN);
-      break;
-    case 'SPECIFIC_USER': {
-      const userId = String(filter?.userId ?? '');
-      rows = rows.filter((r) => r.id === userId);
-      break;
-    }
-    case 'ALL_USERS':
-    default:
-      break;
-  }
-
-  return rows.map((r) => ({
-    userId: r.id,
-    email: r.email,
-    displayName: r.displayName,
-  }));
-}
-
 export async function createMessage(input: {
   subject: string;
   bodyHtml: string;
@@ -615,78 +561,86 @@ export async function sendMessage(messageId: string, actorUserId: string): Promi
       ...variables,
       firstName: recipient.displayName.split(' ')[0] ?? recipient.displayName,
       fullName: recipient.displayName,
-      email: recipient.email,
+      email: recipient.email ?? '',
     };
     const subject = renderTemplate(message.subject, recipientVars);
     const bodyHtml = renderTemplate(message.bodyHtml, recipientVars) + attachmentHtml;
     const bodyText = renderTemplate(message.bodyText, recipientVars);
 
     if (channels.includes('EMAIL') && recipient.email) {
-      const canEmail = await shouldSendChannel(recipient.userId, 'EMAIL', 'announcement');
-      if (!canEmail) continue;
-
-      try {
-        await dispatchMail({
-          event: 'COMMUNICATION',
-          to: recipient.email,
-          subject,
-          text: bodyText,
-          html: bodyHtml,
-          userId: recipient.userId,
-          communicationMessageId: messageId,
-        });
-      } catch (error) {
-        console.error(`[communications] email to ${recipient.email} failed:`, error);
-      }
-    }
-
-    if (channels.includes('SMS')) {
-      const canSms = await shouldSendChannel(recipient.userId, 'SMS', 'announcement');
-      if (!canSms) continue;
-
-      const provider = getSmsProvider();
-      if (provider.isConfigured()) {
+      const canEmail = recipient.userId
+        ? await shouldSendChannel(recipient.userId, 'EMAIL', 'announcement')
+        : true;
+      if (canEmail) {
         try {
-          const result = await provider.send({
-            to: recipient.email,
-            body: bodyText.slice(0, 160),
-          });
-          await logMessageDelivery({
+          await dispatchMail({
             event: 'COMMUNICATION',
-            channel: 'SMS',
-            recipient: recipient.email,
-            provider: result.provider,
-            providerMessageId: result.id,
-            bodyPreview: bodyText,
-            success: true,
+            to: recipient.email,
+            subject,
+            text: bodyText,
+            html: bodyHtml,
             userId: recipient.userId,
+            borrowerId: recipient.borrowerId,
             communicationMessageId: messageId,
           });
         } catch (error) {
-          console.error(`[communications] sms failed:`, error);
+          console.error(`[communications] email to ${recipient.email} failed:`, error);
         }
       }
     }
 
-    if (channels.includes('IN_APP')) {
-      const canInApp = await shouldSendChannel(recipient.userId, 'IN_APP', 'announcement');
-      if (!canInApp) continue;
-
-      void createInAppNotification({
-        userId: recipient.userId,
-        event: 'COMMUNICATION',
-        title: subject,
-        body: bodyText,
-      });
+    if (channels.includes('SMS') && recipient.phone) {
+      const canSms = recipient.userId
+        ? await shouldSendChannel(recipient.userId, 'SMS', 'announcement')
+        : true;
+      if (canSms) {
+        const provider = getSmsProvider();
+        if (provider.isConfigured()) {
+          try {
+            const result = await provider.send({
+              to: recipient.phone,
+              body: bodyText.slice(0, 160),
+            });
+            await logMessageDelivery({
+              event: 'COMMUNICATION',
+              channel: 'SMS',
+              recipient: recipient.phone,
+              provider: result.provider,
+              providerMessageId: result.id,
+              bodyPreview: bodyText,
+              success: true,
+              userId: recipient.userId,
+              borrowerId: recipient.borrowerId,
+              communicationMessageId: messageId,
+            });
+          } catch (error) {
+            console.error(`[communications] sms failed:`, error);
+          }
+        }
+      }
     }
 
-    const canPush = await shouldSendChannel(recipient.userId, 'PUSH', 'announcement');
-    if (canPush) {
-      void sendPushToUser(recipient.userId, {
-        title: subject,
-        body: htmlToPlainText(bodyText).slice(0, 180),
-        category: 'announcement',
-      });
+    if (channels.includes('IN_APP') && recipient.userId) {
+      const canInApp = await shouldSendChannel(recipient.userId, 'IN_APP', 'announcement');
+      if (canInApp) {
+        void createInAppNotification({
+          userId: recipient.userId,
+          event: 'COMMUNICATION',
+          title: subject,
+          body: bodyText,
+        });
+      }
+    }
+
+    if (recipient.userId) {
+      const canPush = await shouldSendChannel(recipient.userId, 'PUSH', 'announcement');
+      if (canPush) {
+        void sendPushToUser(recipient.userId, {
+          title: subject,
+          body: htmlToPlainText(bodyText).slice(0, 180),
+          category: 'announcement',
+        });
+      }
     }
   }
 

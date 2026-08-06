@@ -552,6 +552,19 @@ export interface ICommunicationService {
     input: import('@/types/communication').CreateCommunicationMessageInput,
   ): Promise<import('@/types/communication').CommunicationMessage>;
   sendMessage(messageId: string): Promise<import('@/types/communication').CommunicationMessage>;
+  previewAudience(input: {
+    audienceType: import('@/types/communication').AudienceType;
+    audienceFilter?: Record<string, unknown>;
+    sampleLimit?: number;
+  }): Promise<import('@/types/communication').AudiencePreviewResult>;
+  listAudienceSegments(): Promise<import('@/types/communication').AudienceSegment[]>;
+  createAudienceSegment(input: {
+    name: string;
+    description?: string;
+    audienceType: import('@/types/communication').AudienceType;
+    audienceFilter?: Record<string, unknown>;
+  }): Promise<import('@/types/communication').AudienceSegment>;
+  deleteAudienceSegment(segmentId: string): Promise<void>;
   getAnalytics(): Promise<import('@/types/communication').DeliveryAnalytics>;
   listFailedDeliveries(): Promise<import('@/types/communication').FailedDelivery[]>;
   searchDeliveryLogs(query?: string): Promise<unknown[]>;

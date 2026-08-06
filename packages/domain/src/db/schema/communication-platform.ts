@@ -55,6 +55,10 @@ export const userNotificationPreferences = pgTable('user_notification_preference
   approvalNotifications: boolean('approval_notifications').notNull().default(true),
   registrationNotifications: boolean('registration_notifications').notNull().default(true),
   digestFrequency: text('digest_frequency').notNull().default('INSTANT'),
+  quietHoursEnabled: boolean('quiet_hours_enabled').notNull().default(false),
+  quietHoursStart: text('quiet_hours_start'),
+  quietHoursEnd: text('quiet_hours_end'),
+  quietHoursTimezone: text('quiet_hours_timezone').notNull().default('Africa/Accra'),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

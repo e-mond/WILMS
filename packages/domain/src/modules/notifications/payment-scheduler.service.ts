@@ -14,10 +14,15 @@ import {
   addDays,
   emitAdminMissedPaymentSummary,
   emitPaymentDueSoonNotification,
+  emitPaymentDueTodayNotification,
   emitPaymentMissedNotification,
   loanInstallmentPesewas,
   resolveCollectorUserIdForBorrower,
 } from '../../infrastructure/notifications/payment-notifications.js';
+import {
+  emitSchedulerFailureAlert,
+  processOperationalNotificationJobs,
+} from '../../infrastructure/notifications/ops-notifications.js';
 import { recordSchedulerRun } from '../../infrastructure/scheduler/scheduler-run-state.js';
 import * as borrowerRepo from '../../repositories/borrower.repository.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
@@ -29,9 +34,11 @@ export interface PaymentSchedulerResult {
   correlationId: string;
   activeLoansScanned: number;
   remindersSent: number;
+  dueTodaySent: number;
   missedNotificationsSent: number;
   skippedFullyPaid: number;
   skippedInactiveSchedule: number;
+  opsReconReminders: number;
   errors: string[];
   durationMs: number;
 }
@@ -51,9 +58,11 @@ export async function processPaymentNotificationJobs(
     correlationId,
     activeLoansScanned: 0,
     remindersSent: 0,
+    dueTodaySent: 0,
     missedNotificationsSent: 0,
     skippedFullyPaid: 0,
     skippedInactiveSchedule: 0,
+    opsReconReminders: 0,
     errors: [],
     durationMs: 0,
   };
@@ -135,6 +144,21 @@ export async function processPaymentNotificationJobs(
             });
             result.remindersSent += 1;
           }
+
+          if (week.dueDate === ref) {
+            await emitPaymentDueTodayNotification({
+              borrowerId: borrower.id,
+              borrowerName: borrower.fullName,
+              borrowerPhone: borrower.phone,
+              borrowerEmail: borrower.profile?.email,
+              loanId: loanRow.id,
+              loanDisplayId,
+              amountPesewas: weeklyPesewas,
+              dueDate: week.dueDate,
+              correlationId,
+            });
+            result.dueTodaySent += 1;
+          }
         }
 
         const newlyMissed = await scheduleRepo.applyMissedWeekMarking(
@@ -177,6 +201,19 @@ export async function processPaymentNotificationJobs(
       });
     }
 
+    try {
+      const ops = await processOperationalNotificationJobs(ref);
+      result.opsReconReminders = ops.reconReminders;
+    } catch (opsError) {
+      const message = opsError instanceof Error ? opsError.message : 'Ops scheduler failed';
+      result.errors.push(message);
+      await emitSchedulerFailureAlert({
+        kind: 'operational_notifications',
+        error: message,
+        referenceDate: ref,
+      });
+    }
+
     result.durationMs = Date.now() - startedAt.getTime();
     recordSchedulerRun({
       kind: 'payment_notifications',
@@ -188,7 +225,9 @@ export async function processPaymentNotificationJobs(
       summary: {
         activeLoansScanned: result.activeLoansScanned,
         remindersSent: result.remindersSent,
+        dueTodaySent: result.dueTodaySent,
         missedNotificationsSent: result.missedNotificationsSent,
+        opsReconReminders: result.opsReconReminders,
         skippedFullyPaid: result.skippedFullyPaid,
         errorCount: result.errors.length,
       },
@@ -199,6 +238,7 @@ export async function processPaymentNotificationJobs(
       referenceDate: ref,
       durationMs: result.durationMs,
       remindersSent: result.remindersSent,
+      dueTodaySent: result.dueTodaySent,
       missedNotificationsSent: result.missedNotificationsSent,
       errorCount: result.errors.length,
     });
@@ -216,6 +256,11 @@ export async function processPaymentNotificationJobs(
       success: false,
       correlationId,
       error: message,
+    });
+    void emitSchedulerFailureAlert({
+      kind: 'payment_notifications',
+      error: message,
+      referenceDate: ref,
     });
     logger.error('scheduler.payment_notifications.failed', {
       correlationId,

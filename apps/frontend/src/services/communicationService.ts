@@ -1,4 +1,7 @@
 import type {
+  AudiencePreviewResult,
+  AudienceSegment,
+  AudienceType,
   CommunicationMessage,
   CommunicationTemplate,
   CreateCommunicationMessageInput,
@@ -44,6 +47,31 @@ const communicationService: ICommunicationService = {
 
   sendMessage(messageId: string): Promise<CommunicationMessage> {
     return apiClient.post<CommunicationMessage>(`/communications/messages/${messageId}/send`, {});
+  },
+
+  previewAudience(input: {
+    audienceType: AudienceType;
+    audienceFilter?: Record<string, unknown>;
+    sampleLimit?: number;
+  }): Promise<AudiencePreviewResult> {
+    return apiClient.post<AudiencePreviewResult>('/communications/audience/preview', input);
+  },
+
+  listAudienceSegments(): Promise<AudienceSegment[]> {
+    return apiClient.get<AudienceSegment[]>('/communications/audience-segments');
+  },
+
+  createAudienceSegment(input: {
+    name: string;
+    description?: string;
+    audienceType: AudienceType;
+    audienceFilter?: Record<string, unknown>;
+  }): Promise<AudienceSegment> {
+    return apiClient.post<AudienceSegment>('/communications/audience-segments', input);
+  },
+
+  deleteAudienceSegment(segmentId: string): Promise<void> {
+    return apiClient.delete(`/communications/audience-segments/${segmentId}`);
   },
 
   getAnalytics(): Promise<DeliveryAnalytics> {

@@ -7,9 +7,38 @@ export type AudienceType =
   | 'ALL_OFFICERS'
   | 'ALL_APPROVERS'
   | 'ALL_ADMINS'
+  | 'ALL_AUDITORS'
+  | 'ALL_GROUP_LEADERS'
   | 'SPECIFIC_USER'
+  | 'SPECIFIC_BORROWERS'
   | 'SPECIFIC_GROUP'
+  | 'SPECIFIC_GROUPS'
   | 'CUSTOM';
+
+export interface AudienceRecipientPreview {
+  userId?: string;
+  borrowerId?: string;
+  email?: string;
+  phone?: string;
+  displayName: string;
+}
+
+export interface AudiencePreviewResult {
+  total: number;
+  sample: AudienceRecipientPreview[];
+  channelsHint: Array<'EMAIL' | 'SMS' | 'IN_APP' | 'PUSH'>;
+}
+
+export interface AudienceSegment {
+  id: string;
+  name: string;
+  description?: string;
+  audienceType: AudienceType;
+  audienceFilter?: Record<string, unknown>;
+  createdByUserId: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface CommunicationTemplate {
   id: string;
