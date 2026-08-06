@@ -3,7 +3,15 @@
 import { forwardRef, type InputHTMLAttributes } from 'react';
 import { cn } from '@/utils/cn';
 
-export type InputType = 'text' | 'number' | 'date' | 'tel' | 'search' | 'email' | 'password';
+export type InputType =
+  | 'text'
+  | 'number'
+  | 'date'
+  | 'datetime-local'
+  | 'tel'
+  | 'search'
+  | 'email'
+  | 'password';
 
 export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   type?: InputType;

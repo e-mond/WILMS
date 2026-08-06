@@ -67,6 +67,13 @@ export interface ShellNavItem {
 
 export const SUPER_ADMIN_NAV: ShellNavItem[] = [
   { href: '/dashboard', label: 'Dashboard', exact: true, icon: 'dashboard', group: 'overview' },
+  {
+    href: '/executive',
+    label: 'Executive',
+    exact: true,
+    icon: 'dashboard',
+    group: 'overview',
+  },
   { href: '/borrowers', label: 'Borrowers', icon: 'borrowers', group: 'people' },
   { href: '/loan-pools', label: 'Loan Pools', icon: 'loans', group: 'financial' },
   {
@@ -101,6 +108,13 @@ export const SUPER_ADMIN_NAV: ShellNavItem[] = [
     group: 'system',
   },
   { href: '/reports', label: 'Reports', exact: true, icon: 'reports', group: 'reports' },
+  {
+    href: '/exports',
+    label: 'Exports',
+    exact: true,
+    icon: 'reports',
+    group: 'reports',
+  },
   { href: '/settings', label: 'Settings', exact: true, icon: 'settings', group: 'administration' },
 ];
 

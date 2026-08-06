@@ -2,19 +2,19 @@
 
 | Field | Value |
 |-------|-------|
-| **Current release** | `v1.6.2` |
+| **Current release** | `v1.7.0` |
 | **In progress** | — |
-| **Release type** | Enterprise readiness & workflow completion |
-| **Previous release** | `v1.6.1` |
+| **Release type** | Enterprise finance, reporting & operational intelligence |
+| **Previous release** | `v1.6.2` |
 | **Date** | August 2026 |
 
 ## Package versions
 
 | Package | Version |
 |---------|---------|
-| `wilms` (root) | `1.6.2` |
-| `@wilms/frontend` | `1.6.2` |
-| `@wilms/domain` | `1.6.2` |
-| `@wilms/api` | `1.6.2` |
+| `wilms` (root) | `1.7.0` |
+| `@wilms/frontend` | `1.7.0` |
+| `@wilms/domain` | `1.7.0` |
+| `@wilms/api` | `1.7.0` |
 
-See `docs/v1.6.2/` for the enterprise readiness report pack.
+See `docs/v1.7/` for the release pack.
