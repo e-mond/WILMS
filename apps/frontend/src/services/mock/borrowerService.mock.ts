@@ -382,6 +382,14 @@ const borrowerServiceMock: IBorrowerService = {
     return registryEntryToSummary(updated);
   },
 
+  async relocateBorrower() {
+    throw new ApiError(
+      'Borrower relocate is not available in mock mode.',
+      API_ERROR_CODE.VALIDATION,
+      501,
+    );
+  },
+
   async registerBorrower(payload: RegisterBorrowerPayload) {
     await simulateDelay();
     assertRegistrationAllowed(payload);

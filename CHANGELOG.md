@@ -2,6 +2,25 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.6.2] — Enterprise Readiness & Workflow Completion
+
+**Date:** August 2026  
+**Branch:** `feature/v1.6.2-enterprise-readiness`
+
+### Added
+
+- Organization holidays Settings UI and enterprise workflow APIs (relocation, group dissolve, member replace, emergency schedule change)
+- Force logout and login history for Super Admin user management
+- Payment overdue ladder notifications (1 / 3 / 7 days)
+- Write-off and aging analysis reports
+- Migration `0034_enterprise_readiness_workflows`
+- Docs under `docs/v1.6.2/`
+
+### Notes
+
+- No financial formula changes; write-offs continue through adjustments maker-checker
+- Auth remains custom HMAC sessions (not Auth.js)
+
 ## [1.6.1] — Product Excellence UI & Workflow Polish
 
 **Date:** August 2026  

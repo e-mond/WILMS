@@ -16,6 +16,7 @@ import {
   emitPaymentDueSoonNotification,
   emitPaymentDueTodayNotification,
   emitPaymentMissedNotification,
+  emitPaymentOverdueLadderNotification,
   loanInstallmentPesewas,
   resolveCollectorUserIdForBorrower,
 } from '../../infrastructure/notifications/payment-notifications.js';
@@ -36,6 +37,7 @@ export interface PaymentSchedulerResult {
   remindersSent: number;
   dueTodaySent: number;
   missedNotificationsSent: number;
+  overdueLadderSent: number;
   skippedFullyPaid: number;
   skippedInactiveSchedule: number;
   opsReconReminders: number;
@@ -60,6 +62,7 @@ export async function processPaymentNotificationJobs(
     remindersSent: 0,
     dueTodaySent: 0,
     missedNotificationsSent: 0,
+    overdueLadderSent: 0,
     skippedFullyPaid: 0,
     skippedInactiveSchedule: 0,
     opsReconReminders: 0,
@@ -184,6 +187,31 @@ export async function processPaymentNotificationJobs(
           totalMissedEvents += 1;
           if (borrower.groupId) {
             missedGroupIds.add(borrower.groupId);
+          }
+        }
+
+        for (const week of scheduleWeeks) {
+          if (week.status !== 'MISSED' && !(week.status === 'PENDING' && week.dueDate < ref)) {
+            continue;
+          }
+          const daysPast = Math.floor(
+            (Date.parse(`${ref}T00:00:00Z`) - Date.parse(`${week.dueDate}T00:00:00Z`)) / 86400000,
+          );
+          if (daysPast === 1 || daysPast === 3 || daysPast === 7) {
+            await emitPaymentOverdueLadderNotification({
+              borrowerId: borrower.id,
+              borrowerName: borrower.fullName,
+              borrowerPhone: borrower.phone,
+              borrowerEmail: borrower.profile?.email,
+              loanId: loanRow.id,
+              loanDisplayId,
+              dueDate: week.dueDate,
+              amountPesewas: weeklyPesewas,
+              daysOverdue: daysPast,
+              collectorUserId,
+              correlationId,
+            });
+            result.overdueLadderSent += 1;
           }
         }
       } catch (error) {

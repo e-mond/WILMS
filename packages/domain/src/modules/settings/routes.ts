@@ -272,6 +272,31 @@ settingsRouter.post(
 );
 
 settingsRouter.post(
+  '/settings/users/:id/force-logout',
+  requirePermission(PERMISSION.MANAGE_USERS),
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(res, await settingsService.forceLogoutUser(req.params.id!));
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+settingsRouter.get(
+  '/settings/users/:id/login-history',
+  requirePermission(PERMISSION.MANAGE_USERS),
+  asyncHandler(async (req, res) => {
+    try {
+      const { listLoginEvents } = await import('../enterprise/service.js');
+      sendData(res, await listLoginEvents(req.params.id!, 50));
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+settingsRouter.post(
   '/settings/users/:id/delete',
   requirePermission(PERMISSION.MANAGE_USERS),
   asyncHandler(async (req, res) => {

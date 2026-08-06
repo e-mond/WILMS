@@ -128,7 +128,20 @@ function logLoginAttempt(params: {
   userId?: string;
   displayName?: string;
   ip?: string;
+  userAgent?: string;
+  failureReason?: string;
 }): void {
+  void import('../enterprise/service.js').then(({ recordLoginEvent }) =>
+    recordLoginEvent({
+      userId: params.userId ?? null,
+      email: params.email,
+      success: params.success,
+      failureReason: params.failureReason,
+      ipAddress: params.ip,
+      userAgent: params.userAgent,
+    }),
+  );
+
   if (!params.userId) {
     return;
   }

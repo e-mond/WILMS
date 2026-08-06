@@ -449,6 +449,22 @@ const groupServiceMock: IGroupService = {
     invalidateGroup(input.groupId);
     return this.getGroup(input.groupId);
   },
+
+  async dissolveGroup() {
+    throw new ApiError(
+      'Group dissolve is not available in mock mode.',
+      API_ERROR_CODE.VALIDATION,
+      501,
+    );
+  },
+
+  async replaceMember() {
+    throw new ApiError(
+      'Group member replacement is not available in mock mode.',
+      API_ERROR_CODE.VALIDATION,
+      501,
+    );
+  },
 };
 
 export function resetGroupDetailCache(): void {

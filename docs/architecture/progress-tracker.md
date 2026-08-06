@@ -21,7 +21,9 @@ Units marked ✅ implement core behaviour and unit tests. **Global DoD is not me
 | Phase 2 — Context Documentation | ✅ Complete |
 | Phase 3 — Frontend Architecture | ✅ Complete |
 | Phase 4 — Frontend Development | 🔄 In Progress (~70% core BRD flows) |
-| **v1.6.1 Product Excellence UI** | ✅ Complete — branch `feature/v1.6.1-product-excellence-ui`; reports in `docs/v1.6.1/` |
+| **v1.6.1 Product Excellence UI** | ✅ Complete — PR #160 |
+| **v1.6.2 Enterprise Readiness** | ✅ Complete — branch `feature/v1.6.2-enterprise-readiness`; reports in `docs/v1.6.2/` |
+| **v1.6.2 Enterprise Readiness** | ✅ Complete — branch `feature/v1.6.2-enterprise-readiness`; reports in `docs/v1.6.2/` |
 
 ---
 

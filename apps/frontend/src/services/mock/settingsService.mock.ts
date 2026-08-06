@@ -208,6 +208,16 @@ const settingsServiceMock: ISettingsService = {
     return activateSettingsUser(id);
   },
 
+  async forceLogoutUser(id) {
+    await simulateDelay();
+    return { ok: true as const, userId: id };
+  },
+
+  async getUserLoginHistory() {
+    await simulateDelay();
+    return [];
+  },
+
   async deleteUser(id) {
     await simulateDelay();
     deleteSettingsUser(id);

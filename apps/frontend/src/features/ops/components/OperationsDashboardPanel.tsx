@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, useTransition } from 'react';
 import { Button } from '@/components/ui/Button';
-import { opsService, type OpsStatusReport, type OpsSurfaceState } from '@/services/opsService';
+import { opsService, type OpsStatusReport, type OpsSurfaceState, type OpsWorkerLastRun } from '@/services/opsService';
 import { ApiError } from '@/types/api';
 import { cn } from '@/utils/cn';
 
@@ -45,6 +45,59 @@ function formatPesewas(pesewas: number): string {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
+}
+
+function WorkerLastRunCard({
+  title,
+  run,
+}: {
+  title: string;
+  run: OpsWorkerLastRun | null;
+}) {
+  if (!run) {
+    return (
+      <div className="rounded-sm border border-border bg-card p-wilms-3">
+        <p className="font-medium text-text-primary">{title}</p>
+        <p className="mt-wilms-1 text-small text-text-muted">No run recorded yet.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-sm border border-border bg-card p-wilms-3">
+      <div className="flex items-start justify-between gap-wilms-2">
+        <p className="font-medium text-text-primary">{title}</p>
+        <span
+          className={cn(
+            'inline-flex rounded border px-wilms-2 py-0.5 text-xs font-semibold uppercase tracking-wide',
+            run.success
+              ? 'border-success/30 bg-success/10 text-success'
+              : 'border-danger/30 bg-danger/10 text-danger',
+          )}
+        >
+          {run.success ? 'Success' : 'Failed'}
+        </span>
+      </div>
+      <dl className="mt-wilms-2 space-y-wilms-1 text-small">
+        <div className="flex justify-between gap-wilms-2">
+          <dt className="text-text-muted">Finished</dt>
+          <dd className="font-medium text-text-primary">
+            {new Date(run.finishedAt).toLocaleString()}
+          </dd>
+        </div>
+        <div className="flex justify-between gap-wilms-2">
+          <dt className="text-text-muted">Duration</dt>
+          <dd className="font-medium text-text-primary">{run.durationMs} ms</dd>
+        </div>
+        {run.error ? (
+          <div>
+            <dt className="text-text-muted">Error</dt>
+            <dd className="mt-wilms-1 text-danger">{run.error}</dd>
+          </div>
+        ) : null}
+      </dl>
+    </div>
+  );
 }
 
 export function OperationsDashboardPanel() {
@@ -182,6 +235,18 @@ export function OperationsDashboardPanel() {
                 <dd className="font-medium text-text-primary">{report.workers.scheduler}</dd>
               </div>
             </dl>
+            {report.workers.lastRuns ? (
+              <div className="mt-wilms-3 grid gap-wilms-3 sm:grid-cols-2">
+                <WorkerLastRunCard
+                  title="Payment notifications"
+                  run={report.workers.lastRuns.paymentNotifications}
+                />
+                <WorkerLastRunCard
+                  title="Communications"
+                  run={report.workers.lastRuns.communications}
+                />
+              </div>
+            ) : null}
           </section>
 
           <section aria-labelledby="ops-financial-heading" className="space-y-wilms-2">

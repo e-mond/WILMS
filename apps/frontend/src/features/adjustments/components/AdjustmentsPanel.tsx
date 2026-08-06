@@ -15,6 +15,7 @@ import {
   AdjustmentReviewModal,
   type AdjustmentReviewAction,
 } from '@/features/adjustments/components/AdjustmentReviewModal';
+import { WriteOffRequestModal } from '@/features/adjustments/components/WriteOffRequestModal';
 import { useAdjustmentActions } from '@/features/adjustments/hooks/useAdjustmentActions';
 import { useAdjustments } from '@/features/adjustments/hooks/useAdjustments';
 import type { AdjustmentRequest } from '@/types/adjustment';
@@ -25,6 +26,7 @@ export function AdjustmentsPanel() {
   const { approveMutation, rejectMutation, isSubmitting } = useAdjustmentActions();
   const [selectedRequest, setSelectedRequest] = useState<AdjustmentRequest | null>(null);
   const [reviewAction, setReviewAction] = useState<AdjustmentReviewAction | null>(null);
+  const [writeOffOpen, setWriteOffOpen] = useState(false);
 
   const openReview = (request: AdjustmentRequest, action: AdjustmentReviewAction) => {
     setSelectedRequest(request);
@@ -67,6 +69,14 @@ export function AdjustmentsPanel() {
 
   return (
     <div className="space-y-wilms-4">
+      <div className="flex justify-end">
+        <PermissionGate permission={PERMISSION.ACCESS_ADMIN_PORTAL}>
+          <Button type="button" variant="secondary" size="sm" onClick={() => setWriteOffOpen(true)}>
+            Request write-off
+          </Button>
+        </PermissionGate>
+      </div>
+
       <ExecutiveKpiGrid>
         <KpiCard
           variant="executive"
@@ -146,6 +156,7 @@ export function AdjustmentsPanel() {
         onClose={closeReview}
         onConfirm={handleConfirm}
       />
+      <WriteOffRequestModal isOpen={writeOffOpen} onClose={() => setWriteOffOpen(false)} />
     </div>
   );
 }

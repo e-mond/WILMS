@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Avatar, CurrencyAmount } from '@/components/data-display';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { QueryErrorState } from '@/components/feedback/QueryErrorState';
@@ -15,6 +17,7 @@ import { formatDisplayDate } from '@/utils/format-date';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
 import { useToast } from '@/hooks/useToast';
 import { useAuthStore } from '@/state/authStore';
+import { settingsService } from '@/services';
 
 export interface SettingsUserProfileModalProps {
   userId: string | null;
@@ -26,6 +29,13 @@ export function SettingsUserProfileModal({ userId, onClose }: SettingsUserProfil
   const { disableUser } = useSettingsUserMutations();
   const toast = useToast();
   const currentUserId = useAuthStore((state) => state.user?.id);
+  const [isForcingLogout, setIsForcingLogout] = useState(false);
+
+  const loginHistoryQuery = useQuery({
+    queryKey: ['settings', 'users', userId, 'login-history'] as const,
+    queryFn: () => settingsService.getUserLoginHistory(userId!),
+    enabled: Boolean(userId),
+  });
 
   async function handleSuspendAccount() {
     if (!data) {
@@ -41,6 +51,29 @@ export function SettingsUserProfileModal({ userId, onClose }: SettingsUserProfil
       toast.error('Unable to suspend account', { message });
     }
   }
+
+  async function handleForceLogout() {
+    if (!data) {
+      return;
+    }
+
+    setIsForcingLogout(true);
+    try {
+      await settingsService.forceLogoutUser(data.id);
+      toast.success('Sessions revoked', {
+        message: 'The user will need to sign in again on all devices.',
+      });
+      await loginHistoryQuery.refetch();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Try again shortly.';
+      toast.error('Unable to force logout', { message });
+    } finally {
+      setIsForcingLogout(false);
+    }
+  }
+
+  const apiLoginHistory = loginHistoryQuery.data;
+  const profileLoginHistory = data?.loginHistory ?? [];
 
   return (
     <Modal isOpen={Boolean(userId)} onClose={onClose} title="User Profile">
@@ -213,40 +246,79 @@ export function SettingsUserProfileModal({ userId, onClose }: SettingsUserProfil
 
           <section>
             <h4 className="text-body font-semibold text-text-primary">Login history</h4>
-            <ul className="mt-wilms-2 space-y-wilms-2 text-small">
-              {(data.loginHistory ?? []).map((item) => (
-                <li key={item.id}>
-                  {item.deviceLabel} · {item.locationLabel} · {formatDisplayDate(item.occurredAt)}
-                </li>
-              ))}
-            </ul>
+            {apiLoginHistory && apiLoginHistory.length > 0 ? (
+              <ul className="mt-wilms-2 space-y-wilms-2 text-small">
+                {apiLoginHistory.map((item) => (
+                  <li key={item.id}>
+                    {item.success === false ? 'Failed' : 'Success'}
+                    {item.ipAddress ? ` · ${item.ipAddress}` : ''}
+                    {' · '}
+                    {formatDisplayDate(item.createdAt)}
+                    {item.failureReason ? ` · ${item.failureReason}` : ''}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <ul className="mt-wilms-2 space-y-wilms-2 text-small">
+                {profileLoginHistory.map((item) => (
+                  <li key={item.id}>
+                    {item.deviceLabel} · {item.locationLabel} · {formatDisplayDate(item.occurredAt)}
+                  </li>
+                ))}
+              </ul>
+            )}
           </section>
 
           <section>
             <h4 className="text-body font-semibold text-text-primary">Security actions</h4>
             <div className="mt-wilms-3 flex flex-wrap gap-wilms-2">
               <PermissionGate permission={PERMISSION.RESET_PASSWORD}>
-                <Button type="button" variant="secondary" size="sm" disabled title="Password reset is managed by your identity provider">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  disabled
+                  title="Password reset is managed by your identity provider"
+                >
                   Reset password
                 </Button>
               </PermissionGate>
               <PermissionGate permission={PERMISSION.RESET_PIN}>
-                <Button type="button" variant="secondary" size="sm" disabled title="PIN reset is available on collector devices">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  disabled
+                  title="PIN reset is available on collector devices"
+                >
                   Reset PIN
                 </Button>
               </PermissionGate>
               {data.id !== currentUserId ? (
-                <PermissionGate permission={PERMISSION.SUSPEND_USERS}>
-                  <Button
-                    type="button"
-                    variant="danger"
-                    size="sm"
-                    disabled={disableUser.isPending || data.status === 'SUSPENDED'}
-                    onClick={() => void handleSuspendAccount()}
-                  >
-                    Suspend account
-                  </Button>
-                </PermissionGate>
+                <>
+                  <PermissionGate permission={PERMISSION.MANAGE_USERS}>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      disabled={isForcingLogout}
+                      onClick={() => void handleForceLogout()}
+                    >
+                      {isForcingLogout ? 'Revoking…' : 'Force logout'}
+                    </Button>
+                  </PermissionGate>
+                  <PermissionGate permission={PERMISSION.SUSPEND_USERS}>
+                    <Button
+                      type="button"
+                      variant="danger"
+                      size="sm"
+                      disabled={disableUser.isPending || data.status === 'SUSPENDED'}
+                      onClick={() => void handleSuspendAccount()}
+                    >
+                      Suspend account
+                    </Button>
+                  </PermissionGate>
+                </>
               ) : null}
             </div>
           </section>

@@ -406,6 +406,60 @@ export async function emitPaymentDueTodayNotification(input: {
   recordNotificationMetric('payment_due_today');
 }
 
+/** Escalating overdue reminders at 1 / 3 / 7 days past due. */
+export async function emitPaymentOverdueLadderNotification(input: {
+  borrowerId: string;
+  borrowerName: string;
+  borrowerPhone?: string;
+  borrowerEmail?: string;
+  loanId: string;
+  loanDisplayId: string;
+  dueDate: string;
+  amountPesewas: number;
+  daysOverdue: 1 | 3 | 7;
+  collectorUserId?: string;
+  correlationId?: string;
+}): Promise<void> {
+  const dedupeKey = `payment-overdue-${input.daysOverdue}d:${input.loanId}:${input.dueDate}`;
+  const settings = await getSettings();
+  const amountGhs = formatGhsAmount(input.amountPesewas);
+  const title = `${input.daysOverdue}-day overdue payment`;
+  const body = `WILMS: Hi ${input.borrowerName}, your payment of GHS ${amountGhs} for ${input.loanDisplayId} is ${input.daysOverdue} day(s) overdue (due ${input.dueDate}).`;
+
+  if (input.borrowerPhone) {
+    await dispatchBorrowerSms({
+      dedupeKey,
+      notificationType: 'PAYMENT_OVERDUE',
+      event: 'MISSED_PAYMENT',
+      to: input.borrowerPhone,
+      body: body.slice(0, 160),
+      enabled: settings.smsNotificationsEnabled && settings.missedPaymentSmsEnabled,
+      borrowerId: input.borrowerId,
+      loanId: input.loanId,
+      correlationId: input.correlationId,
+    });
+  }
+
+  const collectorId =
+    input.collectorUserId ?? (await resolveCollectorUserIdForBorrower(input.borrowerId));
+  if (collectorId) {
+    await dispatchStaffInApp({
+      dedupeKey,
+      notificationType: 'PAYMENT_OVERDUE',
+      userId: collectorId,
+      event: 'MISSED_PAYMENT',
+      title,
+      body: `${input.borrowerName} is ${input.daysOverdue} day(s) overdue (GHS ${amountGhs}).`,
+      href: `/collector/payment/${input.borrowerId}`,
+      borrowerId: input.borrowerId,
+      loanId: input.loanId,
+      correlationId: input.correlationId,
+    });
+  }
+
+  recordNotificationMetric('payment_missed');
+}
+
 /** Notify borrower, assigned collector, and admins when a payment is missed. */
 export async function emitPaymentMissedNotification(input: {
   borrowerId: string;

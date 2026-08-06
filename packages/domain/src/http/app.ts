@@ -38,6 +38,7 @@ import { trackingRouter } from '../modules/tracking/routes.js';
 import { webhooksRouter } from '../modules/webhooks/routes.js';
 import { organizationHolidaysRouter } from '../modules/organization-holidays/routes.js';
 import { opsRouter } from '../modules/ops/routes.js';
+import { enterpriseRouter } from '../modules/enterprise/routes.js';
 import { publicSchedulerRouter } from '../modules/scheduler/public-routes.js';
 import { requestIdMiddleware } from '../middleware/request-id.js';
 import { createApiRateLimiter } from '../middleware/api-rate-limit.js';
@@ -81,6 +82,7 @@ function mountBusinessRoutes(app: express.Application, basePath = '') {
   app.use(`${prefix}`, uploadsRouter);
   app.use(`${prefix}`, organizationHolidaysRouter);
   app.use(`${prefix}`, opsRouter);
+  app.use(`${prefix}`, enterpriseRouter);
 }
 
 export function createApp() {
