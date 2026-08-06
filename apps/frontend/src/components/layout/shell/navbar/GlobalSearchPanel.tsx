@@ -34,6 +34,37 @@ const ENTITY_LABELS: Record<GlobalSearchEntityType, string> = {
   [GLOBAL_SEARCH_ENTITY.RISK_FLAG]: 'Risk Flags',
 };
 
+const RECENT_SEARCH_KEY = 'wilms.global-search.recent';
+const RECENT_SEARCH_LIMIT = 6;
+
+type RecentSearch = { query: string; at: number };
+
+function readRecentSearches(): RecentSearch[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = window.localStorage.getItem(RECENT_SEARCH_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as RecentSearch[];
+    return Array.isArray(parsed) ? parsed.slice(0, RECENT_SEARCH_LIMIT) : [];
+  } catch {
+    return [];
+  }
+}
+
+function pushRecentSearch(query: string): void {
+  const trimmed = query.trim();
+  if (trimmed.length < 2) return;
+  const next = [
+    { query: trimmed, at: Date.now() },
+    ...readRecentSearches().filter((entry) => entry.query.toLowerCase() !== trimmed.toLowerCase()),
+  ].slice(0, RECENT_SEARCH_LIMIT);
+  try {
+    window.localStorage.setItem(RECENT_SEARCH_KEY, JSON.stringify(next));
+  } catch {
+    /* ignore quota */
+  }
+}
+
 type CommandItem = {
   id: string;
   label: string;
@@ -66,6 +97,7 @@ export function GlobalSearchPanel() {
   const closeGlobalSearch = useUiStore((state) => state.closeGlobalSearch);
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
+  const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([]);
   const activeIndexRef = useRef(0);
   const commandItemsRef = useRef<CommandItem[]>([]);
 
@@ -150,10 +182,17 @@ export function GlobalSearchPanel() {
     if (!target) {
       return;
     }
+    pushRecentSearch(query);
+    setRecentSearches(readRecentSearches());
     closeGlobalSearch();
     router.push(target.href);
-  }, [closeGlobalSearch, router]);
+  }, [closeGlobalSearch, query, router]);
 
+  useEffect(() => {
+    if (isOpen) {
+      setRecentSearches(readRecentSearches());
+    }
+  }, [isOpen]);
   const handleCommandKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
       const items = commandItemsRef.current;
@@ -223,11 +262,11 @@ export function GlobalSearchPanel() {
       isOpen={isOpen}
       onClose={closeGlobalSearch}
       title="Search WILMS"
-      className="max-w-2xl"
+      className="max-w-3xl"
     >
       <div
         data-global-search-panel="true"
-        className="space-y-wilms-4"
+        className="space-y-wilms-4 motion-enter-fade"
         onKeyDown={handleCommandKeyDown}
       >
         <label className="block" htmlFor={`${titleId}-search`}>
@@ -240,6 +279,7 @@ export function GlobalSearchPanel() {
             autoComplete="off"
             onChange={(event) => setQuery(event.target.value)}
             onKeyDown={handleCommandKeyDown}
+            className="h-12 text-body"
           />
         </label>
         <p className="text-small text-text-muted" id={`${titleId}-hint`}>
@@ -249,10 +289,31 @@ export function GlobalSearchPanel() {
             : null}
         </p>
 
+        {query.trim().length === 0 && recentSearches.length > 0 ? (
+          <section aria-label="Recent searches">
+            <h3 className="mb-1.5 px-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-text-tertiary">
+              Recent
+            </h3>
+            <ul className="flex flex-wrap gap-wilms-2">
+              {recentSearches.map((entry) => (
+                <li key={`${entry.query}-${entry.at}`}>
+                  <button
+                    type="button"
+                    className="rounded-full border border-border bg-background px-wilms-3 py-wilms-1 text-small text-text-muted transition-colors hover:border-brand-primary/40 hover:text-text-primary"
+                    onClick={() => setQuery(entry.query)}
+                  >
+                    {entry.query}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
         <div
           aria-live="polite"
           aria-labelledby={`${titleId}-hint`}
-          className="max-h-[min(26rem,55vh)] space-y-wilms-3 overflow-auto"
+          className="max-h-[min(32rem,60vh)] space-y-wilms-3 overflow-auto"
           role="listbox"
           aria-activedescendant={
             commandItems[activeIndex] ? `search-option-${commandItems[activeIndex]!.id}` : undefined
@@ -306,6 +367,8 @@ export function GlobalSearchPanel() {
                         )}
                         onMouseEnter={() => setActiveIndex(index)}
                         onClick={() => {
+                          pushRecentSearch(query);
+                          setRecentSearches(readRecentSearches());
                           closeGlobalSearch();
                           router.push(item.href);
                         }}

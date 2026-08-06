@@ -20,19 +20,41 @@ import { NOTIFICATION_INBOX_SEVERITY } from '@/types/notification';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
 import { cn } from '@/utils/cn';
 
-type NotificationFilter = 'all' | 'unread' | 'critical' | 'payments' | 'loans' | 'security';
+type NotificationFilter =
+  | 'all'
+  | 'unread'
+  | 'critical'
+  | 'payments'
+  | 'loans'
+  | 'reconciliations'
+  | 'messages'
+  | 'system'
+  | 'security'
+  | 'reminders';
 
 const PAGE_SIZE = 20;
 
 function matchesCategory(event: string, filter: NotificationFilter): boolean {
   if (filter === 'payments') {
-    return /PAYMENT|COLLECTION|MISSED_PAYMENT/i.test(event);
+    return /PAYMENT|COLLECTION|MISSED_PAYMENT|ADMIN_FEE/i.test(event);
   }
   if (filter === 'loans') {
     return /LOAN|DISBURSE|DEFAULT/i.test(event);
   }
+  if (filter === 'reconciliations') {
+    return /RECONCIL/i.test(event);
+  }
+  if (filter === 'messages') {
+    return /COMMUNICATION|MESSAGE|ANNOUNCE/i.test(event);
+  }
+  if (filter === 'system') {
+    return /SCHEDULER|HEALTH|SYSTEM|FAILED_NOTIFICATION|BACKUP/i.test(event);
+  }
   if (filter === 'security') {
     return /PASSWORD|LOGIN|INVITATION|ACCOUNT|ROLE/i.test(event);
+  }
+  if (filter === 'reminders') {
+    return /REMINDER|DUE|QUIET/i.test(event);
   }
   return true;
 }
@@ -133,9 +155,9 @@ export function NotificationInboxPanel() {
     <Drawer
       isOpen={isOpen}
       onClose={closeNotificationPanel}
-      title="Notifications"
+      title="Notification inbox"
       side="right"
-      className="ml-auto w-96 max-w-[90vw] shadow-lg"
+      className="ml-auto w-[26rem] max-w-[94vw] shadow-lg"
     >
       {/* Fixed header: title row + meta — stays visible while list scrolls */}
       <div className="flex flex-col">
@@ -152,13 +174,21 @@ export function NotificationInboxPanel() {
               }}
               aria-label="Search notifications"
             />
-            <div className="flex flex-wrap gap-wilms-2" role="tablist" aria-label="Notification filters">
+            <div
+              className="sticky top-0 z-[1] -mx-1 mb-wilms-2 flex flex-wrap gap-wilms-2 bg-card/95 px-1 py-wilms-2 backdrop-blur-sm"
+              role="tablist"
+              aria-label="Notification filters"
+            >
               {([
                 ['all', 'All', Bell],
                 ['unread', 'Unread', Bell],
                 ['critical', 'Critical', Shield],
                 ['payments', 'Payments', CreditCard],
                 ['loans', 'Loans', CreditCard],
+                ['reconciliations', 'Recon', Shield],
+                ['messages', 'Messages', Bell],
+                ['reminders', 'Reminders', Bell],
+                ['system', 'System', Shield],
                 ['security', 'Security', Shield],
               ] as const).map(([value, label, Icon]) => (
                 <button
@@ -182,19 +212,33 @@ export function NotificationInboxPanel() {
                 </button>
               ))}
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-wilms-2">
             <span className="text-small text-text-muted">
               {hasUnread ? `${unreadItems.length} unread` : 'All caught up'}
             </span>
-            {hasUnread && (
-              <button
-                type="button"
-                className="text-small font-medium text-brand-primary hover:text-brand-primary/80 transition-colors"
-                onClick={() => void markAllRead.mutateAsync()}
-              >
-                Mark all read
-              </button>
-            )}
+            <div className="flex items-center gap-wilms-3">
+              {items.some((item) => item.isRead) ? (
+                <button
+                  type="button"
+                  className="text-small font-medium text-text-muted hover:text-danger transition-colors"
+                  onClick={() => {
+                    const readIds = items.filter((item) => item.isRead).map((item) => item.id);
+                    void Promise.all(readIds.map((id) => deleteNotification.mutateAsync(id)));
+                  }}
+                >
+                  Clear read
+                </button>
+              ) : null}
+              {hasUnread ? (
+                <button
+                  type="button"
+                  className="text-small font-medium text-brand-primary hover:text-brand-primary/80 transition-colors"
+                  onClick={() => void markAllRead.mutateAsync()}
+                >
+                  Mark all read
+                </button>
+              ) : null}
+            </div>
           </div>
           </div>
         )}

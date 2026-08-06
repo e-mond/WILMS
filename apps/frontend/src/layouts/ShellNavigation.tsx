@@ -1,7 +1,8 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { ChevronDown } from 'lucide-react';
 import { ShellNavLink, isShellNavLinkActive, type ShellNavVariant } from '@/layouts/ShellNavLink';
 import { groupShellNavItems, type ShellNavItem } from '@/constants/navigation';
 import { cn } from '@/utils/cn';
@@ -27,6 +28,28 @@ type ShellNavigationLinksProps = Omit<
 > & {
   items: ShellNavItem[];
 };
+
+const NAV_GROUP_STATE_KEY = 'wilms.shell.nav-groups';
+
+function readCollapsedGroups(): Record<string, boolean> {
+  if (typeof window === 'undefined') return {};
+  try {
+    const raw = window.localStorage.getItem(NAV_GROUP_STATE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as Record<string, boolean>;
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeCollapsedGroups(state: Record<string, boolean>): void {
+  try {
+    window.localStorage.setItem(NAV_GROUP_STATE_KEY, JSON.stringify(state));
+  } catch {
+    /* ignore */
+  }
+}
 
 function ShellNavigationLinks({
   items,
@@ -73,7 +96,17 @@ function ShellNavigationLinks({
   );
 }
 
-function GroupLabel({ label, collapsed }: { label: string; collapsed: boolean }) {
+function GroupLabel({
+  label,
+  collapsed,
+  isOpen,
+  onToggle,
+}: {
+  label: string;
+  collapsed: boolean;
+  isOpen: boolean;
+  onToggle?: () => void;
+}) {
   if (collapsed) {
     return (
       <div
@@ -84,13 +117,35 @@ function GroupLabel({ label, collapsed }: { label: string; collapsed: boolean })
     );
   }
 
+  if (!onToggle) {
+    return (
+      <p
+        aria-hidden="true"
+        className="px-3.5 pb-1 pt-3 text-[10.5px] font-medium uppercase tracking-[0.09em] text-text-tertiary first:pt-1"
+      >
+        {label}
+      </p>
+    );
+  }
+
   return (
-    <p
-      aria-hidden="true"
-      className="px-3.5 pb-1 pt-3 text-[10.5px] font-medium uppercase tracking-[0.09em] text-text-tertiary first:pt-1"
+    <button
+      type="button"
+      className="flex w-full items-center justify-between px-3.5 pb-1 pt-3 text-left first:pt-1"
+      onClick={onToggle}
+      aria-expanded={isOpen}
     >
-      {label}
-    </p>
+      <span className="text-[10.5px] font-medium uppercase tracking-[0.09em] text-text-tertiary">
+        {label}
+      </span>
+      <ChevronDown
+        className={cn(
+          'h-3.5 w-3.5 text-text-tertiary motion-safe:transition-transform motion-safe:duration-200',
+          !isOpen && '-rotate-90',
+        )}
+        aria-hidden="true"
+      />
+    </button>
   );
 }
 
@@ -112,6 +167,11 @@ export function ShellNavigation({
     isVertical && useItemGroups
       ? groupShellNavItems(items)
       : [{ groupId: 'ungrouped' as const, label: groupLabel ?? null, items }];
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    setCollapsedGroups(readCollapsedGroups());
+  }, []);
 
   return (
     <nav
@@ -141,22 +201,45 @@ export function ShellNavigation({
           </div>
         }
       >
-        {groups.map((group) => (
-          <div key={group.groupId} className={isVertical ? 'w-full' : undefined}>
-            {group.label && isVertical ? (
-              <GroupLabel label={group.label} collapsed={collapsed} />
-            ) : null}
-            <ShellNavigationLinks
-              items={group.items}
-              orientation={orientation}
-              linkClassName={linkClassName}
-              variant={variant}
-              collapsed={collapsed}
-              showSeparators={showSeparators}
-              animated={animated}
-            />
-          </div>
-        ))}
+        {groups.map((group) => {
+          const isGroupOpen = !collapsedGroups[group.groupId];
+          return (
+            <div key={group.groupId} className={isVertical ? 'w-full' : undefined}>
+              {group.label && isVertical ? (
+                <GroupLabel
+                  label={group.label}
+                  collapsed={collapsed}
+                  isOpen={isGroupOpen}
+                  onToggle={
+                    collapsed
+                      ? undefined
+                      : () => {
+                          setCollapsedGroups((current) => {
+                            const next = {
+                              ...current,
+                              [group.groupId]: !current[group.groupId],
+                            };
+                            writeCollapsedGroups(next);
+                            return next;
+                          });
+                        }
+                  }
+                />
+              ) : null}
+              {collapsed || isGroupOpen ? (
+                <ShellNavigationLinks
+                  items={group.items}
+                  orientation={orientation}
+                  linkClassName={linkClassName}
+                  variant={variant}
+                  collapsed={collapsed}
+                  showSeparators={showSeparators}
+                  animated={animated}
+                />
+              ) : null}
+            </div>
+          );
+        })}
       </Suspense>
     </nav>
   );

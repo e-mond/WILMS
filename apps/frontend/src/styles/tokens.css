@@ -5,9 +5,18 @@
   --motion-slow: 280ms;
   --radius-control: 0.375rem;
   --radius-panel: 0.5rem;
+  --radius-card: 0.5rem;
   --shell-navbar-height: 3rem;
   --shell-sidebar-width: 15rem;
   --shell-sidebar-collapsed-width: 4rem;
+
+  /* Elevation & density (v1.6.1 product excellence) */
+  --shadow-navbar: 0 1px 0 color-mix(in srgb, var(--color-border) 80%, transparent),
+    0 8px 24px -16px rgb(0 0 0 / 0.18);
+  --shadow-card-hover: 0 10px 28px -18px rgb(0 0 0 / 0.28);
+  --density-kpi-padding: 1rem;
+  --density-table-cell-y: 0.75rem;
+  --focus-ring: 2px solid var(--color-brand-primary);
 
   --color-brand-primary: #0f6e56;
   --color-brand-primary-light: #e1f5ee;

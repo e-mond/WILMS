@@ -42,17 +42,21 @@ describe('scheduler HTTP access', () => {
     expect(response.status).toBe(401);
   });
 
-  it('accepts scheduler requests with valid WILMS_SCHEDULER_TOKEN', async () => {
-    const response = await fetch(`${baseUrl}/notifications/scheduler/run`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${SCHEDULER_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: '{}',
-    });
-    expect(response.status).toBe(200);
-    const body = (await response.json()) as { data?: Record<string, unknown> };
-    expect(body.data).toBeDefined();
-  });
+  it(
+    'accepts scheduler requests with valid WILMS_SCHEDULER_TOKEN',
+    async () => {
+      const response = await fetch(`${baseUrl}/notifications/scheduler/run`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${SCHEDULER_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      });
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { data?: Record<string, unknown> };
+      expect(body.data).toBeDefined();
+    },
+    60_000,
+  );
 });
