@@ -386,6 +386,7 @@ Each row represents one scoped, verifiable unit of work.
 
 | Date | Unit | What Broke | Cause | Fix Applied |
 |---|---|---|---|---|
+| 2026-08-06 | Prod invite / locations / expected | Accept-invitation 403; locations 500; recon Expected GH₵0; group add-member 403 | CSRF missing on invite accept; Ghana locations FS read on Vercel; stale `expected_due_pesewas` snapshot; Approver lacked add-member permission | CSRF on accept-invitation; bundled Ghana JSON imports + slug/UUID fallthrough; live expected enrichment + migration `0032_recon_expected_backfill`; Approvers can add group members |
 | — | — | — | — | — |
 
 ---

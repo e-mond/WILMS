@@ -11,6 +11,7 @@ import { isDatabaseEnabled, runInTransaction, getDb } from '../../db/client.js';
 import { financialReconciliations } from '../../db/schema/financial-reconciliations.js';
 import { users } from '../../db/schema/users.js';
 import { buildReconciliationSnapshot } from '../../domain/reconciliation/snapshot.js';
+import { calculateExpectedDuePesewas } from '../../domain/reconciliation/expected-cash.js';
 import {
   mapReconciliationRowToSummary,
   mapSnapshotToSummary,
@@ -19,6 +20,7 @@ import {
   DEFAULT_RECONCILIATION_THRESHOLD_PERCENT,
   type ReconciliationSummary,
 } from '../../domain/reconciliation/types.js';
+import { isLoanDueOnDate } from '../../domain/reconciliation/weekday.js';
 import { decimalToPesewas } from '../../domain/money.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import { createInAppNotification } from '../../infrastructure/notifications/in-app-notify.js';
@@ -85,10 +87,92 @@ async function loadReconciliationInputs(
       installmentPesewas: decimalToPesewas(week.installmentAmount),
     })),
     payments: paymentRows.map((payment) => ({
+      loanId: payment.loanId,
       amountPesewas: payment.amountPesewas,
       status: payment.status,
     })),
   };
+}
+
+/**
+ * When collectors record payments on a non-due day (holiday shift / early),
+ * include those loans' weekly installments so Expected matches daily collection.
+ */
+function paidOutsideDueExpectedPesewas(
+  loans: Array<{ id?: string; paymentDay: string; weeklyPaymentPesewas: number }>,
+  scheduleDues: Array<{ loanId: string }>,
+  reconciliationDate: string,
+  payments: Array<{ loanId: string | null; status: string }>,
+): number {
+  const scheduledLoanIds = new Set(scheduleDues.map((week) => week.loanId));
+  const alreadyExpectedLoanIds = new Set<string>(scheduledLoanIds);
+  for (const loan of loans) {
+    if (!loan.id || alreadyExpectedLoanIds.has(loan.id)) {
+      continue;
+    }
+    if (isLoanDueOnDate(loan.paymentDay, reconciliationDate)) {
+      alreadyExpectedLoanIds.add(loan.id);
+    }
+  }
+
+  const weeklyByLoanId = new Map(
+    loans
+      .filter((loan): loan is { id: string; paymentDay: string; weeklyPaymentPesewas: number } =>
+        Boolean(loan.id),
+      )
+      .map((loan) => [loan.id, loan.weeklyPaymentPesewas] as const),
+  );
+
+  let paidOutside = 0;
+  const counted = new Set<string>();
+  for (const payment of payments) {
+    if (payment.status === 'REVERSED' || !payment.loanId) {
+      continue;
+    }
+    if (alreadyExpectedLoanIds.has(payment.loanId) || counted.has(payment.loanId)) {
+      continue;
+    }
+    const weekly = weeklyByLoanId.get(payment.loanId);
+    if (!weekly) {
+      continue;
+    }
+    counted.add(payment.loanId);
+    paidOutside += weekly;
+  }
+
+  return paidOutside;
+}
+
+/**
+ * Open reconciliations may carry a stale expected snapshot (e.g. submitted
+ * before schedule-aware dues). Recompute live expected for display.
+ */
+async function withLiveExpected(summary: ReconciliationSummary): Promise<ReconciliationSummary> {
+  try {
+    const { dueLoans, scheduleDues, payments } = await loadReconciliationInputs(
+      summary.collectorId,
+      summary.date,
+    );
+    const scheduleAndPaymentDayExpected = calculateExpectedDuePesewas(
+      dueLoans,
+      summary.date,
+      scheduleDues,
+    );
+    const liveExpectedPesewas =
+      scheduleAndPaymentDayExpected +
+      paidOutsideDueExpectedPesewas(dueLoans, scheduleDues, summary.date, payments);
+    const keepSnapshotOnly = summary.status === 'APPROVED';
+
+    return {
+      ...summary,
+      liveExpectedPesewas,
+      expectedPesewas: keepSnapshotOnly
+        ? summary.expectedPesewas
+        : Math.max(summary.expectedPesewas, liveExpectedPesewas),
+    };
+  } catch {
+    return summary;
+  }
 }
 
 export async function getReconciliationSummary(
@@ -103,7 +187,7 @@ export async function getReconciliationSummary(
   );
 
   if (existing) {
-    return mapReconciliationRowToSummary(existing);
+    return withLiveExpected(mapReconciliationRowToSummary(existing));
   }
 
   const { dueLoans, payments, scheduleDues } = await loadReconciliationInputs(
@@ -129,7 +213,10 @@ export async function getReconciliationById(id: string): Promise<ReconciliationS
   requireDatabase();
 
   const row = await reconciliationRepo.findReconciliationById(id);
-  return row ? mapReconciliationRowToSummary(row) : null;
+  if (!row) {
+    return null;
+  }
+  return withLiveExpected(mapReconciliationRowToSummary(row));
 }
 
 export async function listReconciliations(
@@ -141,7 +228,8 @@ export async function listReconciliations(
     filter?.collectorId ? { collectorUserId: filter.collectorId } : undefined,
   );
 
-  return rows.map((row) => mapReconciliationRowToSummary(row));
+  const summaries = rows.map((row) => mapReconciliationRowToSummary(row));
+  return Promise.all(summaries.map((summary) => withLiveExpected(summary)));
 }
 
 export async function getReconciliationHistory(reconciliationId: string) {

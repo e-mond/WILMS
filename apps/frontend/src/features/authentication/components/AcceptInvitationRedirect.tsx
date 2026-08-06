@@ -2,6 +2,29 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { ensureCsrfToken } from '@/services/authService';
+import { csrfHeaders } from '@/lib/auth/csrf';
+
+function extractErrorMessage(payload: unknown): string | null {
+  if (!payload || typeof payload !== 'object') {
+    return null;
+  }
+
+  const record = payload as {
+    message?: unknown;
+    error?: { message?: unknown };
+  };
+
+  if (typeof record.error?.message === 'string' && record.error.message.trim()) {
+    return record.error.message;
+  }
+
+  if (typeof record.message === 'string' && record.message.trim()) {
+    return record.message;
+  }
+
+  return null;
+}
 
 export function AcceptInvitationRedirect() {
   const router = useRouter();
@@ -23,27 +46,33 @@ export function AcceptInvitationRedirect() {
       return;
     }
 
-    void fetch('/api/wilms/auth/accept-invitation', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, email: email || undefined }),
-    })
-      .then(async (response) => {
+    void (async () => {
+      try {
+        await ensureCsrfToken();
+        const response = await fetch('/api/wilms/auth/accept-invitation', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...csrfHeaders(),
+          },
+          credentials: 'include',
+          body: JSON.stringify({ token, email: email || undefined }),
+        });
+
         if (!response.ok) {
-          const payload = (await response.json().catch(() => null)) as
-            | { error?: { message?: string } }
-            | null;
+          const payload = await response.json().catch(() => null);
           setMessage(
-            payload?.error?.message ??
+            extractErrorMessage(payload) ??
               'This invitation link is invalid or has expired. Ask an administrator to resend it.',
           );
           return;
         }
+
         router.replace(`${loginUrl.pathname}${loginUrl.search}`);
-      })
-      .catch(() => {
+      } catch {
         setMessage('Unable to verify the invitation right now. Please try again shortly.');
-      });
+      }
+    })();
   }, [router, searchParams]);
 
   return (

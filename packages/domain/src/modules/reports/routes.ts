@@ -16,9 +16,11 @@ import * as paymentRepo from '../../repositories/payment.repository.js';
 import { requireAuth } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/require-permission.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
+import * as scheduleRepo from '../../repositories/loan-schedule.repository.js';
 import * as userRepo from '../../repositories/user.repository.js';
 import * as defaulterRepo from '../../repositories/defaulter.repository.js';
 import { mapLoanRowToDetail } from '../../domain/loan/mappers.js';
+import { decimalToPesewas } from '../../domain/money.js';
 import { listPortfolioEntries } from '../loans/service.js';
 import { listCollectors } from '../collectors/service.js';
 import { listGroupsResponse } from '../groups/service.js';
@@ -212,6 +214,7 @@ reportsRouter.get(
     }
 
     let loans: Parameters<typeof buildDailyCollectionReport>[0]['loans'];
+    let scheduleDues: Parameters<typeof buildDailyCollectionReport>[0]['scheduleDues'];
 
     if (isDatabaseEnabled()) {
       const loanRows = await loanRepo.listLoans({ externalStatus: 'ACTIVE' });
@@ -229,6 +232,15 @@ reportsRouter.get(
           status: detail.status,
         };
       });
+
+      const scheduleWeeks = await scheduleRepo.listScheduleWeeksForLoansOnDate(
+        loans.map((loan) => loan.id),
+        date,
+      );
+      scheduleDues = scheduleWeeks.map((week) => ({
+        loanId: week.loanId,
+        installmentPesewas: decimalToPesewas(week.installmentAmount),
+      }));
     }
 
     sendData(
@@ -237,6 +249,7 @@ reportsRouter.get(
         date,
         payments,
         loans,
+        scheduleDues,
         borrowerNames,
         collectorNames: new Map(collectorNameEntries),
         collectorId,

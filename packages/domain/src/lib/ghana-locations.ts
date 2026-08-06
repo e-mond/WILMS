@@ -1,6 +1,6 @@
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import regionsSeed from '../../../../data/ghana-locations/regions.json';
+import districtsSeed from '../../../../data/ghana-locations/districts.json';
+import citiesSeed from '../../../../data/ghana-locations/cities.json';
 import { isDatabaseEnabled } from '../db/client.js';
 import * as ghanaLocationsRepo from '../repositories/ghana-locations.repository.js';
 
@@ -41,14 +41,8 @@ interface SeedCity {
   source?: string;
 }
 
-const DATA_DIR = join(dirname(fileURLToPath(import.meta.url)), '../../../../data/ghana-locations');
-
 function slugify(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-}
-
-function readSeedJson<T>(filename: string): T {
-  return JSON.parse(readFileSync(join(DATA_DIR, filename), 'utf8')) as T;
 }
 
 let bundledCache:
@@ -59,6 +53,10 @@ let bundledCache:
     }
   | null = null;
 
+/**
+ * Bundle Ghana location seed JSON via static imports so Vercel serverless
+ * does not depend on filesystem paths after webpack emit.
+ */
 function loadBundledLocations(): {
   regions: LocationRegion[];
   districts: LocationDistrict[];
@@ -68,9 +66,9 @@ function loadBundledLocations(): {
     return bundledCache;
   }
 
-  const seedRegions = readSeedJson<SeedRegion[]>('regions.json');
-  const seedDistricts = readSeedJson<SeedDistrict[]>('districts.json');
-  const seedCities = readSeedJson<SeedCity[]>('cities.json');
+  const seedRegions = regionsSeed as SeedRegion[];
+  const seedDistricts = districtsSeed as SeedDistrict[];
+  const seedCities = citiesSeed as SeedCity[];
 
   const regionIdByCode = new Map<string, string>();
   const regions: LocationRegion[] = seedRegions.map((region) => {
@@ -135,12 +133,16 @@ export async function getGhanaDistricts(regionId: string): Promise<LocationDistr
       const count = await ghanaLocationsRepo.countRegions();
       if (count > 0) {
         const rows = await ghanaLocationsRepo.listDistrictsByRegionId(regionId);
-        return rows.map((row) => ({
-          id: row.id,
-          regionId: row.regionId,
-          name: row.name,
-          type: row.type,
-        }));
+        // DB may use UUID ids while some clients still hold slug ids from the
+        // bundled seed. Fall through when the lookup misses so UI keeps working.
+        if (rows.length > 0) {
+          return rows.map((row) => ({
+            id: row.id,
+            regionId: row.regionId,
+            name: row.name,
+            type: row.type,
+          }));
+        }
       }
     } catch {
       // fall through to bundled data
@@ -158,12 +160,14 @@ export async function getGhanaCities(districtId: string): Promise<LocationCity[]
       const count = await ghanaLocationsRepo.countRegions();
       if (count > 0) {
         const rows = await ghanaLocationsRepo.listCitiesByDistrictId(districtId);
-        return rows.map((row) => ({
-          id: row.id,
-          districtId: row.districtId,
-          name: row.name,
-          source: row.source,
-        }));
+        if (rows.length > 0) {
+          return rows.map((row) => ({
+            id: row.id,
+            districtId: row.districtId,
+            name: row.name,
+            source: row.source,
+          }));
+        }
       }
     } catch {
       // fall through to bundled data
