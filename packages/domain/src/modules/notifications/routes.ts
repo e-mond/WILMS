@@ -34,6 +34,10 @@ const preferencesSchema = z.object({
   approvalNotifications: z.boolean().optional(),
   registrationNotifications: z.boolean().optional(),
   digestFrequency: z.enum(['INSTANT', 'DAILY', 'WEEKLY']).optional(),
+  quietHoursEnabled: z.boolean().optional(),
+  quietHoursStart: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),
+  quietHoursEnd: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),
+  quietHoursTimezone: z.string().min(1).optional(),
 });
 
 notificationsRouter.use(requireAuth);

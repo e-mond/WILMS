@@ -2,6 +2,29 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.6.0-rc.1] — Communication Center audiences & notification automation
+
+**Date:** August 2026  
+**Branch:** `feature/v1.6-communication-notifications`
+
+### Added
+
+- First-class Communication Center audiences: borrowers, groups, multi-group, group leaders, auditors, custom mixes
+- Audience preview API and reusable audience segments
+- Read-receipt table for in-app communication messages
+- Payment due-today automated notifications (distinct dedupe from due-soon)
+- Operational alerts: recon reminders, high-variance, failed-delivery digest, scheduler failure alerts
+- Quiet hours on user notification preferences
+- Docs under `docs/v1.6/` for communication and notification automation
+
+### Fixed
+
+- Communication Center SMS now sends to phone numbers (was incorrectly using email)
+
+### Migration
+
+- `0033_communication_audience_segments`
+
 ## [1.5.1] — Vercel API Runtime Recovery
 
 **Release date:** August 2026  

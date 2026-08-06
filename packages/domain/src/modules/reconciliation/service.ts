@@ -344,6 +344,15 @@ export async function submitReconciliation(
 
       if (summary.varianceFlagged) {
         void notifySuperAdminsOfReconciliation(summary, input.actorDisplayName);
+        void import('../../infrastructure/notifications/ops-notifications.js').then(
+          ({ emitHighVarianceAlert }) =>
+            emitHighVarianceAlert({
+              reconciliationId: summary.id ?? `${summary.collectorId}:${summary.date}`,
+              collectorUserId: summary.collectorId,
+              date: summary.date,
+              variancePesewas: summary.variancePesewas ?? 0,
+            }),
+        );
       }
 
       return summary;

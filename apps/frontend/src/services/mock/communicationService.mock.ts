@@ -96,6 +96,38 @@ const communicationService: ICommunicationService = {
     return message;
   },
 
+  async previewAudience(input) {
+    return {
+      total: input.audienceType === 'ALL_BORROWERS' ? 12 : 3,
+      sample: [
+        { displayName: 'Ama Mensah', phone: '+233200000001', borrowerId: 'bor-1' },
+        { displayName: 'Demo Collector', email: 'collector@wilms.demo', userId: 'user-collector' },
+      ],
+      channelsHint: ['EMAIL', 'SMS', 'IN_APP'],
+    };
+  },
+
+  async listAudienceSegments() {
+    return [];
+  },
+
+  async createAudienceSegment(input) {
+    return {
+      id: `seg-${Date.now()}`,
+      name: input.name,
+      description: input.description,
+      audienceType: input.audienceType,
+      audienceFilter: input.audienceFilter,
+      createdByUserId: 'user-super-admin',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+  },
+
+  async deleteAudienceSegment() {
+    return;
+  },
+
   async getAnalytics(): Promise<DeliveryAnalytics> {
     return {
       totalSent: 42,
