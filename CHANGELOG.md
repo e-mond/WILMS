@@ -2,6 +2,27 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.7.0] — Enterprise Finance, Reporting & Operational Intelligence
+
+**Date:** August 2026  
+**Branch:** `feature/v1.7-finance-reporting-intelligence`
+
+### Added
+
+- Executive intelligence dashboard (`/executive`) with financial, operational, and risk KPIs
+- Schedule-based forecasting and configurable early-warning thresholds
+- Portfolio breakdown + compliance pack APIs
+- Export Center (`/exports`) with tracked export jobs
+- Operations incidents and maintenance windows
+- Migration `0035_finance_reporting_intelligence` (jobs, alerts, incidents, reporting indexes)
+- Docs under `docs/v1.7/`
+
+### Notes
+
+- No borrower portal in this release
+- Auth remains custom HMAC sessions (not Auth.js)
+- Financial ledger formulas unchanged
+
 ## [1.6.2] — Enterprise Readiness & Workflow Completion
 
 **Date:** August 2026  

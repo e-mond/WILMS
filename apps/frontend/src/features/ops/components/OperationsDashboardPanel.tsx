@@ -1,9 +1,18 @@
 'use client';
 
 import { useCallback, useEffect, useState, useTransition } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { PermissionGate } from '@/components/auth/PermissionGate';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
+import { Textarea } from '@/components/ui/Textarea';
+import { PERMISSION } from '@/constants/permissions';
+import { useToast } from '@/hooks/useToast';
+import { intelligenceService } from '@/services/intelligenceService';
 import { opsService, type OpsStatusReport, type OpsSurfaceState, type OpsWorkerLastRun } from '@/services/opsService';
 import { ApiError } from '@/types/api';
+import type { MaintenanceWindow, OperationalIncident } from '@/types/intelligence';
 import { cn } from '@/utils/cn';
 
 function stateLabel(state: OpsSurfaceState): string {
@@ -316,6 +325,338 @@ export function OperationsDashboardPanel() {
       ) : !error ? (
         <p className="text-small text-text-muted">Loading operations status…</p>
       ) : null}
+
+      <OpsIncidentsSection />
+      <OpsMaintenanceSection />
     </div>
+  );
+}
+
+function OpsIncidentsSection() {
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const [title, setTitle] = useState('');
+  const [severity, setSeverity] = useState('warning');
+  const [summary, setSummary] = useState('');
+  const [resolveDrafts, setResolveDrafts] = useState<Record<string, string>>({});
+
+  const incidentsQuery = useQuery({
+    queryKey: ['ops', 'incidents'] as const,
+    queryFn: () => intelligenceService.listIncidents(),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: () =>
+      intelligenceService.createIncident({
+        title: title.trim(),
+        severity,
+        summary: summary.trim() || undefined,
+      }),
+    onSuccess: () => {
+      toast.success('Incident opened');
+      setTitle('');
+      setSummary('');
+      void queryClient.invalidateQueries({ queryKey: ['ops', 'incidents'] });
+    },
+    onError: (error) => {
+      toast.error('Unable to create incident', {
+        message: error instanceof ApiError ? error.message : 'Try again shortly.',
+      });
+    },
+  });
+
+  const acknowledgeMutation = useMutation({
+    mutationFn: (id: string) => intelligenceService.acknowledgeIncident(id),
+    onSuccess: () => {
+      toast.success('Incident acknowledged');
+      void queryClient.invalidateQueries({ queryKey: ['ops', 'incidents'] });
+    },
+    onError: (error) => {
+      toast.error('Unable to acknowledge', {
+        message: error instanceof ApiError ? error.message : 'Try again shortly.',
+      });
+    },
+  });
+
+  const resolveMutation = useMutation({
+    mutationFn: ({ id, resolution }: { id: string; resolution: string }) =>
+      intelligenceService.resolveIncident(id, resolution),
+    onSuccess: (_data, variables) => {
+      toast.success('Incident resolved');
+      setResolveDrafts((prev) => {
+        const next = { ...prev };
+        delete next[variables.id];
+        return next;
+      });
+      void queryClient.invalidateQueries({ queryKey: ['ops', 'incidents'] });
+    },
+    onError: (error) => {
+      toast.error('Unable to resolve', {
+        message: error instanceof ApiError ? error.message : 'Try again shortly.',
+      });
+    },
+  });
+
+  return (
+    <section aria-labelledby="ops-incidents-heading" className="space-y-wilms-3">
+      <h2 id="ops-incidents-heading" className="text-heading-3 font-semibold text-text-primary">
+        Incidents
+      </h2>
+
+      <PermissionGate permission={PERMISSION.MANAGE_SYSTEM_SETTINGS}>
+        <form
+          className="grid gap-wilms-3 rounded-sm border border-border bg-card p-wilms-4 sm:grid-cols-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!title.trim()) return;
+            createMutation.mutate();
+          }}
+        >
+          <label className="block text-small text-text-muted sm:col-span-2">
+            Title
+            <Input
+              className="mt-1"
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              required
+            />
+          </label>
+          <label className="block text-small text-text-muted">
+            Severity
+            <Select
+              className="mt-1"
+              value={severity}
+              onChange={(event) => setSeverity(event.target.value)}
+            >
+              <option value="info">Info</option>
+              <option value="warning">Warning</option>
+              <option value="danger">Danger</option>
+              <option value="critical">Critical</option>
+            </Select>
+          </label>
+          <div className="flex items-end">
+            <Button type="submit" disabled={createMutation.isPending || !title.trim()}>
+              {createMutation.isPending ? 'Opening…' : 'Open incident'}
+            </Button>
+          </div>
+          <label className="block text-small text-text-muted sm:col-span-2">
+            Summary
+            <Textarea
+              className="mt-1"
+              rows={2}
+              value={summary}
+              onChange={(event) => setSummary(event.target.value)}
+            />
+          </label>
+        </form>
+      </PermissionGate>
+
+      {incidentsQuery.isError ? (
+        <p className="text-small text-danger" role="alert">
+          {incidentsQuery.error instanceof ApiError
+            ? incidentsQuery.error.message
+            : 'Unable to load incidents.'}
+        </p>
+      ) : null}
+
+      {incidentsQuery.isLoading ? (
+        <p className="text-small text-text-muted">Loading incidents…</p>
+      ) : (incidentsQuery.data?.length ?? 0) === 0 ? (
+        <p className="text-small text-text-muted">No incidents recorded.</p>
+      ) : (
+        <ul className="divide-y divide-border border-y border-border">
+          {(incidentsQuery.data as OperationalIncident[]).map((incident) => (
+            <li key={incident.id} className="space-y-wilms-2 py-wilms-3">
+              <div className="flex flex-wrap items-start justify-between gap-wilms-2">
+                <div>
+                  <p className="font-medium text-text-primary">{incident.title}</p>
+                  <p className="text-small text-text-muted">
+                    {incident.severity} · {incident.status}
+                    {incident.openedAt
+                      ? ` · ${new Date(incident.openedAt).toLocaleString()}`
+                      : ''}
+                  </p>
+                  {incident.summary ? (
+                    <p className="mt-wilms-1 text-small text-text-muted">{incident.summary}</p>
+                  ) : null}
+                </div>
+                <PermissionGate permission={PERMISSION.MANAGE_SYSTEM_SETTINGS}>
+                  <div className="flex flex-wrap gap-wilms-2">
+                    {incident.status === 'OPEN' ? (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => acknowledgeMutation.mutate(incident.id)}
+                        disabled={acknowledgeMutation.isPending}
+                      >
+                        Acknowledge
+                      </Button>
+                    ) : null}
+                    {incident.status !== 'RESOLVED' ? (
+                      <div className="flex flex-wrap items-center gap-wilms-2">
+                        <Input
+                          className="w-48"
+                          placeholder="Resolution note"
+                          value={resolveDrafts[incident.id] ?? ''}
+                          onChange={(event) =>
+                            setResolveDrafts((prev) => ({
+                              ...prev,
+                              [incident.id]: event.target.value,
+                            }))
+                          }
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => {
+                            const resolution = (resolveDrafts[incident.id] ?? '').trim();
+                            if (!resolution) return;
+                            resolveMutation.mutate({ id: incident.id, resolution });
+                          }}
+                          disabled={
+                            resolveMutation.isPending ||
+                            !(resolveDrafts[incident.id] ?? '').trim()
+                          }
+                        >
+                          Resolve
+                        </Button>
+                      </div>
+                    ) : null}
+                  </div>
+                </PermissionGate>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function OpsMaintenanceSection() {
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const [title, setTitle] = useState('');
+  const [message, setMessage] = useState('');
+  const [startsAt, setStartsAt] = useState('');
+  const [endsAt, setEndsAt] = useState('');
+
+  const maintenanceQuery = useQuery({
+    queryKey: ['ops', 'maintenance'] as const,
+    queryFn: () => intelligenceService.listMaintenanceWindows(),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: () =>
+      intelligenceService.createMaintenanceWindow({
+        title: title.trim(),
+        message: message.trim(),
+        startsAt: new Date(startsAt).toISOString(),
+        endsAt: new Date(endsAt).toISOString(),
+      }),
+    onSuccess: () => {
+      toast.success('Maintenance window scheduled');
+      setTitle('');
+      setMessage('');
+      setStartsAt('');
+      setEndsAt('');
+      void queryClient.invalidateQueries({ queryKey: ['ops', 'maintenance'] });
+    },
+    onError: (error) => {
+      toast.error('Unable to schedule maintenance', {
+        message: error instanceof ApiError ? error.message : 'Try again shortly.',
+      });
+    },
+  });
+
+  return (
+    <section aria-labelledby="ops-maintenance-heading" className="space-y-wilms-3">
+      <h2 id="ops-maintenance-heading" className="text-heading-3 font-semibold text-text-primary">
+        Maintenance windows
+      </h2>
+
+      <PermissionGate permission={PERMISSION.MANAGE_SYSTEM_SETTINGS}>
+        <form
+          className="grid gap-wilms-3 rounded-sm border border-border bg-card p-wilms-4 sm:grid-cols-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!title.trim() || !message.trim() || !startsAt || !endsAt) return;
+            createMutation.mutate();
+          }}
+        >
+          <label className="block text-small text-text-muted sm:col-span-2">
+            Title
+            <Input
+              className="mt-1"
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              required
+            />
+          </label>
+          <label className="block text-small text-text-muted">
+            Starts
+            <Input
+              type="datetime-local"
+              className="mt-1"
+              value={startsAt}
+              onChange={(event) => setStartsAt(event.target.value)}
+              required
+            />
+          </label>
+          <label className="block text-small text-text-muted">
+            Ends
+            <Input
+              type="datetime-local"
+              className="mt-1"
+              value={endsAt}
+              onChange={(event) => setEndsAt(event.target.value)}
+              required
+            />
+          </label>
+          <label className="block text-small text-text-muted sm:col-span-2">
+            Message
+            <Textarea
+              className="mt-1"
+              rows={2}
+              value={message}
+              onChange={(event) => setMessage(event.target.value)}
+              required
+            />
+          </label>
+          <Button type="submit" disabled={createMutation.isPending}>
+            {createMutation.isPending ? 'Scheduling…' : 'Schedule window'}
+          </Button>
+        </form>
+      </PermissionGate>
+
+      {maintenanceQuery.isError ? (
+        <p className="text-small text-danger" role="alert">
+          {maintenanceQuery.error instanceof ApiError
+            ? maintenanceQuery.error.message
+            : 'Unable to load maintenance windows.'}
+        </p>
+      ) : null}
+
+      {maintenanceQuery.isLoading ? (
+        <p className="text-small text-text-muted">Loading maintenance windows…</p>
+      ) : (maintenanceQuery.data?.length ?? 0) === 0 ? (
+        <p className="text-small text-text-muted">No maintenance windows scheduled.</p>
+      ) : (
+        <ul className="divide-y divide-border border-y border-border">
+          {(maintenanceQuery.data as MaintenanceWindow[]).map((entry) => (
+            <li key={entry.id} className="py-wilms-3">
+              <p className="font-medium text-text-primary">{entry.title}</p>
+              <p className="text-small text-text-muted">{entry.message}</p>
+              <p className="mt-wilms-1 text-small text-text-muted">
+                {new Date(entry.startsAt).toLocaleString()} →{' '}
+                {new Date(entry.endsAt).toLocaleString()}
+                {entry.active === false ? ' · inactive' : ''}
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
