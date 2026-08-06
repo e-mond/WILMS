@@ -87,11 +87,23 @@ function MetricTile({
   );
 }
 
+function QuickAction({ href, label, description }: { href: string; label: string; description: string }) {
+  return (
+    <Link
+      href={href}
+      className="flex min-h-[56px] flex-col justify-center rounded-sm border border-border bg-card px-wilms-3 py-wilms-2 transition-colors hover:border-brand-primary/50 hover:bg-brand-primary-light/30"
+    >
+      <span className="text-small font-semibold text-brand-primary">{label}</span>
+      <span className="text-xs text-text-muted">{description}</span>
+    </Link>
+  );
+}
+
 function TodayGroupCard({ group }: { group: CollectorTodayGroup }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <article className="flex h-full min-w-0 flex-col rounded-sm border border-border/70 bg-card/60 p-wilms-4">
+    <article className="flex h-full min-w-0 flex-col rounded-sm border border-border/70 bg-card p-wilms-4">
       <div className="flex items-start gap-wilms-3">
         <Avatar label={group.groupName} photoUrl={group.groupPhotoUrl} size="md" />
         <div className="min-w-0 flex-1">
@@ -135,7 +147,7 @@ function TodayGroupCard({ group }: { group: CollectorTodayGroup }) {
 
       <button
         type="button"
-        className="mt-wilms-3 text-left text-small font-semibold text-brand-primary md:hidden"
+        className="mt-wilms-3 min-h-[44px] text-left text-small font-semibold text-brand-primary md:hidden"
         onClick={() => setExpanded((current) => !current)}
       >
         {expanded ? 'Hide details' : 'View details'}
@@ -215,11 +227,12 @@ export function CollectorDashboardPanel() {
   }
 
   const { summary, hero, alerts, todayGroups, recentPayments, stats, borrowers } = data;
+  const pendingBorrowers = borrowers.filter((entry) => entry.paymentStatus !== 'COLLECTED');
 
   return (
-    <div className="space-y-wilms-4">
+    <div className="min-w-0 space-y-wilms-4">
       <section className="overflow-hidden rounded-sm border border-brand-primary bg-gradient-to-br from-brand-primary-light via-card to-card p-wilms-4 sm:p-wilms-5">
-        <div className="flex flex-col gap-wilms-4 xl:flex-row xl:items-end xl:justify-between">
+        <div className="flex flex-col gap-wilms-4">
           <div className="min-w-0">
             <p className="text-small font-semibold uppercase tracking-wide text-brand-primary">
               Today&apos;s Collection
@@ -229,7 +242,7 @@ export function CollectorDashboardPanel() {
             </p>
             <p className="mt-wilms-2 text-small text-text-muted">
               Target <CurrencyAmount value={hero.targetPesewas} /> · {hero.progressPercent}% achieved ·{' '}
-              {formatDisplayDate(summary.date)}
+              {formatDisplayDate(summary.date)} · {summary.paymentDayLabel}
             </p>
             <div
               className="mt-wilms-3 h-2.5 max-w-md overflow-hidden rounded-full bg-background"
@@ -246,7 +259,7 @@ export function CollectorDashboardPanel() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-wilms-2 sm:grid-cols-3 xl:min-w-[28rem] xl:grid-cols-3">
+          <div className="grid grid-cols-2 gap-wilms-2 sm:grid-cols-3 lg:grid-cols-6">
             <MetricTile
               label="Paid"
               value={hero.paidBorrowers}
@@ -275,8 +288,30 @@ export function CollectorDashboardPanel() {
         </div>
       </section>
 
+      <section
+        aria-label="Quick actions"
+        className="grid grid-cols-2 gap-wilms-2 sm:grid-cols-4"
+      >
+        <QuickAction
+          href="/collector/my-borrowers?status=PENDING"
+          label="Record payments"
+          description={`${hero.pendingBorrowers} pending`}
+        />
+        <QuickAction
+          href="/collector/reconciliation"
+          label="Reconcile"
+          description={reconciliationLabel(summary.reconciliationStatus)}
+        />
+        <QuickAction href="/collector/expenses" label="Log expense" description="Field costs" />
+        <QuickAction
+          href="/collector/admin-fee"
+          label="Collector fees"
+          description="Admin fee entry"
+        />
+      </section>
+
       {alerts.length > 0 ? (
-        <div className="flex gap-wilms-2 overflow-x-auto pb-wilms-1">
+        <div className="-mx-wilms-1 flex gap-wilms-2 overflow-x-auto px-wilms-1 pb-wilms-1">
           {alerts.map((alert) => (
             <div
               key={alert.id}
@@ -295,14 +330,7 @@ export function CollectorDashboardPanel() {
 
       <CollectorSyncStatusCard />
 
-      <ExecutiveKpiGrid className="sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard variant="executive" label="Groups Due Today" value={summary.borrowersDueCount} />
-        <KpiCard
-          variant="executive"
-          label="Collected Today"
-          value={<CurrencyAmount value={summary.collectedPesewas} />}
-          valueClassName="text-status-active"
-        />
+      <ExecutiveKpiGrid className="grid-cols-2 lg:grid-cols-4">
         <KpiCard
           variant="executive"
           label="Outstanding"
@@ -311,15 +339,10 @@ export function CollectorDashboardPanel() {
         />
         <KpiCard
           variant="executive"
-          label="Collection Rate"
+          label="Collection rate"
           value={`${summary.collectionRatePercent}%`}
         />
-      </ExecutiveKpiGrid>
-
-      <ExecutiveKpiGrid className="sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard variant="executive" label="Payments Recorded" value={stats.paymentsRecorded} />
-        <KpiCard variant="executive" label="Borrowers Managed" value={stats.borrowersManaged} />
-        <KpiCard variant="executive" label="Groups Assigned" value={stats.groupsAssigned} />
+        <KpiCard variant="executive" label="Borrowers managed" value={stats.borrowersManaged} />
         <KpiCard
           variant="executive"
           label="Reconciliation"
@@ -329,33 +352,75 @@ export function CollectorDashboardPanel() {
 
       <ExecutiveDetailLayout
         sidebar={
-          <DetailSidebarCard title="Recent payments">
-            <ul className="mt-wilms-2">
-              {recentPayments.length > 0 ? (
-                recentPayments.map((payment) => (
-                  <RecentPaymentRow key={`${payment.borrowerId}-${payment.recordedAt}`} payment={payment} />
-                ))
-              ) : (
-                <li className="py-wilms-3 text-small text-text-muted">No payments recorded yet today.</li>
-              )}
-            </ul>
-          </DetailSidebarCard>
+          <div className="space-y-wilms-3">
+            <DetailSidebarCard title="Recent payments">
+              <ul className="mt-wilms-2">
+                {recentPayments.length > 0 ? (
+                  recentPayments.map((payment) => (
+                    <RecentPaymentRow
+                      key={`${payment.borrowerId}-${payment.recordedAt}`}
+                      payment={payment}
+                    />
+                  ))
+                ) : (
+                  <li className="py-wilms-3 text-small text-text-muted">
+                    No payments recorded yet today.
+                  </li>
+                )}
+              </ul>
+            </DetailSidebarCard>
+            <DetailSidebarCard title="Workload">
+              <dl className="mt-wilms-2 space-y-wilms-2 text-small">
+                <div className="flex justify-between gap-wilms-2">
+                  <dt className="text-text-muted">Payments recorded</dt>
+                  <dd className="font-semibold text-text-primary">{stats.paymentsRecorded}</dd>
+                </div>
+                <div className="flex justify-between gap-wilms-2">
+                  <dt className="text-text-muted">Groups assigned</dt>
+                  <dd className="font-semibold text-text-primary">{stats.groupsAssigned}</dd>
+                </div>
+                <div className="flex justify-between gap-wilms-2">
+                  <dt className="text-text-muted">Still due today</dt>
+                  <dd className="font-semibold text-text-primary">{pendingBorrowers.length}</dd>
+                </div>
+              </dl>
+            </DetailSidebarCard>
+          </div>
         }
       >
-        <section className="w-full min-w-0 rounded-sm border border-border bg-card p-wilms-4 space-y-wilms-3">
+        <section className="w-full min-w-0 space-y-wilms-3 rounded-sm border border-border bg-card p-wilms-4">
           <div className="flex flex-wrap items-center justify-between gap-wilms-2">
             <h2 className="text-heading-3 font-semibold text-text-primary">Today&apos;s Groups</h2>
-            <p className="text-small text-text-muted">{summary.paymentDayLabel}</p>
+            <p className="text-small text-text-muted">
+              {todayGroups.length} group{todayGroups.length === 1 ? '' : 's'}
+            </p>
           </div>
-          <div className="grid w-full min-w-0 gap-wilms-3 sm:grid-cols-2 2xl:grid-cols-3">
-            {todayGroups.map((group) => (
-              <TodayGroupCard key={group.groupId} group={group} />
-            ))}
-          </div>
+          {todayGroups.length === 0 ? (
+            <EmptyState
+              title="No groups due today"
+              description={`No assigned groups have ${summary.paymentDayLabel} as their payment day.`}
+            />
+          ) : (
+            <div className="grid w-full min-w-0 gap-wilms-3 sm:grid-cols-2">
+              {todayGroups.map((group) => (
+                <TodayGroupCard key={group.groupId} group={group} />
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="mt-wilms-6 space-y-wilms-3">
-          <h2 className="text-heading-3 font-semibold text-text-primary">Borrowers due today</h2>
+          <div className="flex flex-wrap items-center justify-between gap-wilms-2">
+            <h2 className="text-heading-3 font-semibold text-text-primary">Borrowers due today</h2>
+            {pendingBorrowers.length > 0 ? (
+              <Link
+                href="/collector/my-borrowers?status=PENDING"
+                className="text-small font-semibold text-brand-primary"
+              >
+                View all pending
+              </Link>
+            ) : null}
+          </div>
           {borrowers.length === 0 ? (
             <EmptyState
               title="No collections scheduled today"
@@ -467,7 +532,8 @@ export function CollectorDashboardPanel() {
             }
             className="mt-wilms-4"
           >
-            Reconciliation: {reconciliationLabel(summary.reconciliationStatus)}.
+            Reconciliation: {reconciliationLabel(summary.reconciliationStatus)}. Open Reconcile when
+            you are ready to submit today&apos;s collections.
           </Alert>
         ) : null}
       </ExecutiveDetailLayout>

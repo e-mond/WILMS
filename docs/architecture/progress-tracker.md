@@ -24,6 +24,7 @@ Units marked ✅ implement core behaviour and unit tests. **Global DoD is not me
 | **v1.6.1 Product Excellence UI** | ✅ Complete — PR #160 |
 | **v1.6.2 Enterprise Readiness** | ✅ Complete — PR #161 |
 | **v1.7.0 Finance & Intelligence** | ✅ Complete — branch `feature/v1.7-finance-reporting-intelligence`; reports in `docs/v1.7/` |
+| **v1.7.1 Ops/UX hotfix** | 🔄 In progress — expense in-app alerts; ops mobile; collector dashboard; CSP; executive route + search keys; graceful ops table fallback |
 
 ---
 

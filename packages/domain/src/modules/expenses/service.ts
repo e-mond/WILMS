@@ -5,6 +5,10 @@ import { isDatabaseEnabled, getDb, runInTransaction } from '../../db/client.js';
 import { expenses } from '../../db/schema/expenses.js';
 import { users } from '../../db/schema/users.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
+import {
+  notifyExpenseReviewed,
+  notifyExpenseSubmitted,
+} from '../../infrastructure/notifications/expense-notifications.js';
 import * as ledgerRepo from '../../repositories/ledger.repository.js';
 import { pesewasToDecimal } from '../../domain/money.js';
 
@@ -176,6 +180,15 @@ export async function createExpense(input: {
     reason: `${created.categoryLabel} ${input.amountPesewas} pesewas (pending approval)`,
   });
 
+  void notifyExpenseSubmitted({
+    expenseId: created.id,
+    displayId: created.displayId,
+    categoryLabel: created.categoryLabel,
+    amountPesewas: created.amountPesewas,
+    recordedById: created.recordedById,
+    recordedByName: created.recordedByName,
+  }).catch(() => undefined);
+
   return { ...created };
 }
 
@@ -252,7 +265,17 @@ export async function reviewExpense(
       });
 
       const [updated] = await tx.select().from(expenses).where(eq(expenses.id, id)).limit(1);
-      return rowToRecord(updated!);
+      const record = rowToRecord(updated!);
+      void notifyExpenseReviewed({
+        expenseId: record.id,
+        displayId: record.displayId,
+        categoryLabel: record.categoryLabel,
+        amountPesewas: record.amountPesewas,
+        status: input.status,
+        recordedById: record.recordedById,
+        reviewNote: input.reviewNote,
+      }).catch(() => undefined);
+      return record;
     });
   }
 
@@ -283,6 +306,16 @@ export async function reviewExpense(
     targetEntityType: 'expense',
     reason: input.reviewNote?.trim() || input.status,
   });
+
+  void notifyExpenseReviewed({
+    expenseId: updated.id,
+    displayId: updated.displayId,
+    categoryLabel: updated.categoryLabel,
+    amountPesewas: updated.amountPesewas,
+    status: input.status,
+    recordedById: updated.recordedById,
+    reviewNote: input.reviewNote,
+  }).catch(() => undefined);
 
   return { ...updated };
 }

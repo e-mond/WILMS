@@ -8,6 +8,7 @@ import {
   maintenanceWindows,
   operationalIncidents,
 } from '../../db/schema/intelligence.js';
+import { isUndefinedTableError } from '../../lib/db-errors.js';
 import { buildDashboardFinancialOverview } from '../dashboard/financial-overview.js';
 import { getDashboardSummary } from '../dashboard/service.js';
 import { buildAgingAnalysisReport, buildWriteOffReport } from '../enterprise/service.js';
@@ -566,8 +567,15 @@ export async function listExportJobs(limit = 50) {
   if (!isDatabaseEnabled()) {
     return memoryExports.slice(0, limit);
   }
-  const db = getDb();
-  return db.select().from(exportJobs).orderBy(desc(exportJobs.createdAt)).limit(limit);
+  try {
+    const db = getDb();
+    return await db.select().from(exportJobs).orderBy(desc(exportJobs.createdAt)).limit(limit);
+  } catch (error) {
+    if (isUndefinedTableError(error)) {
+      return memoryExports.slice(0, limit);
+    }
+    throw error;
+  }
 }
 
 export async function createIncident(input: {
@@ -594,16 +602,23 @@ export async function createIncident(input: {
   }
 
   if (isDatabaseEnabled()) {
-    const db = getDb();
-    await db.insert(operationalIncidents).values({
-      id: incident.id,
-      title: incident.title,
-      severity: incident.severity,
-      status: incident.status,
-      ownerUserId: incident.ownerUserId,
-      summary: incident.summary,
-      createdByUserId: incident.createdByUserId,
-    });
+    try {
+      const db = getDb();
+      await db.insert(operationalIncidents).values({
+        id: incident.id,
+        title: incident.title,
+        severity: incident.severity,
+        status: incident.status,
+        ownerUserId: incident.ownerUserId,
+        summary: incident.summary,
+        createdByUserId: incident.createdByUserId,
+      });
+    } catch (error) {
+      if (!isUndefinedTableError(error)) {
+        throw error;
+      }
+      memoryIncidents.unshift(incident);
+    }
   } else {
     memoryIncidents.unshift(incident);
   }
@@ -614,12 +629,19 @@ export async function listIncidents(limit = 50) {
   if (!isDatabaseEnabled()) {
     return memoryIncidents.slice(0, limit);
   }
-  const db = getDb();
-  return db
-    .select()
-    .from(operationalIncidents)
-    .orderBy(desc(operationalIncidents.openedAt))
-    .limit(limit);
+  try {
+    const db = getDb();
+    return await db
+      .select()
+      .from(operationalIncidents)
+      .orderBy(desc(operationalIncidents.openedAt))
+      .limit(limit);
+  } catch (error) {
+    if (isUndefinedTableError(error)) {
+      return memoryIncidents.slice(0, limit);
+    }
+    throw error;
+  }
 }
 
 export async function acknowledgeIncident(id: string, actorUserId: string) {
@@ -674,8 +696,15 @@ export async function listMaintenanceWindows() {
   if (!isDatabaseEnabled()) {
     return memoryMaintenance;
   }
-  const db = getDb();
-  return db.select().from(maintenanceWindows).orderBy(desc(maintenanceWindows.startsAt));
+  try {
+    const db = getDb();
+    return await db.select().from(maintenanceWindows).orderBy(desc(maintenanceWindows.startsAt));
+  } catch (error) {
+    if (isUndefinedTableError(error)) {
+      return memoryMaintenance;
+    }
+    throw error;
+  }
 }
 
 export async function createMaintenanceWindow(input: {
@@ -699,16 +728,23 @@ export async function createMaintenanceWindow(input: {
     throw new Error('VALIDATION:Title and message are required.');
   }
   if (isDatabaseEnabled()) {
-    const db = getDb();
-    await db.insert(maintenanceWindows).values({
-      id: record.id,
-      title: record.title,
-      message: record.message,
-      startsAt: new Date(record.startsAt),
-      endsAt: new Date(record.endsAt),
-      active: true,
-      createdByUserId: record.createdByUserId,
-    });
+    try {
+      const db = getDb();
+      await db.insert(maintenanceWindows).values({
+        id: record.id,
+        title: record.title,
+        message: record.message,
+        startsAt: new Date(record.startsAt),
+        endsAt: new Date(record.endsAt),
+        active: true,
+        createdByUserId: record.createdByUserId,
+      });
+    } catch (error) {
+      if (!isUndefinedTableError(error)) {
+        throw error;
+      }
+      memoryMaintenance.unshift(record);
+    }
   } else {
     memoryMaintenance.unshift(record);
   }

@@ -40,6 +40,10 @@ export function resolveUserPermissionIds(
 /** Route prefixes → any one of these permissions grants access. */
 export const ROUTE_PERMISSION_REQUIREMENTS: { prefix: string; permissions: PermissionId[] }[] = [
   { prefix: '/dashboard', permissions: [PERMISSION.ACCESS_ADMIN_PORTAL, PERMISSION.VIEW_REPORTS] },
+  {
+    prefix: '/executive',
+    permissions: [PERMISSION.ACCESS_ADMIN_PORTAL, PERMISSION.VIEW_FINANCIAL_REPORTS],
+  },
   /** Platform ops control centre — distinct from executive /dashboard. */
   { prefix: '/ops', permissions: [PERMISSION.ACCESS_ADMIN_PORTAL, PERMISSION.MANAGE_SYSTEM_SETTINGS] },
   { prefix: '/borrowers', permissions: [PERMISSION.ACCESS_ADMIN_PORTAL, PERMISSION.VIEW_ASSIGNED_BORROWERS, PERMISSION.REGISTER_BORROWERS] },
@@ -50,6 +54,7 @@ export const ROUTE_PERMISSION_REQUIREMENTS: { prefix: string; permissions: Permi
   { prefix: '/risk-flags', permissions: [PERMISSION.ACCESS_ADMIN_PORTAL, PERMISSION.REVIEW_RISK_FLAGS] },
   { prefix: '/expenses', permissions: [PERMISSION.ACCESS_ADMIN_PORTAL, PERMISSION.MANAGE_EXPENSES] },
   { prefix: '/communication-center', permissions: [PERMISSION.MANAGE_COMMUNICATIONS, PERMISSION.VIEW_COMMUNICATION_ANALYTICS] },
+  { prefix: '/exports', permissions: [PERMISSION.ACCESS_ADMIN_PORTAL, PERMISSION.EXPORT_REPORTS] },
   { prefix: '/reports', permissions: [PERMISSION.VIEW_REPORTS, PERMISSION.VIEW_AUDIT_LOG, PERMISSION.EXPORT_REPORTS] },
   { prefix: '/adjustments', permissions: [PERMISSION.ACCESS_ADMIN_PORTAL] },
   { prefix: '/settings', permissions: [PERMISSION.MANAGE_SYSTEM_SETTINGS, PERMISSION.MANAGE_USERS] },
@@ -97,6 +102,7 @@ export function getPortalHomePath(role: UserRole): string {
 /** Nav item href → required permission (any match shows item). */
 export const NAV_ITEM_PERMISSIONS: Record<string, PermissionId[]> = {
   '/dashboard': [PERMISSION.ACCESS_ADMIN_PORTAL],
+  '/executive': [PERMISSION.ACCESS_ADMIN_PORTAL, PERMISSION.VIEW_FINANCIAL_REPORTS],
   '/ops': [PERMISSION.ACCESS_ADMIN_PORTAL, PERMISSION.MANAGE_SYSTEM_SETTINGS],
   '/borrowers': [PERMISSION.ACCESS_ADMIN_PORTAL, PERMISSION.VIEW_ASSIGNED_BORROWERS],
   '/loan-pools': [PERMISSION.ACCESS_ADMIN_PORTAL, PERMISSION.VIEW_FINANCIAL_REPORTS],
@@ -110,6 +116,7 @@ export const NAV_ITEM_PERMISSIONS: Record<string, PermissionId[]> = {
   '/communication-center': [PERMISSION.MANAGE_COMMUNICATIONS, PERMISSION.VIEW_COMMUNICATION_ANALYTICS],
   '/reports/audit-log': [PERMISSION.VIEW_AUDIT_LOG],
   '/reports': [PERMISSION.VIEW_REPORTS, PERMISSION.EXPORT_REPORTS],
+  '/exports': [PERMISSION.ACCESS_ADMIN_PORTAL, PERMISSION.EXPORT_REPORTS],
   '/settings': [PERMISSION.MANAGE_SYSTEM_SETTINGS],
   '/collector/dashboard': [PERMISSION.ACCESS_COLLECTOR_PORTAL],
   '/collector/admin-fee': [PERMISSION.RECORD_COLLECTIONS],
