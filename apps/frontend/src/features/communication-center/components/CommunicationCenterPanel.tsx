@@ -34,6 +34,7 @@ import {
 const TABS = [
   { id: 'compose', label: 'Compose' },
   { id: 'outbox', label: 'Outbox' },
+  { id: 'campaigns', label: 'Campaigns' },
   { id: 'templates', label: 'Templates' },
   { id: 'delivery', label: 'Delivery Reports' },
   { id: 'failed', label: 'Failed Messages' },
@@ -97,7 +98,7 @@ export function CommunicationCenterPanel() {
   const messagesQuery = useQuery({
     queryKey: ['communications', 'messages', statusFilter],
     queryFn: () => communicationService.listMessages(statusFilter || undefined),
-    enabled: activeTab === 'outbox',
+    enabled: activeTab === 'outbox' || activeTab === 'campaigns',
   });
 
   const templatesQuery = useQuery({
@@ -216,7 +217,7 @@ export function CommunicationCenterPanel() {
         }
       />
 
-      {activeTab === 'outbox' ? (
+      {activeTab === 'outbox' || activeTab === 'campaigns' ? (
         <QueryStatePanel
           isLoading={messagesQuery.isLoading}
           showLoading={messagesQuery.isLoading}
@@ -237,22 +238,62 @@ export function CommunicationCenterPanel() {
             variant="executive"
             data={messagesQuery.data ?? []}
             getRowId={(row) => row.id}
-            emptyMessage="No messages yet."
-            columns={[
-              { id: 'subject', header: 'Subject', cell: (row) => row.subject },
-              {
-                id: 'status',
-                header: 'Status',
-                cell: (row) => <Badge variant={statusVariant(row.status)}>{row.status}</Badge>,
-              },
-              { id: 'audience', header: 'Audience', cell: (row) => row.audienceType },
-              { id: 'recipients', header: 'Recipients', cell: (row) => row.recipientCount },
-              {
-                id: 'sentAt',
-                header: 'Sent',
-                cell: (row) => (row.sentAt ? formatDisplayDate(row.sentAt) : '—'),
-              },
-            ]}
+            emptyMessage={
+              activeTab === 'campaigns' ? 'No campaigns yet.' : 'No messages yet.'
+            }
+            columns={
+              activeTab === 'campaigns'
+                ? [
+                    { id: 'subject', header: 'Campaign', cell: (row) => row.subject },
+                    {
+                      id: 'status',
+                      header: 'Status',
+                      cell: (row) => (
+                        <Badge variant={statusVariant(row.status)}>{row.status}</Badge>
+                      ),
+                    },
+                    { id: 'audience', header: 'Audience', cell: (row) => row.audienceType },
+                    {
+                      id: 'channels',
+                      header: 'Channels',
+                      cell: (row) => row.channels.join(', '),
+                    },
+                    { id: 'recipients', header: 'Recipients', cell: (row) => row.recipientCount },
+                    {
+                      id: 'delivery',
+                      header: 'Delivery',
+                      cell: (row) => {
+                        if (row.status === 'SENT') return 'Delivered';
+                        if (row.status === 'FAILED') return 'Failed';
+                        if (row.status === 'SCHEDULED') return 'Scheduled';
+                        if (row.status === 'SENDING') return 'In progress';
+                        return 'Draft';
+                      },
+                    },
+                    {
+                      id: 'sentAt',
+                      header: 'Completed',
+                      cell: (row) => (row.sentAt ? formatDisplayDate(row.sentAt) : '—'),
+                    },
+                  ]
+                : [
+                    { id: 'subject', header: 'Subject', cell: (row) => row.subject },
+                    {
+                      id: 'status',
+                      header: 'Status',
+                      cell: (row) => (
+                        <Badge variant={statusVariant(row.status)}>{row.status}</Badge>
+                      ),
+                    },
+                    { id: 'audience', header: 'Audience', cell: (row) => row.audienceType },
+                    { id: 'recipients', header: 'Recipients', cell: (row) => row.recipientCount },
+                    {
+                      id: 'sentAt',
+                      header: 'Sent',
+                      cell: (row) => (row.sentAt ? formatDisplayDate(row.sentAt) : '—'),
+                    },
+                  ]
+            }
           />
         </QueryStatePanel>
       ) : null}
@@ -334,7 +375,13 @@ export function CommunicationCenterPanel() {
       ) : null}
 
       <Modal isOpen={showCompose} onClose={() => setShowCompose(false)} title="Compose Message">
-        <div className="space-y-wilms-4">
+        <div className="space-y-wilms-4 motion-enter-fade">
+          <div className="rounded-[var(--radius-card)] border border-border bg-background/60 p-wilms-3">
+            <p className="text-small text-text-muted">
+              Drafts autosave in the editor. Use audience preview before send. Channels: Email, SMS,
+              In-app.
+            </p>
+          </div>
           <div>
             <label className="mb-wilms-2 block text-small font-medium text-text-primary">Subject</label>
             <Input
@@ -343,10 +390,14 @@ export function CommunicationCenterPanel() {
               placeholder="Message subject"
               aria-label="Subject"
             />
+            <p className="mt-wilms-1 text-right text-small text-text-muted">{subject.length}/120</p>
           </div>
           <div>
             <label className="mb-wilms-2 block text-small font-medium text-text-primary">Message</label>
             <RichTextEditor value={bodyHtml} onChange={setBodyHtml} draftKey="communication-compose" />
+            <p className="mt-wilms-1 text-right text-small text-text-muted">
+              {htmlToText(bodyHtml).length} characters
+            </p>
           </div>
           <AttachmentUploader attachments={attachments} onChange={setAttachments} />
           <AudienceComposer

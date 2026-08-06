@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { PageBreadcrumbs } from '@/components/layout/PageBreadcrumbs';
 import { GlobalSearchTrigger } from '@/components/layout/shell/navbar/GlobalSearchPanel';
@@ -29,6 +30,16 @@ export function AppNavbar({
   const openMobileNav = useUiStore((state) => state.openMobileNav);
   const isSidebarCollapsed = useShellLayoutStore((state) => state.isSidebarCollapsed);
   const { user } = useAuth();
+  const [elevated, setElevated] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      setElevated(window.scrollY > 4);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const isExecutive = variant === 'executive';
   const pageTitle =
@@ -38,10 +49,12 @@ export function AppNavbar({
     <header
       data-navbar="app"
       data-sidebar-collapsed={isSidebarCollapsed ? 'true' : 'false'}
+      data-elevated={elevated ? 'true' : 'false'}
       className={cn(
-        'sticky top-0 z-30 hidden border-b border-border/80 bg-card/95 px-3 backdrop-blur-sm md:block lg:px-4',
+        'sticky top-0 z-30 hidden border-b border-border/80 bg-card/95 px-3 backdrop-blur-md md:block lg:px-4',
         'supports-[backdrop-filter]:bg-card/90',
-        'motion-safe:transition-[box-shadow] motion-safe:duration-200',
+        'motion-safe:transition-[box-shadow] motion-safe:duration-[var(--motion-base)]',
+        elevated && 'navbar-elevated',
         className,
       )}
     >

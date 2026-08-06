@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { DASHBOARD_TREND_TONE_CLASS } from '@/constants/dashboard-display';
 import type { DashboardValueTone } from '@/types/dashboard';
 import { cn } from '@/utils/cn';
+import { TrendingDown, TrendingUp, Minus } from 'lucide-react';
 
 export interface KpiCardProps {
   label: string;
@@ -13,6 +14,9 @@ export interface KpiCardProps {
   icon?: ReactNode;
   variant?: 'default' | 'executive';
   className?: string;
+  /** Soft loading skeleton for value area (label remains visible). */
+  isLoading?: boolean;
+  sparkline?: ReactNode;
 }
 
 export function KpiCard({
@@ -25,20 +29,23 @@ export function KpiCard({
   icon,
   variant = 'default',
   className,
+  isLoading = false,
+  sparkline,
 }: KpiCardProps) {
   const resolvedTrendTone: DashboardValueTone =
     trendTone ??
     (trendDirection === 'up' ? 'success' : trendDirection === 'down' ? 'danger' : 'default');
 
   const isExecutive = variant === 'executive';
-  const trendArrow =
-    trendDirection === 'up' ? '↑' : trendDirection === 'down' ? '↓' : null;
+  const TrendIcon =
+    trendDirection === 'up' ? TrendingUp : trendDirection === 'down' ? TrendingDown : Minus;
 
   return (
     <div
       className={cn(
-        'rounded-sm border border-border bg-card p-wilms-4',
-        isExecutive && 'flex flex-col justify-between',
+        'rounded-[var(--radius-card)] border border-border bg-card motion-card-lift',
+        isExecutive ? 'flex flex-col justify-between' : null,
+        'p-[var(--density-kpi-padding)]',
         className,
       )}
     >
@@ -52,20 +59,31 @@ export function KpiCard({
           {label}
         </p>
         {icon ? (
-          <span className="text-text-muted" aria-hidden="true">
+          <span
+            className="rounded-md bg-background p-1.5 text-text-muted"
+            aria-hidden="true"
+          >
             {icon}
           </span>
         ) : null}
       </div>
-      <div
-        className={cn(
-          'mt-wilms-2 font-mono font-bold',
-          isExecutive ? 'text-display' : 'text-display',
-          valueClassName,
-        )}
-      >
-        {value}
-      </div>
+      {isLoading ? (
+        <div
+          className="mt-wilms-2 h-8 w-24 animate-pulse rounded-sm skeleton-shimmer"
+          aria-hidden="true"
+        />
+      ) : (
+        <div
+          className={cn(
+            'mt-wilms-2 font-mono font-bold tabular-nums tracking-tight',
+            isExecutive ? 'text-display' : 'text-display',
+            valueClassName,
+          )}
+        >
+          {value}
+        </div>
+      )}
+      {sparkline ? <div className="mt-wilms-2">{sparkline}</div> : null}
       {trend ? (
         <p
           className={cn(
@@ -73,7 +91,7 @@ export function KpiCard({
             DASHBOARD_TREND_TONE_CLASS[resolvedTrendTone],
           )}
         >
-          {trendArrow ? <span aria-hidden="true">{trendArrow}</span> : null}
+          <TrendIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           <span>{trend}</span>
         </p>
       ) : null}
