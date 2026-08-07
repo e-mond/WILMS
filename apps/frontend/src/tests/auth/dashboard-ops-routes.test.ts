@@ -26,7 +26,7 @@ describe('Dashboard vs Operations routes', () => {
   });
 
   it('resolves distinct titles and breadcrumbs', () => {
-    expect(resolveShellPageTitle('/dashboard')).toBe('Dashboard');
+    expect(resolveShellPageTitle('/dashboard')).toBe('Operational Dashboard');
     expect(resolveShellPageTitle('/ops')).toBe('Operations');
 
     const dashboardCrumbs = resolveShellBreadcrumbs('/dashboard').map((item) => item.label);

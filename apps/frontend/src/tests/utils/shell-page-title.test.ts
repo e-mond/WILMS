@@ -3,7 +3,7 @@ import { resolveShellPageTitle } from '@/utils/shell-page-title';
 
 describe('resolveShellPageTitle', () => {
   it('resolves exact dashboard title', () => {
-    expect(resolveShellPageTitle('/dashboard')).toBe('Dashboard');
+    expect(resolveShellPageTitle('/dashboard')).toBe('Operational Dashboard');
   });
 
   it('resolves operations control-centre title distinctly from dashboard', () => {
