@@ -10,6 +10,7 @@ import { sql } from 'drizzle-orm';
 import '../config/load-env.js';
 import { getDb, isDatabaseEnabled } from '../db/client.js';
 import { verifyCoreApplicationTables } from '../db/schema-health.js';
+import { resolveMigrationHealthStatus } from '../modules/health/health.service.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const migrationsDir = path.join(packageRoot, 'src/db/migrations');
@@ -18,6 +19,7 @@ const journalPath = path.join(migrationsDir, 'meta/_journal.json');
 interface JournalEntry {
   idx: number;
   tag: string;
+  when?: number;
 }
 
 function loadJournal(): JournalEntry[] {
@@ -71,22 +73,51 @@ async function checkDatabaseState(entries: JournalEntry[]): Promise<boolean> {
 
   const db = getDb();
   const result = await db.execute(sql`
-    SELECT COUNT(*)::int AS count
+    SELECT COUNT(*)::int AS count, MAX(created_at) AS latest
     FROM drizzle.__drizzle_migrations
   `);
-  const rows = result.rows as { count?: number }[];
+  const rows = result.rows as { count?: number; latest?: string | Date | number }[];
   const applied = Number(rows[0]?.count ?? 0);
   const expected = entries.length;
-  const pending = Math.max(expected - applied, 0);
+  const latestJournalWhen = entries.reduce(
+    (max, entry) => Math.max(max, Number(entry.when ?? 0)),
+    0,
+  );
+
+  const latestRaw = rows[0]?.latest;
+  let latestAppliedMillis: number | null = null;
+  if (latestRaw instanceof Date) {
+    latestAppliedMillis = latestRaw.getTime();
+  } else if (typeof latestRaw === 'string' || typeof latestRaw === 'number') {
+    latestAppliedMillis = Number(latestRaw);
+  }
+
+  const migrationStatus = resolveMigrationHealthStatus({
+    expectedCount: expected,
+    appliedCount: applied,
+    latestAppliedMillis,
+    latestJournalWhen,
+  });
+  const countGap = applied !== expected;
+  const pendingByWatermark = entries.filter(
+    (entry) => Number(entry.when ?? 0) > (latestAppliedMillis ?? 0),
+  );
 
   console.log(`\nDatabase migration state:`);
   console.log(`  applied: ${applied}`);
   console.log(`  expected: ${expected}`);
-  console.log(`  pending: ${pending}`);
+  console.log(`  latest_applied_when: ${latestAppliedMillis ?? 'n/a'}`);
+  console.log(`  latest_journal_when: ${latestJournalWhen}`);
+  console.log(`  watermark_status: ${migrationStatus}`);
+  if (countGap) {
+    console.log(
+      `  count_gap: yes (historical; drizzle migrates by watermark, not row count)`,
+    );
+  }
 
-  if (pending > 0) {
-    console.log('\nPending tags (journal tail after applied count):');
-    for (const entry of entries.slice(applied)) {
+  if (pendingByWatermark.length > 0) {
+    console.log('\nPending tags (journal when > applied watermark):');
+    for (const entry of pendingByWatermark) {
       console.log(`  - ${entry.tag}`);
     }
   }
@@ -97,7 +128,7 @@ async function checkDatabaseState(entries: JournalEntry[]): Promise<boolean> {
     console.log(`  missing: ${schemaReport.missingTables.join(', ')}`);
   }
 
-  return pending === 0 && schemaReport.status === 'ok';
+  return migrationStatus === 'ok' && schemaReport.status === 'ok';
 }
 
 async function main(): Promise<void> {
