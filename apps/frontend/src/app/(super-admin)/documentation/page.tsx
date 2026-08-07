@@ -7,7 +7,8 @@ export default function DocumentationPortalPage() {
   return (
     <PageShell
       variant="executive"
-      description="Official WILMS Documentation Centre — browse, search, print, and download the enterprise product library."
+      className="max-w-none"
+      description="Official WILMS Documentation Centre — browse, search, print, and download the enterprise product library. Opened from Operations."
     >
       <Suspense fallback={<PageLoadingFallback label="Loading Documentation Centre" />}>
         <DocumentationPortalClient />

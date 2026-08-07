@@ -37,6 +37,7 @@ import {
   searchMarkdown,
   type DocHeading,
 } from '@/features/documentation/utils/doc-content';
+import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { cn } from '@/utils/cn';
 
 type SearchHit = {
@@ -80,7 +81,7 @@ export function DocumentationCentre({ initialBookId }: { initialBookId?: string 
   const [isSearching, setIsSearching] = useState(false);
   const [version, setVersion] = useState(CURRENT_DOC_VERSION);
   const [presentation, setPresentation] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const [activeHeading, setActiveHeading] = useState<string>('');
   const {
     bookmarks,
@@ -102,6 +103,37 @@ export function DocumentationCentre({ initialBookId }: { initialBookId?: string 
     bookIndex >= 0 && bookIndex < DOCUMENTATION_BOOKS.length - 1
       ? DOCUMENTATION_BOOKS[bookIndex + 1]
       : null;
+
+  const asideContent = useMemo(() => {
+    if (presentation || !book) return null;
+    return (
+      <div className="space-y-wilms-4" data-testid="documentation-aside-toc">
+        <div>
+          <p className="text-small font-semibold uppercase tracking-wide text-text-muted">
+            On this page
+          </p>
+          <p className="mt-wilms-1 text-small text-text-primary">{book.shortTitle}</p>
+          <TocList
+            headings={headings}
+            activeHeading={activeHeading}
+            bookmarks={bookmarks}
+            onToggleBookmark={toggleBookmark}
+          />
+        </div>
+        <div className="border-t border-border pt-wilms-4">
+          <p className="text-small font-semibold text-text-primary">Quick actions</p>
+          <ul className="mt-wilms-2 space-y-2 text-small text-text-muted">
+            <li>Download PDF or Word from the toolbar</li>
+            <li>Use Present for board reviews</li>
+            <li>Bookmark headings for later</li>
+            <li>Open from Operations → Documentation Centre</li>
+          </ul>
+        </div>
+      </div>
+    );
+  }, [activeHeading, book, bookmarks, headings, presentation, toggleBookmark]);
+
+  useShellAsideContent(asideContent);
 
   const loadBook = useCallback(
     async (target: DocumentationBook) => {
@@ -207,17 +239,17 @@ export function DocumentationCentre({ initialBookId }: { initialBookId?: string 
   return (
     <div
       className={cn(
-        'documentation-centre min-h-[70vh]',
-        presentation && 'fixed inset-0 z-[80] overflow-auto bg-background px-wilms-6 py-wilms-8',
+        'documentation-centre w-full min-w-0',
+        presentation && 'fixed inset-0 z-[80] overflow-auto bg-background px-wilms-4 py-wilms-6 md:px-wilms-8',
       )}
       data-testid="documentation-centre"
     >
       {!presentation ? (
-        <header className="mb-wilms-6 overflow-hidden rounded-sm border border-[color-mix(in_srgb,var(--color-brand-primary)_35%,transparent)] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--color-brand-primary)_18%,var(--color-card)),var(--color-card)_55%)] p-wilms-6">
+        <header className="mb-wilms-5 w-full overflow-hidden rounded-sm border border-[color-mix(in_srgb,var(--color-brand-primary)_35%,transparent)] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--color-brand-primary)_18%,var(--color-card)),var(--color-card)_55%)] p-wilms-5 md:p-wilms-6">
           <p className="text-small font-semibold uppercase tracking-[0.14em] text-brand-primary">
             Documentation Centre · v{DOCUMENTATION_STATS.libraryVersion}
           </p>
-          <h1 className="font-doc-display mt-wilms-2 text-heading-1 font-semibold tracking-tight text-text-primary md:text-[2.5rem]">
+          <h1 className="font-doc-display mt-wilms-2 text-heading-1 font-semibold tracking-tight text-text-primary md:text-[2.25rem]">
             WILMS Documentation Centre
           </h1>
           <p className="mt-wilms-3 max-w-3xl text-body text-text-muted">
@@ -231,23 +263,27 @@ export function DocumentationCentre({ initialBookId }: { initialBookId?: string 
             <Stat label="Est. pages" value={String(DOCUMENTATION_STATS.estimatedPages)} />
             <Stat label="Status" value={DOCUMENTATION_STATS.status} />
           </dl>
-          <div className="mt-wilms-5 flex flex-wrap items-center gap-wilms-3">
-            <div className="relative min-w-[16rem] flex-1">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+          <div className="mt-wilms-5 flex flex-col gap-wilms-3 sm:flex-row sm:flex-wrap sm:items-end">
+            <div className="relative min-w-0 flex-1">
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted"
+                aria-hidden
+              />
               <Input
-                className="pl-10"
+                className="min-h-[44px] pl-10"
                 placeholder="Search titles, headings, glossary, API names…"
                 value={query}
                 onChange={(event) => void runSearch(event.target.value)}
                 aria-label="Search documentation"
               />
             </div>
-            <label className="text-small text-text-muted">
-              Version
+            <label className="block shrink-0 text-small text-text-muted">
+              Documentation version
               <Select
-                className="mt-1 w-32"
+                className="mt-1 min-h-[44px] w-full sm:w-40"
                 value={version}
                 onChange={(event) => setVersion(event.target.value as typeof version)}
+                aria-label="Documentation version"
               >
                 {DOC_VERSIONS.map((entry) => (
                   <option key={entry} value={entry}>
@@ -258,7 +294,12 @@ export function DocumentationCentre({ initialBookId }: { initialBookId?: string 
             </label>
           </div>
           {query.trim().length >= 2 ? (
-            <div className="mt-wilms-4 rounded-sm border border-border bg-card/90 p-wilms-3">
+            <div
+              className="mt-wilms-4 rounded-sm border border-border bg-card/90 p-wilms-3"
+              role="region"
+              aria-live="polite"
+              aria-label="Search results"
+            >
               <p className="text-small font-semibold text-text-primary">
                 {isSearching ? 'Searching…' : `${searchHits.length} results`}
               </p>
@@ -267,11 +308,12 @@ export function DocumentationCentre({ initialBookId }: { initialBookId?: string 
                   <li key={`${hit.bookId}-${hit.heading}-${index}`}>
                     <button
                       type="button"
-                      className="w-full rounded-sm px-wilms-2 py-wilms-2 text-left hover:bg-background"
+                      className="min-h-[44px] w-full rounded-sm px-wilms-2 py-wilms-2 text-left hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-primary"
                       onClick={() => {
                         setSelectedId(hit.bookId);
                         setQuery('');
                         setSearchHits([]);
+                        setLibraryOpen(false);
                       }}
                     >
                       <p className="text-small font-semibold text-brand-primary">{hit.bookTitle}</p>
@@ -289,39 +331,44 @@ export function DocumentationCentre({ initialBookId }: { initialBookId?: string 
           <p className="text-small font-semibold uppercase tracking-wide text-brand-primary">
             Presentation mode
           </p>
-          <Button type="button" variant="secondary" onClick={() => setPresentation(false)}>
-            <Minimize2 className="mr-2 h-4 w-4" />
-            Exit
+          <Button type="button" variant="secondary" className="min-h-[44px]" onClick={() => setPresentation(false)}>
+            <Minimize2 className="mr-2 h-4 w-4" aria-hidden />
+            Exit presentation
           </Button>
         </div>
       )}
 
       <div
         className={cn(
-          'grid gap-wilms-4',
-          presentation ? 'grid-cols-1' : 'xl:grid-cols-[280px_minmax(0,1fr)_240px]',
+          'grid w-full min-w-0 gap-wilms-4',
+          presentation ? 'grid-cols-1' : 'lg:grid-cols-[minmax(15rem,17.5rem)_minmax(0,1fr)]',
         )}
       >
         {!presentation ? (
           <aside
+            id="documentation-library-nav"
             className={cn(
-              'rounded-sm border border-border bg-card p-wilms-3 print:hidden',
-              !sidebarOpen && 'hidden xl:block',
+              'min-w-0 rounded-sm border border-border bg-card p-wilms-3 print:hidden lg:sticky lg:top-wilms-4 lg:self-start',
+              libraryOpen ? 'block' : 'hidden lg:block',
             )}
           >
-            <div className="mb-wilms-3 flex items-center justify-between">
+            <div className="mb-wilms-3 flex items-center justify-between gap-wilms-2 lg:block">
               <p className="text-small font-semibold uppercase tracking-wide text-text-muted">
                 Library
               </p>
-              <button
+              <Button
                 type="button"
-                className="text-small text-brand-primary xl:hidden"
-                onClick={() => setSidebarOpen(false)}
+                variant="secondary"
+                className="min-h-[44px] lg:hidden"
+                onClick={() => setLibraryOpen(false)}
               >
                 Close
-              </button>
+              </Button>
             </div>
-            <nav aria-label="Documentation books" className="max-h-[70vh] space-y-wilms-4 overflow-y-auto pr-1">
+            <nav
+              aria-label="Documentation books"
+              className="max-h-[min(70vh,40rem)] space-y-wilms-4 overflow-y-auto overscroll-contain pr-1"
+            >
               {groups.map((group) => (
                 <div key={group.category}>
                   <p className="mb-wilms-2 text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-text-muted">
@@ -335,20 +382,26 @@ export function DocumentationCentre({ initialBookId }: { initialBookId?: string 
                         <li key={entry.id}>
                           <button
                             type="button"
-                            onClick={() => setSelectedId(entry.id)}
+                            onClick={() => {
+                              setSelectedId(entry.id);
+                              setLibraryOpen(false);
+                            }}
+                            aria-current={active ? 'page' : undefined}
                             className={cn(
-                              'flex w-full items-start gap-2 rounded-sm px-wilms-2 py-wilms-2 text-left text-small transition',
+                              'flex min-h-[44px] w-full items-start gap-2 rounded-sm px-wilms-2 py-wilms-2 text-left text-small transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-primary',
                               active
                                 ? 'bg-brand-primary/10 font-semibold text-brand-primary'
                                 : 'text-text-primary hover:bg-background',
                             )}
-                            data-tour-nav={`/documentation?book=${entry.id}`}
                           >
-                            <BookOpen className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                            <BookOpen className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
                             <span className="min-w-0 flex-1">
                               <span className="block truncate">{entry.shortTitle}</span>
                               {progress[entry.id] ? (
-                                <span className="mt-1 block h-1 overflow-hidden rounded-full bg-border">
+                                <span
+                                  className="mt-1 block h-1 overflow-hidden rounded-full bg-border"
+                                  aria-hidden
+                                >
                                   <span
                                     className="block h-full bg-brand-primary"
                                     style={{ width: `${progress[entry.id]}%` }}
@@ -356,7 +409,9 @@ export function DocumentationCentre({ initialBookId }: { initialBookId?: string 
                                 </span>
                               ) : null}
                             </span>
-                            {fav ? <Star className="mt-0.5 h-3.5 w-3.5 shrink-0 fill-current" /> : null}
+                            {fav ? (
+                              <Star className="mt-0.5 h-3.5 w-3.5 shrink-0 fill-current" aria-label="Favourite" />
+                            ) : null}
                           </button>
                         </li>
                       );
@@ -368,65 +423,81 @@ export function DocumentationCentre({ initialBookId }: { initialBookId?: string 
           </aside>
         ) : null}
 
-        <section className="min-w-0">
+        <section className="min-w-0" aria-label="Document reader">
           {!presentation ? (
-            <div className="mb-wilms-4 flex flex-wrap items-center gap-wilms-2 rounded-sm border border-border bg-card px-wilms-3 py-wilms-3 print:hidden">
+            <div className="mb-wilms-3 flex items-center gap-wilms-2 lg:hidden print:hidden">
               <Button
                 type="button"
                 variant="secondary"
-                className="xl:hidden"
-                onClick={() => setSidebarOpen((open) => !open)}
+                className="min-h-[44px]"
+                aria-expanded={libraryOpen}
+                aria-controls="documentation-library-nav"
+                onClick={() => setLibraryOpen((open) => !open)}
               >
-                Library
+                <BookOpen className="mr-2 h-4 w-4" aria-hidden />
+                {libraryOpen ? 'Hide library' : 'Browse library'}
               </Button>
-              <Button type="button" variant="secondary" onClick={() => window.print()}>
-                <Printer className="mr-2 h-4 w-4" />
+              <p className="min-w-0 truncate text-small text-text-muted">{book.shortTitle}</p>
+            </div>
+          ) : null}
+
+          {!presentation ? (
+            <div
+              className="mb-wilms-4 flex flex-wrap items-center gap-wilms-2 rounded-sm border border-border bg-card px-wilms-3 py-wilms-3 print:hidden"
+              role="toolbar"
+              aria-label="Document actions"
+            >
+              <Button type="button" variant="secondary" className="min-h-[44px]" onClick={() => window.print()}>
+                <Printer className="mr-2 h-4 w-4" aria-hidden />
                 Print
               </Button>
               <a
-                className="inline-flex min-h-[40px] items-center rounded-sm border border-border px-wilms-3 text-small font-semibold text-text-primary hover:bg-background"
+                className="inline-flex min-h-[44px] items-center rounded-sm border border-border px-wilms-3 text-small font-semibold text-text-primary hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-primary"
                 href={documentationAssetUrl('pdf', book)}
                 download
               >
-                <Download className="mr-2 h-4 w-4" />
+                <Download className="mr-2 h-4 w-4" aria-hidden />
                 PDF
               </a>
               <a
-                className="inline-flex min-h-[40px] items-center rounded-sm border border-border px-wilms-3 text-small font-semibold text-text-primary hover:bg-background"
+                className="inline-flex min-h-[44px] items-center rounded-sm border border-border px-wilms-3 text-small font-semibold text-text-primary hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-primary"
                 href={documentationAssetUrl('docx', book)}
                 download
               >
-                <FileText className="mr-2 h-4 w-4" />
+                <FileText className="mr-2 h-4 w-4" aria-hidden />
                 Word
               </a>
-              <Button type="button" variant="secondary" onClick={() => void copySectionLink()}>
-                <Link2 className="mr-2 h-4 w-4" />
+              <Button type="button" variant="secondary" className="min-h-[44px]" onClick={() => void copySectionLink()}>
+                <Link2 className="mr-2 h-4 w-4" aria-hidden />
                 Copy link
               </Button>
-              <Button type="button" variant="secondary" onClick={() => setPresentation(true)}>
-                <Maximize2 className="mr-2 h-4 w-4" />
+              <Button type="button" variant="secondary" className="min-h-[44px]" onClick={() => setPresentation(true)}>
+                <Maximize2 className="mr-2 h-4 w-4" aria-hidden />
                 Present
               </Button>
               <Button
                 type="button"
                 variant="secondary"
+                className="min-h-[44px]"
                 onClick={() => toggleFavourite(book.id)}
+                aria-pressed={favourites.includes(book.id)}
               >
                 <Star
                   className={cn(
                     'mr-2 h-4 w-4',
                     favourites.includes(book.id) && 'fill-current text-brand-primary',
                   )}
+                  aria-hidden
                 />
                 Favourite
               </Button>
-              <span className="ml-auto text-small text-text-muted">
-                ~{readingMinutes} min · {book.classification}
+              <span className="w-full text-small text-text-muted sm:ml-auto sm:w-auto">
+                About {readingMinutes} min · {book.classification}
               </span>
             </div>
           ) : null}
 
-          <article className="rounded-sm border border-border bg-card px-wilms-5 py-wilms-6 md:px-wilms-8 md:py-wilms-8 print:border-0">
+          <article className="w-full rounded-sm border border-border bg-card px-wilms-4 py-wilms-5 sm:px-wilms-6 sm:py-wilms-6 md:px-wilms-8 md:py-wilms-8 print:border-0">
             <DocCover book={book} version={version} />
             <QueryStatePanel
               isLoading={isLoading}
@@ -436,53 +507,44 @@ export function DocumentationCentre({ initialBookId }: { initialBookId?: string 
               onRetry={() => void loadBook(book)}
               variant="inline"
             >
-              <div className="mx-auto max-w-[46rem]">
+              <div className="mx-auto w-full max-w-4xl">
                 <DocMarkdown markdown={markdown} />
               </div>
             </QueryStatePanel>
           </article>
 
           {!presentation ? (
-            <div className="mt-wilms-4 flex flex-wrap items-center justify-between gap-wilms-3 print:hidden">
+            <nav
+              className="mt-wilms-4 flex flex-col gap-wilms-3 sm:flex-row sm:items-center sm:justify-between print:hidden"
+              aria-label="Adjacent documents"
+            >
               {prevBook ? (
-                <Button type="button" variant="secondary" onClick={() => setSelectedId(prevBook.id)}>
-                  <ChevronLeft className="mr-2 h-4 w-4" />
-                  {prevBook.shortTitle}
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="min-h-[44px] justify-start"
+                  onClick={() => setSelectedId(prevBook.id)}
+                >
+                  <ChevronLeft className="mr-2 h-4 w-4" aria-hidden />
+                  Previous: {prevBook.shortTitle}
                 </Button>
               ) : (
                 <span />
               )}
               {nextBook ? (
-                <Button type="button" variant="secondary" onClick={() => setSelectedId(nextBook.id)}>
-                  {nextBook.shortTitle}
-                  <ChevronRight className="ml-2 h-4 w-4" />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="min-h-[44px] justify-end sm:ml-auto"
+                  onClick={() => setSelectedId(nextBook.id)}
+                >
+                  Next: {nextBook.shortTitle}
+                  <ChevronRight className="ml-2 h-4 w-4" aria-hidden />
                 </Button>
               ) : null}
-            </div>
+            </nav>
           ) : null}
         </section>
-
-        {!presentation ? (
-          <aside className="hidden rounded-sm border border-border bg-card p-wilms-3 xl:block print:hidden">
-            <p className="text-small font-semibold uppercase tracking-wide text-text-muted">
-              On this page
-            </p>
-            <TocList
-              headings={headings}
-              activeHeading={activeHeading}
-              bookmarks={bookmarks}
-              onToggleBookmark={toggleBookmark}
-            />
-            <div className="mt-wilms-5 border-t border-border pt-wilms-4">
-              <p className="text-small font-semibold text-text-primary">Quick actions</p>
-              <ul className="mt-wilms-2 space-y-2 text-small text-text-muted">
-                <li>Download PDF / Word from the toolbar</li>
-                <li>Use Present for board reviews</li>
-                <li>Bookmark headings for later</li>
-              </ul>
-            </div>
-          </aside>
-        ) : null}
       </div>
     </div>
   );
@@ -548,13 +610,13 @@ function TocList({
   }
 
   return (
-    <ul className="mt-wilms-3 max-h-[55vh] space-y-1 overflow-y-auto pr-1">
+    <ul className="mt-wilms-3 max-h-[min(60vh,32rem)] space-y-1 overflow-y-auto overscroll-contain pr-1">
       {headings.slice(0, 80).map((heading) => (
         <li key={heading.id} className="flex items-start gap-1">
           <a
             href={`#${heading.id}`}
             className={cn(
-              'min-w-0 flex-1 rounded-sm px-wilms-2 py-1 text-small leading-snug hover:bg-background',
+              'min-h-[40px] min-w-0 flex-1 rounded-sm px-wilms-2 py-2 text-small leading-snug hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-primary',
               heading.level === 1 && 'font-semibold',
               heading.level === 2 && 'pl-wilms-3',
               heading.level >= 3 && 'pl-wilms-5 text-text-muted',
@@ -566,11 +628,13 @@ function TocList({
           <button
             type="button"
             aria-label={`Bookmark ${heading.text}`}
-            className="mt-1 text-text-muted hover:text-brand-primary"
+            aria-pressed={bookmarks.includes(heading.id)}
+            className="mt-1 inline-flex min-h-[40px] min-w-[40px] items-center justify-center text-text-muted hover:text-brand-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-primary"
             onClick={() => onToggleBookmark(heading.id)}
           >
             <Star
               className={cn('h-3.5 w-3.5', bookmarks.includes(heading.id) && 'fill-current text-brand-primary')}
+              aria-hidden
             />
           </button>
         </li>

@@ -47,6 +47,10 @@ export function DocumentationSettingsSection() {
         </li>
       </ul>
 
+      <p className="text-small text-text-muted">
+        Also available from <span className="font-semibold text-text-primary">Operations</span>.
+      </p>
+
       <Link
         href="/documentation"
         className="inline-flex min-h-[44px] items-center rounded-sm bg-brand-primary px-wilms-4 text-small font-semibold text-white hover:opacity-95"
