@@ -193,13 +193,11 @@ function OperationalDashboardContent({
             Operational dashboard
           </p>
           <h1 className="text-heading-2 font-semibold text-text-primary">What needs attention today</h1>
-          <p className="mt-wilms-1 max-w-2xl text-small text-text-muted">
-            Task-oriented workspace for approvals, collections, reconciliation, and exceptions.
-            Portfolio performance and board KPIs live on{' '}
+          <p className="mt-wilms-1 max-w-xl text-small text-text-muted">
+            Daily queues for approvals, collections, and reconciliation.{' '}
             <Link href="/executive" className="font-semibold text-brand-primary hover:underline">
-              Executive Intelligence
+              Executive view
             </Link>
-            .
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-wilms-2">
@@ -326,18 +324,13 @@ function OperationalDashboardContent({
           aria-labelledby="ops-activity-heading"
           className="rounded-sm border border-border bg-card p-wilms-5"
         >
-          <div className="mb-wilms-4 flex flex-wrap items-end justify-between gap-wilms-2">
-            <div>
-              <h2 id="ops-activity-heading" className="text-heading-3 font-semibold text-text-primary">
-                Recent activity
-              </h2>
-              <p className="text-small text-text-muted">Authoritative audit events</p>
-            </div>
-            <Link href="/reports/audit-log" className="text-small font-semibold text-brand-primary">
-              Full audit log
-            </Link>
+          <div className="mb-wilms-4">
+            <h2 id="ops-activity-heading" className="text-heading-3 font-semibold text-text-primary">
+              Recent activity
+            </h2>
+            <p className="text-small text-text-muted">Latest audit events</p>
           </div>
-          <DashboardRecentActivity />
+          <DashboardRecentActivity limit={2} />
         </section>
       </div>
 

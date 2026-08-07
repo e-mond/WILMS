@@ -28,8 +28,6 @@ type ActivityCategory =
   | 'security'
   | 'system';
 
-type ActivityGroup = 'Today' | 'Yesterday' | 'This week' | 'Earlier';
-
 interface ActivityItem {
   id: string;
   message: string;
@@ -38,10 +36,6 @@ interface ActivityItem {
   href?: string;
   status: 'info' | 'warning' | 'danger' | 'success';
   actor?: string;
-}
-
-function startOfDay(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
 function classifyAction(action: string): { category: ActivityCategory; status: ActivityItem['status'] } {
@@ -78,35 +72,29 @@ function resolveHref(entry: AuditEntry): string | undefined {
   return `/reports/audit-log`;
 }
 
+function summarizeMessage(action: string, reason?: string | null): string {
+  const label = String(action).replace(/[._]/g, ' ').trim();
+  const detail = reason?.trim();
+  if (!detail) return label;
+  // Prefer short human reasons; hide raw UUID / technical dumps on the dashboard preview.
+  if (/^[0-9a-f-]{20,}$/i.test(detail) || /userid\s*=/i.test(detail) || detail.length > 72) {
+    return label;
+  }
+  return `${label} — ${detail}`;
+}
+
 function toActivityItem(entry: AuditEntry): ActivityItem {
   const { category, status } = classifyAction(String(entry.action));
   const actor = entry.actorDisplayName ?? entry.actorDisplayId ?? 'System';
-  const reason = entry.reason?.trim();
   return {
     id: entry.id,
-    message: reason
-      ? `${String(entry.action).replace(/[._]/g, ' ')} — ${reason}`
-      : String(entry.action).replace(/[._]/g, ' '),
+    message: summarizeMessage(String(entry.action), entry.reason),
     createdAt: entry.createdAt,
     category,
     href: resolveHref(entry),
     status,
     actor,
   };
-}
-
-function groupLabel(iso: string, now: Date): ActivityGroup {
-  const date = new Date(iso);
-  const today = startOfDay(now);
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const weekAgo = new Date(today);
-  weekAgo.setDate(weekAgo.getDate() - 7);
-  const day = startOfDay(date);
-  if (day.getTime() === today.getTime()) return 'Today';
-  if (day.getTime() === yesterday.getTime()) return 'Yesterday';
-  if (day.getTime() >= weekAgo.getTime()) return 'This week';
-  return 'Earlier';
 }
 
 const CATEGORY_ICON = {
@@ -125,15 +113,18 @@ const STATUS_CLASS = {
   success: 'border-status-active/30 bg-status-active-light text-status-active',
 } as const;
 
-const GROUP_ORDER: ActivityGroup[] = ['Today', 'Yesterday', 'This week', 'Earlier'];
-
 export interface DashboardRecentActivityProps {
   /** @deprecated Alerts are no longer the authoritative source; audit log is used. */
   alerts?: unknown[];
+  /** Preview count on the operational dashboard (default 2). */
   limit?: number;
+  showViewAll?: boolean;
 }
 
-export function DashboardRecentActivity({ limit = 24 }: DashboardRecentActivityProps) {
+export function DashboardRecentActivity({
+  limit = 2,
+  showViewAll = true,
+}: DashboardRecentActivityProps) {
   const { user } = useAuth();
   const canViewAudit =
     user?.role === USER_ROLE.SUPER_ADMIN ||
@@ -142,31 +133,20 @@ export function DashboardRecentActivity({ limit = 24 }: DashboardRecentActivityP
 
   const activityQuery = useQuery({
     queryKey: ['dashboard', 'recent-activity', limit] as const,
-    queryFn: () => auditService.listRecentEntries({ limit: Math.max(limit, 40) }),
+    queryFn: () => auditService.listRecentEntries({ limit: Math.max(limit, 12) }),
     enabled: Boolean(canViewAudit),
     refetchInterval: 60_000,
     staleTime: 30_000,
   });
 
-  const grouped = useMemo(() => {
-    const now = new Date();
-    const items = (activityQuery.data ?? [])
+  const items = useMemo(() => {
+    return (activityQuery.data ?? [])
       .map(toActivityItem)
       .filter((item, index, list) => list.findIndex((entry) => entry.id === item.id) === index)
       .slice(0, limit);
-
-    const map = new Map<ActivityGroup, ActivityItem[]>();
-    for (const group of GROUP_ORDER) {
-      map.set(group, []);
-    }
-    for (const item of items) {
-      const label = groupLabel(item.createdAt, now);
-      map.get(label)?.push(item);
-    }
-    return GROUP_ORDER.map((label) => ({ label, items: map.get(label) ?? [] })).filter(
-      (group) => group.items.length > 0,
-    );
   }, [activityQuery.data, limit]);
+
+  const totalAvailable = activityQuery.data?.length ?? 0;
 
   if (!canViewAudit) {
     return (
@@ -180,8 +160,6 @@ export function DashboardRecentActivity({ limit = 24 }: DashboardRecentActivityP
   if (activityQuery.isLoading) {
     return (
       <div className="space-y-2" aria-busy="true">
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="h-14 w-full" />
         <Skeleton className="h-14 w-full" />
         <Skeleton className="h-14 w-full" />
       </div>
@@ -206,7 +184,7 @@ export function DashboardRecentActivity({ limit = 24 }: DashboardRecentActivityP
     );
   }
 
-  if (grouped.length === 0) {
+  if (items.length === 0) {
     return (
       <GuidedEmptyState
         title="No recent activity yet"
@@ -220,63 +198,72 @@ export function DashboardRecentActivity({ limit = 24 }: DashboardRecentActivityP
   }
 
   return (
-    <div className="space-y-wilms-4" data-testid="dashboard-recent-activity">
-      {grouped.map((group) => (
-        <section key={group.label} aria-label={group.label} className="space-y-wilms-2">
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-text-tertiary">
-            {group.label}
-          </h3>
-          <ol className="space-y-wilms-2">
-            {group.items.map((item) => {
-              const Icon = CATEGORY_ICON[item.category] ?? Info;
-              const StatusIcon = item.status === 'danger' || item.status === 'warning' ? AlertTriangle : Icon;
-              const body = (
-                <div className="flex items-start gap-wilms-3">
-                  <span
-                    className={cn(
-                      'mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border',
-                      STATUS_CLASS[item.status],
-                    )}
-                    aria-hidden="true"
-                  >
-                    <StatusIcon className="h-3.5 w-3.5" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-body font-semibold capitalize text-text-primary">{item.message}</p>
-                    <p className="mt-wilms-1 text-small text-text-muted">
-                      {item.actor ? `${item.actor} · ` : ''}
-                      {item.category} ·{' '}
-                      {new Intl.DateTimeFormat('en-GB', {
-                        day: 'numeric',
-                        month: 'short',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      }).format(new Date(item.createdAt))}
-                    </p>
-                  </div>
-                </div>
-              );
+    <div className="space-y-wilms-3" data-testid="dashboard-recent-activity">
+      <ol className="space-y-wilms-2">
+        {items.map((item) => {
+          const Icon = CATEGORY_ICON[item.category] ?? Info;
+          const StatusIcon = item.status === 'danger' || item.status === 'warning' ? AlertTriangle : Icon;
+          const body = (
+            <div className="flex items-start gap-wilms-3">
+              <span
+                className={cn(
+                  'mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border',
+                  STATUS_CLASS[item.status],
+                )}
+                aria-hidden="true"
+              >
+                <StatusIcon className="h-3.5 w-3.5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-body font-semibold capitalize text-text-primary">
+                  {item.message}
+                </p>
+                <p className="mt-wilms-1 text-small text-text-muted">
+                  {item.actor ? `${item.actor} · ` : ''}
+                  {new Intl.DateTimeFormat('en-GB', {
+                    day: 'numeric',
+                    month: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  }).format(new Date(item.createdAt))}
+                </p>
+              </div>
+            </div>
+          );
 
-              return (
-                <li key={item.id}>
-                  {item.href ? (
-                    <Link
-                      href={item.href}
-                      className="block rounded-sm border border-border bg-background px-wilms-3 py-wilms-2 transition-colors hover:border-brand-primary/40"
-                    >
-                      {body}
-                    </Link>
-                  ) : (
-                    <div className="rounded-sm border border-border bg-background px-wilms-3 py-wilms-2">
-                      {body}
-                    </div>
-                  )}
-                </li>
-              );
-            })}
-          </ol>
-        </section>
-      ))}
+          return (
+            <li key={item.id}>
+              {item.href ? (
+                <Link
+                  href={item.href}
+                  className="block rounded-sm border border-border bg-background px-wilms-3 py-wilms-2 transition-colors hover:border-brand-primary/40"
+                >
+                  {body}
+                </Link>
+              ) : (
+                <div className="rounded-sm border border-border bg-background px-wilms-3 py-wilms-2">
+                  {body}
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+
+      {showViewAll ? (
+        <div className="flex items-center justify-between gap-wilms-2 pt-wilms-1">
+          <p className="text-small text-text-muted">
+            Showing {items.length}
+            {totalAvailable > items.length ? ` of latest events` : ''}
+          </p>
+          <Link
+            href="/reports/audit-log"
+            className="text-small font-semibold text-brand-primary hover:underline"
+          >
+            View all activity
+          </Link>
+        </div>
+      ) : null}
     </div>
   );
 }

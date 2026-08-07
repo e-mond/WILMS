@@ -54,45 +54,53 @@ export function DashboardReconciliationSummary({ compact = false }: { compact?: 
   }
 
   if (compact) {
+    const rows = [
+      {
+        label: 'Pending review',
+        value: summary.awaitingReviewCount,
+        className: 'text-status-at-risk',
+      },
+      {
+        label: 'Approved today',
+        value: summary.approvedTodayCount,
+        className: 'text-status-active',
+      },
+      {
+        label: 'Rejected',
+        value: summary.rejectedCount,
+        className: 'text-danger',
+      },
+      {
+        label: 'Total submitted',
+        value: summary.submittedCount,
+        className: 'text-text-primary',
+      },
+    ] as const;
+
     return (
-      <section className="space-y-wilms-4">
+      <section className="space-y-wilms-3">
         <div className="flex flex-wrap items-end justify-between gap-wilms-2">
-          <div>
+          <div className="min-w-0">
             <h3 className="text-heading-3 font-semibold text-text-primary">Reconciliation</h3>
-            <p className="text-small text-text-muted">Collector cash submissions and pending queue</p>
+            <p className="text-small text-text-muted">Collector cash submissions</p>
           </div>
           <Link
             href="/reports/daily-collection"
-            className="text-small font-semibold text-brand-primary hover:underline"
+            className="shrink-0 text-small font-semibold text-brand-primary hover:underline"
           >
-            Pending queue
+            Open queue
           </Link>
         </div>
-        <dl className="grid grid-cols-2 gap-wilms-3 text-small sm:grid-cols-4">
-          <div className="rounded-sm border border-border bg-background p-wilms-3">
-            <dt className="text-text-muted">Pending</dt>
-            <dd className="mt-wilms-1 text-heading-3 font-bold tabular-nums text-status-at-risk">
-              {summary.awaitingReviewCount}
-            </dd>
-          </div>
-          <div className="rounded-sm border border-border bg-background p-wilms-3">
-            <dt className="text-text-muted">Approved today</dt>
-            <dd className="mt-wilms-1 text-heading-3 font-bold tabular-nums text-status-active">
-              {summary.approvedTodayCount}
-            </dd>
-          </div>
-          <div className="rounded-sm border border-border bg-background p-wilms-3">
-            <dt className="text-text-muted">Rejected</dt>
-            <dd className="mt-wilms-1 text-heading-3 font-bold tabular-nums text-danger">
-              {summary.rejectedCount}
-            </dd>
-          </div>
-          <div className="rounded-sm border border-border bg-background p-wilms-3">
-            <dt className="text-text-muted">Total submitted</dt>
-            <dd className="mt-wilms-1 text-heading-3 font-bold tabular-nums text-text-primary">
-              {summary.submittedCount}
-            </dd>
-          </div>
+        <dl className="divide-y divide-border rounded-sm border border-border bg-background">
+          {rows.map((row) => (
+            <div
+              key={row.label}
+              className="flex items-center justify-between gap-wilms-3 px-wilms-3 py-wilms-2.5"
+            >
+              <dt className="text-small text-text-muted">{row.label}</dt>
+              <dd className={`text-body font-bold tabular-nums ${row.className}`}>{row.value}</dd>
+            </div>
+          ))}
         </dl>
       </section>
     );
