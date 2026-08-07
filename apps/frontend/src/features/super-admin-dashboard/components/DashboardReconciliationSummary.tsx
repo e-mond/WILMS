@@ -127,18 +127,24 @@ export function DashboardReconciliationSummary({ compact = false }: { compact?: 
         </Link>
       </div>
 
-      <dl className="grid gap-wilms-3 sm:grid-cols-2 xl:grid-cols-4">
+      <dl
+        className={cn(
+          'grid gap-wilms-3',
+          // Compact sits beside Recent Activity — 4 cols overflow and overlap labels.
+          compact ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-4',
+        )}
+      >
         {metrics.map((metric) => (
           <div
             key={metric.label}
-            className="rounded-sm border border-border/70 bg-card/80 px-wilms-4 py-wilms-4"
+            className="min-w-0 overflow-hidden rounded-sm border border-border/70 bg-card/80 px-wilms-4 py-wilms-4"
           >
-            <dt className="whitespace-nowrap text-small font-semibold text-text-muted">
+            <dt className="truncate text-small font-semibold text-text-muted" title={metric.label}>
               {metric.label}
             </dt>
             <dd
               className={cn(
-                'mt-wilms-2 text-heading-2 font-bold tabular-nums whitespace-nowrap',
+                'mt-wilms-2 text-heading-2 font-bold tabular-nums',
                 metric.tone === 'ok' && 'text-status-active',
                 metric.tone === 'warn' && 'text-status-at-risk',
                 metric.tone === 'danger' && 'text-danger',
@@ -147,7 +153,7 @@ export function DashboardReconciliationSummary({ compact = false }: { compact?: 
             >
               {metric.value}
             </dd>
-            <p className="mt-wilms-2 whitespace-nowrap text-small text-text-muted">{metric.trend}</p>
+            <p className="mt-wilms-2 truncate text-small text-text-muted">{metric.trend}</p>
           </div>
         ))}
       </dl>
