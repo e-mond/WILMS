@@ -1,13 +1,16 @@
 'use client';
 
 import { useCallback, useEffect, useState, useTransition } from 'react';
+import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { BookOpen } from 'lucide-react';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
 import { PERMISSION } from '@/constants/permissions';
+import { DOCUMENTATION_STATS } from '@/features/documentation/catalog';
 import { useToast } from '@/hooks/useToast';
 import { intelligenceService } from '@/services/intelligenceService';
 import { opsService, type OpsStatusReport, type OpsSurfaceState, type OpsWorkerLastRun } from '@/services/opsService';
@@ -160,6 +163,33 @@ export function OperationsDashboardPanel() {
           {error}
         </p>
       ) : null}
+
+      <section
+        aria-labelledby="ops-documentation-heading"
+        className="rounded-sm border border-[color-mix(in_srgb,var(--color-brand-primary)_35%,transparent)] bg-[color-mix(in_srgb,var(--color-brand-primary)_8%,var(--color-card))] p-wilms-4 md:p-wilms-5"
+      >
+        <div className="flex flex-col gap-wilms-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0">
+            <p className="text-small font-semibold uppercase tracking-wide text-brand-primary">
+              Knowledge
+            </p>
+            <h2 id="ops-documentation-heading" className="mt-wilms-1 text-heading-3 font-semibold text-text-primary">
+              Documentation Centre
+            </h2>
+            <p className="mt-wilms-1 max-w-2xl text-small text-text-muted">
+              Browse, search, print, and download the official WILMS product library (v
+              {DOCUMENTATION_STATS.libraryVersion} · {DOCUMENTATION_STATS.bookCount} books).
+            </p>
+          </div>
+          <Link
+            href="/documentation"
+            className="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-sm bg-brand-primary px-wilms-4 text-small font-semibold text-white hover:opacity-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary"
+          >
+            <BookOpen className="h-4 w-4" aria-hidden />
+            Open Documentation Centre
+          </Link>
+        </div>
+      </section>
 
       {report ? (
         <>
