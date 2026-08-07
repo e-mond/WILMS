@@ -89,6 +89,10 @@ const config: Config = {
         none: 'none',
         'auth-card': '0 4px 24px rgba(0, 0, 0, 0.22)',
       },
+      fontFamily: {
+        'doc-display': ['"Source Serif 4"', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
+        'doc-body': ['"Source Sans 3"', 'IBM Plex Sans', 'Segoe UI', 'system-ui', 'sans-serif'],
+      },
     },
   },
   plugins: [],

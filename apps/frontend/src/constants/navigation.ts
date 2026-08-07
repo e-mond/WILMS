@@ -111,7 +111,7 @@ export const SUPER_ADMIN_NAV: ShellNavItem[] = [
   },
   {
     href: '/documentation',
-    label: 'Documentation',
+    label: 'Documentation Centre',
     exact: true,
     icon: 'audit',
     group: 'administration',

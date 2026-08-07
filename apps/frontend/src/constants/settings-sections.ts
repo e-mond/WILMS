@@ -12,6 +12,7 @@ export const SETTINGS_SECTION = {
   DATA_EXPORTS: 'data-exports',
   INTEGRATIONS: 'integrations',
   AUDIT: 'audit',
+  DOCUMENTATION: 'documentation',
 } as const;
 
 export type SettingsSection = (typeof SETTINGS_SECTION)[keyof typeof SETTINGS_SECTION];
@@ -28,4 +29,5 @@ export const SETTINGS_SECTIONS: { id: SettingsSection; label: string }[] = [
   { id: SETTINGS_SECTION.SMS, label: 'SMS & Comms' },
   { id: SETTINGS_SECTION.INTEGRATIONS, label: 'Integrations' },
   { id: SETTINGS_SECTION.AUDIT, label: 'Audit & Logs' },
+  { id: SETTINGS_SECTION.DOCUMENTATION, label: 'Documentation' },
 ];
