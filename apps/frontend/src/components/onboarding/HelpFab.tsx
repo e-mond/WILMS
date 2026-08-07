@@ -20,7 +20,7 @@ function roleStarterSteps(role: string | undefined): Array<{ label: string; href
       return [
         { label: 'Open Operational Dashboard', href: '/dashboard' },
         { label: 'Review Executive Intelligence', href: '/executive' },
-        { label: 'Create an export job', href: '/exports' },
+        { label: 'Export from Reports', href: '/reports' },
         { label: 'Check Operations health', href: '/ops' },
       ];
     case USER_ROLE.COLLECTOR:

@@ -53,10 +53,10 @@ export const SEARCH_NAVIGATION_DESTINATIONS: SearchNavigationDestination[] = [
     roles: [USER_ROLE.SUPER_ADMIN, USER_ROLE.AUDITOR],
   },
   {
-    href: '/exports',
-    label: 'Export Center',
-    description: 'Create and track data export jobs',
-    keywords: ['export', 'csv', 'excel', 'pdf', 'download'],
+    href: '/documentation',
+    label: 'Documentation Library',
+    description: 'Official books, manuals, and technical guides catalogue',
+    keywords: ['docs', 'manual', 'books', 'library', 'guide', 'pdf'],
     roles: [USER_ROLE.SUPER_ADMIN],
   },
   {

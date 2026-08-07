@@ -6,13 +6,13 @@ export interface ReleaseNotes {
 }
 
 export const CURRENT_RELEASE_NOTES: ReleaseNotes = {
-  version: '1.7.2',
+  version: '1.7.3',
   summary:
-    'Release candidate stabilization — financial-grade dashboard, board executive view, Export Center actions, and Product Tour 2.0.',
+    'Official documentation library — comprehensive books, role manuals, branded PDF/DOCX exports, and contextual export simplification.',
   highlights: [
-    'Operational dashboard: reconciliation aging, activity summary feed, financial color identity.',
-    'Executive Intelligence presentation polish for board-ready reviews.',
-    'Export Center job actions: download, preview, regenerate, delete, share, and copy link.',
-    'Product Tour 2.0 with welcome, spotlight, and completion checklist.',
+    'Full documentation library under documentation/ with product book, BRD, security, and API reference.',
+    'Branded PDF and DOCX generation via npm run docs:generate for all official manuals.',
+    'Five role-based user guides: Super Admin, Officer, Collector, Approver, Auditor.',
+    'Standalone Export Center removed; contextual exports from reports and intelligence surfaces.',
   ],
 };
