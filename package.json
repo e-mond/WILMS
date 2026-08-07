@@ -1,6 +1,6 @@
 {
   "name": "wilms",
-  "version": "1.7.3",
+  "version": "1.7.4",
   "private": true,
   "engines": {
     "node": "22.x"
@@ -42,6 +42,8 @@
     "drill:backup-restore": "node scripts/backup-restore-drill.mjs",
     "verify:phase29": "node scripts/phase29-verify-all.mjs",
     "verify:phase32": "node scripts/phase32-verify-all.mjs",
-    "docs:generate": "node scripts/generate-documentation-suite.mjs"
+    "docs:generate": "node scripts/generate-documentation-suite.mjs",
+    "docs:sync": "node scripts/sync-documentation-assets.mjs",
+    "docs:prepare": "npm run docs:generate && npm run docs:sync"
   }
 }

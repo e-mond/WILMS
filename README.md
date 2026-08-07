@@ -1,6 +1,6 @@
 # WILMS — Women’s Interest-Free Loan Management System
 
-[![Version](https://img.shields.io/badge/version-v1.7.1-0F766E?style=flat-square)](VERSION.md)
+[![Version](https://img.shields.io/badge/version-v1.7.4-0F766E?style=flat-square)](VERSION.md)
 [![Status](https://img.shields.io/badge/status-production-059669?style=flat-square)](#2-executive-overview)
 [![Node](https://img.shields.io/badge/node-22.x-339933?style=flat-square&logo=node.js&logoColor=white)](package.json)
 [![Next.js](https://img.shields.io/badge/Next.js-14-000000?style=flat-square&logo=next.js&logoColor=white)](apps/frontend/package.json)
@@ -15,14 +15,14 @@
 
 | Field | Value |
 | --- | --- |
-| **Current release** | [`v1.7.1`](VERSION.md) |
+| **Current release** | [`v1.7.4`](VERSION.md) |
 | **Maturity** | Production operational platform (market packaging) |
 | **Primary deployment** | [wilms.vercel.app](https://wilms.vercel.app) |
 | **Runtime** | Node.js **22.x** |
 | **Data store** | Neon PostgreSQL (Drizzle ORM) |
 | **Auth model** | Custom HMAC-signed session cookies (`wilms_session`) |
 
-> **Single entry point.** This README is the authoritative repository overview. Deep-dive docs live under [`docs/`](docs/README.md). Release evidence packs live under [`docs/v1.7/`](docs/v1.7/).
+> **Single entry point.** This README is the authoritative repository overview. Deep-dive docs live under [`docs/`](docs/README.md). The official product library lives under [`documentation/`](documentation/DOCUMENTATION_LIBRARY_INDEX.md) and is readable in-app at **/documentation** (Documentation Centre). Release evidence packs live under [`docs/v1.7/`](docs/v1.7/).
 
 ---
 

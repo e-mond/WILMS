@@ -1,0 +1,987 @@
+%PDF-1.3
+%ºß¬à
+3 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+/Length 3705
+>>
+stream
+0.5670000000000001 w
+0 G
+0.06 0.43 0.34 rg
+0. 841.8899999999999864 595.2799999999999727 -141.7322834645669332 re
+f
+BT
+/F2 26 Tf
+29.8999999999999986 TL
+1. g
+254.4799999999999613 779.5277952755905062 Td
+(WILMS) Tj
+ET
+BT
+/F1 11 Tf
+12.6499999999999986 TL
+1. g
+175.3749999999999147 751.1813385826771992 Td
+(Women's Interest-Free Loan Management System) Tj
+ET
+BT
+/F1 11 Tf
+12.6499999999999986 TL
+1. g
+228.0099999999999625 728.5041732283464171 Td
+(Operations Manual — v1.7.3) Tj
+ET
+BT
+/F2 14 Tf
+16.0999999999999979 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 666.1419685039369369 Td
+(WILMS Operations Manual) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 640.6301574803148924 Td
+(Version: 1.7.3 Audience: DevOps, Super Admins, programme IT leads Classification: Confidential) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 615.1183464566928478 Td
+(1. Purpose) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 592.4411811023621794 Td
+(This manual covers day-to-day operational procedures for running WILMS in production and staging environments.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 566.9293700787401349 Td
+(2. Environment overview) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 544.2522047244094665 Td
+(| Environment | URL | Purpose |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 518.7403937007873083 Td
+(|-------------|-----|---------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 493.2285826771653205 Td
+(| Production | wilms.vercel.app | Live programme operations |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 467.716771653543276 Td
+(| Preview | Vercel preview deployments | PR validation |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 442.2049606299212314 Td
+(| Local | localhost:3000 | Development |) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 416.69314960629913 Td
+(3. Health monitoring) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 394.0159842519684616 Td
+(Health check) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 371.3388188976377364 Td
+(GET /api/wilms/health) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 345.8270078740156919 Td
+(Returns service status, version, database connectivity.) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 320.3151968503935905 Td
+(Ops dashboard) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 297.6380314960629221 Td
+(Super Admin accesses /ops for:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 272.1262204724408775 Td
+(• Active incidents) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 246.614409448818833 Td
+(• Maintenance windows) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 221.1025984251967884 Td
+(• System metrics summary) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 195.5907874015747439 Td
+(4. Daily operations checklist) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 172.9136220472439618 Td
+(| Task | Frequency | Owner |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 147.4018110236219172 Td
+(|------|-----------|-------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 121.8899999999998727 Td
+(| Verify health endpoint | Daily | DevOps |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 96.3781889763778281 Td
+(| Review ops incidents | Daily | Super Admin |) Tj
+ET
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 22.6771653543306684 Td
+(CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 6 0 R
+>>
+endobj
+6 0 obj
+<<
+/Length 4237
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 785.1970866141732586 Td
+(| Monitor reconciliation aging | Daily | Super Admin |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 759.6852755905511003 Td
+(| Review notification cron logs | Daily | DevOps |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 734.1734645669291695 Td
+(| Check Neon connection pool | Weekly | DevOps |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 708.6616535433070112 Td
+(| Review audit log anomalies | Weekly | Auditor/Admin |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 683.1498425196850803 Td
+(| Run smoke tests post-deploy | Per deploy | DevOps |) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 657.6380314960629221 Td
+(5. Deployment procedure) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 634.9608661417322537 Td
+(Pre-deploy) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 612.2837007874015853 Td
+(1. Verify branch passes CI \(lint, type-check, test\). 2. Run npm run verify:version. 3. Run npm run verify:migrations. 4.) Tj
+T* (Review CHANGELOG for release notes.) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 572.5986614173227736 Td
+(Deploy) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 549.9214960629921052 Td
+(1. Merge to production branch. 2. Vercel auto-deploys on push. 3. Migrations applied: npm run db:migrate -w) Tj
+T* (@wilms/domain. 4. Post-deploy smoke: npm run smoke:production.) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 510.2364566929133503 Td
+(Rollback) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 487.559291338582625 Td
+(1. Revert Vercel deployment to previous build. 2. Database rollback requires manual SQL — migrations are) Tj
+T* (forward-only. 3. Document incident in ops module.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 447.8742519685038701 Td
+(6. Database operations) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 425.1970866141731449 Td
+(Connection) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 402.5199212598424765 Td
+(Neon serverless PostgreSQL via DATABASE_URL. Connection pooling enabled.) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 377.0081102362204319 Td
+(Migrations) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 354.3309448818897067 Td
+(npm run db:migrate -w @wilms/domain npm run verify:migrations -w @wilms/api) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 328.8191338582676053 Td
+(Backup) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 306.1419685039369369 Td
+(Neon provides automated point-in-time recovery. Verify backup retention in Neon dashboard. Run restore drill: npm) Tj
+T* (run drill:backup-restore.) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 266.4569291338582389 Td
+(Demo data cleanup) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 243.7797637795274568 Td
+(npm run cleanup:demo-financial-data -w @wilms/domain) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 218.2679527559054122 Td
+(7. Cron and scheduler) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 195.5907874015747439 Td
+(| Job | Schedule | Endpoint |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 170.0789763779526993 Td
+(|-----|----------|----------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 144.5671653543306547 Td
+(| Notification dispatch | 06:00 UTC daily | /api/cron/notifications |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 119.0553543307086102 Td
+(Configured in vercel.json. Verify cron execution in Vercel dashboard logs.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 93.5435433070865656 Td
+(8. User management operations) Tj
+ET
+BT
+/F2 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 22.6771653543306684 Td
+(CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.) Tj
+ET
+endstream
+endobj
+7 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 8 0 R
+>>
+endobj
+8 0 obj
+<<
+/Length 4333
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 785.1970866141732586 Td
+(Invite new user) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 762.5199212598424765 Td
+( S u p e r   A d m i n  !’   S e t t i n g s  !’   U s e r s  !’   I n v i t e .   U s e r   r e c e i v e s   e m a i l   w i t h   i n v i t a t i o n   l i n k .   F i r s t   l o g i n   t r a n s i t i o n s   s t a t u s   f r o m) Tj
+T* (INVITED to ACTIVE.) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 722.8348818897637784 Td
+(Force logout) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 700.15771653543311 Td
+( S u p e r   A d m i n  !’   U s e r   p r o f i l e  !’   F o r c e   l o g o u t .   I n v a l i d a t e s   a l l   a c t i v e   s e s s i o n s   f o r   t h a t   u s e r .) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 674.6459055118109518 Td
+(Permission overrides) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 651.9687401574802834 Td
+(Grant individual permissions beyond role defaults. All overrides audited.) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 626.4569291338582389 Td
+(Password reset) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 603.7797637795274568 Td
+(Users can self-service via forgot-password flow. Admin cannot view passwords.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 578.2679527559055259 Td
+(9. Incident response) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 555.5907874015747439 Td
+(Severity levels) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 532.9136220472440755 Td
+(| Level | Description | Response time |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 507.4018110236219741 Td
+(|-------|-------------|---------------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 481.8899999999999295 Td
+(| P1 | Production down, data integrity risk | Immediate |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 456.378188976377885 Td
+(| P2 | Major feature degraded | 4 hours |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 430.8663779527558404 Td
+(| P3 | Minor issue, workaround available | 24 hours |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 405.3545669291337958 Td
+(| P4 | Cosmetic, documentation | Next sprint |) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 379.8427559055117513 Td
+(P1 procedure) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 357.1655905511810261 Td
+(1. Create ops incident in WILMS. 2. Check health endpoint and Vercel status. 3. Check Neon status page. 4.) Tj
+T* (Rollback deployment if recent deploy caused issue. 5. Notify programme director. 6. Post-incident review within 48) Tj
+T* (hours.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 303.3073228346455608 Td
+(10. Maintenance windows) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 280.6301574803148924 Td
+(Schedule via Ops module before:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 255.1183464566928478 Td
+(• Database migrations with downtime risk) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 229.6065354330708033 Td
+(• Major version deployments) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 204.0947244094487587 Td
+(• Neon maintenance periods) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 178.5829133858267141 Td
+(Maintenance window displays banner to all users.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 153.0711023622046696 Td
+(11. Security operations) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 130.3939370078738875 Td
+(| Task | Procedure |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 104.882125984251843 Td
+(|------|-----------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 79.3703149606297984 Td
+(| Rotate session secret | Update WILMS_SESSION_SECRET in Vercel; all users re-login |) Tj
+ET
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 22.6771653543306684 Td
+(CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.) Tj
+ET
+endstream
+endobj
+9 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 10 0 R
+>>
+endobj
+10 0 obj
+<<
+/Length 1946
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 785.1970866141732586 Td
+(| Rotate production users | npm run rotate-production-users -w @wilms/domain |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 759.6852755905511003 Td
+(| Review failed login attempts | Audit log filter by auth.login_failed |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 734.1734645669291695 Td
+(| Upload audit | Review upload logs for anomalous file types |) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 708.6616535433070112 Td
+(12. Performance monitoring) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 685.9844881889763428 Td
+(• Bundle budget: npm run bundle:budget-check) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 660.4726771653542983 Td
+(• Performance budget: npm run perf:budget-check) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 634.9608661417322537 Td
+(• API rate limit: 300 req/min global; monitor 429 responses) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 609.4490551181102092 Td
+(13. Documentation maintenance) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 586.7718897637794271 Td
+(Generate updated PDF/DOCX after documentation changes:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 561.2600787401574962 Td
+(npm run docs:generate) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 535.748267716535338 Td
+(Outputs in documentation/pdf/ and documentation/docx/.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 510.2364566929133503 Td
+(CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping) Tj
+T* (only.) Tj
+ET
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 22.6771653543306684 Td
+(CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.) Tj
+ET
+endstream
+endobj
+1 0 obj
+<</Type /Pages
+/Kids [3 0 R 5 0 R 7 0 R 9 0 R ]
+/Count 4
+>>
+endobj
+11 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+12 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+13 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+14 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+15 0 obj
+<<
+/Type /Font
+/BaseFont /Courier
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+16 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+17 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+18 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+19 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Roman
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+20 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+21 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Italic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+22 0 obj
+<<
+/Type /Font
+/BaseFont /Times-BoldItalic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+23 0 obj
+<<
+/Type /Font
+/BaseFont /ZapfDingbats
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+24 0 obj
+<<
+/Type /Font
+/BaseFont /Symbol
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+2 0 obj
+<<
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
+/Font <<
+/F1 11 0 R
+/F2 12 0 R
+/F3 13 0 R
+/F4 14 0 R
+/F5 15 0 R
+/F6 16 0 R
+/F7 17 0 R
+/F8 18 0 R
+/F9 19 0 R
+/F10 20 0 R
+/F11 21 0 R
+/F12 22 0 R
+/F13 23 0 R
+/F14 24 0 R
+>>
+/XObject <<
+>>
+>>
+endobj
+25 0 obj
+<<
+/Producer (jsPDF 4.2.1)
+/CreationDate (D:20260807180738-00'00')
+>>
+endobj
+26 0 obj
+<<
+/Type /Catalog
+/Pages 1 0 R
+/OpenAction [3 0 R /FitH null]
+/PageLayout /OneColumn
+>>
+endobj
+xref
+0 27
+0000000000 65535 f 
+0000014994 00000 n 
+0000016834 00000 n 
+0000000015 00000 n 
+0000000152 00000 n 
+0000003909 00000 n 
+0000004046 00000 n 
+0000008335 00000 n 
+0000008472 00000 n 
+0000012857 00000 n 
+0000012995 00000 n 
+0000015069 00000 n 
+0000015195 00000 n 
+0000015326 00000 n 
+0000015460 00000 n 
+0000015598 00000 n 
+0000015722 00000 n 
+0000015851 00000 n 
+0000015983 00000 n 
+0000016119 00000 n 
+0000016247 00000 n 
+0000016374 00000 n 
+0000016503 00000 n 
+0000016636 00000 n 
+0000016738 00000 n 
+0000017087 00000 n 
+0000017173 00000 n 
+trailer
+<<
+/Size 27
+/Root 26 0 R
+/Info 25 0 R
+/ID [ <649187A491ADAA7E55356443CB0FF883> <649187A491ADAA7E55356443CB0FF883> ]
+>>
+startxref
+17277
+%%EOF

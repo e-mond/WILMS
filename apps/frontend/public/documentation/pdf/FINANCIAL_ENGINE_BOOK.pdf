@@ -1,0 +1,1332 @@
+%PDF-1.3
+%ºß¬à
+3 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+/Length 4076
+>>
+stream
+0.5670000000000001 w
+0 G
+0.06 0.43 0.34 rg
+0. 841.8899999999999864 595.2799999999999727 -141.7322834645669332 re
+f
+BT
+/F2 26 Tf
+29.8999999999999986 TL
+1. g
+254.4799999999999613 779.5277952755905062 Td
+(WILMS) Tj
+ET
+BT
+/F1 11 Tf
+12.6499999999999986 TL
+1. g
+175.3749999999999147 751.1813385826771992 Td
+(Women's Interest-Free Loan Management System) Tj
+ET
+BT
+/F1 11 Tf
+12.6499999999999986 TL
+1. g
+219.8699999999999477 728.5041732283464171 Td
+(Financial Engine Book — v1.7.3) Tj
+ET
+BT
+/F2 14 Tf
+16.0999999999999979 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 666.1419685039369369 Td
+(WILMS Financial Engine Book) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 640.6301574803148924 Td
+(Cover metadata) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 617.952992125984224 Td
+(| Field | Value |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 592.4411811023621794 Td
+(|-------|-------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 566.9293700787401349 Td
+(| Title | WILMS Financial Engine Book |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 541.4175590551180903 Td
+(| Edition | Official Documentation Library |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 515.9057480314959321 Td
+(| Platform version documented | Through v1.7.2 |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 490.3939370078739444 Td
+(| Documentation release | v1.7.3 |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 464.8821259842518998 Td
+(| Date | August 2026 |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 439.3703149606298552 Td
+(| Classification | Confidential |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 413.8585039370078107 Td
+(| Money unit | Integer pesewas \(100 = 1 GHS\) |) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 388.3466929133857661 Td
+(Table of contents) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 365.6695275590550409 Td
+(1. Executive summary 2. Product financial model 3. Money representation 4. Pool accounting 5. Operating cash 6.) Tj
+T* (Disbursement engine 7. Repayment and collections 8. Outstanding balances 9. Admin fees 10. Write-offs and aging) Tj
+T* (11. Reversals 12. Reconciliation 13. Expenses and operating ledger 14. Adjustments 15. Reporting and aggregates) Tj
+T* (16. Integrity controls 17. Explicit non-claims 18. Appendices) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 297.6380314960629221 Td
+(Executive summary) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 274.9608661417322537 Td
+(WILMS manages women's interest-free group lending programmes. The financial engine is an operational system of) Tj
+T* (record — pool ledgers, payment journals, and expense ledgers — not a statutory double-entry general ledger. All) Tj
+T* (monetary values are stored as integer pesewas to eliminate floating-point errors.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 221.1025984251967884 Td
+(The core money chain flows from registration and approval through admin fee confirmation, pool-gated disbursement,) Tj
+T* (weekly collections with GPS verification, daily reconciliation, and reporting. Expenses affect operating cash only; they) Tj
+T* (never reduce loan principal balances.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 167.2443307086613231 Td
+(Product financial model) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 144.5671653543306547 Td
+(WILMS programmes operate on a cash-first, interest-free model:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 119.0553543307086102 Td
+(• No interest accrual engine exists or is planned for v1.x) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 93.5435433070865656 Td
+(• Loans draw from named capital pools with hard-stop disbursement) Tj
+ET
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 22.6771653543306684 Td
+(CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 6 0 R
+>>
+endobj
+6 0 obj
+<<
+/Length 3943
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 785.1970866141732586 Td
+(• Weekly instalments are collected in full \(no partial payments\)) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 759.6852755905511003 Td
+(• Admin fees are collected before disbursement is permitted) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 734.1734645669291695 Td
+(• Field collectors record payments with GPS metadata) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 708.6616535433070112 Td
+(• HQ reconciles physical cash daily against system records) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 683.1498425196850803 Td
+([Diagram: see markdown source for mermaid rendering. PDF export includes text content only.]) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 657.6380314960629221 Td
+(Money representation) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 634.9608661417322537 Td
+(Integer pesewas) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 612.2837007874015853 Td
+(All database columns storing money use integer pesewas. One Ghana Cedi \(GHS\) equals 100 pesewas. UI) Tj
+T* (components format pesewas for display using shared currency utilities. Server-side arithmetic never uses) Tj
+T* (floating-point for money.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 558.42543307086612 Td
+(| Display | Storage |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 532.9136220472440755 Td
+(|---------|---------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 507.4018110236219741 Td
+(| GHS 10.50 | 1050 pesewas |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 481.8899999999999295 Td
+(| GHS 500.00 | 50000 pesewas |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 456.378188976377885 Td
+(| GHS 0.01 | 1 pesewa |) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 430.8663779527558404 Td
+(Rounding rules) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 408.1892125984251152 Td
+(• Utilisation percent: MIN\(ROUND\(disbursed / capital × 100\), 100\)) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 382.6774015748030706 Td
+(• Repayment rate: ROUND\(collected / disbursed × 100, 1\) when disbursed > 0) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 357.1655905511810261 Td
+(• Variance thresholds compared in pesewas with 100 pesewa \(1 GHS\) floor) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 331.6537795275589815 Td
+(Pool accounting) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 308.9766141732283131 Td
+(Each loan pool maintains an append-only pool_allocations ledger.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 283.4648031496062686 Td
+(| Event | Allocation type | Effect |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 257.952992125984224 Td
+(|-------|-----------------|--------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 232.4411811023621794 Td
+(| Pool created / capital injected | REPLENISHMENT | Increases pool capital |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 206.9293700787401349 Td
+(| Loan disbursed from pool | DISBURSEMENT | Increases disbursed; reduces available |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 181.4175590551179766 Td
+(| Borrower repayment | REPAYMENT | Increases collected; reduces outstanding |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 155.9057480314959321 Td
+(| Manual correction | ADJUSTMENT | Audited capital correction |) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 130.3939370078738875 Td
+(Per-pool formulas) Tj
+ET
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 22.6771653543306684 Td
+(CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.) Tj
+ET
+endstream
+endobj
+7 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 8 0 R
+>>
+endobj
+8 0 obj
+<<
+/Length 4747
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 785.1970866141732586 Td
+(disbursed_pesewas     = SUM\(DISBURSEMENT allocations\) collected_pesewas     = SUM\(REPAYMENT allocations\)) Tj
+T* ( o u t s t a n d i n g _ p e s e w a s       =   M A X \( d i s b u r s e d  "   c o l l e c t e d ,   0 \)   a v a i l a b l e _ c a p i t a l           =   c a p i t a l _ p e s e w a s  ") Tj
+T* (outstanding_pesewas utilisation_percent   = MIN\(ROUND\(disbursed / capital × 100\), 100\) repayment_rate_percent =) Tj
+T* (ROUND\(collected / disbursed × 100, 1\)  [when disbursed > 0]) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 717.1655905511811397 Td
+(Pool list and dashboard merge loan portfolio totals when allocation aggregates lag \(runtime reconcile + migration) Tj
+T* (0025\).) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 677.480551181102328 Td
+(Operating cash) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 654.8033858267716596 Td
+(Operating cash represents programme liquidity from collections and fees minus approved expenses:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 629.291574803149615 Td
+( n e t _ o p e r a t i n g _ c a s h   =   c o l l e c t i o n s   +   a d m i n _ f e e s _ c o l l e c t e d  "   a p p r o v e d _ e x p e n s e s   n e t _ c o l l e c t i o n s _ a f t e r _ e x p e n s e s   =) Tj
+T* ( M A X \( t o t a l _ c o l l e c t e d  "   a p p r o v e d _ e x p e n s e s ,   0 \)) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 589.6065354330708033 Td
+(Expenses are deducted from operating cash, not from loan principal or outstanding balances.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 564.0947244094487587 Td
+(Disbursement engine) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 541.4175590551180903 Td
+(Disbursement requires:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 515.9057480314959321 Td
+(1. Approved loan in PENDING_DISBURSEMENT status 2. Admin fee confirmed and recorded 3. Sufficient available) Tj
+T* (pool capital \(hard-stop if not\) 4. Actor with disbursement permission) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 476.2207086614172908 Td
+(On success, a DISBURSEMENT allocation is written to the pool ledger and the loan transitions to ACTIVE with a) Tj
+T* (generated repayment schedule.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 436.5356692913385359 Td
+([Diagram: see markdown source for mermaid rendering. PDF export includes text content only.]) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 411.0238582677164914 Td
+(Repayment and collections) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 388.3466929133857661 Td
+(Business rules) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 365.6695275590550409 Td
+(• Full weekly payment only — partial payments are rejected) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 340.1577165354329964 Td
+(• Oldest obligation first — payment applied to earliest due instalment) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 314.6459055118109518 Td
+(• GPS required on field capture) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 289.1340944881889072 Td
+(• Same-day edit window for collectors to correct entries) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 263.6222834645668627 Td
+(• Immutability after day-end — no edits once day boundary passes) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 238.1104724409448181 Td
+(Collection allocation) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 215.4333070866141497 Td
+(When a payment is recorded:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 189.9214960629919915 Td
+(1. Validate full weekly amount matches schedule expectation 2. Write REPAYMENT allocation to pool ledger 3.) Tj
+T* (Update loan outstanding balance 4. Record GPS metadata and collector ID 5. Emit audit log entry and notifications) Tj
+T* (as configured) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 136.0632283464566399 Td
+(Outstanding balances) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 113.3860629921258578 Td
+(Outstanding at loan level: remaining principal from schedule minus confirmed payments.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 87.8742519685038133 Td
+(Organisation dashboard outstanding:) Tj
+ET
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 22.6771653543306684 Td
+(CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.) Tj
+ET
+endstream
+endobj
+9 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 10 0 R
+>>
+endobj
+10 0 obj
+<<
+/Length 4619
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 785.1970866141732586 Td
+(outstanding = MAX\(pool outstanding sum, active/defaulted loan balances\)) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 759.6852755905511003 Td
+(Admin fees) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 737.0081102362204319 Td
+(Admin fees are one-time charges collected before disbursement. The system blocks disbursement until the admin) Tj
+T* (fee is confirmed. Admin fees contribute to net operating cash but are separate from loan principal.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 697.3230708661417339 Td
+(Write-offs and aging) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 674.6459055118109518 Td
+(Write-offs \(v1.6.2+\) proceed through the adjustments maker-checker workflow. Aging analysis reports identify loans) Tj
+T* (by days past due. Write-offs do not bypass audit controls — they require supervisory review.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 634.9608661417322537 Td
+(Reversals) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 612.2837007874015853 Td
+(Payment reversals unwind allocation and payment state under controlled paths:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 586.7718897637794271 Td
+(• Negative REPAYMENT allocation posted to pool ledger) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 561.2600787401574962 Td
+(• REVERSAL ledger entry for audit trail) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 535.748267716535338 Td
+(• Payment status updated to reversed) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 510.2364566929133503 Td
+(• Permission-gated; logged in audit log) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 484.7246456692913057 Td
+(Reconciliation) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 462.0474803149605805 Td
+( p r i m a r y _ v a r i a n c e   =   p h y s i c a l _ c a s h  "   e x p e c t e d _ d u e   c o l l e c t i o n _ d e l t a   =   p h y s i c a l _ c a s h  "   s y s t e m _ r e c o r d e d) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 436.5356692913385359 Td
+(Variance is flagged when:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 411.0238582677164914 Td
+( •   c o l l e c t i o n _ d e l t a  "`   0) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 385.5120472440944468 Td
+( •   e x p e c t e d _ d u e   =   0   a n d   p h y s i c a l   c a s h  "`   0) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 360.0002362204724022 Td
+( •   a b s o l u t e   p r i m a r y   v a r i a n c e  "e   1 0 0   p e s e w a s   \( 1   G H S \)) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 334.4884251968503008 Td
+(• percentage variance exceeds threshold \(default 10%\)) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 308.9766141732283131 Td
+(Review requires Super Admin access. Collectors bound to own collectorId. REJECTED/REOPENED rows may be) Tj
+T* (resubmitted with history preserved.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 269.2915748031495013 Td
+(Expenses and operating ledger) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 246.614409448818833 Td
+(Expenses follow maker-checker: submitter cannot approve own expense. Approved expenses post as operating) Tj
+T* (ledger ADJUSTMENT entries. They reduce net operating cash but never affect loan principal.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 206.9293700787401349 Td
+(Adjustments) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 184.2522047244093528 Td
+(Capital adjustments require supervisory review via /adjustments. Approved adjustments write ADJUSTMENT type) Tj
+T* (pool ledger entries. Residual SoD gaps \(self-approve on adjustments\) documented as Medium risk in certification) Tj
+T* (packs.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 130.3939370078738875 Td
+(Reporting and aggregates) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 107.7167716535432191 Td
+(Organisation dashboard metrics \(buildDashboardFinancialOverview\):) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 82.2049606299211746 Td
+(| Metric | Calculation |) Tj
+ET
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 22.6771653543306684 Td
+(CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.) Tj
+ET
+endstream
+endobj
+11 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 12 0 R
+>>
+endobj
+12 0 obj
+<<
+/Length 4518
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 785.1970866141732586 Td
+(|--------|-------------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 759.6852755905511003 Td
+(| Pool funds | SUM\(pool.capital_pesewas\) |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 734.1734645669291695 Td
+(| Total disbursed | MAX\(pool disbursed, loan portfolio disbursed\) |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 708.6616535433070112 Td
+(| Total collected | SUM\(confirmed payments\) |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 683.1498425196850803 Td
+(| Outstanding | MAX\(pool outstanding, active loan balances\) |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 657.6380314960629221 Td
+( |   A v a i l a b l e   c a p i t a l   |   p o o l   f u n d s  "   o u t s t a n d i n g   |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 632.1262204724408775 Td
+(Oversized unpaginated report queries return HTTP 422 \(fail-closed\).) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 606.614409448818833 Td
+(Integrity controls) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 583.9372440944881646 Td
+(| Control | Status |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 558.42543307086612 Td
+(|---------|--------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 532.9136220472440755 Td
+(| Admin fee before disbursement | Verified |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 507.4018110236219741 Td
+(| Pool hard-stop | Verified |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 481.8899999999999295 Td
+(| Payment immutability after day-end | Verified |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 456.378188976377885 Td
+(| GPS on field capture | Verified |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 430.8663779527558404 Td
+(| Reversal unwind | Verified |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 405.3545669291337958 Td
+(| SQL dashboard KPIs | Verified |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 379.8427559055117513 Td
+(| Report truncation refusal | Verified |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 354.3309448818897067 Td
+(| Adjustment self-approve | Residual Medium |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 328.8191338582676053 Td
+(| Expense self-post APPROVED | Residual Medium |) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 303.3073228346455608 Td
+(Explicit non-claims) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 280.6301574803148924 Td
+(• WILMS is not a statutory double-entry general ledger) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 255.1183464566928478 Td
+(• No interest accrual engine \(interest-free product\)) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 229.6065354330708033 Td
+(• Expenses do not affect loan principal balances) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 204.0947244094487587 Td
+(• No Production Certified financial seal for all residual items) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 178.5829133858267141 Td
+(Appendices) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 155.9057480314959321 Td
+(Appendix A — Data integrity workflow) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 133.2285826771652637 Td
+( P o o l   c r e a t e d  !’   C a p i t a l   \( R E P L E N I S H M E N T \)                          !’   L o a n   P E N D I N G _ A P P R O V A L   \( a d m i n   f e e   r e q u i r e d \)                          !’) Tj
+T* ( A p p r o v e  !’   P E N D I N G _ D I S B U R S E M E N T                          !’   D i s b u r s e m e n t   \( D I S B U R S E M E N T ;   c a p i t a l   h a r d   s t o p \)                          !’) Tj
+T* ( C o l l e c t i o n   \( R E P A Y M E N T ;   G P S   r e q u i r e d \)                          !’   R e v e r s a l   \( n e g a t i v e   R E P A Y M E N T   +   R E V E R S A L \)                          !’) Tj
+T* ( E x p e n s e   \( o p e r a t i n g   c a s h ;   n e v e r   p r i n c i p a l \)                          !’   D a s h b o a r d   /   R e p o r t s   /   E x p o r t s) Tj
+ET
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 22.6771653543306684 Td
+(CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.) Tj
+ET
+endstream
+endobj
+13 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 14 0 R
+>>
+endobj
+14 0 obj
+<<
+/Length 1327
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 785.1970866141732586 Td
+(Appendix B — Related documentation) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 762.5199212598424765 Td
+(• docs/FINANCIAL_MODEL.md — architecture hub financial summary) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 737.0081102362204319 Td
+(• docs/financial-calculations.md — formula reference) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 711.4962992125983874 Td
+(• documentation/books/WILMS_PRODUCT_BOOK.md — product context) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 685.9844881889763428 Td
+(• documentation/books/REPORTING_ANALYTICS_BOOK.md — report specifications) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 660.4726771653542983 Td
+(CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping) Tj
+T* (only.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 620.7876377952754865 Td
+(WILMS Financial Engine Book — Documentation release v1.7.3 — Platform documented through v1.7.2) Tj
+ET
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 22.6771653543306684 Td
+(CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.) Tj
+ET
+endstream
+endobj
+1 0 obj
+<</Type /Pages
+/Kids [3 0 R 5 0 R 7 0 R 9 0 R 11 0 R 13 0 R ]
+/Count 6
+>>
+endobj
+15 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+16 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+17 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+18 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+19 0 obj
+<<
+/Type /Font
+/BaseFont /Courier
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+20 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+21 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+22 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+23 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Roman
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+24 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+25 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Italic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+26 0 obj
+<<
+/Type /Font
+/BaseFont /Times-BoldItalic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+27 0 obj
+<<
+/Type /Font
+/BaseFont /ZapfDingbats
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+28 0 obj
+<<
+/Type /Font
+/BaseFont /Symbol
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+2 0 obj
+<<
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
+/Font <<
+/F1 15 0 R
+/F2 16 0 R
+/F3 17 0 R
+/F4 18 0 R
+/F5 19 0 R
+/F6 20 0 R
+/F7 21 0 R
+/F8 22 0 R
+/F9 23 0 R
+/F10 24 0 R
+/F11 25 0 R
+/F12 26 0 R
+/F13 27 0 R
+/F14 28 0 R
+>>
+/XObject <<
+>>
+>>
+endobj
+29 0 obj
+<<
+/Producer (jsPDF 4.2.1)
+/CreationDate (D:20260807180738-00'00')
+>>
+endobj
+30 0 obj
+<<
+/Type /Catalog
+/Pages 1 0 R
+/OpenAction [3 0 R /FitH null]
+/PageLayout /OneColumn
+>>
+endobj
+xref
+0 31
+0000000000 65535 f 
+0000024387 00000 n 
+0000026241 00000 n 
+0000000015 00000 n 
+0000000152 00000 n 
+0000004280 00000 n 
+0000004417 00000 n 
+0000008412 00000 n 
+0000008549 00000 n 
+0000013348 00000 n 
+0000013486 00000 n 
+0000018158 00000 n 
+0000018297 00000 n 
+0000022868 00000 n 
+0000023007 00000 n 
+0000024476 00000 n 
+0000024602 00000 n 
+0000024733 00000 n 
+0000024867 00000 n 
+0000025005 00000 n 
+0000025129 00000 n 
+0000025258 00000 n 
+0000025390 00000 n 
+0000025526 00000 n 
+0000025654 00000 n 
+0000025781 00000 n 
+0000025910 00000 n 
+0000026043 00000 n 
+0000026145 00000 n 
+0000026494 00000 n 
+0000026580 00000 n 
+trailer
+<<
+/Size 31
+/Root 30 0 R
+/Info 29 0 R
+/ID [ <A1229D769535BCC1DABB200151B1C2FA> <A1229D769535BCC1DABB200151B1C2FA> ]
+>>
+startxref
+26684
+%%EOF

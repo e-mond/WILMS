@@ -1,10 +1,11 @@
-const CACHE_VERSION = 'wilms-v173-shell';
+const CACHE_VERSION = 'wilms-v174-shell';
 const SHELL_ASSETS = [
   '/',
   '/login',
   '/dashboard',
   '/executive',
   '/reports',
+  '/documentation',
   '/settings',
   '/collector/dashboard',
   '/collector/my-borrowers',

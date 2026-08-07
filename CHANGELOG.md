@@ -2,6 +2,27 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.7.4] — Documentation Centre
+
+**Date:** August 2026  
+**Branch:** `feature/v1.7.4-documentation-portal`
+
+### Added
+
+- In-app **WILMS Documentation Centre** (`/documentation`) with enterprise knowledge-base layout
+- Book-quality Markdown reader (typography, covers, callouts, Mermaid diagrams, tables)
+- Interactive table of contents, full-library search, favourites, reading progress, presentation mode
+- Direct PDF and Word downloads from the synced documentation library (no GitHub required)
+- Settings → Documentation section linking into the centre
+- Asset sync pipeline: `npm run docs:sync` / `npm run docs:prepare`
+
+### Notes
+
+- Builds on the v1.7.3 documentation library; does not recreate source books from scratch
+- Financial formulas, RBAC, reconciliation, and notification guarantees unchanged
+- Auth remains custom HMAC sessions
+- British English terminology preferred in portal UI copy
+
 ## [1.7.3] — Documentation Suite
 
 **Date:** August 2026  

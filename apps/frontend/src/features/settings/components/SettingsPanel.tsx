@@ -22,6 +22,7 @@ import {
   SecuritySectionView,
   SmsSectionView,
 } from '@/features/settings/components/SettingsSectionViews';
+import { DocumentationSettingsSection } from '@/features/settings/components/DocumentationSettingsSection';
 import {
   SETTINGS_SECTION,
   SETTINGS_SECTIONS,
@@ -139,6 +140,7 @@ export function SettingsPanel() {
               <IntegrationsSectionView settings={data} />
             ) : null}
             {activeSection === SETTINGS_SECTION.AUDIT ? <AuditSectionView settings={data} /> : null}
+            {activeSection === SETTINGS_SECTION.DOCUMENTATION ? <DocumentationSettingsSection /> : null}
           </div>
         </div>
       ) : null}

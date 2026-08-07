@@ -1,0 +1,953 @@
+%PDF-1.3
+%ºß¬à
+3 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+/Length 3906
+>>
+stream
+0.5670000000000001 w
+0 G
+0.06 0.43 0.34 rg
+0. 841.8899999999999864 595.2799999999999727 -141.7322834645669332 re
+f
+BT
+/F2 26 Tf
+29.8999999999999986 TL
+1. g
+254.4799999999999613 779.5277952755905062 Td
+(WILMS) Tj
+ET
+BT
+/F1 11 Tf
+12.6499999999999986 TL
+1. g
+175.3749999999999147 751.1813385826771992 Td
+(Women's Interest-Free Loan Management System) Tj
+ET
+BT
+/F1 11 Tf
+12.6499999999999986 TL
+1. g
+229.2199999999999704 728.5041732283464171 Td
+(Procurement Pack — v1.7.3) Tj
+ET
+BT
+/F2 14 Tf
+16.0999999999999979 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 666.1419685039369369 Td
+(WILMS Procurement Pack) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 640.6301574803148924 Td
+(Version: 1.7.3 Audience: Procurement committees, RFP evaluators Classification: Confidential) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 615.1183464566928478 Td
+(1. Vendor information) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 592.4411811023621794 Td
+(| Field | Value |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 566.9293700787401349 Td
+(|-------|-------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 541.4175590551180903 Td
+(| Product name | WILMS — Women's Interest-Free Loan Management System |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 515.9057480314959321 Td
+(| Product type | SaaS operational platform |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 490.3939370078739444 Td
+(| Deployment model | Cloud \(Vercel + Neon PostgreSQL\) |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 464.8821259842518998 Td
+(| Current version | v1.7.3 \(documentation\); platform v1.7.2 |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 439.3703149606298552 Td
+(| License | Proprietary |) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 413.8585039370078107 Td
+(2. Functional requirements compliance) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 391.1813385826770855 Td
+(| Requirement area | Status | Evidence |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 365.6695275590550409 Td
+(|-----------------|--------|----------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 340.1577165354329964 Td
+(| Borrower registration | Complete | Officer manual, BRD BR-001–008 |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 314.6459055118109518 Td
+(| Loan lifecycle | Complete | Product book § workflows |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 289.1340944881889072 Td
+(| Field collections | Complete | Collector manual, offline support |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 263.6222834645668627 Td
+(| Reconciliation | Complete | Operations manual |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 238.1104724409448181 Td
+(| Capital pool management | Complete | Financial engine documentation |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 212.5986614173227736 Td
+(| RBAC \(5 roles\) | Complete | Security book, shared-rbac |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 187.086850393700729 Td
+(| Audit trail | Complete | Append-only audit log |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 161.5750393700786844 Td
+(| Reporting | Complete | Reporting book |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 136.0632283464566399 Td
+(| Executive dashboard | Complete | Executive intelligence |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 110.5514173228345953 Td
+(| Notifications | Complete | Notification book |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 85.0396062992125508 Td
+(| Export capabilities | Complete | Contextual exports v1.7.3 |) Tj
+ET
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 22.6771653543306684 Td
+(CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 6 0 R
+>>
+endobj
+6 0 obj
+<<
+/Length 3860
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 785.1970866141732586 Td
+(3. Technical requirements compliance) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 762.5199212598424765 Td
+(| Requirement | Status | Detail |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 737.0081102362204319 Td
+(|-------------|--------|--------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 711.4962992125983874 Td
+(| Web-based access | Complete | Next.js 14, responsive |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 685.9844881889763428 Td
+(| Mobile field access | Complete | PWA, collector field shell |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 660.4726771653542983 Td
+(| HTTPS encryption | Complete | Vercel enforced |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 634.9608661417322537 Td
+(| Session security | Complete | HMAC-signed cookies |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 609.4490551181102092 Td
+(| Database | Complete | Neon PostgreSQL |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 583.9372440944881646 Td
+(| Backup/recovery | Complete | Neon PITR |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 558.42543307086612 Td
+(| API access | Complete | REST JSON via Route Handlers |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 532.9136220472440755 Td
+(| Offline capability | Complete | Collector payment queue |) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 507.4018110236219741 Td
+(4. Security compliance) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 484.7246456692913057 Td
+(| Control | Status |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 459.2128346456692611 Td
+(|---------|--------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 433.7010236220471597 Td
+(| Authentication | HMAC sessions, bcrypt passwords |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 408.1892125984251152 Td
+(| Authorization | RBAC + permission overrides |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 382.6774015748030706 Td
+(| Audit logging | Append-only |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 357.1655905511810261 Td
+(| Rate limiting | 300 req/min global |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 331.6537795275589815 Td
+(| CSRF protection | Mutating BFF paths |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 306.1419685039369369 Td
+(| Upload restrictions | File type allowlist |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 280.6301574803148924 Td
+(| Export confidentiality | Footer on all exports |) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 255.1183464566928478 Td
+(5. Documentation deliverables \(v1.7.3\)) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 232.4411811023621794 Td
+(| Document | Format |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 206.9293700787401349 Td
+(|----------|--------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 181.4175590551179766 Td
+(| Product Book | MD, PDF, DOCX |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 155.9057480314959321 Td
+(| Business Requirements Book | MD, PDF, DOCX |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 130.3939370078738875 Td
+(| Technical Architecture Guide | MD, PDF, DOCX |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 104.882125984251843 Td
+(| API Reference | MD, PDF, DOCX |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 79.3703149606297984 Td
+(| Security & Compliance Book | MD, PDF, DOCX |) Tj
+ET
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 22.6771653543306684 Td
+(CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.) Tj
+ET
+endstream
+endobj
+7 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 8 0 R
+>>
+endobj
+8 0 obj
+<<
+/Length 3713
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 785.1970866141732586 Td
+(| Operations Manual | MD, PDF, DOCX |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 759.6852755905511003 Td
+(| Role manuals \(5\) | MD, PDF, DOCX |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 734.1734645669291695 Td
+(| Developer Guide | MD, PDF, DOCX |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 708.6616535433070112 Td
+(| Product Dossier | MD, PDF, DOCX |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 683.1498425196850803 Td
+(| Board Presentation | MD, PDF, DOCX |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 657.6380314960629221 Td
+(Generate: npm run docs:generate) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 632.1262204724408775 Td
+(6. Testing and quality) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 609.4490551181102092 Td
+(| Test type | Tool | Status |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 583.9372440944881646 Td
+(|-----------|------|--------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 558.42543307086612 Td
+(| Unit tests | Vitest | Active |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 532.9136220472440755 Td
+(| E2E tests | Playwright | Active |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 507.4018110236219741 Td
+(| RBAC smoke | Custom script | Active |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 481.8899999999999295 Td
+(| API integrity | Custom script | Active |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 456.378188976377885 Td
+(| Migration verify | Custom script | Active |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 430.8663779527558404 Td
+(| Version consistency | Custom script | Active |) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 405.3545669291337958 Td
+(7. Deployment and support) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 382.6774015748030706 Td
+(| Item | Detail |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 357.1655905511810261 Td
+(|------|--------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 331.6537795275589815 Td
+(| Hosting | Vercel \(application\), Neon \(database\) |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 306.1419685039369369 Td
+(| Runtime | Node.js 22.x |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 280.6301574803148924 Td
+(| Migration strategy | Forward-only SQL journal |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 255.1183464566928478 Td
+(| Monitoring | Health endpoint, ops incidents |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 229.6065354330708033 Td
+(| Cron | Vercel Cron daily notification dispatch |) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 204.0947244094487587 Td
+(8. Pricing model) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 181.4175590551179766 Td
+(Contact programme administration for licensing terms. Deployment on partner's Vercel/Neon accounts or managed) Tj
+T* (hosting.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 141.7325196850392786 Td
+(9. Evaluation checklist) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 119.0553543307086102 Td
+(• [ ] Review Product Dossier) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 93.5435433070865656 Td
+(• [ ] Verify RBAC against organisation role structure) Tj
+ET
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 22.6771653543306684 Td
+(CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.) Tj
+ET
+endstream
+endobj
+9 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 10 0 R
+>>
+endobj
+10 0 obj
+<<
+/Length 1104
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 785.1970866141732586 Td
+(• [ ] Test demo environment with provided credentials) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 759.6852755905511003 Td
+(• [ ] Review Security & Compliance Book) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 734.1734645669291695 Td
+(• [ ] Validate export samples \(PDF compliance pack\)) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 708.6616535433070112 Td
+(• [ ] Confirm roadmap alignment with programme needs) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 683.1498425196850803 Td
+(• [ ] Review Business Requirements Book status columns) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 657.6380314960629221 Td
+(CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping) Tj
+T* (only.) Tj
+ET
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 22.6771653543306684 Td
+(CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.) Tj
+ET
+endstream
+endobj
+1 0 obj
+<</Type /Pages
+/Kids [3 0 R 5 0 R 7 0 R 9 0 R ]
+/Count 4
+>>
+endobj
+11 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+12 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+13 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+14 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+15 0 obj
+<<
+/Type /Font
+/BaseFont /Courier
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+16 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+17 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+18 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+19 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Roman
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+20 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+21 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Italic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+22 0 obj
+<<
+/Type /Font
+/BaseFont /Times-BoldItalic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+23 0 obj
+<<
+/Type /Font
+/BaseFont /ZapfDingbats
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+24 0 obj
+<<
+/Type /Font
+/BaseFont /Symbol
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+2 0 obj
+<<
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
+/Font <<
+/F1 11 0 R
+/F2 12 0 R
+/F3 13 0 R
+/F4 14 0 R
+/F5 15 0 R
+/F6 16 0 R
+/F7 17 0 R
+/F8 18 0 R
+/F9 19 0 R
+/F10 20 0 R
+/F11 21 0 R
+/F12 22 0 R
+/F13 23 0 R
+/F14 24 0 R
+>>
+/XObject <<
+>>
+>>
+endobj
+25 0 obj
+<<
+/Producer (jsPDF 4.2.1)
+/CreationDate (D:20260807180738-00'00')
+>>
+endobj
+26 0 obj
+<<
+/Type /Catalog
+/Pages 1 0 R
+/OpenAction [3 0 R /FitH null]
+/PageLayout /OneColumn
+>>
+endobj
+xref
+0 27
+0000000000 65535 f 
+0000013356 00000 n 
+0000015196 00000 n 
+0000000015 00000 n 
+0000000152 00000 n 
+0000004110 00000 n 
+0000004247 00000 n 
+0000008159 00000 n 
+0000008296 00000 n 
+0000012061 00000 n 
+0000012199 00000 n 
+0000013431 00000 n 
+0000013557 00000 n 
+0000013688 00000 n 
+0000013822 00000 n 
+0000013960 00000 n 
+0000014084 00000 n 
+0000014213 00000 n 
+0000014345 00000 n 
+0000014481 00000 n 
+0000014609 00000 n 
+0000014736 00000 n 
+0000014865 00000 n 
+0000014998 00000 n 
+0000015100 00000 n 
+0000015449 00000 n 
+0000015535 00000 n 
+trailer
+<<
+/Size 27
+/Root 26 0 R
+/Info 25 0 R
+/ID [ <1509ADFDF6FF7B4CE54C073BE8B2D4E3> <1509ADFDF6FF7B4CE54C073BE8B2D4E3> ]
+>>
+startxref
+15639
+%%EOF

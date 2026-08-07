@@ -6,13 +6,13 @@ export interface ReleaseNotes {
 }
 
 export const CURRENT_RELEASE_NOTES: ReleaseNotes = {
-  version: '1.7.3',
+  version: '1.7.4',
   summary:
-    'Official documentation library — comprehensive books, role manuals, branded PDF/DOCX exports, and contextual export simplification.',
+    'Documentation Centre — read, search, print, and download the official WILMS product library inside the application.',
   highlights: [
-    'Full documentation library under documentation/ with product book, BRD, security, and API reference.',
-    'Branded PDF and DOCX generation via npm run docs:generate for all official manuals.',
-    'Five role-based user guides: Super Admin, Officer, Collector, Approver, Auditor.',
-    'Standalone Export Center removed; contextual exports from reports and intelligence surfaces.',
+    'Enterprise Documentation Centre with book-quality reading layout and interactive contents.',
+    'Search across the full documentation library with section snippets.',
+    'Download PDF and Word editions directly from the app; presentation mode for board reviews.',
+    'Accessible from the Super Admin sidebar and Settings → Documentation.',
   ],
 };
