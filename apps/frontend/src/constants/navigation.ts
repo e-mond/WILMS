@@ -109,14 +109,14 @@ export const SUPER_ADMIN_NAV: ShellNavItem[] = [
     icon: 'queue',
     group: 'system',
   },
-  { href: '/reports', label: 'Reports', exact: true, icon: 'reports', group: 'reports' },
   {
-    href: '/exports',
-    label: 'Exports',
+    href: '/documentation',
+    label: 'Documentation',
     exact: true,
-    icon: 'exports',
-    group: 'reports',
+    icon: 'audit',
+    group: 'administration',
   },
+  { href: '/reports', label: 'Reports', exact: true, icon: 'reports', group: 'reports' },
   { href: '/settings', label: 'Settings', exact: true, icon: 'settings', group: 'administration' },
 ];
 
