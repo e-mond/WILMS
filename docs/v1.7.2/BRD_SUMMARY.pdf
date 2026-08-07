@@ -1,0 +1,570 @@
+%PDF-1.3
+%ºß¬à
+3 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+/Length 4144
+>>
+stream
+0.5670000000000001 w
+0 G
+0.06 0.43 0.34 rg
+0. 841.8899999999999864 595.2799999999999727 -141.7322834645669332 re
+f
+BT
+/F2 26 Tf
+29.8999999999999986 TL
+1. g
+254.4799999999999613 779.5277952755905062 Td
+(WILMS) Tj
+ET
+BT
+/F1 11 Tf
+12.6499999999999986 TL
+1. g
+175.3749999999999147 751.1813385826771992 Td
+(Women's Interest-Free Loan Management System) Tj
+ET
+BT
+/F1 11 Tf
+12.6499999999999986 TL
+1. g
+235.2699999999999818 728.5041732283464171 Td
+(Product Dossier — v1.7.2) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 666.1419685039369369 Td
+(Executive Summary) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 649.1340944881889072 Td
+(WILMS v1.7.2 packages a production interest-free loan management platform for market presentation to) Tj
+T* (government, NGO, and institutional partners.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 603.7797637795274568 Td
+(Product Overview) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 586.7718897637794271 Td
+(Women’s Interest-Free Loan Management System covering registration, approval, disbursement, collections,) Tj
+T* (reconciliation, communications, executive intelligence, and operations.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 541.4175590551180903 Td
+(Problem Statement) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 524.4096850393700606 Td
+(Paper and spreadsheet programmes lack separation of duties, auditability, and timely portfolio visibility.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 493.2285826771653205 Td
+(Solution) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 476.2207086614172908 Td
+(A modular TypeScript monolith on Next.js + Vercel + Neon with RBAC, operational ledgers, notifications, and board) Tj
+T* (reporting.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 430.8663779527558404 Td
+(Target Users) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 413.8585039370078107 Td
+(Collectors, officers, approvers, auditors, super admins, directors, MPs, NGO boards, procurement committees, and) Tj
+T* (investors.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 368.5041732283464171 Td
+(Features) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 351.4962992125983874 Td
+(Borrower lifecycle, pools, collections, reconciliation, expenses, communication center, executive intelligence, exports,) Tj
+T* (ops incidents.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 306.1419685039369369 Td
+(Architecture) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 289.1340944881889072 Td
+(Next.js App Router hosts @wilms/domain via Route Handlers; custom HMAC sessions; Neon PostgreSQL; optional) Tj
+T* (Redis rate limits.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 243.7797637795274568 Td
+(BRD Summary) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 226.7718897637794271 Td
+(Interest-free group lending with maker-checker controls, field GPS collections, and programme capital hard-stops.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 195.5907874015747439 Td
+(Implemented Modules) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 178.5829133858267141 Td
+(Core lending through v1.7.0 intelligence/exports/ops; v1.7.2 market packaging and dashboard separation.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 147.4018110236219172 Td
+(Financial Model) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 130.3939370078738875 Td
+(Pesewas integer money; pool replenishment/disbursement/repayment/adjustment; expenses affect operating cash) Tj
+T* (only.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 85.0396062992125508 Td
+(Security Model) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 68.0317322834645211 Td
+(HMAC sessions, RBAC + overrides, CSRF on mutating BFF paths, audit logging, upload allowlists.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 6 0 R
+>>
+endobj
+6 0 obj
+<<
+/Length 2821
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 785.1970866141732586 Td
+(Operations) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 768.1892125984252289 Td
+(Health, metrics, cron notifications, incidents, maintenance windows, Neon backups.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 737.0081102362204319 Td
+(Deployment) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 720.0002362204724022 Td
+(Vercel production + Neon; migrations via domain SQL journal.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 688.819133858267719 Td
+(Reporting) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 671.8112598425196893 Td
+(Operational reports, executive intelligence, forecasting, export center.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 640.6301574803148924 Td
+(Compliance) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 623.6222834645668627 Td
+(Audit trail, SoD on expenses/adjustments, confidentiality notices on exports.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 592.4411811023621794 Td
+(Testing) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 575.4333070866141497 Td
+(Vitest, Playwright, financial/RBAC/notification smokes, version and migration verifies.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 544.2522047244094665 Td
+(Certification Status) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 527.2443307086614368 Td
+(Production operational platform; statutory GL and multi-org deferred.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 496.0632283464566399 Td
+(Skipped / Deferred) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 479.0553543307086102 Td
+(Borrower portal, multi-organization tenancy, statutory GL, native mobile app, deep payment-provider integrations.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 447.8742519685038701 Td
+(Roadmap) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 430.8663779527558404 Td
+(v1.8 Integrations & Payments; v1.9 Enterprise automation; v2.0 General Ledger & multi-branch.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 399.6852755905511003 Td
+(Technical Appendix) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 382.6774015748030706 Td
+(Node 22, Next.js 14, Drizzle, shared-rbac, export engines \(PDF/Excel/DOCX\), docs/v1.7.2 release pack.) Tj
+ET
+BT
+/F1 8 Tf
+9.1999999999999993 TL
+0.361 g
+39.6850393700787407 28.3466929133857093 Td
+(CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.) Tj
+ET
+endstream
+endobj
+1 0 obj
+<</Type /Pages
+/Kids [3 0 R 5 0 R ]
+/Count 2
+>>
+endobj
+7 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+8 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+9 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+10 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+11 0 obj
+<<
+/Type /Font
+/BaseFont /Courier
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+12 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+13 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+14 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+15 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Roman
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+16 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+17 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Italic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+18 0 obj
+<<
+/Type /Font
+/BaseFont /Times-BoldItalic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+19 0 obj
+<<
+/Type /Font
+/BaseFont /ZapfDingbats
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+20 0 obj
+<<
+/Type /Font
+/BaseFont /Symbol
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+2 0 obj
+<<
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
+/Font <<
+/F1 7 0 R
+/F2 8 0 R
+/F3 9 0 R
+/F4 10 0 R
+/F5 11 0 R
+/F6 12 0 R
+/F7 13 0 R
+/F8 14 0 R
+/F9 15 0 R
+/F10 16 0 R
+/F11 17 0 R
+/F12 18 0 R
+/F13 19 0 R
+/F14 20 0 R
+>>
+/XObject <<
+>>
+>>
+endobj
+21 0 obj
+<<
+/Producer (jsPDF 4.2.1)
+/CreationDate (D:20260807163837-00'00')
+>>
+endobj
+22 0 obj
+<<
+/Type /Catalog
+/Pages 1 0 R
+/OpenAction [3 0 R /FitH null]
+/PageLayout /OneColumn
+>>
+endobj
+xref
+0 23
+0000000000 65535 f 
+0000007358 00000 n 
+0000009183 00000 n 
+0000000015 00000 n 
+0000000152 00000 n 
+0000004348 00000 n 
+0000004485 00000 n 
+0000007421 00000 n 
+0000007546 00000 n 
+0000007676 00000 n 
+0000007809 00000 n 
+0000007947 00000 n 
+0000008071 00000 n 
+0000008200 00000 n 
+0000008332 00000 n 
+0000008468 00000 n 
+0000008596 00000 n 
+0000008723 00000 n 
+0000008852 00000 n 
+0000008985 00000 n 
+0000009087 00000 n 
+0000009433 00000 n 
+0000009519 00000 n 
+trailer
+<<
+/Size 23
+/Root 22 0 R
+/Info 21 0 R
+/ID [ <4914B0D105351D8BAAC2C8942C02DA5D> <4914B0D105351D8BAAC2C8942C02DA5D> ]
+>>
+startxref
+9623
+%%EOF
