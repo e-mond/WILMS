@@ -55,16 +55,14 @@ export function ExecutiveIntelligencePanel() {
       <div className="flex flex-wrap items-end justify-between gap-wilms-3 border-b border-border pb-wilms-4 print:border-0">
         <div>
           <p className="text-small font-semibold uppercase tracking-wide text-warning">
-            Executive intelligence
+            Executive
           </p>
-          <h1 className="text-heading-2 font-semibold text-text-primary">Organisation performance</h1>
-          <p className="mt-wilms-1 max-w-2xl text-small text-text-muted">
-            Board-ready portfolio, cash, risk, and forecast view for directors and finance committees.
-            Day-to-day approvals and queues remain on the{' '}
+          <h1 className="text-heading-2 font-semibold text-text-primary">Portfolio overview</h1>
+          <p className="mt-wilms-1 max-w-xl text-small text-text-muted">
+            Organisation cash, risk, and performance.{' '}
             <Link href="/dashboard" className="font-semibold text-brand-primary hover:underline">
-              Operational Dashboard
+              Operational dashboard
             </Link>
-            .
           </p>
         </div>
         <div className="flex flex-wrap items-end gap-wilms-2 print:hidden">

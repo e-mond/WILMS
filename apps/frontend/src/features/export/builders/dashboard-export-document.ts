@@ -16,14 +16,14 @@ export function buildDashboardExportDocument(input: DashboardExportInput): Wilms
   return {
     metadata: {
       reportType: WILMS_REPORT_TYPE.GENERIC_REPORT,
-      reportTitle: 'Executive Dashboard Summary',
+      reportTitle: 'Operational Dashboard Summary',
       reportId,
       generatedAt,
       generatedBy: input.generatedBy,
       environment: getWilmsEnvironment(),
       referencePrefix: 'DSH',
     },
-    executiveSummary: `Dashboard snapshot generated ${generatedAt}.`,
+    executiveSummary: `Operational dashboard snapshot generated ${generatedAt}.`,
     sections: [
       {
         title: 'Key metrics',

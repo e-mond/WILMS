@@ -10,6 +10,8 @@ export type ShellNavIcon =
   | 'risk'
   | 'audit'
   | 'reports'
+  | 'executive'
+  | 'exports'
   | 'adjustments'
   | 'settings'
   | 'admin-fee'
@@ -71,7 +73,7 @@ export const SUPER_ADMIN_NAV: ShellNavItem[] = [
     href: '/executive',
     label: 'Executive',
     exact: true,
-    icon: 'reports',
+    icon: 'executive',
     group: 'overview',
   },
   { href: '/borrowers', label: 'Borrowers', icon: 'borrowers', group: 'people' },
@@ -96,7 +98,7 @@ export const SUPER_ADMIN_NAV: ShellNavItem[] = [
   {
     href: '/communication-center',
     label: 'Communication Center',
-    icon: 'reports',
+    icon: 'messages',
     group: 'communication',
   },
   { href: '/reports/audit-log', label: 'Audit Log', exact: true, icon: 'audit', group: 'reports' },
@@ -112,7 +114,7 @@ export const SUPER_ADMIN_NAV: ShellNavItem[] = [
     href: '/exports',
     label: 'Exports',
     exact: true,
-    icon: 'reports',
+    icon: 'exports',
     group: 'reports',
   },
   { href: '/settings', label: 'Settings', exact: true, icon: 'settings', group: 'administration' },

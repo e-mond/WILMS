@@ -11,6 +11,7 @@ export interface DashboardAlertsAsideProps {
 
 export function DashboardAlertsAside({ alerts }: DashboardAlertsAsideProps) {
   const criticalCount = alerts.filter((alert) => alert.severity === 'danger').length;
+  const preview = alerts.slice(0, 2);
 
   return (
     <div className="flex h-full flex-col space-y-wilms-4">
@@ -24,49 +25,59 @@ export function DashboardAlertsAside({ alerts }: DashboardAlertsAsideProps) {
         ) : null}
       </div>
 
-      <ul className="min-h-0 flex-1 space-y-wilms-3 overflow-y-auto">
-        {alerts.map((alert) => {
-          const content = (
-            <>
-              <DashboardAlertIcon icon={alert.icon} />
-              <p className="min-w-0 flex-1 text-body text-text-primary">{alert.message}</p>
-              <time
-                dateTime={alert.createdAt}
-                className="shrink-0 text-small font-semibold text-text-muted"
-              >
-                {formatAlertClock(alert.createdAt)}
-              </time>
-            </>
-          );
-
-          return (
-            <li
-              key={alert.id}
-              className="border-b border-border pb-wilms-3 last:border-b-0 last:pb-0"
-            >
-              {alert.href ? (
-                <Link
-                  href={alert.href}
-                  className="flex min-h-[44px] items-start gap-wilms-3 rounded-sm p-wilms-1 hover:bg-accent/40 hover:underline"
+      {preview.length === 0 ? (
+        <p className="text-small text-text-muted">No alerts in the current window.</p>
+      ) : (
+        <ul className="min-h-0 flex-1 space-y-wilms-3 overflow-y-auto">
+          {preview.map((alert) => {
+            const content = (
+              <>
+                <DashboardAlertIcon icon={alert.icon} />
+                <p className="min-w-0 flex-1 truncate text-body text-text-primary">{alert.message}</p>
+                <time
+                  dateTime={alert.createdAt}
+                  className="shrink-0 text-small font-semibold text-text-muted"
                 >
-                  {content}
-                </Link>
-              ) : (
-                <div className="flex min-h-[44px] items-start gap-wilms-3 p-wilms-1">
-                  {content}
-                </div>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+                  {formatAlertClock(alert.createdAt)}
+                </time>
+              </>
+            );
 
-      <Link
-        href="/reports/audit-log"
-        className="text-small font-semibold text-brand-primary hover:underline"
-      >
-        View All Alerts
-      </Link>
+            return (
+              <li
+                key={alert.id}
+                className="border-b border-border pb-wilms-3 last:border-b-0 last:pb-0"
+              >
+                {alert.href ? (
+                  <Link
+                    href={alert.href}
+                    className="flex min-h-[44px] items-start gap-wilms-3 rounded-sm p-wilms-1 hover:bg-accent/40 hover:underline"
+                  >
+                    {content}
+                  </Link>
+                ) : (
+                  <div className="flex min-h-[44px] items-start gap-wilms-3 p-wilms-1">
+                    {content}
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      <div className="flex items-center justify-between gap-wilms-2">
+        <p className="text-small text-text-muted">
+          Showing {preview.length}
+          {alerts.length > preview.length ? ` of ${alerts.length}` : ''}
+        </p>
+        <Link
+          href="/reports/audit-log"
+          className="text-small font-semibold text-brand-primary hover:underline"
+        >
+          View all alerts
+        </Link>
+      </div>
     </div>
   );
 }
