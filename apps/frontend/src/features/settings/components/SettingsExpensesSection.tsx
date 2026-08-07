@@ -1,18 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { CurrencyAmount, DataTable } from '@/components/data-display';
 import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { Button } from '@/components/ui/Button';
 import { SettingsSectionCard } from '@/features/settings/components/SettingsSectionCard';
 import { useExpenses } from '@/features/expenses/hooks/useExpenses';
+import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
+import { WILMS_REPORT_TYPE } from '@/features/export';
 import { expenseService } from '@/services';
 import type { ExpenseRecord } from '@/types/expense';
 import { EXPENSE_STATUS } from '@/types/expense';
 import { SettingsExpensesIcon } from '@/features/settings/components/SettingsSectionIcons';
 import { resolveExpenseDisplayId } from '@/utils/entity-display-id';
 import { formatDisplayDate } from '@/utils/format-date';
+import { formatPesewasForCsv } from '@/utils/export-csv';
 import { useToast } from '@/hooks/useToast';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -22,6 +25,19 @@ export function SettingsExpensesSection() {
   const toast = useToast();
   const queryClient = useQueryClient();
   const [busyId, setBusyId] = useState<string | null>(null);
+
+  const expenseExportRows = useMemo(
+    () =>
+      (data?.expenses ?? []).map((row) => [
+        resolveExpenseDisplayId(row),
+        row.categoryLabel,
+        formatPesewasForCsv(row.amountPesewas),
+        row.expenseDate,
+        row.status,
+        row.reason ?? '',
+      ]),
+    [data?.expenses],
+  );
 
   const reviewMutation = useMutation({
     mutationFn: (input: {
@@ -54,23 +70,34 @@ export function SettingsExpensesSection() {
 
   return (
     <div className="space-y-wilms-4">
-      <div className="grid gap-wilms-3 sm:grid-cols-3">
-        <div className="rounded-sm border border-border bg-card p-wilms-4">
-          <p className="text-small text-text-muted">Pending review</p>
-          <p className="text-heading-3 font-bold text-text-primary">{data.summary.pendingCount}</p>
+      <div className="flex flex-wrap items-end justify-between gap-wilms-3">
+        <div className="grid min-w-0 flex-1 gap-wilms-3 sm:grid-cols-3">
+          <div className="rounded-sm border border-border bg-card p-wilms-4">
+            <p className="text-small text-text-muted">Pending review</p>
+            <p className="text-heading-3 font-bold text-text-primary">{data.summary.pendingCount}</p>
+          </div>
+          <div className="rounded-sm border border-border bg-card p-wilms-4">
+            <p className="text-small text-text-muted">Approved amount</p>
+            <p className="text-heading-3 font-bold text-status-active">
+              <CurrencyAmount value={data.summary.approvedTotalPesewas} />
+            </p>
+          </div>
+          <div className="rounded-sm border border-border bg-card p-wilms-4">
+            <p className="text-small text-text-muted">Pending amount</p>
+            <p className="text-heading-3 font-bold text-text-primary">
+              <CurrencyAmount value={data.summary.pendingTotalPesewas} />
+            </p>
+          </div>
         </div>
-        <div className="rounded-sm border border-border bg-card p-wilms-4">
-          <p className="text-small text-text-muted">Approved amount</p>
-          <p className="text-heading-3 font-bold text-status-active">
-            <CurrencyAmount value={data.summary.approvedTotalPesewas} />
-          </p>
-        </div>
-        <div className="rounded-sm border border-border bg-card p-wilms-4">
-          <p className="text-small text-text-muted">Pending amount</p>
-          <p className="text-heading-3 font-bold text-text-primary">
-            <CurrencyAmount value={data.summary.pendingTotalPesewas} />
-          </p>
-        </div>
+        <ExportCsvButton
+          label="Export expenses"
+          filename={`expense-report-${new Date().toISOString().slice(0, 10)}.csv`}
+          reportType={WILMS_REPORT_TYPE.GENERIC_REPORT}
+          reportTitle="Expense Report"
+          executiveSummary={`Pending ${data.summary.pendingCount}; approved total ${formatPesewasForCsv(data.summary.approvedTotalPesewas)} GHS.`}
+          headers={['Expense ID', 'Category', 'Amount (GHS)', 'Date', 'Status', 'Reason']}
+          rows={expenseExportRows}
+        />
       </div>
 
       <SettingsSectionCard

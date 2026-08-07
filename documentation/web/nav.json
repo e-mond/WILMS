@@ -1,0 +1,96 @@
+{
+  "version": "1.7.3",
+  "title": "WILMS Documentation",
+  "sections": [
+    {
+      "id": "getting-started",
+      "title": "Getting Started",
+      "items": [
+        { "title": "Documentation Library Index", "path": "../DOCUMENTATION_LIBRARY_INDEX.md" },
+        { "title": "Final Documentation Report", "path": "../FINAL_DOCUMENTATION_REPORT.md" },
+        { "title": "Product Dossier", "path": "../books/PRODUCT_DOSSIER.md" },
+        { "title": "Implementation Guide", "path": "../books/IMPLEMENTATION_GUIDE.md" }
+      ]
+    },
+    {
+      "id": "product-books",
+      "title": "Product Books",
+      "items": [
+        { "title": "WILMS Product Book", "path": "../books/WILMS_PRODUCT_BOOK.md" },
+        { "title": "Business Requirements Book", "path": "../books/BUSINESS_REQUIREMENTS_BOOK.md" },
+        { "title": "Security & Compliance Book", "path": "../books/SECURITY_COMPLIANCE_BOOK.md" },
+        { "title": "Reporting & Analytics Book", "path": "../books/REPORTING_ANALYTICS_BOOK.md" },
+        { "title": "Notification & Communication Book", "path": "../books/NOTIFICATION_COMMUNICATION_BOOK.md" },
+        { "title": "Board Presentation", "path": "../books/BOARD_PRESENTATION.md" },
+        { "title": "Procurement Pack", "path": "../books/PROCUREMENT_PACK.md" }
+      ]
+    },
+    {
+      "id": "technical",
+      "title": "Technical",
+      "items": [
+        { "title": "Technical Architecture Guide", "path": "../technical/TECHNICAL_ARCHITECTURE_GUIDE.md" },
+        { "title": "API Reference", "path": "../technical/API_REFERENCE.md" },
+        { "title": "Developer Guide", "path": "../developer/DEVELOPER_GUIDE.md" }
+      ]
+    },
+    {
+      "id": "user-guides",
+      "title": "User Guides",
+      "items": [
+        { "title": "Super Admin Manual", "path": "../user-guides/SUPER_ADMIN_MANUAL.md", "outputName": "ADMINISTRATOR_MANUAL" },
+        { "title": "Registration Officer Manual", "path": "../user-guides/OFFICER_MANUAL.md" },
+        { "title": "Collector Manual", "path": "../user-guides/COLLECTOR_MANUAL.md" },
+        { "title": "Approver Manual", "path": "../user-guides/APPROVER_MANUAL.md" },
+        { "title": "Auditor Manual", "path": "../user-guides/AUDITOR_MANUAL.md" }
+      ]
+    },
+    {
+      "id": "operations",
+      "title": "Operations",
+      "items": [
+        { "title": "Operations Manual", "path": "../operations/OPERATIONS_MANUAL.md" }
+      ]
+    },
+    {
+      "id": "roadmap",
+      "title": "Roadmap",
+      "items": [
+        { "title": "Future Work Book", "path": "../roadmap/ROADMAP_FUTURE_WORK_BOOK.md" }
+      ]
+    },
+    {
+      "id": "branding",
+      "title": "Branding",
+      "items": [
+        { "title": "Brand System", "path": "../branding/BRAND_SYSTEM.md" }
+      ]
+    }
+  ],
+  "faq": [
+    {
+      "question": "Where did Export Center go?",
+      "answer": "The standalone Export Center route was removed in v1.7.3. Use contextual export buttons on report pages, borrower profiles, and executive intelligence."
+    },
+    {
+      "question": "How do I generate PDF manuals?",
+      "answer": "Run npm run docs:generate from the repository root. Outputs appear in documentation/pdf/ and documentation/docx/."
+    },
+    {
+      "question": "What authentication does WILMS use?",
+      "answer": "Custom HMAC-signed session cookies (wilms_session), not Auth.js or JWT bearer tokens."
+    },
+    {
+      "question": "How is money stored?",
+      "answer": "Integer pesewas in the database. 100 pesewas = 1 GHS. No floating-point arithmetic."
+    }
+  ],
+  "glossary": [
+    { "term": "Pesewas", "definition": "Integer money unit; 100 pesewas = 1 GHS" },
+    { "term": "Pool", "definition": "Capital fund from which loans are disbursed" },
+    { "term": "Maker-checker", "definition": "Dual-control requiring different users for submit and approve" },
+    { "term": "SoD", "definition": "Separation of duties" },
+    { "term": "RBAC", "definition": "Role-based access control" },
+    { "term": "Contextual export", "definition": "Export action embedded in the page displaying source data" }
+  ]
+}

@@ -180,10 +180,11 @@ function ExecutiveDashboardContent({ data }: { data: ExecutiveDashboard }) {
         actions={
           <div className="flex flex-wrap gap-wilms-2 print:hidden">
             <ExportCsvButton
-              label="Export"
-              filename={`executive-intelligence-${data.asOfDate}.csv`}
+              label="Export board report"
+              filename={`executive-board-report-${data.asOfDate}.csv`}
               reportType={WILMS_REPORT_TYPE.GENERIC_REPORT}
-              reportTitle="Executive Intelligence"
+              reportTitle="Executive Board Report"
+              executiveSummary={`Board KPI summary as of ${data.asOfDate}${data.filters.community ? ` for ${data.filters.community}` : ''}.`}
               headers={['Metric', 'Value']}
               rows={csvRows}
             />

@@ -2,6 +2,29 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.7.3] — Documentation Suite
+
+**Date:** August 2026  
+**Branch:** `feature/v1.7.3-documentation-suite`
+
+### Added
+
+- Official documentation library under `documentation/` (books, technical guides, role manuals, operations, roadmap, branding)
+- Branded PDF and DOCX generation: `npm run docs:generate` (`scripts/generate-documentation-suite.mjs`)
+- Web docs portal structure (`documentation/web/`) with navigation tree and FAQ scaffolding
+- Release pack at `docs/v1.7.3/`
+
+### Changed
+
+- Standalone Export Center route (`/exports`) and sidebar navigation removed in favour of contextual exports from reports, borrower profiles, and executive intelligence
+- Export job API (`/exports/jobs`) retained for embedded and programmatic flows
+
+### Notes
+
+- v1.7.2 remains the last feature platform release
+- Financial formulas, RBAC, reconciliation, and notification guarantees unchanged
+- Auth remains custom HMAC sessions
+
 ## [1.7.2] — Release Candidate Stabilization (RC1)
 
 **Date:** August 2026  

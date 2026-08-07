@@ -17,11 +17,14 @@ import {
   useReconciliationList,
   useReviewReconciliation,
 } from '@/features/reconciliation/hooks/useReconciliationReview';
+import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
+import { WILMS_REPORT_TYPE } from '@/features/export';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import type { ReconciliationSummary } from '@/types/services';
 import { resolveUserDisplayId } from '@/utils/entity-display-id';
 import { formatDisplayDate } from '@/utils/format-date';
+import { formatPesewasForCsv } from '@/utils/export-csv';
 import { needsReconciliationReview } from '@/utils/reconciliation-review';
 import { cn } from '@/utils/cn';
 
@@ -167,11 +170,28 @@ export function ReconciliationReviewQueue() {
 
   return (
     <div className="space-y-wilms-4">
-      <div>
-        <h2 className="text-heading-2 font-semibold text-text-primary">Pending reconciliations</h2>
-        <p className="text-small text-text-muted">
-          Approve, reject, investigate, or return reconciliations with flagged variance.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-wilms-3">
+        <div>
+          <h2 className="text-heading-2 font-semibold text-text-primary">Pending reconciliations</h2>
+          <p className="text-small text-text-muted">
+            Approve, reject, investigate, or return reconciliations with flagged variance.
+          </p>
+        </div>
+        <ExportCsvButton
+          label="Export queue"
+          filename={`reconciliation-pending-${new Date().toISOString().slice(0, 10)}.csv`}
+          reportType={WILMS_REPORT_TYPE.GENERIC_REPORT}
+          reportTitle="Reconciliation Pending Queue"
+          headers={['Date', 'Collector', 'Expected (GHS)', 'Physical (GHS)', 'Variance (GHS)', 'Status']}
+          rows={pendingReview.map((row) => [
+            row.date,
+            resolveUserDisplayId(row.collectorId),
+            formatPesewasForCsv(row.expectedPesewas),
+            formatPesewasForCsv(row.physicalCashPesewas ?? row.actualPesewas),
+            formatPesewasForCsv(row.variancePesewas),
+            String(row.status ?? 'SUBMITTED'),
+          ])}
+        />
       </div>
 
       <DataTable<ReconciliationSummary>

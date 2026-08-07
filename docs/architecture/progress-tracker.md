@@ -25,7 +25,8 @@ Units marked ✅ implement core behaviour and unit tests. **Global DoD is not me
 | **v1.6.2 Enterprise Readiness** | ✅ Complete — PR #161 |
 | **v1.7.0 Finance & Intelligence** | ✅ Complete — PR #162; reports in `docs/v1.7/` |
 | **v1.7.0 Ops/UX hardening** | ✅ Complete — PR #163 |
-| **v1.7.2 Release Candidate** | 🔄 In progress — branch `feature/v1.7.2-release-candidate-stabilization`; pack in `docs/v1.7.2/` |
+| **v1.7.2 Release Candidate** | ✅ Complete — last feature platform release; pack in `docs/v1.7.2/` |
+| **v1.7.3 Documentation Suite** | ✅ Complete — branch `feature/v1.7.3-documentation-suite`; library in `documentation/`; pack in `docs/v1.7.3/` |
 | **v1.7.1 Market Readiness** | ✅ Merged (#165 / #166); pack in `docs/v1.7.1/` |
 
 ---

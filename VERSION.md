@@ -2,19 +2,26 @@
 
 | Field | Value |
 |-------|-------|
-| **Current release** | `v1.7.2` |
-| **In progress** | RC1 — release candidate stabilization (Phases A–E) |
-| **Release type** | Release candidate / financial UX & market readiness |
-| **Previous release** | `v1.7.1` |
+| **Current release** | `v1.7.3` |
+| **In progress** | — |
+| **Release type** | Documentation suite / export page removal |
+| **Previous release** | `v1.7.2` (last feature platform release) |
 | **Date** | August 2026 |
 
 ## Package versions
 
 | Package | Version |
 |---------|---------|
-| `wilms` (root) | `1.7.2` |
-| `@wilms/frontend` | `1.7.2` |
-| `@wilms/domain` | `1.7.2` |
-| `@wilms/api` | `1.7.2` |
+| `wilms` (root) | `1.7.3` |
+| `@wilms/frontend` | `1.7.3` |
+| `@wilms/domain` | `1.7.3` |
+| `@wilms/api` | `1.7.3` |
 
-See `docs/v1.7.2/` for the RC1 release pack. RC2 (onboarding, offline, full manuals) follows `v1.7.2-rc1`.
+## v1.7.3 notes
+
+- Official documentation library under `documentation/`
+- Branded PDF/DOCX generation via `npm run docs:generate`
+- Standalone Export Center (`/exports`) removed; contextual exports remain
+- Platform features documented through v1.7.2; no financial/RBAC formula changes
+
+See `docs/v1.7.3/` for the documentation suite release pack. See `docs/v1.7.2/` for the last feature platform release pack.

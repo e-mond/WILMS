@@ -90,8 +90,8 @@ const TOUR_STEPS_BY_ROLE: Partial<Record<UserRole, ProductTourStep[]>> = {
     },
     {
       id: 'reports',
-      title: 'Reports',
-      body: 'Open financial and operational reports for leadership reviews.',
+      title: 'Reports & exports',
+      body: 'Open financial and operational reports. Export PDF, Excel, CSV, or Word from each report and dashboard toolbar — there is no separate Exports page.',
       href: '/reports',
       targetSelector: '[data-tour-nav="/reports"]',
     },
