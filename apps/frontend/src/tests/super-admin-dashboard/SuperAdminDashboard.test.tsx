@@ -65,7 +65,7 @@ describe('SuperAdminDashboard', () => {
       'href',
       '/executive',
     );
-    expect(screen.getByRole('link', { name: /executive intelligence/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /^executive view$/i })).toHaveAttribute(
       'href',
       '/executive',
     );

@@ -163,6 +163,41 @@ export function ShellNavIcon({ name, className }: ShellNavIconProps) {
           />
         </svg>
       );
+    case 'executive':
+      return (
+        <svg className={iconClass} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M4 19V5M4 19h16"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+          <path
+            d="M8 16V10M12 16V7M16 16v-4"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+        </svg>
+      );
+    case 'exports':
+      return (
+        <svg className={iconClass} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M12 3v12M8 7l4-4 4 4"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M5 14v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+        </svg>
+      );
     case 'expenses':
       return (
         <svg className={iconClass} viewBox="0 0 24 24" fill="none" aria-hidden="true">
