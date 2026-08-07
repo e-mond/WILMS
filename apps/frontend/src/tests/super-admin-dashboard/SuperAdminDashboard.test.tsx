@@ -42,7 +42,7 @@ describe('SuperAdminDashboard', () => {
     mockGetDashboardSummary.mockImplementation(() => dashboardServiceMock.getDashboardSummary());
   });
 
-  it('renders executive dashboard KPIs and sections from service data', async () => {
+  it('renders operational dashboard work queues and links to executive view', async () => {
     render(
       <TestQueryProvider>
         <AsideSlotProvider>
@@ -55,16 +55,19 @@ describe('SuperAdminDashboard', () => {
 
     await waitFor(
       () => {
-        expect(screen.getByText('Total Pool Funds')).toBeInTheDocument();
+        expect(screen.getByTestId('operational-dashboard')).toBeInTheDocument();
       },
       { timeout: 15_000 },
     );
-    expect(screen.getByText('Borrower Status')).toBeInTheDocument();
-    expect(screen.getByText('Collector Performance')).toBeInTheDocument();
-    expect(screen.getByText('Group Risk Distribution')).toBeInTheDocument();
-    expect(await screen.findByText('Recent Alerts')).toBeInTheDocument();
-    expect(screen.getByText(/critical/)).toBeInTheDocument();
-    expect(screen.getByText('Pending')).toBeInTheDocument();
-    expect(screen.getAllByText('GH₵4,820,000.00').length).toBeGreaterThan(0);
+    expect(screen.getByText('What needs attention today')).toBeInTheDocument();
+    expect(screen.getByText("Today’s work queue")).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /open executive view/i })).toHaveAttribute(
+      'href',
+      '/executive',
+    );
+    expect(screen.getByRole('link', { name: /executive intelligence/i })).toHaveAttribute(
+      'href',
+      '/executive',
+    );
   });
 });

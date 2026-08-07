@@ -56,7 +56,10 @@ describe('CollectorDashboardPanel', () => {
     expect(
       await screen.findByText("Today's Collection", {}, { timeout: 8000 }),
     ).toBeInTheDocument();
-    expect(screen.getByText('Groups Due Today')).toBeInTheDocument();
+    expect(screen.getByTestId('collector-field-dashboard')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /quick payment/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /^reconcile$/i })).toBeInTheDocument();
+    expect(screen.getByText('Groups today')).toBeInTheDocument();
     expect(screen.getAllByText('Ama Mensah').length).toBeGreaterThan(0);
     expect(screen.getAllByText('GH₵50.00').length).toBeGreaterThan(0);
     expect(screen.getAllByText(/missed payment alert/i).length).toBeGreaterThanOrEqual(1);
