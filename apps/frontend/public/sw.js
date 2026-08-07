@@ -1,7 +1,15 @@
-const CACHE_VERSION = 'wilms-v137-shell';
+const CACHE_VERSION = 'wilms-v172-shell';
 const SHELL_ASSETS = [
+  '/',
   '/login',
+  '/dashboard',
+  '/executive',
+  '/exports',
+  '/reports',
+  '/settings',
   '/collector/dashboard',
+  '/collector/my-borrowers',
+  '/collector/reconciliation',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon-192-maskable.png',

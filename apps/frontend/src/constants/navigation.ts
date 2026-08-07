@@ -106,7 +106,7 @@ export const SUPER_ADMIN_NAV: ShellNavItem[] = [
     href: '/ops',
     label: 'Operations',
     exact: true,
-    icon: 'risk',
+    icon: 'queue',
     group: 'system',
   },
   { href: '/reports', label: 'Reports', exact: true, icon: 'reports', group: 'reports' },

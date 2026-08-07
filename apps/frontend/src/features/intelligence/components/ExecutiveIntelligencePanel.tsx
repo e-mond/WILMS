@@ -54,12 +54,14 @@ export function ExecutiveIntelligencePanel() {
     <div className="space-y-wilms-6 print:space-y-4" data-testid="executive-intelligence">
       <div className="flex flex-wrap items-end justify-between gap-wilms-3 border-b border-border pb-wilms-4 print:border-0">
         <div>
-          <p className="text-small font-semibold uppercase tracking-wide text-warning">
-            Executive
+          <p className="text-small font-semibold uppercase tracking-[0.12em] text-warning">
+            Board view
           </p>
-          <h1 className="text-heading-2 font-semibold text-text-primary">Portfolio overview</h1>
-          <p className="mt-wilms-1 max-w-xl text-small text-text-muted">
-            Organisation cash, risk, and performance.{' '}
+          <h1 className="mt-wilms-2 text-heading-1 font-semibold tracking-tight text-text-primary md:text-[2.25rem]">
+            Portfolio health
+          </h1>
+          <p className="mt-wilms-3 max-w-2xl text-body text-text-muted">
+            Operating cash, recovery, PAR, and forecast for directors and finance committees.{' '}
             <Link href="/dashboard" className="font-semibold text-brand-primary hover:underline">
               Operational dashboard
             </Link>
@@ -167,7 +169,7 @@ function ExecutiveDashboardContent({ data }: { data: ExecutiveDashboard }) {
   );
 
   return (
-    <div className="space-y-wilms-6 print:space-y-4">
+    <div className="space-y-wilms-10 print:space-y-6">
       <ManagementToolbar
         search={
           <p className="text-small text-text-muted">
@@ -192,10 +194,15 @@ function ExecutiveDashboardContent({ data }: { data: ExecutiveDashboard }) {
         }
       />
 
-      <section aria-labelledby="financial-kpi-heading" className="space-y-wilms-3">
-        <h2 id="financial-kpi-heading" className="text-heading-3 font-semibold text-text-primary">
-          Financial
-        </h2>
+      <section aria-labelledby="financial-kpi-heading" className="space-y-wilms-5">
+        <div>
+          <h2 id="financial-kpi-heading" className="text-heading-2 font-semibold text-text-primary">
+            Portfolio & cash
+          </h2>
+          <p className="mt-wilms-1 text-small text-text-muted">
+            Board-level liquidity, recovery, and portfolio position
+          </p>
+        </div>
         <ExecutiveKpiGrid>
           <KpiCard
             variant="executive"
@@ -219,7 +226,7 @@ function ExecutiveDashboardContent({ data }: { data: ExecutiveDashboard }) {
           />
           <KpiCard
             variant="executive"
-            label="Liquidity"
+            label="Operating cash"
             value={<CurrencyAmount value={financial.liquidityPesewas ?? 0} />}
           />
           <KpiCard
@@ -240,36 +247,13 @@ function ExecutiveDashboardContent({ data }: { data: ExecutiveDashboard }) {
         </ExecutiveKpiGrid>
       </section>
 
-      <section aria-labelledby="operational-kpi-heading" className="space-y-wilms-3">
-        <h2 id="operational-kpi-heading" className="text-heading-3 font-semibold text-text-primary">
-          Operational
-        </h2>
-        <ExecutiveKpiGrid>
-          <KpiCard variant="executive" label="Active groups" value={operational.activeGroups ?? 0} />
-          <KpiCard
-            variant="executive"
-            label="Active borrowers"
-            value={operational.activeBorrowers ?? 0}
-          />
-          <KpiCard variant="executive" label="Active loans" value={operational.activeLoans ?? 0} />
-          <KpiCard variant="executive" label="Closed loans" value={operational.closedLoans ?? 0} />
-          <KpiCard
-            variant="executive"
-            label="Reconciliation alerts"
-            value={operational.reconciliationAlerts ?? 0}
-          />
-          <KpiCard
-            variant="executive"
-            label="Notifications sent"
-            value={operational.notificationSent ?? 0}
-          />
-        </ExecutiveKpiGrid>
-      </section>
-
-      <section aria-labelledby="risk-kpi-heading" className="space-y-wilms-3">
-        <h2 id="risk-kpi-heading" className="text-heading-3 font-semibold text-text-primary">
-          Risk
-        </h2>
+      <section aria-labelledby="risk-kpi-heading" className="space-y-wilms-5">
+        <div>
+          <h2 id="risk-kpi-heading" className="text-heading-2 font-semibold text-text-primary">
+            Delinquency & PAR
+          </h2>
+          <p className="mt-wilms-1 text-small text-text-muted">Portfolio at risk across 30 / 60 / 90 day bands</p>
+        </div>
         <ExecutiveKpiGrid>
           <KpiCard
             variant="executive"
@@ -292,6 +276,35 @@ function ExecutiveDashboardContent({ data }: { data: ExecutiveDashboard }) {
           <KpiCard variant="executive" label="PAR30 count" value={risk.par30Count ?? 0} />
           <KpiCard variant="executive" label="PAR60 count" value={risk.par60Count ?? 0} />
           <KpiCard variant="executive" label="PAR90 count" value={risk.par90Count ?? 0} />
+        </ExecutiveKpiGrid>
+      </section>
+
+      <section aria-labelledby="operational-kpi-heading" className="space-y-wilms-5">
+        <div>
+          <h2 id="operational-kpi-heading" className="text-heading-2 font-semibold text-text-primary">
+            Scale & productivity
+          </h2>
+          <p className="mt-wilms-1 text-small text-text-muted">Active book size and operational throughput</p>
+        </div>
+        <ExecutiveKpiGrid>
+          <KpiCard variant="executive" label="Active groups" value={operational.activeGroups ?? 0} />
+          <KpiCard
+            variant="executive"
+            label="Active borrowers"
+            value={operational.activeBorrowers ?? 0}
+          />
+          <KpiCard variant="executive" label="Active loans" value={operational.activeLoans ?? 0} />
+          <KpiCard variant="executive" label="Closed loans" value={operational.closedLoans ?? 0} />
+          <KpiCard
+            variant="executive"
+            label="Reconciliation alerts"
+            value={operational.reconciliationAlerts ?? 0}
+          />
+          <KpiCard
+            variant="executive"
+            label="Notifications sent"
+            value={operational.notificationSent ?? 0}
+          />
         </ExecutiveKpiGrid>
       </section>
     </div>

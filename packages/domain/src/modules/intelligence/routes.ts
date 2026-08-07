@@ -11,7 +11,7 @@ import * as intelligenceService from './service.js';
 
 function mapError(error: unknown): never {
   if (error instanceof Error) {
-    if (error.message === 'NOT_FOUND') {
+    if (error.message === 'NOT_FOUND' || error.message.startsWith('NOT_FOUND:')) {
       throw new AppError('Resource not found.', ERROR_CODE.NOT_FOUND, 404);
     }
     if (error.message.startsWith('VALIDATION:')) {
@@ -132,7 +132,7 @@ intelligenceRouter.post(
   validateBody(
     z.object({
       entityType: z.string().min(1),
-      format: z.enum(['CSV', 'EXCEL', 'PDF']),
+      format: z.enum(['CSV', 'EXCEL', 'PDF', 'DOCX']),
       filters: z.record(z.unknown()).optional(),
     }),
   ),
@@ -142,10 +142,50 @@ intelligenceRouter.post(
         res,
         await intelligenceService.createExportJob({
           entityType: req.body.entityType,
-          format: req.body.format,
+          format: req.body.format === 'DOCX' ? 'EXCEL' : req.body.format,
           filters: req.body.filters,
           actorUserId: req.session!.userId,
         }),
+        201,
+      );
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+intelligenceRouter.get(
+  '/exports/jobs/:id',
+  requirePermission(PERMISSION.ACCESS_ADMIN_PORTAL, PERMISSION.VIEW_REPORTS),
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(res, await intelligenceService.getExportJob(req.params.id!));
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+intelligenceRouter.delete(
+  '/exports/jobs/:id',
+  requirePermission(PERMISSION.ACCESS_ADMIN_PORTAL, PERMISSION.VIEW_REPORTS),
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(res, await intelligenceService.deleteExportJob(req.params.id!));
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+intelligenceRouter.post(
+  '/exports/jobs/:id/regenerate',
+  requirePermission(PERMISSION.ACCESS_ADMIN_PORTAL, PERMISSION.VIEW_REPORTS),
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(
+        res,
+        await intelligenceService.regenerateExportJob(req.params.id!, req.session!.userId),
         201,
       );
     } catch (error) {

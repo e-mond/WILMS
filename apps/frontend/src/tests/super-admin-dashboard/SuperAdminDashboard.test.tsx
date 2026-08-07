@@ -27,6 +27,19 @@ vi.mock('@/hooks/usePermissions', () => ({
   usePermission: () => true,
 }));
 
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: {
+      id: 'user-super-admin',
+      role: 'SUPER_ADMIN',
+      displayName: 'Demo Admin',
+      email: 'admin@wilms.demo',
+    },
+    isAuthenticated: true,
+    isHydrated: true,
+  }),
+}));
+
 vi.mock('@/services', () => ({
   dashboardService: {
     getDashboardSummary: mockGetDashboardSummary,
@@ -69,5 +82,7 @@ describe('SuperAdminDashboard', () => {
       'href',
       '/executive',
     );
+    expect(screen.getByTestId('dashboard-reconciliation-summary')).toBeInTheDocument();
+    expect(screen.getByTestId('dashboard-recent-activity')).toBeInTheDocument();
   });
 });

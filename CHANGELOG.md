@@ -2,6 +2,26 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.7.2] — Release Candidate Stabilization (RC1)
+
+**Date:** August 2026  
+**Branch:** `feature/v1.7.2-release-candidate-stabilization`
+
+### RC1 (Phases A–E)
+
+- Financial-grade operational dashboard: reconciliation aging summary, pending table, executive Recent Activity feed
+- Board-grade Executive Intelligence layout and presentation
+- Distinct sidebar icons and nav polish (Executive / Reports / Exports / Ops / Audit / Communications)
+- Export Center: New Export, Download, Preview, Regenerate, Delete, Share, Copy link, expiry metadata
+- Product Tour 2.0: welcome modal, spotlight, progress, exit/completion flows
+- Docs pack under `docs/v1.7.2/` (RC1 reports)
+
+### Notes
+
+- Financial formulas, RBAC, reconciliation, and notification guarantees unchanged
+- Auth remains custom HMAC sessions
+- RC2 (guided onboarding, offline-everywhere, full manuals, design-system completion) follows `v1.7.2-rc1`
+
 ## [1.7.1] — Market Readiness, Executive Intelligence & Product Packaging
 
 **Date:** August 2026  

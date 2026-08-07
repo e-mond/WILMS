@@ -6,13 +6,13 @@ export interface ReleaseNotes {
 }
 
 export const CURRENT_RELEASE_NOTES: ReleaseNotes = {
-  version: '1.5.1',
+  version: '1.7.2',
   summary:
-    'Vercel full-stack recovery — API Route Handlers no longer crash at import when domain secrets are missing; health and BFF return JSON errors instead of HTML 500 pages.',
+    'Release candidate stabilization — financial-grade dashboard, board executive view, Export Center actions, and Product Tour 2.0.',
   highlights: [
-    'Serverless bootstrap tolerates missing WILMS_SESSION_SECRET at import time (still fails closed for signed sessions until configured).',
-    '/api/wilms/* lazy-loads @wilms/domain and returns JSON 503 on handler failure.',
-    'Proxy mode activates only for a valid http(s) WILMS_API_UPSTREAM.',
-    'Set DATABASE_URL + WILMS_SESSION_SECRET on Vercel for production data and auth.',
+    'Operational dashboard: reconciliation aging, activity summary feed, financial color identity.',
+    'Executive Intelligence presentation polish for board-ready reviews.',
+    'Export Center job actions: download, preview, regenerate, delete, share, and copy link.',
+    'Product Tour 2.0 with welcome, spotlight, and completion checklist.',
   ],
 };

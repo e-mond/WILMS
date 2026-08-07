@@ -135,14 +135,17 @@ export function ShellNavIcon({ name, className }: ShellNavIconProps) {
       return (
         <svg className={iconClass} viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path
-            d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"
+            d="M12 3 5 6v5c0 4.5 3 7.5 7 9 4-1.5 7-4.5 7-9V6l-7-3Z"
             stroke="currentColor"
             strokeWidth="1.5"
+            strokeLinejoin="round"
           />
           <path
-            d="M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"
+            d="m9.5 12 1.5 1.5 3.5-3.5"
             stroke="currentColor"
             strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
         </svg>
       );
@@ -150,13 +153,13 @@ export function ShellNavIcon({ name, className }: ShellNavIconProps) {
       return (
         <svg className={iconClass} viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path
-            d="M6 4h9l3 3v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z"
+            d="M4 19V5M4 19h16"
             stroke="currentColor"
             strokeWidth="1.5"
-            strokeLinejoin="round"
+            strokeLinecap="round"
           />
           <path
-            d="M15 4v3h3M8 12h8M8 16h5"
+            d="M8 16V10M12 16V7M16 16v-5"
             stroke="currentColor"
             strokeWidth="1.5"
             strokeLinecap="round"
@@ -167,13 +170,19 @@ export function ShellNavIcon({ name, className }: ShellNavIconProps) {
       return (
         <svg className={iconClass} viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path
-            d="M4 19V5M4 19h16"
+            d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
             stroke="currentColor"
             strokeWidth="1.5"
             strokeLinecap="round"
           />
           <path
-            d="M8 16V10M12 16V7M16 16v-4"
+            d="M5 7h14v12a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7Z"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M10 12h4"
             stroke="currentColor"
             strokeWidth="1.5"
             strokeLinecap="round"
@@ -218,6 +227,30 @@ export function ShellNavIcon({ name, className }: ShellNavIconProps) {
             stroke="currentColor"
             strokeWidth="1.5"
             strokeLinecap="round"
+          />
+        </svg>
+      );
+    case 'messages':
+      return (
+        <svg className={iconClass} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M4 9v8l4-2h7a3 3 0 0 0 3-3V6a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3v3Z"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M8 11h5M8 8h8"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+          <path
+            d="m15 16 5 3v-6"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
         </svg>
       );

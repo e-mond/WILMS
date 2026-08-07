@@ -61,6 +61,9 @@ export function DashboardCollectionSummary({ compact = false }: DashboardCollect
     return (
       <section className="space-y-wilms-5 sm:space-y-wilms-6">
         <div className="space-y-wilms-2">
+          <p className="text-small font-semibold uppercase tracking-wide text-status-active">
+            Collections
+          </p>
           <h3 className="text-heading-3 font-semibold text-text-primary">Collection Performance</h3>
           <p className="text-small text-text-muted">Expected vs collected totals by period</p>
         </div>

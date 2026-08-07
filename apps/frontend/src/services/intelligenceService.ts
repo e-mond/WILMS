@@ -84,6 +84,18 @@ export const intelligenceService = {
     return apiClient.post<ExportJob>('/exports/jobs', input);
   },
 
+  getExportJob(id: string): Promise<ExportJob> {
+    return apiClient.get<ExportJob>(`/exports/jobs/${id}`);
+  },
+
+  deleteExportJob(id: string): Promise<{ id: string; deleted: boolean }> {
+    return apiClient.delete<{ id: string; deleted: boolean }>(`/exports/jobs/${id}`);
+  },
+
+  regenerateExportJob(id: string): Promise<ExportJob> {
+    return apiClient.post<ExportJob>(`/exports/jobs/${id}/regenerate`, {});
+  },
+
   listIncidents(): Promise<OperationalIncident[]> {
     return apiClient.get<OperationalIncident[]>('/ops/incidents');
   },

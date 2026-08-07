@@ -1,7 +1,18 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Award, CheckCircle2 } from 'lucide-react';
+import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/hooks/useAuth';
 import { USER_ROLE, type UserRole } from '@/constants/roles';
@@ -13,12 +24,26 @@ const TOUR_NEVER_SHOW_KEY = 'wilms-product-tour-never-show';
 const TOUR_PROGRESS_PREFIX = 'wilms-product-tour-progress';
 const TOUR_ANALYTICS_PREFIX = 'wilms-product-tour-analytics';
 
+const SPOTLIGHT_PAD = 10;
+
 export interface ProductTourStep {
   id: string;
   title: string;
   body: string;
   href?: string;
   targetSelector?: string;
+}
+
+interface SpotlightRect {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
+
+interface TourCompletionContent {
+  nextAction: { label: string; href: string };
+  checklist: [string, string, string];
 }
 
 const TOUR_STEPS_BY_ROLE: Partial<Record<UserRole, ProductTourStep[]>> = {
@@ -31,7 +56,7 @@ const TOUR_STEPS_BY_ROLE: Partial<Record<UserRole, ProductTourStep[]>> = {
     {
       id: 'dashboard',
       title: 'Dashboard',
-      body: 'Review pool funds, disbursements, collections, and outstanding balances from your executive dashboard.',
+      body: 'Start on the Operational Dashboard for work queues and daily financials, then open Executive Intelligence for board-grade KPIs and forecasts.',
       href: '/dashboard',
       targetSelector: '[data-tour="financial-overview"], [data-tour-nav="/dashboard"]',
     },
@@ -94,14 +119,14 @@ const TOUR_STEPS_BY_ROLE: Partial<Record<UserRole, ProductTourStep[]>> = {
     {
       id: 'collector-dashboard',
       title: 'Dashboard',
-      body: 'See today’s groups, expected collections, and record payments from assigned borrowers.',
+      body: "See today's groups, expected collections, and record payments from assigned borrowers.",
       href: '/collector/dashboard',
       targetSelector: '[data-tour-nav="/collector/dashboard"]',
     },
     {
       id: 'collections',
       title: 'Borrowers',
-      body: 'Open assigned borrowers and jump into collection sheets for today’s groups.',
+      body: "Open assigned borrowers and jump into collection sheets for today's groups.",
       href: '/collector/my-borrowers',
       targetSelector: '[data-tour-nav="/collector/my-borrowers"]',
     },
@@ -229,37 +254,99 @@ function recordTourAnalytics(role: UserRole, event: string, stepId?: string) {
   }
 }
 
-const HIGHLIGHT_CLASSES = [
-  'ring-2',
-  'ring-brand-primary',
-  'ring-offset-2',
-  'relative',
-  'z-[121]',
-  'tour-highlight-pulse',
-] as const;
-
-function clearTourHighlights() {
-  document.querySelectorAll('.tour-highlight-pulse').forEach((element) => {
-    element.classList.remove(...HIGHLIGHT_CLASSES);
-  });
-}
-
-function highlightTourTarget(selector?: string) {
-  clearTourHighlights();
+function measureSpotlight(selector?: string): SpotlightRect | null {
   if (!selector) {
-    return;
+    return null;
   }
 
   const element = document.querySelector(selector);
   if (!(element instanceof HTMLElement)) {
-    return;
+    return null;
   }
 
-  element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  element.classList.add(...HIGHLIGHT_CLASSES);
+  const rect = element.getBoundingClientRect();
+  if (rect.width <= 0 && rect.height <= 0) {
+    return null;
+  }
+
+  return {
+    top: Math.max(0, rect.top - SPOTLIGHT_PAD),
+    left: Math.max(0, rect.left - SPOTLIGHT_PAD),
+    width: rect.width + SPOTLIGHT_PAD * 2,
+    height: rect.height + SPOTLIGHT_PAD * 2,
+  };
 }
 
-type TourPhase = 'welcome' | 'tour' | 'exit-confirm' | 'idle';
+function scrollTourTarget(selector?: string) {
+  if (!selector) {
+    return;
+  }
+  const element = document.querySelector(selector);
+  if (element instanceof HTMLElement) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+  }
+}
+
+function getTourCompletion(role: UserRole): TourCompletionContent {
+  switch (role) {
+    case USER_ROLE.SUPER_ADMIN:
+      return {
+        nextAction: { label: 'Open Operational Dashboard', href: '/dashboard' },
+        checklist: [
+          'Review Operational Dashboard work queues',
+          'Open Executive Intelligence for board KPIs',
+          'Invite a team member under Settings → Users',
+        ],
+      };
+    case USER_ROLE.COLLECTOR:
+      return {
+        nextAction: { label: 'Go to collector dashboard', href: '/collector/dashboard' },
+        checklist: [
+          "Open today's assigned groups",
+          'Record a borrower payment',
+          'Submit daily cash reconciliation',
+        ],
+      };
+    case USER_ROLE.REGISTRATION_OFFICER:
+      return {
+        nextAction: { label: 'Start a registration', href: '/officer/register' },
+        checklist: [
+          'Begin a new borrower registration',
+          'Capture ID photos and GPS as prompted',
+          'Track status under My Registrations',
+        ],
+      };
+    case USER_ROLE.APPROVER:
+      return {
+        nextAction: { label: 'Open pending reviews', href: '/approver/pending' },
+        checklist: [
+          'Open the pending approval queue',
+          'Review documents and guarantors',
+          'Approve or reject with a documented reason',
+        ],
+      };
+    case USER_ROLE.AUDITOR:
+      return {
+        nextAction: { label: 'Open audit log', href: '/auditor/audit-log' },
+        checklist: [
+          'Review recent immutable audit entries',
+          'Open read-only reports for compliance',
+          'Export data when an external review needs it',
+        ],
+      };
+    default:
+      return {
+        nextAction: { label: 'Continue', href: '/' },
+        checklist: [
+          'Explore your role home page',
+          'Open Help anytime to replay this tour',
+          'Update your profile under Settings',
+        ],
+      };
+  }
+}
+
+type TourPhase = 'welcome' | 'tour' | 'exit-confirm' | 'complete' | 'idle';
 
 export function useProductTour() {
   const { user, isAuthenticated } = useAuth();
@@ -274,6 +361,21 @@ export function useProductTour() {
   const [stepIndex, setStepIndex] = useState(0);
   const [neverShowAgain, setNeverShowAgain] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [spotlight, setSpotlight] = useState<SpotlightRect | null>(null);
+  const [hasSavedProgress, setHasSavedProgress] = useState(false);
+
+  const completion = useMemo(
+    () => (role ? getTourCompletion(role) : null),
+    [role],
+  );
+
+  const refreshSpotlight = useCallback((selector?: string) => {
+    setSpotlight(measureSpotlight(selector));
+  }, []);
+
+  const clearSpotlight = useCallback(() => {
+    setSpotlight(null);
+  }, []);
 
   const persistDismissal = useCallback(
     (options?: { neverShowAgain?: boolean }) => {
@@ -314,7 +416,7 @@ export function useProductTour() {
 
   const closeTour = useCallback(
     (options?: { neverShowAgain?: boolean }) => {
-      clearTourHighlights();
+      clearSpotlight();
       if (role) {
         localStorage.removeItem(progressKey(role));
         recordTourAnalytics(role, 'tour_completed_or_exited', steps[stepIndex]?.id);
@@ -323,14 +425,34 @@ export function useProductTour() {
         setNeverShowAgain(options.neverShowAgain);
       }
       persistDismissal(options);
+      setHasSavedProgress(false);
       setPhase('idle');
       setIsNavigating(false);
     },
-    [persistDismissal, role, stepIndex, steps],
+    [clearSpotlight, persistDismissal, role, stepIndex, steps],
   );
 
+  const finishTour = useCallback(() => {
+    clearSpotlight();
+    if (role) {
+      localStorage.removeItem(progressKey(role));
+      recordTourAnalytics(role, 'tour_completed', steps[stepIndex]?.id);
+      localStorage.setItem(completedKey(role), 'true');
+    }
+    if (userId) {
+      localStorage.setItem(welcomeKey(userId), 'dismissed');
+    }
+    setHasSavedProgress(false);
+    setIsNavigating(false);
+    setPhase('complete');
+  }, [clearSpotlight, role, stepIndex, steps, userId]);
+
+  const dismissCompletion = useCallback(() => {
+    setPhase('idle');
+  }, []);
+
   const pauseTourForLater = useCallback(() => {
-    clearTourHighlights();
+    clearSpotlight();
     if (role) {
       localStorage.setItem(progressKey(role), String(stepIndex));
       // Allow resume: clear completed/welcome dismissal without "never show"
@@ -339,10 +461,11 @@ export function useProductTour() {
         localStorage.removeItem(welcomeKey(userId));
       }
       recordTourAnalytics(role, 'tour_paused', steps[stepIndex]?.id);
+      setHasSavedProgress(true);
     }
     setPhase('idle');
     setIsNavigating(false);
-  }, [role, stepIndex, steps, userId]);
+  }, [clearSpotlight, role, stepIndex, steps, userId]);
 
   const requestExit = useCallback(() => {
     setPhase('exit-confirm');
@@ -365,6 +488,9 @@ export function useProductTour() {
       return;
     }
 
+    const saved = Number(localStorage.getItem(progressKey(role)) ?? '0');
+    setHasSavedProgress(Number.isFinite(saved) && saved > 0 && saved < steps.length);
+
     const timer = window.setTimeout(() => {
       setPhase('welcome');
     }, 900);
@@ -374,6 +500,7 @@ export function useProductTour() {
 
   useEffect(() => {
     if (phase !== 'tour') {
+      clearSpotlight();
       return;
     }
 
@@ -390,7 +517,12 @@ export function useProductTour() {
       if (cancelled) {
         return;
       }
-      highlightTourTarget(step.targetSelector);
+      scrollTourTarget(step.targetSelector);
+      window.setTimeout(() => {
+        if (!cancelled) {
+          refreshSpotlight(step.targetSelector);
+        }
+      }, 280);
       setIsNavigating(false);
     };
 
@@ -411,13 +543,32 @@ export function useProductTour() {
         window.clearTimeout(navigateTimer);
       }
     };
-  }, [phase, router, stepIndex, steps]);
+  }, [clearSpotlight, phase, refreshSpotlight, router, stepIndex, steps]);
+
+  useEffect(() => {
+    if (phase !== 'tour') {
+      return;
+    }
+
+    const step = steps[stepIndex];
+    if (!step?.targetSelector) {
+      return;
+    }
+
+    const onLayoutChange = () => refreshSpotlight(step.targetSelector);
+    window.addEventListener('resize', onLayoutChange);
+    window.addEventListener('scroll', onLayoutChange, true);
+    return () => {
+      window.removeEventListener('resize', onLayoutChange);
+      window.removeEventListener('scroll', onLayoutChange, true);
+    };
+  }, [phase, refreshSpotlight, stepIndex, steps]);
 
   useEffect(() => {
     return () => {
-      clearTourHighlights();
+      clearSpotlight();
     };
-  }, []);
+  }, [clearSpotlight]);
 
   const step = steps[stepIndex];
   const progressPercent = steps.length > 0 ? Math.round(((stepIndex + 1) / steps.length) * 100) : 0;
@@ -431,15 +582,20 @@ export function useProductTour() {
     setNeverShowAgain,
     isNavigating,
     progressPercent,
+    spotlight,
+    hasSavedProgress,
+    completion,
     openWelcome,
     startTour,
     closeTour,
+    finishTour,
+    dismissCompletion,
     pauseTourForLater,
     requestExit,
     resumeTour: () => setPhase('tour'),
     nextStep: () => {
       if (stepIndex >= steps.length - 1) {
-        closeTour();
+        finishTour();
         return;
       }
       const next = stepIndex + 1;
@@ -459,16 +615,53 @@ export function useProductTour() {
   };
 }
 
+function TourSpotlight({ rect }: { rect: SpotlightRect | null }) {
+  const veil = 'bg-black/50 backdrop-blur-[2px]';
+
+  if (!rect) {
+    return <div className={cn('fixed inset-0 z-[119]', veil)} aria-hidden="true" />;
+  }
+
+  const { top, left, width, height } = rect;
+
+  return (
+    <div className="pointer-events-none fixed inset-0 z-[119]" aria-hidden="true">
+      <div className={cn('absolute left-0 right-0 top-0', veil)} style={{ height: top }} />
+      <div
+        className={cn('absolute bottom-0 left-0 right-0', veil)}
+        style={{ top: top + height }}
+      />
+      <div className={cn('absolute left-0', veil)} style={{ top, height, width: left }} />
+      <div
+        className={cn('absolute right-0', veil)}
+        style={{ top, height, left: left + width }}
+      />
+      <div
+        className="tour-highlight-pulse absolute rounded-sm ring-2 ring-brand-primary ring-offset-2 ring-offset-transparent"
+        style={{ top, left, width, height }}
+      />
+      {/* Block clicks through the cut-out without covering the visual hole */}
+      <div className="pointer-events-auto absolute" style={{ top, left, width, height }} />
+    </div>
+  );
+}
+
 function TourDialogShell({
   title,
   children,
   onKeyDown,
   progressPercent,
+  showSpotlight,
+  spotlight,
+  compact,
 }: {
   title: string;
   children: ReactNode;
   onKeyDown?: (event: KeyboardEvent) => void;
   progressPercent?: number;
+  showSpotlight?: boolean;
+  spotlight?: SpotlightRect | null;
+  compact?: boolean;
 }) {
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -518,13 +711,24 @@ function TourDialogShell({
   return (
     <div
       ref={dialogRef}
-      className="fixed inset-0 z-[120] flex items-end justify-center bg-black/45 p-wilms-4 backdrop-blur-[1px] sm:items-center"
+      className={cn(
+        'fixed inset-0 z-[120] flex p-wilms-4',
+        showSpotlight ? 'items-end justify-center sm:items-end sm:justify-end' : 'items-end justify-center sm:items-center',
+      )}
       role="dialog"
       aria-modal="true"
       aria-labelledby="product-tour-title"
       onKeyDown={onKeyDown}
     >
-      <div className="tour-dialog-panel w-full max-w-lg overflow-hidden rounded-sm border border-border bg-card shadow-lg">
+      {showSpotlight ? <TourSpotlight rect={spotlight ?? null} /> : (
+        <div className="fixed inset-0 z-[119] bg-black/45 backdrop-blur-[2px]" aria-hidden="true" />
+      )}
+      <div
+        className={cn(
+          'tour-dialog-panel relative z-[122] w-full overflow-hidden rounded-sm border border-border bg-card shadow-lg',
+          compact ? 'max-w-md' : 'max-w-lg',
+        )}
+      >
         {typeof progressPercent === 'number' ? (
           <div
             className="h-1 bg-border"
@@ -566,12 +770,15 @@ export function ProductTourOverlay() {
     return (
       <TourDialogShell title="Welcome to WILMS">
         <p className="mt-wilms-3 text-body text-text-muted">
-          Would you like a quick guided tour of the portal? We&apos;ll highlight key menus and pages
-          so you can get started faster.
+          WILMS is the Women&apos;s Interest-Free Loan Management System — your workspace for pools,
+          registrations, collections, approvals, and reporting.
+        </p>
+        <p className="mt-wilms-2 text-body text-text-muted">
+          This guided tour highlights the menus and pages you will use most often for your role.
         </p>
         <p className="mt-wilms-2 text-small text-text-muted">
-          You can restart the guided tour anytime using the Help button at the bottom-right of your
-          screen, or from the help icon in the header.
+          Estimated time: about 3–5 minutes. You can pause and resume later, or restart anytime from
+          Help.
         </p>
         <div className="mt-wilms-5 flex flex-wrap justify-end gap-wilms-2">
           <Button
@@ -589,7 +796,53 @@ export function ProductTourOverlay() {
             Not Now
           </Button>
           <Button type="button" onClick={tour.startTour}>
-            Start Tour
+            {tour.hasSavedProgress ? 'Resume Tour' : 'Start Tour'}
+          </Button>
+        </div>
+      </TourDialogShell>
+    );
+  }
+
+  if (tour.phase === 'complete' && tour.completion) {
+    return (
+      <TourDialogShell title="Tour complete" compact>
+        <div className="mt-wilms-3 flex flex-wrap items-center gap-wilms-2">
+          <Badge variant="success" className="gap-1.5">
+            <Award className="h-3.5 w-3.5" aria-hidden="true" />
+            Tour completed
+          </Badge>
+        </div>
+        <p className="mt-wilms-3 text-body text-text-muted">
+          You&apos;re ready to work in WILMS. Start with the recommended next step, then use the
+          quick-start checklist below.
+        </p>
+        <div className="mt-wilms-4 rounded-sm border border-border bg-background p-wilms-3">
+          <p className="text-small font-semibold text-text-primary">Next recommended action</p>
+          <Link
+            href={tour.completion.nextAction.href}
+            className="mt-wilms-1 inline-flex text-body font-semibold text-brand-primary underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary"
+            onClick={tour.dismissCompletion}
+          >
+            {tour.completion.nextAction.label}
+          </Link>
+        </div>
+        <div className="mt-wilms-4">
+          <p className="text-small font-semibold text-text-primary">Quick-start checklist</p>
+          <ul className="mt-wilms-2 space-y-wilms-2">
+            {tour.completion.checklist.map((item) => (
+              <li key={item} className="flex items-start gap-wilms-2 text-body text-text-muted">
+                <CheckCircle2
+                  className="mt-0.5 h-4 w-4 shrink-0 text-brand-primary"
+                  aria-hidden="true"
+                />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="mt-wilms-5 flex flex-wrap justify-end gap-wilms-2">
+          <Button type="button" onClick={tour.dismissCompletion}>
+            Done
           </Button>
         </div>
       </TourDialogShell>
@@ -598,14 +851,22 @@ export function ProductTourOverlay() {
 
   if (tour.phase === 'exit-confirm') {
     return (
-      <TourDialogShell title="Exit guided tour?" progressPercent={tour.progressPercent}>
+      <TourDialogShell
+        title="Exit guided tour?"
+        progressPercent={tour.progressPercent}
+        showSpotlight
+        spotlight={tour.spotlight}
+      >
         <p className="mt-wilms-3 text-body text-text-muted">
-          You are leaving the guided tour. You can open it again anytime using the Help button at
-          the bottom-right of your screen.
+          You are leaving the guided tour. Progress will not be saved unless you pause instead. You
+          can open the tour again anytime using Help.
         </p>
         <div className="mt-wilms-5 flex flex-wrap justify-end gap-wilms-2">
           <Button type="button" variant="secondary" onClick={tour.resumeTour}>
             Continue Tour
+          </Button>
+          <Button type="button" variant="ghost" onClick={tour.pauseTourForLater}>
+            Pause
           </Button>
           <Button type="button" variant="ghost" onClick={() => tour.closeTour()}>
             Exit Tour
@@ -615,10 +876,16 @@ export function ProductTourOverlay() {
     );
   }
 
+  if (tour.phase !== 'tour' || !tour.step) {
+    return null;
+  }
+
   return (
     <TourDialogShell
       title={tour.step.title}
       progressPercent={tour.progressPercent}
+      showSpotlight
+      spotlight={tour.spotlight}
       onKeyDown={(event) => {
         if (event.key === 'Escape') {
           tour.requestExit();
@@ -654,14 +921,14 @@ export function ProductTourOverlay() {
       </div>
       <p className="mt-wilms-3 text-body text-text-muted">{tour.step.body}</p>
       <p className="mt-wilms-2 text-small text-text-muted">
-        Tip: use ← → keys to move, Esc to exit.
+        Tip: use ← → keys to move, Esc to exit. Pause saves progress (Resume later from welcome or Help).
       </p>
       <div className="mt-wilms-5 flex flex-wrap justify-end gap-wilms-2">
-        <Button type="button" variant="ghost" onClick={tour.pauseTourForLater}>
-          Resume later
-        </Button>
         <Button type="button" variant="ghost" onClick={tour.requestExit}>
-          Exit
+          Skip
+        </Button>
+        <Button type="button" variant="ghost" onClick={tour.pauseTourForLater}>
+          Pause
         </Button>
         {tour.stepIndex > 0 ? (
           <Button type="button" variant="secondary" onClick={tour.previousStep}>

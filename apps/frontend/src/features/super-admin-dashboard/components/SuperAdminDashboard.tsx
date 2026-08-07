@@ -216,6 +216,31 @@ function OperationalDashboardContent({
         </div>
       </header>
 
+      <div className="grid gap-wilms-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+        <DashboardReconciliationSummary compact />
+        <section
+          aria-labelledby="ops-activity-heading"
+          className="rounded-sm border border-border bg-card p-wilms-5"
+        >
+          <div className="mb-wilms-4">
+            <h2 id="ops-activity-heading" className="text-heading-3 font-semibold text-text-primary">
+              Recent activity
+            </h2>
+            <p className="text-small text-text-muted">Concise audit-backed summary</p>
+          </div>
+          <DashboardRecentActivity limit={3} />
+        </section>
+      </div>
+
+      <div className="grid gap-wilms-4 lg:grid-cols-2">
+        <div className="min-w-0 rounded-sm border border-[color-mix(in_srgb,var(--color-status-active)_35%,transparent)] bg-[color-mix(in_srgb,var(--color-status-active)_8%,var(--color-card))] p-wilms-4">
+          <DashboardCollectionSummary compact />
+        </div>
+        <div className="min-w-0 rounded-sm border border-[color-mix(in_srgb,var(--color-status-at-risk)_40%,transparent)] bg-[color-mix(in_srgb,var(--color-status-at-risk)_10%,var(--color-card))] p-wilms-4">
+          <DashboardExpenseSummary compact />
+        </div>
+      </div>
+
       <ExecutiveKpiGrid className="sm:grid-cols-2 xl:grid-cols-4">
         {displayKpis.map((kpi) => (
           <KpiCard
@@ -284,7 +309,7 @@ function OperationalDashboardContent({
         </ul>
       </section>
 
-      <div className="grid gap-wilms-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+      <div className="grid gap-wilms-6 xl:grid-cols-1">
         <section
           aria-labelledby="ops-actions-heading"
           className="rounded-sm border border-border bg-card p-wilms-5"
@@ -292,7 +317,7 @@ function OperationalDashboardContent({
           <h2 id="ops-actions-heading" className="text-heading-3 font-semibold text-text-primary">
             Quick actions
           </h2>
-          <ul className="mt-wilms-4 grid gap-wilms-3 sm:grid-cols-2">
+          <ul className="mt-wilms-4 grid gap-wilms-3 sm:grid-cols-2 lg:grid-cols-3">
             {QUICK_ACTIONS.map((action) => (
               <li key={action.href}>
                 <Link
@@ -319,31 +344,6 @@ function OperationalDashboardContent({
             </li>
           </ul>
         </section>
-
-        <section
-          aria-labelledby="ops-activity-heading"
-          className="rounded-sm border border-border bg-card p-wilms-5"
-        >
-          <div className="mb-wilms-4">
-            <h2 id="ops-activity-heading" className="text-heading-3 font-semibold text-text-primary">
-              Recent activity
-            </h2>
-            <p className="text-small text-text-muted">Latest audit events</p>
-          </div>
-          <DashboardRecentActivity limit={2} />
-        </section>
-      </div>
-
-      <div className="grid gap-wilms-4 lg:grid-cols-3">
-        <div className="min-w-0 rounded-sm border border-border bg-card p-wilms-4">
-          <DashboardCollectionSummary compact />
-        </div>
-        <div className="min-w-0 rounded-sm border border-border bg-card p-wilms-4">
-          <DashboardExpenseSummary compact />
-        </div>
-        <div className="min-w-0 rounded-sm border border-border bg-card p-wilms-4">
-          <DashboardReconciliationSummary compact />
-        </div>
       </div>
 
       <section

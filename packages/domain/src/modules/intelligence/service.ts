@@ -498,10 +498,9 @@ export async function createExportJob(input: {
       expiresAt: new Date(job.expiresAt),
       completedAt: job.completedAt ? new Date(job.completedAt) : null,
     });
-  } else {
-    memoryExports.unshift(job);
-    memoryExports.splice(100);
   }
+  memoryExports.unshift(job);
+  memoryExports.splice(100);
 
   return job;
 }
@@ -576,6 +575,62 @@ export async function listExportJobs(limit = 50) {
     }
     throw error;
   }
+}
+
+export async function getExportJob(id: string) {
+  if (!isDatabaseEnabled()) {
+    const job = memoryExports.find((entry) => entry.id === id);
+    if (!job) throw new Error('NOT_FOUND:Export job not found.');
+    return job;
+  }
+  try {
+    const db = getDb();
+    const rows = await db.select().from(exportJobs).where(eq(exportJobs.id, id)).limit(1);
+    const row = rows[0];
+    if (!row) throw new Error('NOT_FOUND:Export job not found.');
+    const memory = memoryExports.find((entry) => entry.id === id);
+    return {
+      ...row,
+      expiresAt: row.expiresAt?.toISOString?.() ?? row.expiresAt,
+      completedAt: row.completedAt?.toISOString?.() ?? row.completedAt,
+      createdAt: row.createdAt?.toISOString?.() ?? row.createdAt,
+      previewRows: memory?.previewRows ?? [],
+    };
+  } catch (error) {
+    if (String(error).includes('NOT_FOUND')) throw error;
+    if (isUndefinedTableError(error)) {
+      const job = memoryExports.find((entry) => entry.id === id);
+      if (!job) throw new Error('NOT_FOUND:Export job not found.');
+      return job;
+    }
+    throw error;
+  }
+}
+
+export async function deleteExportJob(id: string) {
+  const index = memoryExports.findIndex((entry) => entry.id === id);
+  if (index >= 0) {
+    memoryExports.splice(index, 1);
+  }
+  if (isDatabaseEnabled()) {
+    try {
+      const db = getDb();
+      await db.delete(exportJobs).where(eq(exportJobs.id, id));
+    } catch (error) {
+      if (!isUndefinedTableError(error)) throw error;
+    }
+  }
+  return { id, deleted: true };
+}
+
+export async function regenerateExportJob(id: string, actorUserId: string) {
+  const existing = await getExportJob(id);
+  return createExportJob({
+    entityType: String(existing.entityType),
+    format: existing.format as 'CSV' | 'EXCEL' | 'PDF',
+    actorUserId,
+    filters: (existing.filters as Record<string, unknown> | null) ?? undefined,
+  });
 }
 
 export async function createIncident(input: {

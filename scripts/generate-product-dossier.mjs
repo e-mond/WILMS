@@ -1,5 +1,5 @@
 /**
- * Generate WILMS v1.7.1 product dossier artefacts (PDF + DOCX).
+ * Generate WILMS v1.7.2 product dossier artefacts (PDF + DOCX).
  * Run from repo root: node scripts/generate-product-dossier.mjs
  */
 import fs from 'node:fs';
@@ -9,14 +9,14 @@ import { createRequire } from 'node:module';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
-const outDir = path.join(root, 'docs', 'v1.7.1');
+const outDir = path.join(root, 'docs', 'v1.7.2');
 const require = createRequire(path.join(root, 'apps/frontend/package.json'));
 
 const { Document, Packer, Paragraph, HeadingLevel, TextRun, AlignmentType } = require('docx');
 const { jsPDF } = require('jspdf');
 
 const SECTIONS = [
-  ['Executive Summary', 'WILMS v1.7.1 packages a production interest-free loan management platform for market presentation to government, NGO, and institutional partners.'],
+  ['Executive Summary', 'WILMS v1.7.2 packages a production interest-free loan management platform for market presentation to government, NGO, and institutional partners.'],
   ['Product Overview', 'Women’s Interest-Free Loan Management System covering registration, approval, disbursement, collections, reconciliation, communications, executive intelligence, and operations.'],
   ['Problem Statement', 'Paper and spreadsheet programmes lack separation of duties, auditability, and timely portfolio visibility.'],
   ['Solution', 'A modular TypeScript monolith on Next.js + Vercel + Neon with RBAC, operational ledgers, notifications, and board reporting.'],
@@ -24,7 +24,7 @@ const SECTIONS = [
   ['Features', 'Borrower lifecycle, pools, collections, reconciliation, expenses, communication center, executive intelligence, exports, ops incidents.'],
   ['Architecture', 'Next.js App Router hosts @wilms/domain via Route Handlers; custom HMAC sessions; Neon PostgreSQL; optional Redis rate limits.'],
   ['BRD Summary', 'Interest-free group lending with maker-checker controls, field GPS collections, and programme capital hard-stops.'],
-  ['Implemented Modules', 'Core lending through v1.7.0 intelligence/exports/ops; v1.7.1 market packaging and dashboard separation.'],
+  ['Implemented Modules', 'Core lending through v1.7.0 intelligence/exports/ops; v1.7.2 market packaging and dashboard separation.'],
   ['Financial Model', 'Pesewas integer money; pool replenishment/disbursement/repayment/adjustment; expenses affect operating cash only.'],
   ['Security Model', 'HMAC sessions, RBAC + overrides, CSRF on mutating BFF paths, audit logging, upload allowlists.'],
   ['Operations', 'Health, metrics, cron notifications, incidents, maintenance windows, Neon backups.'],
@@ -35,7 +35,7 @@ const SECTIONS = [
   ['Certification Status', 'Production operational platform; statutory GL and multi-org deferred.'],
   ['Skipped / Deferred', 'Borrower portal, multi-organization tenancy, statutory GL, native mobile app, deep payment-provider integrations.'],
   ['Roadmap', 'v1.8 Integrations & Payments; v1.9 Enterprise automation; v2.0 General Ledger & multi-branch.'],
-  ['Technical Appendix', 'Node 22, Next.js 14, Drizzle, shared-rbac, export engines (PDF/Excel/DOCX), docs/v1.7.1 release pack.'],
+  ['Technical Appendix', 'Node 22, Next.js 14, Drizzle, shared-rbac, export engines (PDF/Excel/DOCX), docs/v1.7.2 release pack.'],
 ];
 
 fs.mkdirSync(outDir, { recursive: true });
@@ -54,7 +54,7 @@ function buildDocx() {
     new Paragraph({
       alignment: AlignmentType.CENTER,
       spacing: { after: 400 },
-      children: [new TextRun({ text: 'Product Dossier — v1.7.1', italics: true, size: 24 })],
+      children: [new TextRun({ text: 'Product Dossier — v1.7.2', italics: true, size: 24 })],
     }),
   ];
 
@@ -86,7 +86,7 @@ function buildDocx() {
 
   return new Document({
     creator: 'WILMS',
-    title: 'WILMS Product Dossier v1.7.1',
+    title: 'WILMS Product Dossier v1.7.2',
     description: 'Official product dossier for market readiness',
     sections: [{ children }],
   });
@@ -105,7 +105,7 @@ function buildPdf() {
   doc.setFontSize(11);
   doc.setFont('helvetica', 'normal');
   doc.text("Women's Interest-Free Loan Management System", pageWidth / 2, 32, { align: 'center' });
-  doc.text('Product Dossier — v1.7.1', pageWidth / 2, 40, { align: 'center' });
+  doc.text('Product Dossier — v1.7.2', pageWidth / 2, 40, { align: 'center' });
 
   doc.setTextColor(0, 0, 0);
   let y = 62;
