@@ -3,6 +3,8 @@ const EXACT_DESCRIPTIONS: Record<string, string> = {
     'Task-oriented operational workspace for approvals, collections, reconciliation, and today’s queues.',
   '/executive':
     'Board-ready portfolio, cash, risk, and forecast intelligence for directors and finance committees.',
+  '/documentation':
+    'Official WILMS Documentation Centre — browse, search, print, and download the enterprise product library.',
   '/borrowers':
     'Review registered borrowers, track approval status, and open profiles for loan servicing.',
   '/loan-pools':
@@ -27,8 +29,6 @@ const EXACT_DESCRIPTIONS: Record<string, string> = {
     'Configure organisation settings, users, security policy, and integrations.',
   '/ops':
     'Monitor system health, workers, integrations, financial alerts, and deployment version.',
-  '/documentation':
-    'Browse the official WILMS documentation library catalogue — books, manuals, and technical guides.',
   '/reports':
     'Generate operational and financial reports for audits, collections, and portfolio review.',
   '/reports/loan-portfolio':
