@@ -12,7 +12,42 @@ import { useUiStore } from '@/state/uiStore';
 import { resolveSettingsHref } from '@/utils/settings-route';
 import { cn } from '@/utils/cn';
 
-type HelpPane = 'menu' | 'role-guide' | 'shortcuts';
+type HelpPane = 'menu' | 'role-guide' | 'shortcuts' | 'starter';
+
+function roleStarterSteps(role: string | undefined): Array<{ label: string; href: string }> {
+  switch (role) {
+    case USER_ROLE.SUPER_ADMIN:
+      return [
+        { label: 'Open Operational Dashboard', href: '/dashboard' },
+        { label: 'Review Executive Intelligence', href: '/executive' },
+        { label: 'Create an export job', href: '/exports' },
+        { label: 'Check Operations health', href: '/ops' },
+      ];
+    case USER_ROLE.COLLECTOR:
+      return [
+        { label: 'Open collector dashboard', href: '/collector/dashboard' },
+        { label: 'Record a collection', href: '/collector/my-borrowers' },
+        { label: 'Submit reconciliation', href: '/collector/reconciliation' },
+      ];
+    case USER_ROLE.REGISTRATION_OFFICER:
+      return [
+        { label: 'Register a borrower', href: '/officer/register' },
+        { label: 'Review my registrations', href: '/officer/my-registrations' },
+      ];
+    case USER_ROLE.APPROVER:
+      return [
+        { label: 'Open pending queue', href: '/approver/pending' },
+        { label: 'Review offline sync', href: '/approver/offline-sync' },
+      ];
+    case USER_ROLE.AUDITOR:
+      return [
+        { label: 'Open reports', href: '/auditor/reports' },
+        { label: 'Open audit log', href: '/reports/audit-log' },
+      ];
+    default:
+      return [{ label: 'Open settings', href: '/settings' }];
+  }
+}
 
 function roleGuideCopy(role: string | undefined): { title: string; body: string[] } {
   switch (role) {
@@ -115,15 +150,29 @@ export function HelpMenuModal() {
   }, [isOpen]);
 
   const guide = useMemo(() => roleGuideCopy(user?.role), [user?.role]);
+  const starterSteps = useMemo(() => roleStarterSteps(user?.role), [user?.role]);
   const settingsHref = resolveSettingsHref(user?.role);
   const roleLabel = user?.role ? ROLE_LABELS[user.role] : 'your role';
+  const starterKey = `wilms-guided-starter-completed:${user?.role ?? 'unknown'}`;
+  const [starterDone, setStarterDone] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    setStarterDone(window.localStorage.getItem(starterKey) === '1');
+  }, [starterKey]);
 
   if (!isAuthenticated) {
     return null;
   }
 
   const title =
-    pane === 'role-guide' ? guide.title : pane === 'shortcuts' ? 'Keyboard shortcuts' : 'Help';
+    pane === 'role-guide'
+      ? guide.title
+      : pane === 'shortcuts'
+        ? 'Keyboard shortcuts'
+        : pane === 'starter'
+          ? 'Guided starter'
+          : 'Help';
 
   return (
     <Modal
@@ -147,6 +196,15 @@ export function HelpMenuModal() {
           >
             <Map className="h-4 w-4" aria-hidden="true" />
             Restart guided tour
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full justify-start gap-wilms-2"
+            onClick={() => setPane('starter')}
+          >
+            <BookOpen className="h-4 w-4" aria-hidden="true" />
+            Guided starter checklist{starterDone ? ' (completed)' : ''}
           </Button>
           <Button
             type="button"
@@ -200,6 +258,48 @@ export function HelpMenuModal() {
               }}
             >
               Start guided tour
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      {pane === 'starter' ? (
+        <div className="space-y-wilms-3">
+          <p className="text-small text-text-muted">
+            First-run walkthrough for {roleLabel}. Complete these steps, then mark done.
+          </p>
+          <ol className="space-y-wilms-2">
+            {starterSteps.map((step, index) => (
+              <li key={step.href}>
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-wilms-2 rounded-sm border border-border px-wilms-3 py-wilms-2 text-left text-small font-semibold text-text-primary hover:border-brand-primary"
+                  onClick={() => {
+                    closeHelpMenu();
+                    router.push(step.href);
+                  }}
+                >
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-primary-light text-brand-primary">
+                    {index + 1}
+                  </span>
+                  {step.label}
+                </button>
+              </li>
+            ))}
+          </ol>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button type="button" variant="ghost" onClick={() => setPane('menu')}>
+              Back
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                window.localStorage.setItem(starterKey, '1');
+                setStarterDone(true);
+                closeHelpMenu();
+              }}
+            >
+              Mark checklist complete
             </Button>
           </div>
         </div>
