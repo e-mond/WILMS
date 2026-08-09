@@ -137,6 +137,20 @@ const TOUR_STEPS_BY_ROLE: Partial<Record<UserRole, ProductTourStep[]>> = {
       href: '/settings',
       targetSelector: '[data-tour="app-lock"]',
     },
+    {
+      id: 'automation',
+      title: 'Automation',
+      body: 'Open Settings → Automation to review reminder ladders, escalations, follow-ups, and run the daily automation pass.',
+      href: '/settings?section=automation',
+      targetSelector: '[data-tour-nav="/settings"]',
+    },
+    {
+      id: 'documentation',
+      title: 'Documentation Centre',
+      body: 'Browse the branded product, technical, and operations books from the Documentation Centre.',
+      href: '/documentation',
+      targetSelector: '[data-tour-nav="/documentation"]',
+    },
   ],
   [USER_ROLE.COLLECTOR]: [
     {
@@ -199,6 +213,13 @@ const TOUR_STEPS_BY_ROLE: Partial<Record<UserRole, ProductTourStep[]>> = {
       href: '/collector/settings',
       targetSelector: '[data-tour="app-lock"], [data-tour-nav="/collector/settings"]',
     },
+    {
+      id: 'push',
+      title: 'Push notifications',
+      body: 'Enable browser push in Settings so holiday approvals and sync alerts reach this device.',
+      href: '/collector/settings',
+      targetSelector: '[data-tour="push-notifications"], [data-tour-nav="/collector/settings"]',
+    },
   ],
   [USER_ROLE.REGISTRATION_OFFICER]: [
     {
@@ -219,6 +240,20 @@ const TOUR_STEPS_BY_ROLE: Partial<Record<UserRole, ProductTourStep[]>> = {
       body: 'Monitor pending, approved, and rejected registrations. Follow up when an approver returns an application.',
       href: '/officer/my-registrations',
       targetSelector: '[data-tour-nav="/officer/my-registrations"]',
+    },
+    {
+      id: 'offline',
+      title: 'Offline readiness',
+      body: 'Shell pages remain available offline. Watch the banner and sync panel when connectivity returns.',
+      href: '/officer/register',
+      targetSelector: '[data-tour-nav="/officer/register"]',
+    },
+    {
+      id: 'app-lock',
+      title: 'App Lock',
+      body: 'Protect registration devices with PIN and optional biometrics under Settings.',
+      href: '/officer/settings',
+      targetSelector: '[data-tour="app-lock"], [data-tour-nav="/officer/settings"]',
     },
   ],
   [USER_ROLE.APPROVER]: [
@@ -247,6 +282,13 @@ const TOUR_STEPS_BY_ROLE: Partial<Record<UserRole, ProductTourStep[]>> = {
       body: 'Approve or reject financial operations captured while collectors were offline.',
       href: '/approver/sync-conflicts',
       targetSelector: '[data-tour-nav="/approver/sync-conflicts"]',
+    },
+    {
+      id: 'app-lock',
+      title: 'App Lock',
+      body: 'Protect approval sessions with PIN idle lock under Settings.',
+      href: '/approver/settings',
+      targetSelector: '[data-tour="app-lock"], [data-tour-nav="/approver/settings"]',
     },
   ],
   [USER_ROLE.AUDITOR]: [

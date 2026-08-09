@@ -1,7 +1,7 @@
 {
   "name": "WILMS - Women's Interest-Free Loan Management",
   "short_name": "WILMS",
-  "description": "Women's Interest-Free Loan Management System — v1.7.5",
+  "description": "Women's Interest-Free Loan Management System — v1.8.0",
   "start_url": "/login",
   "scope": "/",
   "display": "standalone",

@@ -30,7 +30,9 @@ type NotificationFilter =
   | 'messages'
   | 'system'
   | 'security'
-  | 'reminders';
+  | 'reminders'
+  | 'automation'
+  | 'operations';
 
 const PAGE_SIZE = 20;
 
@@ -55,6 +57,12 @@ function matchesCategory(event: string, filter: NotificationFilter): boolean {
   }
   if (filter === 'reminders') {
     return /REMINDER|DUE|QUIET/i.test(event);
+  }
+  if (filter === 'automation') {
+    return /AUTOMATION|ESCALAT|FOLLOW.?UP|WORKFLOW/i.test(event);
+  }
+  if (filter === 'operations') {
+    return /HOLIDAY|OFFLINE|SYNC|EXPENSE|SUPERVISOR/i.test(event);
   }
   return true;
 }
@@ -188,6 +196,8 @@ export function NotificationInboxPanel() {
                 ['reconciliations', 'Recon', Shield],
                 ['messages', 'Messages', Bell],
                 ['reminders', 'Reminders', Bell],
+                ['automation', 'Automation', Shield],
+                ['operations', 'Ops', Shield],
                 ['system', 'System', Shield],
                 ['security', 'Security', Shield],
               ] as const).map(([value, label, Icon]) => (

@@ -117,6 +117,11 @@ export async function createHolidayRequest(input: {
   holidayDate: string;
   endDate?: string | null;
   reason?: string | null;
+  notes?: string | null;
+  evidenceUrl?: string | null;
+  community?: string | null;
+  groupId?: string | null;
+  borrowerId?: string | null;
   scope?: string;
   branch?: string | null;
   requestedByUserId: string;
@@ -140,6 +145,11 @@ export async function createHolidayRequest(input: {
     holidayDate,
     endDate,
     reason: input.reason?.trim() || null,
+    notes: input.notes?.trim() || null,
+    evidenceUrl: input.evidenceUrl?.trim() || null,
+    community: input.community?.trim() || null,
+    groupId: input.groupId?.trim() || null,
+    borrowerId: input.borrowerId?.trim() || null,
     scope: input.scope?.trim() || 'NATIONAL',
     branch: input.branch?.trim() || null,
     status: input.submit ? 'SUBMITTED' : 'DRAFT',
@@ -181,6 +191,11 @@ export async function updateHolidayRequestDraft(
     holidayDate: string;
     endDate: string | null;
     reason: string | null;
+    notes: string | null;
+    evidenceUrl: string | null;
+    community: string | null;
+    groupId: string | null;
+    borrowerId: string | null;
     scope: string;
     branch: string | null;
   }>,
@@ -206,6 +221,14 @@ export async function updateHolidayRequestDraft(
           ? assertDate(input.endDate, 'End date')
           : null,
     reason: input.reason === undefined ? existing.reason : input.reason?.trim() || null,
+    notes: input.notes === undefined ? existing.notes : input.notes?.trim() || null,
+    evidenceUrl:
+      input.evidenceUrl === undefined ? existing.evidenceUrl : input.evidenceUrl?.trim() || null,
+    community:
+      input.community === undefined ? existing.community : input.community?.trim() || null,
+    groupId: input.groupId === undefined ? existing.groupId : input.groupId?.trim() || null,
+    borrowerId:
+      input.borrowerId === undefined ? existing.borrowerId : input.borrowerId?.trim() || null,
     scope: input.scope?.trim() ?? existing.scope,
     branch:
       input.branch === undefined ? existing.branch : input.branch?.trim() || null,
@@ -305,6 +328,38 @@ export async function rejectHolidayRequest(
   );
 
   return updated;
+}
+
+export async function cancelHolidayRequest(
+  id: string,
+  actorUserId: string,
+): Promise<HolidayRequestRecord> {
+  const existing = await getRequestOrThrow(id);
+
+  if (existing.requestedByUserId !== actorUserId) {
+    throw new Error('FORBIDDEN:You can only cancel your own holiday requests.');
+  }
+  if (existing.status !== 'DRAFT' && existing.status !== 'SUBMITTED') {
+    throw new Error('VALIDATION:Only draft or submitted holiday requests can be cancelled.');
+  }
+
+  return persistUpdate(id, { status: 'CANCELLED' });
+}
+
+export async function previewHolidayImpact(input: {
+  holidayDate: string;
+  endDate?: string | null;
+}) {
+  const holidayDate = assertDate(input.holidayDate, 'Holiday date');
+  const endDate = input.endDate ? assertDate(input.endDate, 'End date') : null;
+  if (endDate && endDate < holidayDate) {
+    throw new Error('VALIDATION:End date must be on or after the holiday date.');
+  }
+
+  const { previewHolidayScheduleImpact } = await import(
+    '../../repositories/holiday-request.repository.js'
+  );
+  return previewHolidayScheduleImpact({ holidayDate, endDate });
 }
 
 export async function applyHolidayRequest(

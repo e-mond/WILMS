@@ -6,13 +6,13 @@ export interface ReleaseNotes {
 }
 
 export const CURRENT_RELEASE_NOTES: ReleaseNotes = {
-  version: '1.7.5',
+  version: '1.8.0',
   summary:
-    'Offline-ready field operations, holiday requests, push alerts, modern dashboards, and stronger App Lock.',
+    'Enterprise design refresh, Ghana holidays, full offline readiness, and workflow automation.',
   highlights: [
-    'Field-critical offline for every role with sync status and conflict review.',
-    'Collectors can request holidays; approvers review with maker-checker before schedule apply.',
-    'Web Push for approvals, holiday status, sync conflicts, and reconciliation alerts.',
-    'Modern dashboard widgets and Product Tour steps for Offline, Push, Holidays, and App Lock.',
+    'Self-hosted fonts with CSP-safe loading and hardened holiday request APIs.',
+    'Automatic Ghana public holidays with a single premium calendar experience.',
+    'iOS-inspired dashboards, unique module icons, and offline-first field operations.',
+    'Automation engine for reminders, follow-ups, escalations, and scheduled executive reports.',
   ],
 };

@@ -38,6 +38,7 @@ import { trackingRouter } from '../modules/tracking/routes.js';
 import { webhooksRouter } from '../modules/webhooks/routes.js';
 import { organizationHolidaysRouter } from '../modules/organization-holidays/routes.js';
 import { holidayRequestsRouter } from '../modules/holiday-requests/routes.js';
+import { automationRouter } from '../modules/automation/routes.js';
 import { opsRouter } from '../modules/ops/routes.js';
 import { enterpriseRouter } from '../modules/enterprise/routes.js';
 import { intelligenceRouter } from '../modules/intelligence/routes.js';
@@ -84,6 +85,7 @@ function mountBusinessRoutes(app: express.Application, basePath = '') {
   app.use(`${prefix}`, uploadsRouter);
   app.use(`${prefix}`, organizationHolidaysRouter);
   app.use(`${prefix}`, holidayRequestsRouter);
+  app.use(`${prefix}`, automationRouter);
   app.use(`${prefix}`, opsRouter);
   app.use(`${prefix}`, enterpriseRouter);
   app.use(`${prefix}`, intelligenceRouter);

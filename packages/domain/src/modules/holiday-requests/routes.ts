@@ -20,6 +20,16 @@ function mapError(error: unknown): never {
   if (error instanceof Error && error.message.startsWith('VALIDATION:')) {
     throw new AppError(error.message.slice('VALIDATION:'.length), ERROR_CODE.VALIDATION, 400);
   }
+  if (error instanceof Error && error.message.startsWith('SCHEMA_MISSING:')) {
+    throw new AppError(error.message.slice('SCHEMA_MISSING:'.length), ERROR_CODE.SERVER, 503);
+  }
+  if (error instanceof Error && error.message === 'DATABASE_REQUIRED') {
+    throw new AppError(
+      'Holiday requests require a connected database. Try again shortly.',
+      ERROR_CODE.SERVER,
+      503,
+    );
+  }
   throw error;
 }
 
@@ -55,6 +65,28 @@ holidayRequestsRouter.get(
   }),
 );
 
+holidayRequestsRouter.get(
+  '/holiday-requests/preview-impact',
+  requirePermission(
+    PERMISSION.ACCESS_COLLECTOR_PORTAL,
+    PERMISSION.ACCESS_APPROVER_PORTAL,
+    PERMISSION.MANAGE_SYSTEM_SETTINGS,
+  ),
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(
+        res,
+        await holidayRequestService.previewHolidayImpact({
+          holidayDate: String(req.query.holidayDate ?? ''),
+          endDate: typeof req.query.endDate === 'string' ? req.query.endDate : null,
+        }),
+      );
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
 holidayRequestsRouter.post(
   '/holiday-requests',
   requirePermission(
@@ -70,6 +102,11 @@ holidayRequestsRouter.post(
           holidayDate: String(req.body?.holidayDate ?? ''),
           endDate: typeof req.body?.endDate === 'string' ? req.body.endDate : null,
           reason: typeof req.body?.reason === 'string' ? req.body.reason : null,
+          notes: typeof req.body?.notes === 'string' ? req.body.notes : null,
+          evidenceUrl: typeof req.body?.evidenceUrl === 'string' ? req.body.evidenceUrl : null,
+          community: typeof req.body?.community === 'string' ? req.body.community : null,
+          groupId: typeof req.body?.groupId === 'string' ? req.body.groupId : null,
+          borrowerId: typeof req.body?.borrowerId === 'string' ? req.body.borrowerId : null,
           scope: typeof req.body?.scope === 'string' ? req.body.scope : undefined,
           branch: typeof req.body?.branch === 'string' ? req.body.branch : null,
           requestedByUserId: req.session!.userId,
@@ -105,6 +142,36 @@ holidayRequestsRouter.patch(
               : typeof req.body?.reason === 'string'
                 ? req.body.reason
                 : undefined,
+          notes:
+            req.body?.notes === null
+              ? null
+              : typeof req.body?.notes === 'string'
+                ? req.body.notes
+                : undefined,
+          evidenceUrl:
+            req.body?.evidenceUrl === null
+              ? null
+              : typeof req.body?.evidenceUrl === 'string'
+                ? req.body.evidenceUrl
+                : undefined,
+          community:
+            req.body?.community === null
+              ? null
+              : typeof req.body?.community === 'string'
+                ? req.body.community
+                : undefined,
+          groupId:
+            req.body?.groupId === null
+              ? null
+              : typeof req.body?.groupId === 'string'
+                ? req.body.groupId
+                : undefined,
+          borrowerId:
+            req.body?.borrowerId === null
+              ? null
+              : typeof req.body?.borrowerId === 'string'
+                ? req.body.borrowerId
+                : undefined,
           scope: typeof req.body?.scope === 'string' ? req.body.scope : undefined,
           branch:
             req.body?.branch === null
@@ -113,6 +180,21 @@ holidayRequestsRouter.patch(
                 ? req.body.branch
                 : undefined,
         }),
+      );
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+holidayRequestsRouter.post(
+  '/holiday-requests/:id/cancel',
+  requirePermission(PERMISSION.ACCESS_COLLECTOR_PORTAL, PERMISSION.MANAGE_SYSTEM_SETTINGS),
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(
+        res,
+        await holidayRequestService.cancelHolidayRequest(req.params.id!, req.session!.userId),
       );
     } catch (error) {
       mapError(error);

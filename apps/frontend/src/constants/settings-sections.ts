@@ -13,6 +13,7 @@ export const SETTINGS_SECTION = {
   INTEGRATIONS: 'integrations',
   AUDIT: 'audit',
   DOCUMENTATION: 'documentation',
+  AUTOMATION: 'automation',
 } as const;
 
 export type SettingsSection = (typeof SETTINGS_SECTION)[keyof typeof SETTINGS_SECTION];
@@ -23,6 +24,7 @@ export const SETTINGS_SECTIONS: { id: SettingsSection; label: string }[] = [
   { id: SETTINGS_SECTION.USERS, label: 'User Management' },
   { id: SETTINGS_SECTION.ROLES, label: 'Roles & Permissions' },
   { id: SETTINGS_SECTION.HOLIDAYS, label: 'Holidays' },
+  { id: SETTINGS_SECTION.AUTOMATION, label: 'Automation' },
   { id: SETTINGS_SECTION.SECURITY, label: 'Security & Access' },
   { id: SETTINGS_SECTION.NOTIFICATIONS, label: 'Notifications' },
   { id: SETTINGS_SECTION.LOAN_RULES, label: 'Loan Rules' },

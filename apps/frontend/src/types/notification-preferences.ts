@@ -11,4 +11,8 @@ export interface NotificationPreferences {
   approvalNotifications: boolean;
   registrationNotifications: boolean;
   digestFrequency: 'INSTANT' | 'DAILY' | 'WEEKLY';
+  quietHoursEnabled?: boolean;
+  quietHoursStart?: string | null;
+  quietHoursEnd?: string | null;
+  quietHoursTimezone?: string;
 }

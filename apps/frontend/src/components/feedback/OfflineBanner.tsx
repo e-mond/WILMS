@@ -50,12 +50,12 @@ function getBannerMessage({
     return `Sync backlog critical: ${pendingCount} saved items waiting. Contact your supervisor.`;
   }
 
-  if (isSyncing && pendingCount > 0) {
-    return `Syncing ${pendingLabel}...`;
+  if (isOffline) {
+    return 'Offline. Working from locally stored data. Changes will sync automatically.';
   }
 
-  if (isOffline) {
-    return 'You are offline. Changes will be saved and synced when connection returns.';
+  if (isSyncing && pendingCount > 0) {
+    return `Syncing ${pendingLabel}…`;
   }
 
   if (pendingCount > 0) {

@@ -38,7 +38,7 @@ export function AppOfflineShell({
   paymentSyncHandler = replayQueuedPayment,
   expenseSyncHandler = replayQueuedExpense,
   holidaySyncHandler = replayQueuedHolidayRequest,
-  showSyncPanel = false,
+  showSyncPanel = true,
 }: AppOfflineShellProps) {
   const { isOffline } = useOfflineStatus();
   const items = useOfflineQueueStore((state) => state.items);

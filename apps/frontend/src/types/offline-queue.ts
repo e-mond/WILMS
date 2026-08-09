@@ -38,6 +38,11 @@ export interface HolidayRequestQueuePayload {
   holidayDate: string;
   endDate?: string | null;
   reason?: string | null;
+  notes?: string | null;
+  evidenceUrl?: string | null;
+  community?: string | null;
+  groupId?: string | null;
+  borrowerId?: string | null;
   scope?: string;
   branch?: string | null;
   submit: boolean;

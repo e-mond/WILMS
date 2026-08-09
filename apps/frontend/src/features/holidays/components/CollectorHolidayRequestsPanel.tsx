@@ -5,6 +5,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
+import { Calendar } from '@/components/ui/Calendar';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
 import { QueryErrorState } from '@/components/feedback/QueryErrorState';
 import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { holidayRequestsService } from '@/services/holidayRequestsService';
@@ -12,24 +15,24 @@ import { organizationHolidaysService } from '@/services/organizationHolidaysServ
 import type { HolidayRequest } from '@/types/holiday-requests';
 import { formatDisplayDate } from '@/utils/format-date';
 import { useToast } from '@/hooks/useToast';
-import { cn } from '@/utils/cn';
 import { useOfflineStatus } from '@/hooks/useOfflineStatus';
 import { useOfflineQueueStore } from '@/state/offlineQueueStore';
 
 const requestsQueryKey = ['holiday-requests', 'mine'] as const;
 const orgHolidaysQueryKey = ['organization-holidays'] as const;
 
-function statusTone(status: HolidayRequest['status']): string {
+function statusVariant(status: HolidayRequest['status']): 'default' | 'success' | 'warning' | 'danger' | 'primary' | 'pending' {
   switch (status) {
     case 'APPLIED':
     case 'APPROVED':
-      return 'text-status-active';
+      return 'success';
     case 'REJECTED':
-      return 'text-danger';
+    case 'CANCELLED':
+      return 'danger';
     case 'SUBMITTED':
-      return 'text-status-info';
+      return 'primary';
     default:
-      return 'text-text-muted';
+      return 'pending';
   }
 }
 
@@ -42,6 +45,9 @@ export function CollectorHolidayRequestsPanel() {
   const [holidayDate, setHolidayDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [reason, setReason] = useState('');
+  const [notes, setNotes] = useState('');
+  const [community, setCommunity] = useState('');
+  const [evidenceUrl, setEvidenceUrl] = useState('');
   const [selectedMonth, setSelectedMonth] = useState(() => new Date().toISOString().slice(0, 7));
 
   const requestsQuery = useQuery({
@@ -52,6 +58,15 @@ export function CollectorHolidayRequestsPanel() {
     queryKey: orgHolidaysQueryKey,
     queryFn: () => organizationHolidaysService.listHolidays(),
   });
+  const impactQuery = useQuery({
+    queryKey: ['holiday-impact', holidayDate, endDate],
+    queryFn: () =>
+      holidayRequestsService.previewImpact({
+        holidayDate: holidayDate.trim(),
+        endDate: endDate.trim() || null,
+      }),
+    enabled: Boolean(holidayDate.trim()) && !isOffline,
+  });
 
   const createMutation = useMutation({
     mutationFn: async (submit: boolean) => {
@@ -60,14 +75,15 @@ export function CollectorHolidayRequestsPanel() {
         holidayDate: holidayDate.trim(),
         endDate: endDate.trim() || null,
         reason: reason.trim() || null,
+        notes: notes.trim() || null,
+        community: community.trim() || null,
+        evidenceUrl: evidenceUrl.trim() || null,
         submit,
       };
-
       if (isOffline) {
         enqueueHolidayRequest(payload);
         return { offline: true as const, submit };
       }
-
       return {
         offline: false as const,
         request: await holidayRequestsService.createRequest(payload),
@@ -75,16 +91,14 @@ export function CollectorHolidayRequestsPanel() {
     },
     onSuccess: async (result) => {
       setName('');
-      setHolidayDate('');
       setEndDate('');
       setReason('');
+      setNotes('');
+      setCommunity('');
+      setEvidenceUrl('');
       await queryClient.invalidateQueries({ queryKey: requestsQueryKey });
       if (result.offline) {
-        toast.success(
-          result.submit
-            ? 'Holiday request queued for sync'
-            : 'Holiday draft saved offline',
-        );
+        toast.success(result.submit ? 'Holiday request queued for sync' : 'Holiday draft saved offline');
         return;
       }
       toast.success(
@@ -111,45 +125,52 @@ export function CollectorHolidayRequestsPanel() {
     },
   });
 
-  const calendarDays = useMemo(() => {
-    const [year, month] = selectedMonth.split('-').map(Number);
-    if (!year || !month) {
-      return [];
+  const cancelMutation = useMutation({
+    mutationFn: (id: string) => holidayRequestsService.cancel(id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: requestsQueryKey });
+      toast.success('Holiday request cancelled');
+    },
+    onError: (err: unknown) => {
+      toast.error('Unable to cancel', {
+        message: err instanceof Error ? err.message : 'Try again shortly.',
+      });
+    },
+  });
+
+  const markers = useMemo(() => {
+    const list: Array<{ iso: string; tone: 'brand' | 'info' | 'success' | 'warning' | 'danger' }> = [];
+    for (const holiday of holidaysQuery.data?.holidays ?? []) {
+      list.push({ iso: holiday.holidayDate, tone: 'brand' });
     }
-    const first = new Date(Date.UTC(year, month - 1, 1));
-    const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
-    const startPad = first.getUTCDay();
-    const orgDates = new Set((holidaysQuery.data?.holidays ?? []).map((h) => h.holidayDate));
-    const requestByDate = new Map<string, HolidayRequest[]>();
     for (const request of requestsQuery.data?.requests ?? []) {
-      const list = requestByDate.get(request.holidayDate) ?? [];
-      list.push(request);
-      requestByDate.set(request.holidayDate, list);
-    }
-
-    const cells: Array<{
-      key: string;
-      label: string;
-      iso: string | null;
-      isOrgHoliday: boolean;
-      requests: HolidayRequest[];
-    }> = [];
-
-    for (let i = 0; i < startPad; i += 1) {
-      cells.push({ key: `pad-${i}`, label: '', iso: null, isOrgHoliday: false, requests: [] });
-    }
-    for (let day = 1; day <= daysInMonth; day += 1) {
-      const iso = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      cells.push({
-        key: iso,
-        label: String(day),
-        iso,
-        isOrgHoliday: orgDates.has(iso),
-        requests: requestByDate.get(iso) ?? [],
+      list.push({
+        iso: request.holidayDate,
+        tone:
+          request.status === 'REJECTED'
+            ? 'danger'
+            : request.status === 'SUBMITTED'
+              ? 'info'
+              : request.status === 'APPLIED' || request.status === 'APPROVED'
+                ? 'success'
+                : 'warning',
       });
     }
-    return cells;
-  }, [holidaysQuery.data?.holidays, requestsQuery.data?.requests, selectedMonth]);
+    return list;
+  }, [holidaysQuery.data?.holidays, requestsQuery.data?.requests]);
+
+  const upcoming = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    return (holidaysQuery.data?.holidays ?? [])
+      .filter((holiday) => holiday.holidayDate >= today)
+      .slice(0, 6);
+  }, [holidaysQuery.data?.holidays]);
+
+  const requests = requestsQuery.data?.requests ?? [];
+  const pending = requests.filter((request) => request.status === 'DRAFT' || request.status === 'SUBMITTED');
+  const decided = requests.filter(
+    (request) => request.status === 'APPROVED' || request.status === 'APPLIED' || request.status === 'REJECTED',
+  );
 
   if (requestsQuery.isLoading || holidaysQuery.isLoading) {
     return <InlinePanelSkeleton />;
@@ -160,158 +181,203 @@ export function CollectorHolidayRequestsPanel() {
       <QueryErrorState
         title="Unable to load holiday requests"
         description={
-          requestsQuery.error instanceof Error
-            ? requestsQuery.error.message
-            : 'Try again shortly.'
+          requestsQuery.error instanceof Error ? requestsQuery.error.message : 'Try again shortly.'
         }
         onRetry={() => void requestsQuery.refetch()}
       />
     );
   }
 
-  const requests = requestsQuery.data?.requests ?? [];
-
   return (
     <div className="space-y-wilms-6">
-      <section className="space-y-wilms-3 rounded-sm border border-border bg-card p-wilms-4">
-        <h2 className="text-heading-3 font-semibold text-text-primary">Request a holiday</h2>
-        <p className="text-small text-text-muted">
-          Draft or submit a holiday that shifts repayment schedules after approval.
-        </p>
-        <form
-          className="grid gap-wilms-3 sm:grid-cols-2"
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (!name.trim() || !holidayDate.trim()) {
-              toast.error('Name and date are required');
-              return;
-            }
-            void createMutation.mutateAsync(true);
+      <div className="grid gap-wilms-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+        <Calendar
+          month={selectedMonth}
+          selectedDate={holidayDate || null}
+          onMonthChange={setSelectedMonth}
+          onSelectDate={(iso) => {
+            setHolidayDate(iso);
+            setSelectedMonth(iso.slice(0, 7));
           }}
-        >
-          <Input
-            aria-label="Holiday name"
-            placeholder="Holiday name"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-          />
-          <Input
-            aria-label="Holiday date"
-            type="date"
-            value={holidayDate}
-            onChange={(event) => setHolidayDate(event.target.value)}
-          />
-          <Input
-            aria-label="End date (optional)"
-            type="date"
-            value={endDate}
-            onChange={(event) => setEndDate(event.target.value)}
-          />
-          <Textarea
-            aria-label="Reason"
-            placeholder="Reason (optional)"
-            value={reason}
-            onChange={(event) => setReason(event.target.value)}
-            className="sm:col-span-2"
-          />
-          <div className="flex flex-wrap gap-wilms-2 sm:col-span-2">
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              disabled={createMutation.isPending}
-              onClick={() => {
-                if (!name.trim() || !holidayDate.trim()) {
-                  toast.error('Name and date are required');
-                  return;
-                }
-                void createMutation.mutateAsync(false);
-              }}
-            >
-              Save draft
-            </Button>
-            <Button type="submit" size="sm" disabled={createMutation.isPending}>
-              {createMutation.isPending ? 'Saving…' : 'Submit for approval'}
-            </Button>
-          </div>
-        </form>
-      </section>
+          markers={markers}
+        />
 
-      <section className="space-y-wilms-3 rounded-sm border border-border bg-card p-wilms-4">
-        <div className="flex flex-wrap items-center justify-between gap-wilms-2">
-          <h2 className="text-heading-3 font-semibold text-text-primary">Holiday calendar</h2>
-          <input
-            aria-label="Calendar month"
-            type="month"
-            value={selectedMonth}
-            onChange={(event) => setSelectedMonth(event.target.value)}
-            className="h-10 w-auto rounded-sm border border-border bg-card px-wilms-3 text-body text-text-primary"
-          />
-        </div>
-        <div className="grid grid-cols-7 gap-1 text-center text-caption text-text-muted">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((label) => (
-            <div key={label} className="py-1 font-semibold">
-              {label}
-            </div>
-          ))}
-          {calendarDays.map((cell) => (
-            <div
-              key={cell.key}
-              className={cn(
-                'min-h-14 rounded-sm border border-transparent p-1 text-left',
-                cell.iso && 'border-border bg-surface',
-                cell.isOrgHoliday && 'border-brand-primary/40 bg-brand-primary-light',
-                cell.requests.length > 0 && 'ring-1 ring-status-info/40',
+        <div className="space-y-wilms-4">
+          <Card className="rounded-2xl border-border/70 bg-card/90 shadow-sm backdrop-blur">
+            <CardHeader>
+              <CardTitle>Request holiday</CardTitle>
+              <CardDescription>
+                Select a date on the calendar, then submit for maker-checker approval.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-wilms-3">
+              <Input
+                aria-label="Holiday name"
+                placeholder="Holiday name"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+              />
+              <div className="grid gap-wilms-3 sm:grid-cols-2">
+                <Input
+                  aria-label="Holiday date"
+                  type="date"
+                  value={holidayDate}
+                  onChange={(event) => setHolidayDate(event.target.value)}
+                />
+                <Input
+                  aria-label="End date (optional)"
+                  type="date"
+                  value={endDate}
+                  onChange={(event) => setEndDate(event.target.value)}
+                />
+              </div>
+              <Textarea
+                aria-label="Reason"
+                placeholder="Reason (optional)"
+                value={reason}
+                onChange={(event) => setReason(event.target.value)}
+              />
+              <Input
+                aria-label="Community"
+                placeholder="Community (optional)"
+                value={community}
+                onChange={(event) => setCommunity(event.target.value)}
+              />
+              <Textarea
+                aria-label="Notes"
+                placeholder="Notes for approvers (optional)"
+                value={notes}
+                onChange={(event) => setNotes(event.target.value)}
+              />
+              <Input
+                aria-label="Evidence URL"
+                placeholder="Evidence link or file reference (optional)"
+                value={evidenceUrl}
+                onChange={(event) => setEvidenceUrl(event.target.value)}
+              />
+              {impactQuery.data ? (
+                <p className="rounded-xl border border-border/60 bg-background/60 px-wilms-3 py-wilms-2 text-small text-text-secondary">
+                  Schedule preview: {impactQuery.data.affectedInstallments} installment
+                  {impactQuery.data.affectedInstallments === 1 ? '' : 's'} may shift if this holiday is
+                  applied.
+                </p>
+              ) : null}
+              <div className="flex flex-wrap gap-wilms-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  disabled={createMutation.isPending}
+                  onClick={() => {
+                    if (!name.trim() || !holidayDate.trim()) {
+                      toast.error('Name and date are required');
+                      return;
+                    }
+                    void createMutation.mutateAsync(false);
+                  }}
+                >
+                  Save draft
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={createMutation.isPending}
+                  onClick={() => {
+                    if (!name.trim() || !holidayDate.trim()) {
+                      toast.error('Name and date are required');
+                      return;
+                    }
+                    void createMutation.mutateAsync(true);
+                  }}
+                >
+                  {createMutation.isPending ? 'Saving…' : 'Submit for approval'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-2xl border-border/70 bg-card/90 shadow-sm backdrop-blur">
+            <CardHeader>
+              <CardTitle>Upcoming holidays</CardTitle>
+              <CardDescription>National and organisation calendar</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {upcoming.length === 0 ? (
+                <p className="text-small text-text-muted">No upcoming holidays loaded.</p>
+              ) : (
+                <ul className="space-y-wilms-2">
+                  {upcoming.map((holiday) => (
+                    <li key={holiday.id} className="flex items-center justify-between gap-wilms-2 text-small">
+                      <span className="font-semibold text-text-primary">{holiday.name}</span>
+                      <span className="text-text-muted">{formatDisplayDate(holiday.holidayDate)}</span>
+                    </li>
+                  ))}
+                </ul>
               )}
-            >
-              <div className="text-caption font-semibold text-text-primary">{cell.label}</div>
-              {cell.isOrgHoliday ? (
-                <div className="text-[10px] font-medium text-brand-primary">Org</div>
-              ) : null}
-              {cell.requests[0] ? (
-                <div className={cn('truncate text-[10px] font-medium', statusTone(cell.requests[0].status))}>
-                  {cell.requests[0].status}
-                </div>
-              ) : null}
-            </div>
-          ))}
+            </CardContent>
+          </Card>
         </div>
-      </section>
+      </div>
 
-      <section className="space-y-wilms-3 rounded-sm border border-border bg-card p-wilms-4">
-        <h2 className="text-heading-3 font-semibold text-text-primary">My requests</h2>
-        {requests.length === 0 ? (
-          <p className="text-small text-text-muted">No holiday requests yet.</p>
-        ) : (
-          <ul className="divide-y divide-border">
-            {requests.map((request) => (
-              <li
-                key={request.id}
-                className="flex flex-wrap items-center justify-between gap-wilms-2 py-wilms-3"
-              >
-                <div>
-                  <p className="font-semibold text-text-primary">{request.name}</p>
-                  <p className="text-small text-text-muted">
-                    {formatDisplayDate(request.holidayDate)}
-                    {request.endDate ? ` – ${formatDisplayDate(request.endDate)}` : ''}
-                    {' · '}
-                    <span className={statusTone(request.status)}>{request.status}</span>
-                  </p>
+      <div className="grid gap-wilms-4 lg:grid-cols-2">
+        <Card className="rounded-2xl">
+          <CardHeader>
+            <CardTitle>Pending requests</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-wilms-3">
+            {pending.length === 0 ? (
+              <p className="text-small text-text-muted">No drafts or submissions waiting.</p>
+            ) : (
+              pending.map((request) => (
+                <div key={request.id} className="flex items-center justify-between gap-wilms-2">
+                  <div>
+                    <p className="font-semibold text-text-primary">{request.name}</p>
+                    <p className="text-small text-text-muted">{formatDisplayDate(request.holidayDate)}</p>
+                  </div>
+                  <div className="flex items-center gap-wilms-2">
+                    <Badge variant={statusVariant(request.status)}>{request.status}</Badge>
+                    {request.status === 'DRAFT' ? (
+                      <Button size="sm" onClick={() => void submitMutation.mutateAsync(request.id)}>
+                        Submit
+                      </Button>
+                    ) : null}
+                    {request.status === 'DRAFT' || request.status === 'SUBMITTED' ? (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => void cancelMutation.mutateAsync(request.id)}
+                      >
+                        Cancel
+                      </Button>
+                    ) : null}
+                  </div>
                 </div>
-                {request.status === 'DRAFT' ? (
-                  <Button
-                    size="sm"
-                    disabled={submitMutation.isPending}
-                    onClick={() => void submitMutation.mutateAsync(request.id)}
-                  >
-                    Submit
-                  </Button>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+              ))
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-2xl">
+          <CardHeader>
+            <CardTitle>History</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-wilms-3">
+            {decided.length === 0 ? (
+              <p className="text-small text-text-muted">No decided requests yet.</p>
+            ) : (
+              decided.map((request) => (
+                <div key={request.id} className="flex items-center justify-between gap-wilms-2">
+                  <div>
+                    <p className="font-semibold text-text-primary">{request.name}</p>
+                    <p className="text-small text-text-muted">{formatDisplayDate(request.holidayDate)}</p>
+                  </div>
+                  <Badge variant={statusVariant(request.status)}>{request.status}</Badge>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

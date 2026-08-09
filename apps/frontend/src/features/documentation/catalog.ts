@@ -29,9 +29,9 @@ export interface DocumentationBook {
   classification: 'Confidential' | 'Internal' | 'Restricted';
 }
 
-export const DOC_VERSIONS = ['1.7.5', '1.7.4', '1.7.3', '1.7.2', '1.7.1', '1.7.0'] as const;
+export const DOC_VERSIONS = ['1.8.0', '1.7.5', '1.7.4', '1.7.3', '1.7.2', '1.7.1', '1.7.0'] as const;
 export type DocVersion = (typeof DOC_VERSIONS)[number];
-export const CURRENT_DOC_VERSION: DocVersion = '1.7.5';
+export const CURRENT_DOC_VERSION: DocVersion = '1.8.0';
 
 export const DOC_CATEGORY_LABELS: Record<DocCategory, string> = {
   product: 'Product',

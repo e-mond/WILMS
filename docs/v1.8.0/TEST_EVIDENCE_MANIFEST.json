@@ -1,0 +1,54 @@
+{
+  "release": "1.8.0",
+  "branch": "feature/v1.8-enterprise-design-automation",
+  "generatedAt": "2026-08-09T12:47:30.000Z",
+  "commands": [
+    {
+      "name": "domain-focused",
+      "command": "npm run test -w @wilms/domain -- src/tests/organization-holidays/ghana-provider.test.ts src/tests/holiday-requests/lifecycle.test.ts src/tests/holiday-requests/repository-errors.test.ts src/tests/automation/engine.test.ts",
+      "status": "passed",
+      "tests": 10
+    },
+    {
+      "name": "type-check",
+      "command": "npm run type-check",
+      "status": "passed"
+    },
+    {
+      "name": "lint",
+      "command": "npm run lint",
+      "status": "passed"
+    },
+    {
+      "name": "version-consistency",
+      "command": "node scripts/verify-version-consistency.mjs",
+      "status": "passed"
+    },
+    {
+      "name": "frontend-build",
+      "command": "npm run build -w @wilms/frontend",
+      "status": "passed"
+    }
+  ],
+  "suites": {
+    "ghanaHolidays": ["packages/domain/src/tests/organization-holidays/ghana-provider.test.ts"],
+    "holidayRequests": [
+      "packages/domain/src/tests/holiday-requests/lifecycle.test.ts",
+      "packages/domain/src/tests/holiday-requests/repository-errors.test.ts"
+    ],
+    "automation": ["packages/domain/src/tests/automation/engine.test.ts"],
+    "offline": [
+      "apps/frontend/src/tests/offline-queue/offlineQueueStore.test.ts",
+      "apps/frontend/src/tests/offline-queue/OfflineBanner.test.ts"
+    ],
+    "appLock": ["apps/frontend/src/tests/app-lock"]
+  },
+  "migrations": [
+    "0037_v180_ghana_holiday_provider",
+    "0038_v180_automation_engine",
+    "0039_v180_holiday_request_enrichment"
+  ],
+  "notes": [
+    "DATABASE_URL may be unset locally; migrations validated by SQL + journal presence and operator script scripts/apply-v180-migrations.sh."
+  ]
+}

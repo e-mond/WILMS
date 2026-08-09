@@ -49,6 +49,21 @@ export function SettingsHolidaysSection() {
     },
   });
 
+  const syncMutation = useMutation({
+    mutationFn: () => organizationHolidaysService.syncGhanaHolidays(),
+    onSuccess: async (result) => {
+      await queryClient.invalidateQueries({ queryKey: holidaysQueryKey });
+      toast.success(
+        `Ghana holidays synced (${result.inserted} new, ${result.updated} updated for ${result.year})`,
+      );
+    },
+    onError: (err: unknown) => {
+      toast.error('Unable to sync Ghana holidays', {
+        message: err instanceof Error ? err.message : 'Try again shortly.',
+      });
+    },
+  });
+
   if (isLoading) {
     return <InlinePanelSkeleton />;
   }
@@ -73,6 +88,17 @@ export function SettingsHolidaysSection() {
         icon={<SettingsHolidaysIcon />}
       >
         <PermissionGate permission={PERMISSION.MANAGE_SYSTEM_SETTINGS}>
+          <div className="mb-wilms-4 flex flex-wrap gap-wilms-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              disabled={syncMutation.isPending}
+              onClick={() => void syncMutation.mutateAsync()}
+            >
+              {syncMutation.isPending ? 'Syncing…' : 'Sync Ghana public holidays'}
+            </Button>
+          </div>
           <form
             className="mb-wilms-4 grid gap-wilms-3 sm:grid-cols-[1fr_10rem_auto]"
             onSubmit={(event) => {
@@ -119,6 +145,11 @@ export function SettingsHolidaysSection() {
                 cell: (row) => formatDisplayDate(row.holidayDate),
               },
               { id: 'scope', header: 'Scope', cell: (row) => row.scope },
+              {
+                id: 'source',
+                header: 'Source',
+                cell: (row) => row.source ?? 'MANUAL',
+              },
               {
                 id: 'branch',
                 header: 'Branch',

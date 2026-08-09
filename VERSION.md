@@ -2,27 +2,27 @@
 
 | Field | Value |
 |-------|-------|
-| **Current release** | `v1.7.5` |
-| **In progress** | Offline, push & modernisation |
-| **Release type** | Field-critical offline, holiday requests, push, dashboard kit, App Lock |
-| **Previous release** | `v1.7.4` (Documentation Centre) |
+| **Current release** | `v1.8.0` |
+| **In progress** | Enterprise design, automation & platform readiness |
+| **Release type** | Platform refinement |
+| **Previous release** | `v1.7.5` (offline, push & modernisation) |
 | **Date** | August 2026 |
 
 ## Package versions
 
 | Package | Version |
 |---------|---------|
-| `wilms` (root) | `1.7.5` |
-| `@wilms/frontend` | `1.7.5` |
-| `@wilms/domain` | `1.7.5` |
-| `@wilms/api` | `1.7.5` |
+| `wilms` (root) | `1.8.0` |
+| `@wilms/frontend` | `1.8.0` |
+| `@wilms/domain` | `1.8.0` |
+| `@wilms/api` | `1.8.0` |
 
-## v1.7.5 notes
+## v1.8.0 notes
 
-- Field-critical offline for all roles (shell cache, expanded queue, sync/conflict UX)
-- Collector holiday request lifecycle with maker-checker and schedule apply
-- Web Push category triggers on existing notification events
-- Dashboards-first Card/Tabs/Skeleton kit aligned to WILMS tokens
-- App Lock idle timeout + optional WebAuthn; Product Tour steps for new capabilities
+- Self-hosted fonts (CSP-safe); holiday API hardening
+- Ghana public holiday provider + premium holiday UX
+- Unique financial-grade icon system; iOS-inspired enterprise UI
+- Offline-first completion; automation / workflow / rule engines
+- Expanded push categories; documentation suite updates
 
-See `docs/v1.7.5/` for the release pack.
+See `docs/v1.8.0/` for the release pack.

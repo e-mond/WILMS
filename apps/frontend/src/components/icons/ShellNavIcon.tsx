@@ -210,23 +210,76 @@ export function ShellNavIcon({ name, className }: ShellNavIconProps) {
     case 'expenses':
       return (
         <svg className={iconClass} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path
-            d="M7 7h10v12H7V7Z"
+          <rect
+            x="3"
+            y="6"
+            width="18"
+            height="12"
+            rx="2"
             stroke="currentColor"
             strokeWidth="1.5"
-            strokeLinejoin="round"
           />
           <path
-            d="M9 5h6a1 1 0 0 1 1 1v1H8V6a1 1 0 0 1 1-1Z"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M10 11h4M10 14h4"
+            d="M3 10h18M8 14h2"
             stroke="currentColor"
             strokeWidth="1.5"
             strokeLinecap="round"
+          />
+        </svg>
+      );
+    case 'holidays':
+      return (
+        <svg className={iconClass} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect
+            x="3"
+            y="5"
+            width="18"
+            height="16"
+            rx="2"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          />
+          <path
+            d="M3 9h18M8 3v4M16 3v4M9 14h2.5a1.5 1.5 0 0 0 0-3H10v6M14 13v4"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      );
+    case 'documentation':
+      return (
+        <svg className={iconClass} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M5 4h9l5 5v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M14 4v5h5M8 13h8M8 17h6"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+        </svg>
+      );
+    case 'operations':
+      return (
+        <svg className={iconClass} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M12 3 4 7v5c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-4Z"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+          <path
+            d="m9 12 2 2 4-4"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
         </svg>
       );

@@ -25,6 +25,8 @@ import { ConsoleExtensionNoiseFilter } from '@/components/dev/ConsoleExtensionNo
 import { ServiceWorkerRegistrar } from '@/components/pwa/ServiceWorkerRegistrar';
 import { AppOfflineShell } from '@/components/offline/AppOfflineShell';
 import { getServerSession } from '@/lib/auth/server-session';
+import { fontSans, fontSerif } from '@/lib/fonts';
+import { cn } from '@/utils/cn';
 import '@/styles/globals.css';
 
 export const metadata: Metadata = {
@@ -49,7 +51,7 @@ export default function RootLayout({
   const session = getServerSession();
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={cn(fontSans.variable, fontSerif.variable)} suppressHydrationWarning>
       <head>
         <ThemeScript />
         <meta name="mobile-web-app-capable" content="yes" />
@@ -57,7 +59,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="WILMS" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
-      <body className="min-h-screen bg-background text-text-primary">
+      <body className="min-h-screen bg-background font-sans text-text-primary antialiased">
         <SkipToContent />
         <ServiceWorkerRegistrar />
         <ChunkRecoveryHandler />

@@ -7,6 +7,7 @@ export type InputType =
   | 'text'
   | 'number'
   | 'date'
+  | 'time'
   | 'datetime-local'
   | 'tel'
   | 'search'

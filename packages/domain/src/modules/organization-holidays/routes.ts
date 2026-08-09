@@ -31,8 +31,24 @@ organizationHolidaysRouter.get(
     PERMISSION.ACCESS_APPROVER_PORTAL,
     PERMISSION.VIEW_REPORTS,
   ),
-  asyncHandler(async (_req, res) => {
-    sendData(res, { holidays: await holidayService.listHolidays() });
+  asyncHandler(async (req, res) => {
+    const includeDisabled = req.query.includeDisabled === '1';
+    await holidayService.ensureCurrentYearGhanaHolidays();
+    sendData(res, {
+      holidays: await holidayService.listHolidays({ includeDisabled }),
+    });
+  }),
+);
+
+organizationHolidaysRouter.post(
+  '/organization-holidays/sync-ghana',
+  requirePermission(PERMISSION.MANAGE_SYSTEM_SETTINGS),
+  asyncHandler(async (req, res) => {
+    const year =
+      typeof req.body?.year === 'number'
+        ? req.body.year
+        : Number.parseInt(String(req.body?.year ?? new Date().getUTCFullYear()), 10);
+    sendData(res, await holidayService.syncGhanaPublicHolidays(year));
   }),
 );
 
@@ -75,6 +91,7 @@ organizationHolidaysRouter.patch(
               : typeof req.body?.branch === 'string'
                 ? req.body.branch
                 : undefined,
+          enabled: typeof req.body?.enabled === 'boolean' ? req.body.enabled : undefined,
         }),
       );
     } catch (error) {
