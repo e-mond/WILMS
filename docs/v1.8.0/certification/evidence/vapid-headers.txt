@@ -1,0 +1,34 @@
+HTTP/1.1 401 Unauthorized
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Origin: http://127.0.0.1:3000
+Age: 0
+Cache-Control: no-store, must-revalidate
+Content-Length: 70
+Content-Security-Policy: default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests
+Content-Type: application/json; charset=utf-8
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Date: Sun, 09 Aug 2026 19:21:56 GMT
+Etag: W/"46-Hq4xINa+ngLHP0Hcx+jrrP4Iy4E"
+Origin-Agent-Cluster: ?1
+Permissions-Policy: camera=(self), microphone=(), geolocation=(self), payment=()
+Ratelimit-Limit: 300
+Ratelimit-Policy: 300;w=60
+Ratelimit-Remaining: 299
+Ratelimit-Reset: 60
+Referrer-Policy: no-referrer
+Server: Vercel
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Vary: RSC, Next-Router-State-Tree, Next-Router-Prefetch
+Vary: Origin
+X-Content-Type-Options: nosniff
+X-Dns-Prefetch-Control: off
+X-Download-Options: noopen
+X-Frame-Options: SAMEORIGIN
+X-Matched-Path: /api/wilms/[...path]
+X-Permitted-Cross-Domain-Policies: none
+X-Request-Id: 3b986b10-59a9-4b16-b2b9-295582da360f
+X-Vercel-Cache: MISS
+X-Vercel-Id: iad1::iad1::2hrq6-1786303316316-fc1ba262e342
+X-Xss-Protection: 0
+
