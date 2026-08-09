@@ -1,14 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type * as PreferencesService from '../../modules/notifications/preferences.service.js';
+
+type ShouldSendChannel = typeof PreferencesService.shouldSendChannel;
+type ShouldSendChannelArgs = Parameters<ShouldSendChannel>;
 
 vi.mock('../../db/client.js', () => ({
   isDatabaseEnabled: () => false,
   getDb: () => ({}),
 }));
 
-const shouldSendChannel = vi.fn(async () => true);
+const shouldSendChannel = vi.fn(async (..._args: ShouldSendChannelArgs): Promise<boolean> => true);
 
 vi.mock('../../modules/notifications/preferences.service.js', () => ({
-  shouldSendChannel: (...args: unknown[]) => shouldSendChannel(...args),
+  shouldSendChannel: (...args: ShouldSendChannelArgs) => shouldSendChannel(...args),
 }));
 
 describe('push and in-app preference gates', () => {

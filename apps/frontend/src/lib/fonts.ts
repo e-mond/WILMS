@@ -17,5 +17,7 @@ export const fontSerif = Source_Serif_4({
   weight: ['500', '600', '700'],
   variable: '--font-wilms-serif',
   display: 'swap',
+  // Body UI uses sans; serif is reserved for display headings — avoid unused preload warnings.
+  preload: false,
   fallback: ['Georgia', 'Cambria', 'Times New Roman', 'serif'],
 });

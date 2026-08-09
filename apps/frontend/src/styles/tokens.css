@@ -13,12 +13,14 @@
   /* Elevation & density (v1.8 iOS-inspired enterprise) */
   --shadow-navbar: 0 1px 0 color-mix(in srgb, var(--color-border) 70%, transparent),
     0 12px 32px -20px rgb(0 0 0 / 0.22);
-  --shadow-card: 0 8px 28px -20px rgb(0 0 0 / 0.22);
-  --shadow-card-hover: 0 14px 36px -20px rgb(0 0 0 / 0.28);
-  --glass-surface: color-mix(in srgb, var(--color-card) 82%, transparent);
-  --glass-blur: 18px;
-  --density-kpi-padding: 1rem;
-  --density-table-cell-y: 0.75rem;
+  --shadow-card: 0 1px 0 color-mix(in srgb, var(--color-border) 55%, transparent),
+    0 10px 28px -22px rgb(0 0 0 / 0.18);
+  --shadow-card-hover: 0 1px 0 color-mix(in srgb, var(--color-border) 55%, transparent),
+    0 14px 32px -20px rgb(0 0 0 / 0.22);
+  --glass-surface: color-mix(in srgb, var(--color-card) 92%, transparent);
+  --glass-blur: 14px;
+  --density-kpi-padding: 0.875rem;
+  --density-table-cell-y: 0.625rem;
   --focus-ring: 2px solid var(--color-brand-primary);
 
   --color-brand-primary: #0f6e56;

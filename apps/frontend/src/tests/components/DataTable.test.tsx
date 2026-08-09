@@ -77,4 +77,23 @@ describe('DataTable', () => {
     const cell = container.querySelector('td');
     expect(cell?.className).toContain('whitespace-nowrap');
   });
+
+  it('renders stacked mobile cards when mobileLayout is stack', () => {
+    render(
+      <DataTable
+        mobileLayout="stack"
+        caption="Borrowers"
+        getRowId={(row) => row.id}
+        data={[{ id: 'b-1', name: 'Ama Mensah', status: 'Active' }]}
+        columns={[
+          { id: 'name', header: 'Name', priority: 'primary', cell: (row) => row.name },
+          { id: 'status', header: 'Status', priority: 'secondary', cell: (row) => row.status },
+        ]}
+      />,
+    );
+
+    expect(screen.getByRole('list', { name: 'Borrowers' })).toBeInTheDocument();
+    expect(screen.getAllByText('Ama Mensah').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Status').length).toBeGreaterThan(0);
+  });
 });

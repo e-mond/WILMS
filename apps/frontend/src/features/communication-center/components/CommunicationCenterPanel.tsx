@@ -9,8 +9,8 @@ import { PermissionGate } from '@/components/auth/PermissionGate';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { Modal } from '@/components/ui/Modal';
 import { Badge } from '@/components/ui/Badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { PERMISSION } from '@/constants/permissions';
 import { communicationService } from '@/services';
 import { formatDeliveryFailure } from '@/utils/format-delivery-failure';
@@ -30,6 +30,7 @@ import {
   AudienceComposer,
   type AudienceComposerValue,
 } from '@/features/communication-center/components/AudienceComposer';
+import { cn } from '@/utils/cn';
 
 const TABS = [
   { id: 'compose', label: 'Compose' },
@@ -75,7 +76,6 @@ function htmlToText(html: string): string {
 export function CommunicationCenterPanel() {
   const [activeTab, setActiveTab] = useState<TabId>('compose');
   const [statusFilter, setStatusFilter] = useState('');
-  const [showCompose, setShowCompose] = useState(false);
   const [showTemplateBuilder, setShowTemplateBuilder] = useState(false);
   const [subject, setSubject] = useState('');
   const [bodyHtml, setBodyHtml] = useState('');
@@ -151,7 +151,6 @@ export function CommunicationCenterPanel() {
     },
     onSuccess: () => {
       toastSuccess(scheduleMode ? 'Message scheduled' : 'Message sent');
-      setShowCompose(false);
       setSubject('');
       setBodyHtml('');
       setAttachments([]);
@@ -209,7 +208,7 @@ export function CommunicationCenterPanel() {
               <Button type="button" variant="secondary" onClick={() => setShowTemplateBuilder(true)}>
                 New Template
               </Button>
-              <Button type="button" onClick={() => setShowCompose(true)}>
+              <Button type="button" onClick={() => setActiveTab('compose')}>
                 Compose Message
               </Button>
             </PermissionGate>
@@ -363,98 +362,160 @@ export function CommunicationCenterPanel() {
         </QueryStatePanel>
       ) : null}
 
-      {activeTab === 'compose' && !showCompose ? (
-        <div className="rounded-lg border border-dashed border-border bg-card p-wilms-8 text-center">
-          <p className="text-body text-text-muted">
-            Compose broadcasts to staff, borrowers, groups, or group leaders.
-          </p>
-          <Button type="button" className="mt-wilms-4" onClick={() => setShowCompose(true)}>
-            Start Composing
-          </Button>
+      {activeTab === 'compose' ? (
+        <div className="grid gap-wilms-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.25fr)]">
+          <Card className="h-fit">
+            <CardHeader>
+              <CardTitle>Audience</CardTitle>
+              <CardDescription>Choose who should receive this message.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-wilms-4">
+              <AudienceComposer
+                value={audience}
+                onChange={setAudience}
+                preview={audiencePreview}
+                onRequestPreview={requestPreview}
+                previewPending={false}
+              />
+              <div className="rounded-xl border border-border/70 bg-background/60 p-wilms-3 text-small">
+                <p className="font-semibold text-text-primary">Delivery summary</p>
+                <p className="mt-wilms-1 text-text-muted">
+                  Recipients:{' '}
+                  <span className="font-semibold text-text-primary">
+                    {audiencePreview?.total ?? 'Preview to estimate'}
+                  </span>
+                </p>
+                <p className="mt-wilms-1 text-text-muted">
+                  Channels:{' '}
+                  <span className="font-semibold text-text-primary">
+                    {channels.length ? channels.join(', ') : 'None selected'}
+                  </span>
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Compose</CardTitle>
+              <CardDescription>Write, preview, and send with validation intact.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-wilms-4">
+              <div>
+                <label className="mb-wilms-2 block text-small font-medium text-text-primary">Subject</label>
+                <Input
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value.slice(0, 120))}
+                  placeholder="Message subject"
+                  aria-label="Subject"
+                />
+                <p className="mt-wilms-1 text-right text-small text-text-muted">{subject.length}/120</p>
+              </div>
+              <div>
+                <label className="mb-wilms-2 block text-small font-medium text-text-primary">Message</label>
+                <RichTextEditor value={bodyHtml} onChange={setBodyHtml} draftKey="communication-compose" />
+                <p className="mt-wilms-1 text-right text-small text-text-muted">
+                  {htmlToText(bodyHtml).length} characters
+                </p>
+              </div>
+              <AttachmentUploader attachments={attachments} onChange={setAttachments} />
+              <div>
+                <label className="mb-wilms-2 block text-small font-medium text-text-primary">Schedule</label>
+                <Select
+                  value={scheduleMode}
+                  onChange={(e) => setScheduleMode(e.target.value)}
+                  aria-label="Schedule"
+                >
+                  {RECURRENCE_OPTIONS.map((option) => (
+                    <option key={option.value || 'immediate'} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Select>
+                {scheduleMode === 'SCHEDULED' ? (
+                  <input
+                    type="datetime-local"
+                    className="mt-wilms-2 h-10 w-full rounded-xl border border-border bg-card px-wilms-3 text-body"
+                    value={scheduledAt}
+                    onChange={(e) => setScheduledAt(e.target.value)}
+                    aria-label="Scheduled date and time"
+                  />
+                ) : null}
+              </div>
+              <div>
+                <p className="mb-wilms-2 text-small font-medium text-text-primary">Channels</p>
+                <div className="flex flex-wrap gap-wilms-2">
+                  {(['EMAIL', 'SMS', 'IN_APP'] as CommunicationChannel[]).map((channel) => {
+                    const active = channels.includes(channel);
+                    return (
+                      <button
+                        key={channel}
+                        type="button"
+                        onClick={() => toggleChannel(channel)}
+                        className={cn(
+                          'rounded-full border px-3 py-1.5 text-small font-semibold transition-colors',
+                          active
+                            ? 'border-brand-primary bg-brand-primary-light text-brand-primary'
+                            : 'border-border text-text-muted hover:border-brand-primary/40',
+                        )}
+                        aria-pressed={active}
+                      >
+                        {channel}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="rounded-xl border border-dashed border-border/80 bg-background/50 p-wilms-3">
+                <p className="text-small font-semibold text-text-primary">Preview</p>
+                <p className="mt-wilms-2 text-body font-semibold text-text-primary">
+                  {subject.trim() || 'Untitled message'}
+                </p>
+                <p className="mt-wilms-2 whitespace-pre-wrap text-small text-text-muted">
+                  {htmlToText(bodyHtml) || 'Message body preview will appear here.'}
+                </p>
+              </div>
+              <div className="flex flex-wrap justify-end gap-wilms-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => {
+                    setSubject('');
+                    setBodyHtml('');
+                    setAttachments([]);
+                    setScheduleMode('');
+                    setScheduledAt('');
+                    setAudience({ audienceType: 'ALL_COLLECTORS' });
+                    setAudiencePreview(null);
+                  }}
+                >
+                  Clear
+                </Button>
+                <Button
+                  type="button"
+                  disabled={
+                    !subject.trim() || !bodyHtml.trim() || channels.length === 0 || createMessage.isPending
+                  }
+                  onClick={() => {
+                    if (
+                      !window.confirm(
+                        scheduleMode
+                          ? 'Schedule this message for the selected audience?'
+                          : 'Send this message now to the selected audience?',
+                      )
+                    ) {
+                      return;
+                    }
+                    createMessage.mutate();
+                  }}
+                >
+                  {createMessage.isPending ? 'Sending…' : scheduleMode ? 'Schedule' : 'Send'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       ) : null}
-
-      <Modal isOpen={showCompose} onClose={() => setShowCompose(false)} title="Compose Message">
-        <div className="space-y-wilms-4 motion-enter-fade">
-          <div className="rounded-[var(--radius-card)] border border-border bg-background/60 p-wilms-3">
-            <p className="text-small text-text-muted">
-              Drafts autosave in the editor. Use audience preview before send. Channels: Email, SMS,
-              In-app.
-            </p>
-          </div>
-          <div>
-            <label className="mb-wilms-2 block text-small font-medium text-text-primary">Subject</label>
-            <Input
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              placeholder="Message subject"
-              aria-label="Subject"
-            />
-            <p className="mt-wilms-1 text-right text-small text-text-muted">{subject.length}/120</p>
-          </div>
-          <div>
-            <label className="mb-wilms-2 block text-small font-medium text-text-primary">Message</label>
-            <RichTextEditor value={bodyHtml} onChange={setBodyHtml} draftKey="communication-compose" />
-            <p className="mt-wilms-1 text-right text-small text-text-muted">
-              {htmlToText(bodyHtml).length} characters
-            </p>
-          </div>
-          <AttachmentUploader attachments={attachments} onChange={setAttachments} />
-          <AudienceComposer
-            value={audience}
-            onChange={setAudience}
-            preview={audiencePreview}
-            onRequestPreview={requestPreview}
-            previewPending={false}
-          />
-          <div>
-            <label className="mb-wilms-2 block text-small font-medium text-text-primary">Schedule</label>
-            <Select value={scheduleMode} onChange={(e) => setScheduleMode(e.target.value)} aria-label="Schedule">
-              {RECURRENCE_OPTIONS.map((option) => (
-                <option key={option.value || 'immediate'} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </Select>
-            {scheduleMode === 'SCHEDULED' ? (
-              <input
-                type="datetime-local"
-                className="mt-wilms-2 h-10 w-full rounded-sm border border-border bg-card px-wilms-3 text-body"
-                value={scheduledAt}
-                onChange={(e) => setScheduledAt(e.target.value)}
-                aria-label="Scheduled date and time"
-              />
-            ) : null}
-          </div>
-          <div>
-            <p className="mb-wilms-2 text-small font-medium text-text-primary">Channels</p>
-            <div className="flex flex-wrap gap-wilms-3">
-              {(['EMAIL', 'SMS', 'IN_APP'] as CommunicationChannel[]).map((channel) => (
-                <label key={channel} className="flex items-center gap-wilms-2 text-small">
-                  <input
-                    type="checkbox"
-                    checked={channels.includes(channel)}
-                    onChange={() => toggleChannel(channel)}
-                  />
-                  {channel}
-                </label>
-              ))}
-            </div>
-          </div>
-          <div className="flex justify-end gap-wilms-2">
-            <Button type="button" variant="secondary" onClick={() => setShowCompose(false)}>
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              disabled={!subject.trim() || !bodyHtml.trim() || createMessage.isPending}
-              onClick={() => createMessage.mutate()}
-            >
-              {createMessage.isPending ? 'Sending…' : scheduleMode ? 'Schedule' : 'Send'}
-            </Button>
-          </div>
-        </div>
-      </Modal>
 
       <TemplateBuilderModal
         isOpen={showTemplateBuilder}

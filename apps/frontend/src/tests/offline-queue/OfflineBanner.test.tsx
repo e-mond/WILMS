@@ -16,7 +16,7 @@ describe('OfflineBanner', () => {
     );
 
     expect(screen.getByRole('status')).toHaveTextContent(
-      'You are offline. Payments and expenses will be saved and synced when connection returns.',
+      'Offline. Working from locally stored data. Changes will sync automatically.',
     );
   });
 
@@ -62,7 +62,7 @@ describe('OfflineBanner', () => {
       />,
     );
 
-    expect(screen.getByRole('status')).toHaveTextContent('1 payment and 2 expenses pending sync');
+    expect(screen.getByRole('status')).toHaveTextContent('1 payment, 2 expenses pending sync.');
   });
 
   it('renders nothing when online with empty queue', () => {

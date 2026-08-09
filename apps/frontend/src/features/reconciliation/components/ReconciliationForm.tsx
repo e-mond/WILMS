@@ -169,72 +169,79 @@ export function ReconciliationForm() {
 
   return (
     <div className="space-y-wilms-6">
-      <div className="flex flex-wrap items-end gap-wilms-3">
-        <FormField label="Reconciliation date" htmlFor="reconciliation-date">
-          <Input
-            id="reconciliation-date"
-            type="date"
-            value={date}
-            onChange={(event) => {
-              setDate(event.target.value);
-              setSuccessMessage(null);
-              setActionError(null);
-              setComment('');
-              setCommentError(null);
-            }}
-            disabled={formLocked}
-          />
-        </FormField>
-        <p className="text-body text-text-muted">{formatDisplayDate(date)}</p>
+      <div className="rounded-2xl border border-border/80 bg-card p-wilms-4 shadow-[var(--shadow-card)] sm:p-wilms-5">
+        <div className="flex flex-wrap items-end gap-wilms-3">
+          <FormField label="Reconciliation date" htmlFor="reconciliation-date">
+            <Input
+              id="reconciliation-date"
+              type="date"
+              value={date}
+              onChange={(event) => {
+                setDate(event.target.value);
+                setSuccessMessage(null);
+                setActionError(null);
+                setComment('');
+                setCommentError(null);
+              }}
+              disabled={formLocked}
+            />
+          </FormField>
+          <p className="text-body text-text-muted">{formatDisplayDate(date)}</p>
+          <p className="ml-auto text-small font-semibold text-text-primary">
+            {reconciliationLifecycleLabel(data.status, data.submitted)}
+          </p>
+        </div>
+
+        <div className="mt-wilms-4">
+          <ExecutiveKpiGrid>
+            <KpiCard
+              variant="executive"
+              label={`Expected (${paymentDayLabel})`}
+              value={<CurrencyAmount value={data.expectedPesewas} />}
+            />
+            <KpiCard
+              variant="executive"
+              label="Collected (system)"
+              value={<CurrencyAmount value={data.actualPesewas} />}
+            />
+            <KpiCard
+              variant="executive"
+              label="Physical cash"
+              value={
+                data.submitted && data.physicalCashPesewas !== undefined ? (
+                  <CurrencyAmount value={data.physicalCashPesewas} />
+                ) : previewPhysicalPesewas !== null ? (
+                  <CurrencyAmount value={previewPhysicalPesewas} />
+                ) : (
+                  '—'
+                )
+              }
+            />
+            <KpiCard
+              variant="executive"
+              label="Variance"
+              value={
+                data.submitted ? (
+                  <VarianceAmount value={data.variancePesewas ?? 0} />
+                ) : previewVariancePesewas !== null ? (
+                  <VarianceAmount value={previewVariancePesewas} />
+                ) : (
+                  '—'
+                )
+              }
+              valueClassName={
+                previewVarianceFlagged || data.varianceFlagged ? 'text-danger' : undefined
+              }
+            />
+          </ExecutiveKpiGrid>
+        </div>
+
+        <p className="mt-wilms-3 text-small text-text-muted">
+          Expected is the sum of weekly installments for active loans due on {paymentDayLabel}.
+          {data.submittedAt ? ` · Submitted ${formatDisplayDate(data.submittedAt.slice(0, 10))}` : ''}
+          {data.reviewedAt ? ` · Reviewed ${formatDisplayDate(data.reviewedAt.slice(0, 10))}` : ''}
+        </p>
       </div>
-
-      <ExecutiveKpiGrid>
-        <KpiCard
-          variant="executive"
-          label={`Expected (${paymentDayLabel})`}
-          value={<CurrencyAmount value={data.expectedPesewas} />}
-        />
-        <KpiCard
-          variant="executive"
-          label="Collected (system)"
-          value={<CurrencyAmount value={data.actualPesewas} />}
-        />
-        <KpiCard
-          variant="executive"
-          label="Physical cash"
-          value={
-            data.submitted && data.physicalCashPesewas !== undefined ? (
-              <CurrencyAmount value={data.physicalCashPesewas} />
-            ) : previewPhysicalPesewas !== null ? (
-              <CurrencyAmount value={previewPhysicalPesewas} />
-            ) : (
-              '—'
-            )
-          }
-        />
-        <KpiCard
-          variant="executive"
-          label="Variance"
-          value={
-            data.submitted ? (
-              <VarianceAmount value={data.variancePesewas ?? 0} />
-            ) : previewVariancePesewas !== null ? (
-              <VarianceAmount value={previewVariancePesewas} />
-            ) : (
-              '—'
-            )
-          }
-        />
-      </ExecutiveKpiGrid>
-
-      <p className="text-small text-text-muted">
-        Expected is the sum of weekly installments for active loans due on {paymentDayLabel}. Status:{' '}
-        <span className="font-semibold text-text-primary">
-          {reconciliationLifecycleLabel(data.status, data.submitted)}
-        </span>
-        {data.submittedAt ? ` · Submitted ${formatDisplayDate(data.submittedAt.slice(0, 10))}` : ''}
-        {data.reviewedAt ? ` · Reviewed ${formatDisplayDate(data.reviewedAt.slice(0, 10))}` : ''}
-      </p>
 
       {!formLocked && data.expectedPesewas === 0 ? (
         <Alert title="No collections due this weekday" variant="info">

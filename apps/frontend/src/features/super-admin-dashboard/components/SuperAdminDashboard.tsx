@@ -10,7 +10,6 @@ import {
   DashboardKpiIcon,
   type DashboardKpiIconName,
 } from '@/components/icons/DashboardKpiIcon';
-import { DashboardQuickActionIcon } from '@/components/icons/DashboardQuickActionIcon';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import {
@@ -31,7 +30,6 @@ import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { DashboardRecentActivity } from '@/features/super-admin-dashboard/components/DashboardRecentActivity';
 import { cn } from '@/utils/cn';
-import { useReplayProductTour } from '@/components/onboarding/ProductTourOverlay';
 
 const KPI_ICON_NAMES: Record<string, DashboardKpiIconName> = {
   pool: 'pool',
@@ -44,98 +42,39 @@ const KPI_ICON_NAMES: Record<string, DashboardKpiIconName> = {
   'active-borrowers': 'pool',
 };
 
-const WORK_QUEUE: Array<{
+const ATTENTION_ITEMS: Array<{
   id: string;
   label: string;
-  description: string;
   href: string;
-  icon: 'approve' | 'variance' | 'audit';
   resolveCount: (data: NonNullable<ReturnType<typeof useDashboardSummary>['data']>) => number;
 }> = [
   {
     id: 'approvals',
     label: 'Pending applications',
-    description: 'Borrowers awaiting approval review',
     href: '/borrowers?status=PENDING',
-    icon: 'approve',
     resolveCount: (data) =>
       data.borrowerSegments.find((segment) => segment.id === 'pending')?.count ?? 0,
   },
   {
-    id: 'disbursements',
-    label: 'Disbursements',
-    description: 'Originate or track loan disbursement',
-    href: '/loans',
-    icon: 'approve',
-    resolveCount: () => 0,
-  },
-  {
-    id: 'collections',
-    label: 'Today’s collections',
-    description: 'Review daily collection progress',
-    href: '/reports/daily-collection',
-    icon: 'variance',
-    resolveCount: () => 0,
-  },
-  {
-    id: 'expenses',
-    label: 'Expense review',
-    description: 'Approve or reject submitted expenses',
-    href: '/expenses',
-    icon: 'approve',
-    resolveCount: () => 0,
-  },
-  {
-    id: 'reconciliation',
-    label: 'Reconciliation',
-    description: 'Review collector cash submissions',
-    href: '/reports/daily-collection',
-    icon: 'variance',
-    resolveCount: () => 0,
-  },
-  {
     id: 'risk',
     label: 'Risk & flags',
-    description: 'Investigate escalated risk signals',
     href: '/risk-flags',
-    icon: 'audit',
     resolveCount: (data) =>
       data.groupRisk
         .filter((segment) => segment.tone === 'flagged' || segment.tone === 'atRisk')
         .reduce((sum, segment) => sum + segment.count, 0),
   },
-];
-
-const QUICK_ACTIONS = [
   {
-    href: '/adjustments',
-    label: 'Approve adjustment',
-    icon: 'approve' as const,
-    className: 'border-status-active text-status-active hover:bg-status-active-light',
-  },
-  {
-    href: '/expenses',
-    label: 'Review expenses',
-    icon: 'approve' as const,
-    className: 'border-brand-primary text-brand-primary hover:bg-brand-primary-light',
-  },
-  {
+    id: 'reconciliation',
+    label: 'Reconciliation review',
     href: '/reports/daily-collection',
-    label: 'Review variance',
-    icon: 'variance' as const,
-    className: 'border-brand-primary text-brand-primary hover:bg-brand-primary-light',
+    resolveCount: () => 0,
   },
   {
-    href: '/communication-center',
-    label: 'Send broadcast',
-    icon: 'audit' as const,
-    className: 'border-status-info text-status-info hover:bg-status-info-light',
-  },
-  {
-    href: '/settings?section=holidays',
-    label: 'Review holidays',
-    icon: 'approve' as const,
-    className: 'border-brand-primary text-brand-primary hover:bg-brand-primary-light',
+    id: 'expenses',
+    label: 'Expense review',
+    href: '/expenses',
+    resolveCount: () => 0,
   },
 ];
 
@@ -182,7 +121,6 @@ function OperationalDashboardContent({
   borrowerTotal: number;
 }) {
   const generatedBy = useWilmsExportActor();
-  const replayTour = useReplayProductTour();
   const exportDocument = useMemo(
     () => buildDashboardExportDocument({ summary: data, generatedBy }),
     [data, generatedBy],
@@ -193,18 +131,23 @@ function OperationalDashboardContent({
   );
   const displayKpis = operationalKpis.length > 0 ? operationalKpis : data.kpis.slice(0, 4);
 
+  const attentionWithCounts = ATTENTION_ITEMS.map((item) => ({
+    ...item,
+    count: item.resolveCount(data),
+  })).sort((a, b) => b.count - a.count);
+
   return (
     <div className="space-y-wilms-6" data-testid="operational-dashboard">
-      <header className="flex flex-col gap-wilms-3 border-b border-border pb-wilms-4 sm:flex-row sm:items-end sm:justify-between">
+      <header className="flex flex-col gap-wilms-3 border-b border-border/80 pb-wilms-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <p className="text-small font-semibold uppercase tracking-wide text-brand-primary">
-            Operational dashboard
+            Operations
           </p>
-          <h1 className="text-heading-2 font-semibold text-text-primary">What needs attention today</h1>
+          <h1 className="text-heading-2 font-semibold text-text-primary">Financial operations</h1>
           <p className="mt-wilms-1 max-w-xl text-small text-text-muted">
-            Daily queues for approvals, collections, and reconciliation.{' '}
+            Portfolio state, reconciliation, and work that needs attention.{' '}
             <Link href="/executive" className="font-semibold text-brand-primary hover:underline">
-              Executive view
+              Executive intelligence
             </Link>
           </p>
         </div>
@@ -217,46 +160,12 @@ function OperationalDashboardContent({
           />
           <Link
             href="/executive"
-            className="inline-flex min-h-[44px] items-center rounded-sm border border-brand-primary px-wilms-4 text-small font-semibold text-brand-primary hover:bg-brand-primary-light"
+            className="inline-flex min-h-[44px] items-center rounded-full border border-brand-primary px-wilms-4 text-small font-semibold text-brand-primary hover:bg-brand-primary-light"
           >
-            Open executive view
+            Executive view
           </Link>
         </div>
       </header>
-
-      <div className="grid gap-wilms-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
-        <DashboardReconciliationSummary compact />
-        <Card aria-labelledby="ops-activity-heading">
-          <CardHeader>
-            <CardTitle id="ops-activity-heading">Recent activity</CardTitle>
-            <CardDescription>Concise audit-backed summary</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <DashboardRecentActivity limit={3} />
-          </CardContent>
-        </Card>
-      </div>
-
-      <Tabs defaultValue="collections">
-        <TabsList aria-label="Operational summaries">
-          <TabsTrigger value="collections">Collections</TabsTrigger>
-          <TabsTrigger value="expenses">Expenses</TabsTrigger>
-        </TabsList>
-        <TabsContent value="collections">
-          <Card className="border-[color-mix(in_srgb,var(--color-status-active)_35%,transparent)] bg-[color-mix(in_srgb,var(--color-status-active)_8%,var(--color-card))]">
-            <CardContent>
-              <DashboardCollectionSummary compact />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="expenses">
-          <Card className="border-[color-mix(in_srgb,var(--color-status-at-risk)_40%,transparent)] bg-[color-mix(in_srgb,var(--color-status-at-risk)_10%,var(--color-card))]">
-            <CardContent>
-              <DashboardExpenseSummary compact />
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
 
       <ExecutiveKpiGrid className="sm:grid-cols-2 xl:grid-cols-4">
         {displayKpis.map((kpi) => (
@@ -269,7 +178,7 @@ function OperationalDashboardContent({
               kpi.valueKind === 'count' ? (
                 <span
                   className={cn(
-                    'text-heading-2 font-bold',
+                    'text-heading-2 font-semibold',
                     DASHBOARD_VALUE_TONE_CLASS[kpi.valueTone ?? 'default'],
                   )}
                 >
@@ -289,116 +198,113 @@ function OperationalDashboardContent({
         ))}
       </ExecutiveKpiGrid>
 
-      <section aria-labelledby="work-queue-heading" className="space-y-wilms-3">
+      <section aria-labelledby="attention-heading" className="space-y-wilms-3">
         <div>
-          <h2 id="work-queue-heading" className="text-heading-3 font-semibold text-text-primary">
-            Today’s work queue
+          <h2 id="attention-heading" className="text-heading-3 font-semibold text-text-primary">
+            Needs attention
           </h2>
-          <p className="text-small text-text-muted">Jump into the highest-priority operational tasks.</p>
+          <p className="text-small text-text-muted">Priority queues with live counters where available.</p>
         </div>
-        <ul className="grid gap-wilms-3 sm:grid-cols-2 xl:grid-cols-3">
-          {WORK_QUEUE.map((item) => {
-            const count = item.resolveCount(data);
-            return (
-              <li key={item.id}>
-                <Link
-                  href={item.href}
-                  className="flex min-h-[96px] flex-col justify-between rounded-sm border border-border bg-card p-wilms-4 transition-colors hover:border-brand-primary/50 hover:bg-brand-primary-light/20"
-                >
-                  <div className="flex items-start justify-between gap-wilms-2">
-                    <div className="min-w-0">
-                      <p className="font-semibold text-text-primary">{item.label}</p>
-                      <p className="mt-wilms-1 text-small text-text-muted">{item.description}</p>
-                    </div>
-                    <DashboardQuickActionIcon name={item.icon} className="shrink-0 text-brand-primary" />
-                  </div>
-                  {count > 0 ? (
-                    <p className="mt-wilms-3 text-small font-semibold text-brand-primary">
-                      {count.toLocaleString()} open
-                    </p>
-                  ) : (
-                    <p className="mt-wilms-3 text-small text-text-muted">Open queue</p>
+        <ul className="grid gap-wilms-3 sm:grid-cols-2 xl:grid-cols-4">
+          {attentionWithCounts.map((item) => (
+            <li key={item.id}>
+              <Link
+                href={item.href}
+                className="flex min-h-[88px] flex-col justify-between rounded-2xl border border-border/80 bg-card p-wilms-4 shadow-[var(--shadow-card)] transition-colors hover:border-brand-primary/40"
+              >
+                <p className="font-semibold text-text-primary">{item.label}</p>
+                <p
+                  className={cn(
+                    'mt-wilms-3 text-heading-3 font-semibold tabular-nums',
+                    item.count > 0 ? 'text-brand-primary' : 'text-text-muted',
                   )}
-                </Link>
-              </li>
-            );
-          })}
+                >
+                  {item.count > 0 ? item.count.toLocaleString() : '—'}
+                </p>
+              </Link>
+            </li>
+          ))}
         </ul>
       </section>
 
-      <div className="grid gap-wilms-6 xl:grid-cols-1">
-        <Card aria-labelledby="ops-actions-heading">
+      <div className="grid gap-wilms-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+        <DashboardReconciliationSummary compact />
+        <Card aria-labelledby="ops-activity-heading">
           <CardHeader>
-            <CardTitle id="ops-actions-heading">Quick actions</CardTitle>
+            <CardTitle id="ops-activity-heading">Recent activity</CardTitle>
+            <CardDescription>Latest operational changes</CardDescription>
           </CardHeader>
           <CardContent>
-          <ul className="mt-wilms-4 grid gap-wilms-3 sm:grid-cols-2 lg:grid-cols-3">
-            {QUICK_ACTIONS.map((action) => (
-              <li key={action.href}>
-                <Link
-                  href={action.href}
-                  className={cn(
-                    'flex min-h-[48px] items-center gap-wilms-3 rounded-sm border px-wilms-4 py-wilms-3 text-body font-semibold',
-                    action.className,
-                  )}
-                >
-                  <DashboardQuickActionIcon name={action.icon} className="shrink-0" />
-                  {action.label}
-                </Link>
-              </li>
-            ))}
-            <li>
-              <button
-                type="button"
-                onClick={replayTour}
-                className="flex min-h-[48px] w-full items-center gap-wilms-3 rounded-sm border border-border px-wilms-4 py-wilms-3 text-left text-body font-semibold text-text-primary hover:border-brand-primary hover:bg-brand-primary-light"
-              >
-                <DashboardQuickActionIcon name="variance" className="shrink-0 text-brand-primary" />
-                Replay product tour
-              </button>
-            </li>
-          </ul>
+            <DashboardRecentActivity limit={5} />
           </CardContent>
         </Card>
       </div>
 
+      <Tabs defaultValue="collections">
+        <TabsList aria-label="Operational summaries">
+          <TabsTrigger value="collections">Collections</TabsTrigger>
+          <TabsTrigger value="expenses">Expenses</TabsTrigger>
+        </TabsList>
+        <TabsContent value="collections">
+          <Card>
+            <CardContent className="pt-wilms-4">
+              <DashboardCollectionSummary compact />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="expenses">
+          <Card>
+            <CardContent className="pt-wilms-4">
+              <DashboardExpenseSummary compact />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
       <Card aria-labelledby="borrower-status-heading">
         <CardHeader className="flex-row flex-wrap items-end justify-between gap-wilms-2">
-          <CardTitle id="borrower-status-heading">Borrower workflow status</CardTitle>
+          <CardTitle id="borrower-status-heading">Borrower status</CardTitle>
           <CardDescription>
-            Total: <span className="font-semibold text-text-primary">{borrowerTotal.toLocaleString()}</span>
+            Total:{' '}
+            <span className="font-semibold text-text-primary">{borrowerTotal.toLocaleString()}</span>
           </CardDescription>
         </CardHeader>
         <CardContent>
-        {borrowerTotal === 0 ? (
-          <div className="mt-wilms-4">
+          {borrowerTotal === 0 ? (
             <GuidedEmptyState
               title="No borrowers yet"
-              description="Register or approve borrowers to populate today’s operational queues."
+              description="Register or approve borrowers to populate operational queues."
               actionHref="/borrowers"
               actionLabel="Open borrowers"
             />
-          </div>
-        ) : (
-          <ul className="mt-wilms-4 grid gap-wilms-3 sm:grid-cols-2 xl:grid-cols-5">
-            {data.borrowerSegments.map((segment) => (
-              <li
-                key={segment.id}
-                className="flex items-center gap-wilms-3 rounded-sm border border-border bg-background p-wilms-3"
-              >
-                <span
-                  className={cn('h-3 w-3 shrink-0 rounded-sm', DASHBOARD_BORROWER_TONE_CLASS[segment.tone].bar)}
-                />
-                <div className="min-w-0">
-                  <p className={cn('truncate text-small font-semibold', DASHBOARD_BORROWER_TONE_CLASS[segment.tone].text)}>
-                    {segment.label}
-                  </p>
-                  <p className="text-small text-text-muted">{segment.count.toLocaleString()}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+          ) : (
+            <ul className="grid gap-wilms-3 sm:grid-cols-2 xl:grid-cols-5">
+              {data.borrowerSegments.map((segment) => (
+                <li
+                  key={segment.id}
+                  className="flex items-center gap-wilms-3 rounded-xl border border-border/70 bg-background/60 p-wilms-3"
+                >
+                  <span
+                    className={cn(
+                      'h-2.5 w-2.5 shrink-0 rounded-full',
+                      DASHBOARD_BORROWER_TONE_CLASS[segment.tone].bar,
+                    )}
+                  />
+                  <div className="min-w-0">
+                    <p
+                      className={cn(
+                        'truncate text-small font-semibold',
+                        DASHBOARD_BORROWER_TONE_CLASS[segment.tone].text,
+                      )}
+                    >
+                      {segment.label}
+                    </p>
+                    <p className="text-small text-text-muted">{segment.count.toLocaleString()}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </CardContent>
       </Card>
     </div>

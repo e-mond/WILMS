@@ -1,14 +1,10 @@
 {
   "release": "1.8.0",
-  "branch": "feature/v1.8-enterprise-design-automation",
-  "generatedAt": "2026-08-09T12:47:30.000Z",
+  "updateType": "post-release-ui",
+  "branch": "fix/v1.8.0-ui-modernisation",
+  "releaseTag": "UNCHANGED",
+  "generatedAt": "2026-08-09T15:35:00.000Z",
   "commands": [
-    {
-      "name": "domain-focused",
-      "command": "npm run test -w @wilms/domain -- src/tests/organization-holidays/ghana-provider.test.ts src/tests/holiday-requests/lifecycle.test.ts src/tests/holiday-requests/repository-errors.test.ts src/tests/automation/engine.test.ts",
-      "status": "passed",
-      "tests": 10
-    },
     {
       "name": "type-check",
       "command": "npm run type-check",
@@ -20,35 +16,37 @@
       "status": "passed"
     },
     {
-      "name": "version-consistency",
-      "command": "node scripts/verify-version-consistency.mjs",
-      "status": "passed"
+      "name": "domain-tests",
+      "command": "npm run test -w @wilms/domain",
+      "status": "passed",
+      "tests": 245,
+      "files": 80
+    },
+    {
+      "name": "frontend-tests",
+      "command": "npm test",
+      "status": "passed",
+      "notes": "Both vitest shards passed (270 + 268 tests across shards)"
     },
     {
       "name": "frontend-build",
-      "command": "npm run build -w @wilms/frontend",
+      "command": "npm run build",
       "status": "passed"
+    },
+    {
+      "name": "focused-regression",
+      "command": "npx vitest run DataTable OfflineBanner CollectorDashboard SuperAdminDashboard ReportsIndexPanel.responsive",
+      "status": "passed",
+      "tests": 13
     }
   ],
-  "suites": {
-    "ghanaHolidays": ["packages/domain/src/tests/organization-holidays/ghana-provider.test.ts"],
-    "holidayRequests": [
-      "packages/domain/src/tests/holiday-requests/lifecycle.test.ts",
-      "packages/domain/src/tests/holiday-requests/repository-errors.test.ts"
-    ],
-    "automation": ["packages/domain/src/tests/automation/engine.test.ts"],
-    "offline": [
-      "apps/frontend/src/tests/offline-queue/offlineQueueStore.test.ts",
-      "apps/frontend/src/tests/offline-queue/OfflineBanner.test.ts"
-    ],
-    "appLock": ["apps/frontend/src/tests/app-lock"]
+  "migrations": {
+    "required": false,
+    "newMigrations": []
   },
-  "migrations": [
-    "0037_v180_ghana_holiday_provider",
-    "0038_v180_automation_engine",
-    "0039_v180_holiday_request_enrichment"
-  ],
   "notes": [
-    "DATABASE_URL may be unset locally; migrations validated by SQL + journal presence and operator script scripts/apply-v180-migrations.sh."
+    "No .only / describe.only / it.only found in frontend or domain tests.",
+    "scheduler-http beforeAll hookTimeout raised to 60s to avoid cold-start flake under load.",
+    "Financial integrity P0 and financial endpoint RBAC suites included in domain pass."
   ]
 }

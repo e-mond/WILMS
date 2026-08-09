@@ -56,14 +56,14 @@ export function ExecutiveIntelligencePanel() {
     <div className="space-y-wilms-6 print:space-y-4" data-testid="executive-intelligence">
       <div className="flex flex-wrap items-end justify-between gap-wilms-3 border-b border-border pb-wilms-4 print:border-0">
         <div>
-          <p className="text-small font-semibold uppercase tracking-[0.12em] text-warning">
-            Board view
+          <p className="text-small font-semibold uppercase tracking-[0.12em] text-brand-primary">
+            Executive intelligence
           </p>
           <h1 className="mt-wilms-2 text-heading-1 font-semibold tracking-tight text-text-primary md:text-[2.25rem]">
             Portfolio health
           </h1>
           <p className="mt-wilms-3 max-w-2xl text-body text-text-muted">
-            Operating cash, recovery, PAR, and forecast for directors and finance committees.{' '}
+            Portfolio value, collection performance, delinquency, and forecast as of the selected date.{' '}
             <Link href="/dashboard" className="font-semibold text-brand-primary hover:underline">
               Operational dashboard
             </Link>
@@ -121,9 +121,8 @@ export function ExecutiveIntelligencePanel() {
       <Tabs defaultValue="forecast">
         <div className="flex flex-wrap items-end justify-between gap-wilms-3">
           <div>
-            <TabsList aria-label="Executive boards">
+            <TabsList aria-label="Executive forecast">
               <TabsTrigger value="forecast">Forecast</TabsTrigger>
-              <TabsTrigger value="guidance">Board guidance</TabsTrigger>
             </TabsList>
             <p className="mt-wilms-2 text-small text-text-muted">
               Schedule-based weekly due × observed collection rate.
@@ -151,16 +150,6 @@ export function ExecutiveIntelligencePanel() {
             </CardHeader>
             <CardContent>
               <ForecastSection query={forecastQuery} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="guidance">
-          <Card>
-            <CardContent>
-              <p className="text-small text-text-muted">
-                Use portfolio health KPIs above with forecast trends for board packs. Export CSV from the
-                toolbar when preparing committee packs.
-              </p>
             </CardContent>
           </Card>
         </TabsContent>
