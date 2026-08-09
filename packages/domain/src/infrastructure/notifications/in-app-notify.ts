@@ -2,6 +2,7 @@ import { and, eq, isNull, sql } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
 import { isDatabaseEnabled, getDb } from '../../db/client.js';
 import { notifications } from '../../db/schema/notifications.js';
+import { shouldSendChannel } from '../../modules/notifications/preferences.service.js';
 
 export type InAppEvent =
   | 'REGISTRATION_APPROVED'
@@ -50,6 +51,28 @@ function resolveSeverity(event: InAppEvent): 'INFO' | 'WARNING' | 'CRITICAL' {
   return 'INFO';
 }
 
+function mapInAppCategory(
+  event: InAppEvent,
+):
+  | 'marketing'
+  | 'announcement'
+  | 'reminder'
+  | 'loan'
+  | 'payment'
+  | 'approval'
+  | 'registration'
+  | undefined {
+  if (event.includes('PAYMENT') || event === 'MISSED_PAYMENT') return 'payment';
+  if (event.includes('LOAN') || event === 'DEFAULTER_STATUS') return 'loan';
+  if (event.includes('REGISTRATION')) return 'registration';
+  if (event === 'PAYMENT_REMINDER') return 'reminder';
+  if (event === 'COMMUNICATION') return 'announcement';
+  if (event === 'SUPERVISOR_ALERT' || event.includes('APPROVED') || event.includes('REJECTED')) {
+    return 'approval';
+  }
+  return undefined;
+}
+
 const memoryInbox = new Map<string, Array<{ id: string; event: InAppEvent; title: string; body: string }>>();
 
 export async function createInAppNotification(input: {
@@ -67,8 +90,15 @@ export async function createInAppNotification(input: {
     return;
   }
 
-  const id = uuidv7();
   const severity = resolveSeverity(input.event);
+  const allowed = await shouldSendChannel(input.userId, 'IN_APP', mapInAppCategory(input.event), {
+    critical: severity === 'CRITICAL',
+  });
+  if (!allowed) {
+    return;
+  }
+
+  const id = uuidv7();
   const now = new Date();
 
   if (!isDatabaseEnabled()) {
