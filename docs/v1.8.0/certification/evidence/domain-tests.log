@@ -1,0 +1,179 @@
+
+> @wilms/domain@1.8.0 test
+> vitest run
+
+
+ RUN  v3.2.7 C:/Users/eddie/OneDrive/Desktop/WILMS/packages/domain
+
+stdout | src/tests/notifications/scheduler-http.test.ts > scheduler HTTP access
+◇ injected env (22) from ..\..\apps\backend\.env.local // tip: ⌁ auth for agents [www.vestauth.com]
+◇ injected env (1) from ..\..\.env.local // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+
+ ✓ src/tests/automation/engine.test.ts (3 tests) 2255ms
+   ✓ automation engine foundations > defines payment reminder and escalation ladders  2004ms
+ ✓ src/tests/adjustments/sod-self-approve.test.ts (1 test) 3393ms
+   ✓ adjustment SoD > blocks the requester from approving their own adjustment  3389ms
+ ✓ src/tests/reconciliation/sod-self-review.test.ts (1 test) 4026ms
+   ✓ reconciliation review SoD > blocks the submitting collector from reviewing their own reconciliation  4022ms
+ ✓ src/tests/loans/sod-self-approve.test.ts (1 test) 4407ms
+   ✓ loan approval SoD > blocks the creator from approving their own loan  4403ms
+ ✓ src/tests/infrastructure/mail-dispatch.test.ts (4 tests) 5056ms
+   ✓ mail dispatch configuration > treats Vercel relay as configured mail delivery  3757ms
+   ✓ mail dispatch configuration > uses Vercel relay whenever relay env is set (even with local Gmail creds)  464ms
+   ✓ mail dispatch configuration > normalizes relay base URL when WILMS_VERCEL_MAIL_URL includes /api/mail  366ms
+   ✓ mail dispatch configuration > rejects direct Gmail SMTP from Railway when relay is not configured  463ms
+ ✓ src/tests/notifications/push-inapp-preferences.test.ts (2 tests) 1690ms
+   ✓ push and in-app preference gates > skips push delivery when preferences disallow PUSH  1665ms
+ ✓ src/tests/sync/sod-self-approve.test.ts (1 test) 1507ms
+   ✓ sync conflict approval SoD > blocks resolving your own offline operation conflict  1503ms
+ ✓ src/tests/notifications/in-app-mirrors-push.test.ts (2 tests) 1430ms
+   ✓ createInAppNotification mirrors Web Push > sends push after a successful in-app write when preferences allow IN_APP  1421ms
+ ✓ src/tests/holiday-requests/repository-errors.test.ts (1 test) 1455ms
+   ✓ holiday request repository error mapping > maps missing holiday_requests table to SCHEMA_MISSING  1451ms
+ ✓ src/tests/borrowers/sod-self-approve.test.ts (1 test) 7999ms
+   ✓ borrower approval SoD > blocks the submitting officer from approving their own registration  7994ms
+ ✓ src/tests/borrowers/borrower-list-rbac.test.ts (5 tests) 369ms
+ ✓ src/tests/financial/financial-endpoints-rbac.test.ts (7 tests) 588ms
+ ✓ src/tests/collector-portal/rbac.test.ts (6 tests) 778ms
+   ✓ collector portal RBAC > allows collectors to load their own dashboard  379ms
+stderr | src/tests/settings/roles-routes.test.ts > settings role routes > clones a role with a unique name
+[mail] LOGIN_ALERT failed: Error: Mail provider is not configured.
+    at Module.dispatchMail (C:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\infrastructure\mail\dispatch.ts:133:11)
+    at dispatchEmailWhenEnabled (C:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\infrastructure\notifications\event-dispatch.ts:164:11)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at Module.notifyLoginAlert (C:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\infrastructure\notifications\event-dispatch.ts:371:3)
+    at sendLoginAlert (C:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\modules\auth\routes.ts:50:5)
+
+stderr | src/tests/security/hardening-regressions.test.ts > v1.3.8 security hardening regressions > blocks collectors from creating admin message threads as another admin
+[mail] LOGIN_ALERT failed: Error: Mail provider is not configured.
+    at Module.dispatchMail (C:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\infrastructure\mail\dispatch.ts:133:11)
+    at dispatchEmailWhenEnabled (C:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\infrastructure\notifications\event-dispatch.ts:164:11)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at Module.notifyLoginAlert (C:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\infrastructure\notifications\event-dispatch.ts:371:3)
+    at sendLoginAlert (C:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\modules\auth\routes.ts:50:5)
+
+stderr | src/tests/stress/in-memory-concurrency.test.ts > in-memory concurrency stress > handles 100 concurrent authenticated health/session reads without errors
+[mail] LOGIN_ALERT failed: Error: Mail provider is not configured.
+    at Module.dispatchMail (C:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\infrastructure\mail\dispatch.ts:133:11)
+    at dispatchEmailWhenEnabled (C:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\infrastructure\notifications\event-dispatch.ts:164:11)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at Module.notifyLoginAlert (C:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\infrastructure\notifications\event-dispatch.ts:371:3)
+    at sendLoginAlert (C:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\modules\auth\routes.ts:50:5)
+
+stdout | src/tests/notifications/scheduler-http.test.ts > scheduler HTTP access > accepts scheduler requests with valid WILMS_SCHEDULER_TOKEN
+{"level":"info","message":"scheduler.payment_notifications.start","timestamp":"2026-08-09T19:20:49.182Z","service":"wilms-api","requestId":"f91c007b-26f7-4593-ab6d-cfad6928ca91","correlationId":"019fe7f8-7b18-7fa6-860f-e39472512afb","referenceDate":"2026-08-09"}
+
+stderr | src/tests/settings/roles-routes.test.ts > settings role routes > deletes a cloned role
+[mail] LOGIN_ALERT failed: Error: Mail provider is not configured.
+    at Module.dispatchMail (C:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\infrastructure\mail\dispatch.ts:133:11)
+    at dispatchEmailWhenEnabled (C:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\infrastructure\notifications\event-dispatch.ts:164:11)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at Module.notifyLoginAlert (C:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\infrastructure\notifications\event-dispatch.ts:371:3)
+    at sendLoginAlert (C:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\modules\auth\routes.ts:50:5)
+
+stderr | src/tests/security/hardening-regressions.test.ts > v1.3.8 security hardening regressions > requires permission to send outbound notifications
+[mail] LOGIN_ALERT failed: Error: Mail provider is not configured.
+    at Module.dispatchMail (C:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\infrastructure\mail\dispatch.ts:133:11)
+    at dispatchEmailWhenEnabled (C:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\infrastructure\notifications\event-dispatch.ts:164:11)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at Module.notifyLoginAlert (C:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\infrastructure\notifications\event-dispatch.ts:371:3)
+    at sendLoginAlert (C:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\modules\auth\routes.ts:50:5)
+
+stderr | src/tests/settings/roles-routes.test.ts > settings role routes > returns 404 when deleting a missing role
+[mail] LOGIN_ALERT failed: Error: Mail provider is not configured.
+    at Module.dispatchMail (C:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\infrastructure\mail\dispatch.ts:133:11)
+    at dispatchEmailWhenEnabled (C:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\infrastructure\notifications\event-dispatch.ts:164:11)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at Module.notifyLoginAlert (C:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\infrastructure\notifications\event-dispatch.ts:371:3)
+    at sendLoginAlert (C:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\modules\auth\routes.ts:50:5)
+
+ ✓ src/tests/security/hardening-regressions.test.ts (3 tests) 1127ms
+   ✓ v1.3.8 security hardening regressions > blocks collectors from creating admin message threads as another admin  1017ms
+ ✓ src/tests/settings/roles-routes.test.ts (3 tests) 1151ms
+   ✓ settings role routes > clones a role with a unique name  1029ms
+ ✓ src/tests/holiday-requests/lifecycle.test.ts (4 tests) 74ms
+ ✓ src/tests/stress/in-memory-concurrency.test.ts (2 tests) 2038ms
+   ✓ in-memory concurrency stress > handles 100 concurrent authenticated health/session reads without errors  1514ms
+   ✓ in-memory concurrency stress > rejects parallel forged sessions consistently  517ms
+ ✓ src/tests/communications/audience-helpers.test.ts (3 tests) 117ms
+ ✓ src/tests/communications/audience-resolve.test.ts (7 tests) 83ms
+ ✓ src/tests/enterprise/financial-integrity-p0.test.ts (6 tests) 81ms
+ ✓ src/tests/notifications/admin-fee-notifications.test.ts (1 test) 69ms
+ ✓ src/tests/borrowers/awaiting-admin-fee-endpoint.test.ts (3 tests) 329ms
+ ✓ src/tests/photo-capture/public-routes.test.ts (3 tests) 305ms
+ ✓ src/tests/borrowers/admin-fee-status-endpoint.test.ts (2 tests) 215ms
+ ✓ src/tests/auth/password-reset-routes.test.ts (4 tests) 370ms
+stdout | src/tests/notifications/scheduler-http.test.ts > scheduler HTTP access > accepts scheduler requests with valid WILMS_SCHEDULER_TOKEN
+{"level":"info","message":"scheduler.payment_notifications.complete","timestamp":"2026-08-09T19:20:58.532Z","service":"wilms-api","requestId":"f91c007b-26f7-4593-ab6d-cfad6928ca91","correlationId":"019fe7f8-7b18-7fa6-860f-e39472512afb","referenceDate":"2026-08-09","durationMs":9355,"remindersSent":0,"dueTodaySent":0,"missedNotificationsSent":0,"errorCount":0}
+
+ ✓ src/tests/notifications/scheduler-http.test.ts (2 tests) 26905ms
+   ✓ scheduler HTTP access > rejects scheduler requests without valid token  755ms
+   ✓ scheduler HTTP access > accepts scheduler requests with valid WILMS_SCHEDULER_TOKEN  9396ms
+ ✓ src/tests/organization-holidays/ghana-provider.test.ts (2 tests) 76ms
+ ✓ src/tests/reports/defaulter.test.ts (4 tests) 53ms
+ ✓ src/tests/settings/permission-overrides.test.ts (6 tests) 33ms
+ ✓ src/tests/notifications/email-layout.test.ts (8 tests) 27ms
+ ✓ src/tests/security/invitation-token.test.ts (4 tests) 31ms
+ ✓ src/tests/empty-database/list-handlers.test.ts (7 tests) 41ms
+ ✓ src/tests/reconciliation/service.test.ts (3 tests) 22ms
+ ✓ src/tests/expenses/sod-self-approve.test.ts (3 tests) 29ms
+ ✓ src/tests/transactions/admin-fee-workflow.test.ts (2 tests) 10ms
+ ✓ src/tests/http/error-handler.test.ts (2 tests) 46ms
+ ✓ src/tests/loan-pools/service.test.ts (1 test) 28ms
+ ✓ src/tests/notifications/templates.test.ts (9 tests) 19ms
+ ✓ src/tests/messages/memory-store.test.ts (3 tests) 21ms
+ ✓ src/tests/risk-flags/service.test.ts (4 tests) 38ms
+ ✓ src/tests/notifications/communication-platform.test.ts (6 tests) 25ms
+ ✓ src/tests/messages/routes.schema.test.ts (3 tests) 16ms
+ ✓ src/tests/notifications/payment-notifications.test.ts (6 tests) 14ms
+ ✓ src/tests/health/health.service.test.ts (5 tests) 24ms
+ ✓ src/tests/organization-holidays/service.test.ts (2 tests) 21ms
+ ✓ src/tests/borrowers/borrower-risk.test.ts (4 tests) 40ms
+ ✓ src/tests/photo-capture/upload-validation.test.ts (3 tests) 14ms
+ ✓ src/tests/reports/domain.test.ts (4 tests) 27ms
+ ✓ src/tests/payments/mark-missed.schema.test.ts (2 tests) 17ms
+stderr | src/tests/lending/organization-holidays-fallback.test.ts > organization holiday repository > returns an empty list when the holidays table has not been migrated
+[organization-holidays] table missing — loan schedules will ignore holidays until migrations are applied.
+
+ ✓ src/tests/lending/organization-holidays-fallback.test.ts (1 test) 15ms
+ ✓ src/tests/enterprise/workflows-validation.test.ts (4 tests) 17ms
+ ✓ src/tests/overpayment-reviews/sod-self-resolve.test.ts (1 test) 14ms
+ ✓ src/tests/reconciliation/domain.test.ts (6 tests) 15ms
+ ✓ src/tests/notifications/scheduler-access.test.ts (4 tests) 20ms
+ ✓ src/tests/platform/feature-flags.test.ts (2 tests) 11ms
+ ✓ src/tests/intelligence/forecast.test.ts (1 test) 18ms
+ ✓ src/tests/ops/ops.service.test.ts (2 tests) 16ms
+ ✓ src/tests/security/demo-login-block.test.ts (3 tests) 16ms
+ ✓ src/tests/auth/session-invalidation.test.ts (2 tests) 14ms
+ ✓ src/tests/communications/template-preview.test.ts (2 tests) 11ms
+ ✓ src/tests/platform/cursor-pagination.test.ts (3 tests) 16ms
+ ✓ src/tests/borrowers/guarantor-eligibility.test.ts (4 tests) 15ms
+ ✓ src/tests/settings/invitation.test.ts (3 tests) 13ms
+ ✓ src/tests/notifications/email-catalogue.test.ts (3 tests) 15ms
+ ✓ src/tests/collector-portal/access.test.ts (4 tests) 12ms
+ ✓ src/tests/ops/request-id.test.ts (2 tests) 11ms
+ ✓ src/tests/uploads/magic-bytes.test.ts (2 tests) 31ms
+ ✓ src/tests/security/password-policy.test.ts (2 tests) 13ms
+ ✓ src/tests/security/safe-redirect-url.test.ts (3 tests) 11ms
+ ✓ src/tests/lending/holiday-schedule.test.ts (3 tests) 11ms
+ ✓ src/tests/lending/payment-day.test.ts (3 tests) 17ms
+ ✓ src/tests/settings/invitation-lifecycle.test.ts (3 tests) 12ms
+ ✓ src/tests/platform/idempotency-hash.test.ts (2 tests) 15ms
+ ✓ src/tests/users/user-purge.test.ts (1 test) 9ms
+ ✓ src/tests/lending/advanced-lending.test.ts (4 tests) 13ms
+ ✓ src/tests/security/secure-token.test.ts (1 test) 9ms
+stdout | src/tests/platform/in-process-queue.test.ts > in-process queue fallback > executes registered handlers
+{"level":"info","message":"queue.in_process.completed","timestamp":"2026-08-09T19:21:22.125Z","service":"wilms-api","queue":"mail","type":"test.echo","id":"local-1786303282125-4i6rpu"}
+
+ ✓ src/tests/platform/in-process-queue.test.ts (1 test) 14ms
+ ✓ src/tests/security/invitation-expiry.test.ts (2 tests) 12ms
+ ✓ src/tests/loans/disbursement-error-mapping.test.ts (1 test) 9ms
+ ✓ src/tests/enterprise/holiday-shift.test.ts (2 tests) 9ms
+ ✓ src/tests/sync/sync.constants.test.ts (1 test) 8ms
+ ✓ src/tests/reconciliation/repository.test.ts (1 test) 9ms
+
+ Test Files  82 passed (82)
+      Tests  250 passed (250)
+   Start at  19:20:29
+   Duration  53.91s (transform 11.30s, setup 0ms, collect 170.13s, tests 68.93s, environment 55ms, prepare 47.72s)
+

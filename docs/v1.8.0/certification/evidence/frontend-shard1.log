@@ -1,0 +1,162 @@
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ RUN  v3.2.6 C:/Users/eddie/OneDrive/Desktop/WILMS/apps/frontend
+
+ ✓ src/tests/services/borrowerService.mock.test.ts (13 tests) 6227ms
+   ✓ borrowerService.mock conflict checks > detects duplicate phone numbers  317ms
+   ✓ borrowerService.mock conflict checks > detects duplicate ID numbers for the same type  309ms
+   ✓ borrowerService.mock conflict checks > returns fuzzy name matches within distance two  314ms
+   ✓ borrowerService.mock conflict checks > blocks borrowers with active loans  309ms
+   ✓ borrowerService.mock conflict checks > blocks blacklisted borrowers by phone or ID  613ms
+   ✓ borrowerService.mock conflict checks > rejects registration when blocking conflicts exist  312ms
+   ✓ borrowerService.mock conflict checks > registers a borrower when no blocking conflicts exist  321ms
+   ✓ borrowerService.mock conflict checks > returns a full borrower review profile  317ms
+   ✓ borrowerService.mock conflict checks > approves a pending borrower  1550ms
+   ✓ borrowerService.mock conflict checks > rejects a pending borrower with a reason  929ms
+   ✓ borrowerService.mock conflict checks > blacklists a pending borrower with a reason  311ms
+   ✓ borrowerService.mock conflict checks > lists pending applications for the approval queue  313ms
+   ✓ borrowerService.mock conflict checks > lists registrations for a specific officer  310ms
+ ✓ src/tests/services/mock/groupFormationService.mock.test.ts (3 tests) 6216ms
+   ✓ groupFormationService.mock > queues approved borrowers until the configured minimum is reached  2483ms
+   ✓ groupFormationService.mock > creates an automated group when the minimum threshold is met  3106ms
+   ✓ groupFormationService.mock > reads min and max group size from settings service  625ms
+ ✓ src/tests/adjustments/adjustmentService.mock.test.ts (4 tests) 3780ms
+   ✓ adjustmentService.mock > creates a pending adjustment request and writes an audit entry  942ms
+   ✓ adjustmentService.mock > approves a pending adjustment and posts a ledger entry  937ms
+   ✓ adjustmentService.mock > rejects a pending adjustment with a required reason  931ms
+   ✓ adjustmentService.mock > blacklists borrower on approved write-off  969ms
+ ✓ src/tests/payment-collection/PaymentEntryPanel.test.tsx (3 tests) 2979ms
+   ✓ PaymentEntryPanel > renders payment amount and oldest obligation details  665ms
+   ✓ PaymentEntryPanel > queues payment for sync when offline  832ms
+   ✓ PaymentEntryPanel > captures GPS before recording payment  1479ms
+ ✓ src/tests/services/notificationService.mock.test.ts (3 tests) 2175ms
+   ✓ notificationService.mock > records SMS and email deliveries  316ms
+   ✓ notificationService.mock > records supervisor alerts as notification deliveries  617ms
+   ✓ notificationService.mock > lists inbox items with unread count and marks items read  1240ms
+ ✓ src/tests/borrower-registration/MyRegistrationsList.test.tsx (3 tests) 2004ms
+   ✓ MyRegistrationsList > lists registrations for the signed-in officer  822ms
+   ✓ MyRegistrationsList > filters registrations by search query  602ms
+   ✓ MyRegistrationsList > filters registrations by status  577ms
+ ✓ src/tests/loan-management/CreateLoanWizard.test.tsx (2 tests) 1866ms
+   ✓ CreateLoanWizard > shows the preview step with computed weekly payment before submission  1000ms
+   ✓ CreateLoanWizard > creates a loan from the preview step  865ms
+ ✓ src/tests/services/loanService.mock.test.ts (2 tests) 2009ms
+   ✓ loanService.mock disbursement gate > blocks disbursement until admin fee is recorded  622ms
+   ✓ loanService.mock disbursement gate > allows disbursement after admin fee is recorded  1385ms
+ ✓ src/tests/services/transactionService.mock.test.ts (4 tests) 1869ms
+   ✓ transactionService.mock > lists approved borrowers without an admin fee  315ms
+   ✓ transactionService.mock > records an admin fee with collector id and ADMIN_FEE type  618ms
+   ✓ transactionService.mock > blocks duplicate admin fee recording  622ms
+   ✓ transactionService.mock > rejects admin fee recording for non-approved borrowers  311ms
+ ✓ src/tests/reports/DailyCollectionReportPanel.test.tsx (1 test) 1520ms
+   ✓ DailyCollectionReportPanel > renders daily collection totals and borrower rows  1517ms
+ ✓ src/tests/utils/upload-file.test.ts (1 test) 1134ms
+   ✓ upload-file utils > uploads files through the upload service  1132ms
+ ✓ src/tests/layouts/shells.test.tsx (5 tests) 1728ms
+   ✓ role shells > renders super admin sidebar navigation with shared office chrome  1203ms
+ ✓ src/tests/app-lock/AppLockSetupPanel.test.tsx (2 tests) 951ms
+   ✓ AppLockSetupPanel > enables app lock after matching pin confirmation  874ms
+ ✓ src/tests/reports/reportService.mock.test.ts (2 tests) 1266ms
+   ✓ reportService.mock > returns loan portfolio report from seed loans  640ms
+   ✓ reportService.mock > returns daily collection report for a date with repayments  625ms
+ ✓ src/tests/services/searchService.mock.test.ts (3 tests) 1265ms
+   ✓ searchService.mock > returns cross-entity results for super admin  645ms
+   ✓ searchService.mock > limits borrower search for approver to pending applications  309ms
+   ✓ searchService.mock > returns collector payment links for field search  310ms
+ ✓ src/tests/payment-collection/PaymentEditSection.test.tsx (2 tests) 959ms
+   ✓ PaymentEditSection > submits a payment correction adjustment request for locked payments  831ms
+ ✓ src/tests/reports/AuditLogReportPanel.test.tsx (1 test) 542ms
+   ✓ AuditLogReportPanel > renders immutable audit entries and export action  541ms
+ ✓ src/tests/reports/ReportsIndexPanel.test.tsx (1 test) 757ms
+   ✓ ReportsIndexPanel > lists all available report links  756ms
+ ✓ src/tests/services/loanService.progress.test.ts (3 tests) 946ms
+   ✓ loanService.mock progress and payment log > returns loan progress derived from repayment transactions  312ms
+   ✓ loanService.mock progress and payment log > lists borrower loan history newest first  310ms
+   ✓ loanService.mock progress and payment log > returns disbursement and repayment entries for the payment log  323ms
+ ✓ src/tests/reports/LoanPortfolioReportPanel.test.tsx (1 test) 813ms
+   ✓ LoanPortfolioReportPanel > renders portfolio report summary and export action  812ms
+ ✓ src/tests/components/PhotoUpload.test.tsx (5 tests) 224ms
+ ✓ src/tests/super-admin-management/GroupProfilePanel.test.tsx (1 test) 788ms
+   ✓ GroupProfilePanel > renders full group detail sections with leader, members, and risk history  787ms
+ ✓ src/tests/payment-collection/useRecordPaymentOrQueue.test.ts (2 tests) 654ms
+   ✓ useRecordPaymentOrQueue > records payment online through the payment service  650ms
+ ✓ src/tests/app-lock/PinEntryPad.test.tsx (3 tests) 720ms
+   ✓ PinEntryPad > submits a six-digit pin  412ms
+ ✓ src/tests/components/Modal.test.tsx (4 tests) 404ms
+ ✓ src/tests/collector-management/CollectorsMobileCardList.test.tsx (1 test) 195ms
+ ✓ src/tests/components/PasswordField.test.tsx (2 tests) 195ms
+ ✓ src/tests/services/mock/groups-demo.factory.test.ts (7 tests) 341ms
+   ✓ groupService.mock > serves reference-scale group list from demo factory  312ms
+ ✓ src/tests/components/Button.test.tsx (3 tests) 156ms
+ ✓ src/tests/components/Toast.test.tsx (5 tests) 161ms
+ ✓ src/tests/components/MultiStepForm.test.tsx (3 tests) 151ms
+ ✓ src/tests/components/Modal.lifecycle.test.tsx (1 test) 142ms
+ ✓ src/tests/services/mock/dashboard-demo.factory.test.ts (5 tests) 137ms
+ ✓ src/tests/auth/AppLockHandler.test.tsx (2 tests) 105ms
+ ✓ src/tests/approval-workflow/ReviewedApplicationsPanel.test.tsx (1 test) 101ms
+ ✓ src/tests/layouts/ShellNavLink.test.tsx (2 tests) 87ms
+ ✓ src/tests/auth/SessionExpiredPage.test.tsx (1 test) 94ms
+ ✓ src/tests/components/Input.test.tsx (2 tests) 89ms
+ ✓ src/tests/layout/floating-action-stack.test.tsx (1 test) 83ms
+ ✓ src/tests/services/reconciliationService.mock.test.ts (6 tests) 30ms
+ ✓ src/tests/providers/AppBootstrap.test.tsx (2 tests) 61ms
+ ✓ src/tests/components/StatusBadge.test.tsx (4 tests) 34ms
+ ✓ src/tests/offline/OfflineInitOverlay.test.tsx (2 tests) 35ms
+ ✓ src/tests/components/WilmsSplashScreen.test.tsx (1 test) 37ms
+ ✓ src/tests/utils/group-system-id.test.ts (2 tests) 24ms
+ ✓ src/tests/super-admin-dashboard/dashboard-summary.utils.test.ts (6 tests) 28ms
+ ✓ src/tests/config/api-config.test.ts (3 tests) 23ms
+ ✓ src/tests/utils/group-detail.test.ts (1 test) 19ms
+ ✓ src/tests/offline-queue/offlineQueueStore.test.ts (6 tests) 12ms
+ ✓ src/tests/lib/send-test-email.test.ts (3 tests) 25ms
+ ✓ src/tests/utils/media-preview.test.ts (4 tests) 5ms
+ ✓ src/tests/reports/daily-collection-report.utils.test.ts (4 tests) 7ms
+ ✓ src/tests/payment-collection/paymentService.edit.test.ts (2 tests) 13ms
+ ✓ src/tests/design-tokens.test.ts (3 tests) 6ms
+ ✓ src/tests/app-lock/app-lock.schema.test.ts (2 tests) 5ms
+ ✓ src/tests/auth/login.schema.test.ts (4 tests) 5ms
+ ✓ src/tests/auth/dashboard-ops-routes.test.ts (4 tests) 6ms
+ ✓ src/tests/state/uiStore.test.ts (6 tests) 6ms
+ ✓ src/tests/lib/api-proxy-headers.test.ts (3 tests) 10ms
+ ✓ src/tests/observability/logger.test.ts (3 tests) 6ms
+ ✓ src/tests/utils/financialMutation.test.ts (5 tests) 6ms
+ ✓ src/tests/utils/shell-breadcrumbs.test.ts (6 tests) 4ms
+ ✓ src/tests/lib/background-sync.test.ts (3 tests) 10ms
+ ✓ src/tests/auth/forgot-password.schema.test.ts (3 tests) 7ms
+ ✓ src/tests/hooks/notification-sound-warm.test.ts (1 test) 7ms
+ ✓ src/tests/constants/auditor-report-filters.test.ts (3 tests) 8ms
+ ✓ src/tests/services/services-index.test.ts (2 tests) 4ms
+ ✓ src/tests/reports/loan-portfolio-report.utils.test.ts (1 test) 13ms
+ ✓ src/tests/services/mock/settings-users.store.test.ts (2 tests) 6ms
+ ✓ src/tests/auth/authenticate.test.ts (2 tests) 4ms
+ ✓ src/tests/utils/search-match.test.ts (4 tests) 9ms
+ ✓ src/tests/lib/pin-hash.test.ts (2 tests) 4ms
+ ✓ src/tests/validation/entity-display-id.test.ts (4 tests) 5ms
+ ✓ src/tests/utils/group-risk.test.ts (4 tests) 6ms
+ ✓ src/tests/observability/analytics.test.ts (1 test) 20ms
+ ✓ src/tests/borrower-management/borrower-list.utils.test.ts (1 test) 12ms
+ ✓ src/tests/auth/unauthorized-handler.test.ts (1 test) 4ms
+ ✓ src/tests/state/shellLayoutStore.test.ts (2 tests) 6ms
+ ✓ src/tests/validation/borrower-id.schema.test.ts (8 tests) 10ms
+ ✓ src/tests/utils/reconciliation.schema.test.ts (3 tests) 12ms
+ ✓ src/tests/utils/group-leader-permissions.test.ts (3 tests) 4ms
+ ✓ src/tests/approval-workflow/approval.schema.test.ts (2 tests) 4ms
+ ✓ src/tests/utils/schedule-missed-marking.test.ts (2 tests) 3ms
+ ✓ src/tests/loan-management/loan-progress.utils.test.ts (2 tests) 7ms
+ ✓ src/tests/lib/error-body.test.ts (4 tests) 5ms
+ ✓ src/tests/lib/collector-query-persister.test.ts (1 test) 3ms
+ ✓ src/tests/loan-management/loan.schema.test.ts (3 tests) 7ms
+ ✓ src/tests/utils/notification-toast-tracker.test.ts (2 tests) 8ms
+ ✓ src/tests/utils/payment-same-day.test.ts (2 tests) 7ms
+ ✓ src/tests/borrower-registration/registration-conflicts.test.ts (2 tests) 7ms
+ ✓ src/tests/auth/redirect.test.ts (3 tests) 5ms
+ ✓ src/tests/theme/themeStore.test.ts (3 tests) 4ms
+ ✓ src/tests/utils/data-url-bytes.test.ts (1 test) 6ms
+ ✓ src/features/communication-center/components/AudienceComposer.test.tsx (1 test) 5ms
+ ✓ src/tests/utils/group-profile.test.ts (1 test) 4ms
+
+ Test Files  95 passed (95)
+      Tests  271 passed (271)
+   Start at  19:21:32
+   Duration  263.44s (transform 8.52s, setup 42.62s, collect 34.90s, tests 46.47s, environment 95.92s, prepare 12.84s)
+

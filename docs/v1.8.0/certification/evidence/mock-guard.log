@@ -1,0 +1,6 @@
+
+> wilms@1.8.0 verify:mock-guard
+> node scripts/rc1-mock-import-guard.mjs
+
+RC1.1 Mock Import Guard
+PASS: no forbidden mock imports in features/

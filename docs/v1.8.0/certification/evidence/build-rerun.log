@@ -1,0 +1,8 @@
+
+> @wilms/frontend@1.8.0 build
+> next build
+
+  ▲ Next.js 14.2.35
+  - Environments: .env.local
+
+   Creating an optimized production build ...
