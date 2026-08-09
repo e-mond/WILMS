@@ -832,18 +832,6 @@ export async function notifyLoanDisbursed(input: {
       borrowerId: input.borrowerId,
       loanId: input.loanId,
     });
-
-    try {
-      const { sendPushToUser } = await import('../../modules/notifications/push.service.js');
-      void sendPushToUser(input.collectorUserId, {
-        title: 'Loan disbursed',
-        body: `Loan ${input.loanDisplayId} for ${input.borrowerName} has been disbursed.`,
-        url: '/collector/my-borrowers',
-        category: 'LOAN',
-      });
-    } catch {
-      // Push is best-effort.
-    }
   }
 }
 

@@ -27,13 +27,6 @@ async function notifyRequester(
       body,
       href,
     });
-    const { sendPushToUser } = await import('../notifications/push.service.js');
-    await sendPushToUser(userId, {
-      title,
-      body,
-      url: href,
-      category: 'holiday',
-    });
   } catch {
     // Notification failure must not block holiday workflow.
   }
@@ -45,7 +38,6 @@ async function notifySupervisors(title: string, body: string, href: string): Pro
       return;
     }
     const { listUsers } = await import('../../repositories/user.repository.js');
-    const { sendPushToUser } = await import('../notifications/push.service.js');
     const users = await listUsers();
     const recipients = users.filter(
       (user) =>
@@ -59,12 +51,6 @@ async function notifySupervisors(title: string, body: string, href: string): Pro
           title,
           body,
           href,
-        });
-        await sendPushToUser(user.id, {
-          title,
-          body,
-          url: href,
-          category: 'holiday',
         });
       }),
     );

@@ -23,6 +23,9 @@ All notable changes to WILMS are documented in this file.
 - Shared `DataTable` mobile stack layout for responsive financial tables
 - Communication Center inline two-column compose console (audience | composer/preview)
 - Raise Flag entity search (name/phone/group/reference) without manual Entity ID entry
+- Web Push mirrored from every successful in-app notification (preference / quiet-hour gated)
+- Super Admin inactive re-engagement email (last login > 7 days; weekly dedupe via automation pass)
+- Dashboard Recent Alerts aside populated from the signed-in user’s recent inbox (preview of some, not all)
 
 ### Changed (post-release UI update)
 
