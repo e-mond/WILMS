@@ -41,7 +41,30 @@ describe('Drawer', () => {
       </Drawer>,
     );
 
-    await user.click(screen.getAllByRole('button', { name: 'Close drawer overlay' })[0]!);
+    await user.click(screen.getByRole('button', { name: 'Close drawer overlay' }));
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('survives rapid open and close without throwing', () => {
+    const onClose = vi.fn();
+    const { rerender, unmount } = render(
+      <Drawer isOpen onClose={onClose} title="Lifecycle">
+        <button type="button">Inside</button>
+      </Drawer>,
+    );
+
+    expect(screen.getByRole('dialog', { name: 'Lifecycle' })).toBeInTheDocument();
+    rerender(
+      <Drawer isOpen={false} onClose={onClose} title="Lifecycle">
+        <button type="button">Inside</button>
+      </Drawer>,
+    );
+    rerender(
+      <Drawer isOpen onClose={onClose} title="Lifecycle">
+        <button type="button">Inside</button>
+      </Drawer>,
+    );
+    expect(screen.getByRole('dialog', { name: 'Lifecycle' })).toBeInTheDocument();
+    unmount();
   });
 });

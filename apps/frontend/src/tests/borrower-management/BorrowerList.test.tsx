@@ -35,7 +35,8 @@ describe('BorrowerList', () => {
       </TestQueryProvider>,
     );
 
-    expect(await screen.findByText('Ama Mensah')).toBeInTheDocument();
+    // Stack + desktop table both mount in jsdom (responsive classes only).
+    expect((await screen.findAllByText('Ama Mensah')).length).toBeGreaterThan(0);
     const profileLinks = screen.getAllByRole('link', { name: 'View profile' });
     expect(profileLinks.some((link) => link.getAttribute('href') === '/borrowers/borrower-001')).toBe(
       true,
@@ -50,10 +51,10 @@ describe('BorrowerList', () => {
       </TestQueryProvider>,
     );
 
-    await screen.findByText('Ama Mensah');
+    await screen.findAllByText('Ama Mensah');
     await user.selectOptions(screen.getByRole('combobox', { name: 'Filter borrowers by status' }), 'APPROVED');
 
-    expect(screen.getByText('Ama Mensah')).toBeInTheDocument();
+    expect(screen.getAllByText('Ama Mensah').length).toBeGreaterThan(0);
     expect(screen.queryByText('Adjoa Owusu')).not.toBeInTheDocument();
   });
 });

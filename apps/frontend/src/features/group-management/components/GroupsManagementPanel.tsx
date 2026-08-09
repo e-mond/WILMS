@@ -214,6 +214,7 @@ export function GroupsManagementPanel() {
         }
       />
       <DataTable<GroupSummary>
+        mobileLayout="stack"
         variant="executive"
         caption="Groups"
         data={slice}
@@ -223,6 +224,7 @@ export function GroupsManagementPanel() {
         columns={[
           {
             id: 'groupId',
+              priority: 'primary',
             header: 'Group ID',
             className: 'whitespace-nowrap font-mono text-small',
             cell: (row) => (

@@ -231,6 +231,7 @@ export function CollectorsManagementPanel() {
             />
             <div className="hidden lg:block">
               <DataTable<CollectorSummary>
+                mobileLayout="stack"
                 variant="executive"
                 caption="Collectors"
                 data={slice}
@@ -240,6 +241,7 @@ export function CollectorsManagementPanel() {
                 columns={[
                   {
                     id: 'name',
+              priority: 'primary',
                     header: 'Collector',
                     className: 'min-w-[12rem]',
                     cell: (row) => (

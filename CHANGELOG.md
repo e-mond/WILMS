@@ -6,7 +6,8 @@ All notable changes to WILMS are documented in this file.
 
 **Date:** August 2026  
 **Branch:** `feature/v1.8-enterprise-design-automation`  
-**Post-release update:** August 2026 (`fix/v1.8.0-ui-modernisation`) — same release identity; **no new tag / no v1.8.1**
+**Post-release update:** August 2026 (`fix/v1.8.0-ui-modernisation`) — same release identity; **no new tag / no v1.8.1**  
+**Production-readiness closure:** August 2026 (`fix/v1.8.0-production-readiness`) — same release identity; **no new tag / no retag of `v1.8.0`**
 
 ### Added
 
@@ -45,13 +46,23 @@ All notable changes to WILMS are documented in this file.
 - Domain type-check TS2556 in `push-inapp-preferences.test.ts` (typed mock rest args)
 - Settings profile photo upload 403 for roles without `CAPTURE_DOCUMENTS` (own `profile-photo` allowed)
 - Unused serif font preload warnings (serif `preload: false`)
+- Unreachable duplicate `case 'messages'` in `ShellNavIcon`
+- Drawer portal lifecycle races on rapid close / route change (align with Modal focus restore)
+- Communication Center attachment UI offered upload without `CAPTURE_DOCUMENTS` (gate + clear copy; server 403 unchanged)
+
+### Changed (production-readiness closure)
+
+- Selective `DataTable` `mobileLayout="stack"` on ops list tables (borrowers, collectors, groups, risk flags, loans, expenses, settings users, communication center); dense financial/report/audit tables remain scroll
+- Root README fully uplifted to **v1.8.0** identity (migrations **0036–0039**, doc map → `docs/v1.8.0/`)
+- `docs/offline-architecture.md` synced to 1.8.0 offline + upload capability matrix
+- Production readiness matrix under `docs/v1.8.0/PRODUCTION_READINESS_MATRIX.md`
 
 ### Notes
 
 - Extends v1.7.5 foundations; does not weaken financial, RBAC/SoD, reconciliation, notifications, or scheduler guarantees
 - Auth remains custom HMAC sessions
 - Apply migrations 0037–0039 before enabling Ghana sync / automation tables in production
-- **This post-release update requires no new database migration**
+- **This production-readiness closure requires no new database migration**
 - Full offline writes for every entity and visual workflow builder remain iterative beyond this RC
 
 ## [1.7.5] — Offline, Push & Modernisation
