@@ -102,7 +102,6 @@ export async function ingestOfflineBatch(
         const { createInAppNotification } = await import(
           '../../infrastructure/notifications/in-app-notify.js'
         );
-        const { sendPushToUser } = await import('../notifications/push.service.js');
         const users = await listUsers();
         const recipients = users.filter(
           (user) =>
@@ -116,12 +115,6 @@ export async function ingestOfflineBatch(
               title: 'Offline sync conflict',
               body: 'A financial offline operation requires review.',
               href: '/approver/sync-conflicts',
-            });
-            await sendPushToUser(user.id, {
-              title: 'Offline sync conflict',
-              body: 'A financial offline operation requires review.',
-              url: '/approver/sync-conflicts',
-              category: 'offline-sync',
             });
           }),
         );

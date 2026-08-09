@@ -111,13 +111,26 @@ photoCaptureRouter.post(
       }
 
       const body = req.body as z.infer<typeof uploadSchema>;
-      validateUploadInput(body);
       const buffer = decodeDataUrl(body.dataUrl);
+
+      let verifiedMime = body.mimeType;
+      try {
+        verifiedMime = validateUploadInput({
+          mimeType: body.mimeType,
+          sizeBytes: buffer.length,
+          buffer,
+        });
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message.replace(/^VALIDATION:/, '') : 'Invalid upload.';
+        throw new AppError(message, ERROR_CODE.VALIDATION, 422);
+      }
+
       const stored = await saveUpload({
         purpose: body.purpose,
         fileName: body.fileName,
-        mimeType: body.mimeType,
-        sizeBytes: body.sizeBytes,
+        mimeType: verifiedMime,
+        sizeBytes: buffer.length,
         buffer,
         ownerUserId: undefined,
       });
@@ -129,7 +142,7 @@ photoCaptureRouter.post(
         uploadId: record.id,
         previewUrl,
         fileName: body.fileName,
-        mimeType: body.mimeType,
+        mimeType: verifiedMime,
       });
 
       sendData(res, completed, 201);

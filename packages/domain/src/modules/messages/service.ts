@@ -12,7 +12,6 @@ import {
   sendMessageInMemory,
 } from './memory-store.js';
 import { createInAppNotification } from '../../infrastructure/notifications/in-app-notify.js';
-import { sendPushToUser } from '../notifications/push.service.js';
 
 export interface MessageDto {
   id: string;
@@ -258,13 +257,6 @@ export async function sendMessage(
     title: 'New message',
     body: trimmedBody.slice(0, 120),
     href: '/collector/messages',
-  });
-
-  void sendPushToUser(recipientUserId, {
-    title: 'New message',
-    body: trimmedBody.slice(0, 120),
-    url: '/collector/messages',
-    category: 'MESSAGE',
   });
 
   return messageDto;

@@ -16,7 +16,6 @@ import {
 } from './notification-dedupe.js';
 import { getMailProvider } from '../mail/index.js';
 import { buildEmailTemplate, emailParagraph } from './email-layout.js';
-import { sendPushToUser } from '../../modules/notifications/push.service.js';
 
 export const OPS_DEDUPE = {
   reconReminder: (collectorId: string, date: string) => `recon-reminder:${collectorId}:${date}`,
@@ -79,13 +78,6 @@ async function notifyUserChannels(input: {
     recipient: input.userId,
     channel: 'IN_APP',
     status: 'SENT',
-  });
-
-  void sendPushToUser(input.userId, {
-    title: input.title,
-    body: input.body.slice(0, 180),
-    url: input.href,
-    category: 'OPERATIONS',
   });
 
   if (input.email) {

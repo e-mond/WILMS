@@ -13,7 +13,7 @@ dashboardRouter.use(requireAuth);
 dashboardRouter.get(
   '/dashboard/summary',
   requirePermission(PERMISSION.ACCESS_ADMIN_PORTAL),
-  asyncHandler(async (_req, res) => {
-    sendData(res, await dashboardService.getDashboardSummary());
+  asyncHandler(async (req, res) => {
+    sendData(res, await dashboardService.getDashboardSummary({ userId: req.session!.userId }));
   }),
 );

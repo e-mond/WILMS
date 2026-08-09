@@ -35,6 +35,7 @@ describe('automation engine foundations', () => {
     expect(result.escalationsEvaluated).toBe(OVERDUE_ESCALATION_DAYS.length);
     expect(result.followUpsCreated).toBeTypeOf('number');
     expect(result.executivePackRecipients).toBeTypeOf('number');
+    expect(result.inactiveSuperAdminNudges).toBe(0);
   });
 
   it('exposes escalation role ladder aligned to thresholds', async () => {

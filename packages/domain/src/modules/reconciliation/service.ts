@@ -31,7 +31,6 @@ import {
   emailReceipt,
 } from '../../infrastructure/notifications/email-layout.js';
 import { formatGhsAmount } from '../../infrastructure/notifications/templates.js';
-import { sendPushToUser } from '../notifications/push.service.js';
 import { runWithIdempotency } from '../../infrastructure/idempotency/run-with-idempotency.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import * as paymentRepo from '../../repositories/payment.repository.js';
@@ -387,12 +386,6 @@ async function notifySuperAdminsOfReconciliation(
           body,
           href: '/reports/daily-collection',
         });
-        await sendPushToUser(supervisor.id, {
-          title,
-          body,
-          url: '/reports/daily-collection',
-          category: 'RECONCILIATION',
-        });
       }),
     );
   } catch {
@@ -547,13 +540,6 @@ async function notifyCollectorOfReconciliationReview(input: {
       title,
       body,
       href: '/collector/reconciliation',
-    });
-
-    await sendPushToUser(collector.id, {
-      title,
-      body,
-      url: '/collector/reconciliation',
-      category: 'RECONCILIATION',
     });
 
     if (collector.email?.trim()) {

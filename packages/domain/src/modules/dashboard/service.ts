@@ -1,7 +1,9 @@
 import { formatUserDisplayId } from '@wilms/shared-utils';
 import { BORROWER_STATUS } from '@wilms/shared-contracts';
+import { and, desc, eq, isNull } from 'drizzle-orm';
 import { listBorrowers, listPayments } from '../../db/persistence.js';
-import { isDatabaseEnabled } from '../../db/client.js';
+import { getDb, isDatabaseEnabled } from '../../db/client.js';
+import { notifications } from '../../db/schema/notifications.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import * as paymentRepo from '../../repositories/payment.repository.js';
 import * as userRepo from '../../repositories/user.repository.js';
@@ -55,15 +57,69 @@ export interface DashboardSummary {
     message: string;
     createdAt: string;
     icon: 'danger' | 'warning' | 'info' | 'edit';
+    href?: string;
   }>;
   financialOverview: DashboardFinancialOverview;
 }
 
-export async function getDashboardSummary(): Promise<DashboardSummary> {
-  const [borrowers, groupsResponse, financialOverview] = await Promise.all([
+const RECENT_ALERT_LIMIT = 8;
+
+function mapNotificationSeverity(
+  severity: string | null | undefined,
+): 'danger' | 'warning' | 'info' {
+  if (severity === 'CRITICAL') return 'danger';
+  if (severity === 'WARNING') return 'warning';
+  return 'info';
+}
+
+async function buildRecentAlertsForUser(userId?: string): Promise<DashboardSummary['recentAlerts']> {
+  if (!userId || !isDatabaseEnabled()) {
+    return [];
+  }
+
+  try {
+    const db = getDb();
+    const rows = await db
+      .select({
+        id: notifications.id,
+        title: notifications.title,
+        body: notifications.body,
+        event: notifications.event,
+        severity: notifications.severity,
+        href: notifications.href,
+        createdAt: notifications.createdAt,
+        sentAt: notifications.sentAt,
+      })
+      .from(notifications)
+      .where(and(eq(notifications.userId, userId), isNull(notifications.deletedAt)))
+      .orderBy(desc(notifications.createdAt))
+      .limit(RECENT_ALERT_LIMIT);
+
+    return rows.map((row) => {
+      const severity = mapNotificationSeverity(row.severity);
+      return {
+        id: row.id,
+        severity,
+        category: String(row.event ?? 'AUDIT_WARNING'),
+        message: row.title || row.body || 'Notification',
+        createdAt: (row.createdAt ?? row.sentAt ?? new Date()).toISOString(),
+        icon: severity,
+        href: row.href ?? undefined,
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
+export async function getDashboardSummary(options?: {
+  userId?: string;
+}): Promise<DashboardSummary> {
+  const [borrowers, groupsResponse, financialOverview, recentAlerts] = await Promise.all([
     listBorrowers(),
     listGroupsResponse(),
     buildDashboardFinancialOverview(),
+    buildRecentAlertsForUser(options?.userId),
   ]);
 
   const groups = groupsResponse.groups;
@@ -231,7 +287,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
         value: `${fo.collections.collectionRatePercent}%`,
       },
     ],
-    recentAlerts: [],
+    recentAlerts,
     financialOverview,
   };
 }

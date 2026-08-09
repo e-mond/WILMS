@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Alert } from '@/components/feedback/Alert';
 import { extractApiErrorMessage } from '@/lib/api/error-body';
+import { estimateDataUrlBytes } from '@/utils/data-url-bytes';
 
 interface CaptureSession {
   sessionToken: string;
@@ -108,7 +109,7 @@ export default function MobileCapturePage({ params }: { params: { token: string 
 
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
     const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
-    const sizeBytes = Math.ceil((dataUrl.length * 3) / 4);
+    const sizeBytes = estimateDataUrlBytes(dataUrl);
 
     setUploading(true);
     setError(null);

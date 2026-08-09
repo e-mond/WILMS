@@ -1,10 +1,7 @@
 import type { IPhotoCaptureSessionService } from '@/types/services';
 import type { PhotoCaptureSession } from '@/types/photo-capture-session';
 import { apiClient } from '@/utils/apiClient';
-
-function estimateDataUrlBytes(dataUrl: string): number {
-  return Math.ceil((dataUrl.length * 3) / 4);
-}
+import { estimateDataUrlBytes } from '@/utils/data-url-bytes';
 
 const photoCaptureSessionService: IPhotoCaptureSessionService = {
   createSession(input) {

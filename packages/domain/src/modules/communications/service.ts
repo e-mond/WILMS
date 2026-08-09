@@ -630,9 +630,8 @@ export async function sendMessage(messageId: string, actorUserId: string): Promi
           body: bodyText,
         });
       }
-    }
-
-    if (recipient.userId) {
+    } else if (recipient.userId) {
+      // Push-only path when the broadcast did not also create an in-app item.
       const canPush = await shouldSendChannel(recipient.userId, 'PUSH', 'announcement');
       if (canPush) {
         void sendPushToUser(recipient.userId, {

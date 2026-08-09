@@ -11,7 +11,7 @@ export interface DashboardAlertsAsideProps {
 
 export function DashboardAlertsAside({ alerts }: DashboardAlertsAsideProps) {
   const criticalCount = alerts.filter((alert) => alert.severity === 'danger').length;
-  const preview = alerts.slice(0, 2);
+  const preview = alerts.slice(0, 5);
 
   return (
     <div className="flex h-full flex-col space-y-wilms-4">
