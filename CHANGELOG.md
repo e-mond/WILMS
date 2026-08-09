@@ -49,6 +49,7 @@ All notable changes to WILMS are documented in this file.
 - Domain type-check TS2556 in `push-inapp-preferences.test.ts` (typed mock rest args)
 - Settings profile photo upload 403 for roles without `CAPTURE_DOCUMENTS` (own `profile-photo` allowed)
 - Unused serif font preload warnings (serif `preload: false`)
+- Photo-capture session upload 500: validate with decoded buffer and map VALIDATION → 422; simulate/mobile use real JPEG + correct sizeBytes
 
 ### Notes
 
