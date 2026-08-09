@@ -43,11 +43,11 @@ export async function listOrganizationHolidays(options?: {
   const db = getDb();
 
   try {
-    const rows = await db
-      .select()
-      .from(organizationHolidays)
-      .where(options?.includeDisabled ? undefined : eq(organizationHolidays.enabled, true))
-      .orderBy(asc(organizationHolidays.holidayDate));
+    const baseQuery = db.select().from(organizationHolidays);
+    const filtered = options?.includeDisabled
+      ? baseQuery
+      : baseQuery.where(eq(organizationHolidays.enabled, true));
+    const rows = await filtered.orderBy(asc(organizationHolidays.holidayDate));
 
     return rows.map(mapRow);
   } catch (error) {

@@ -5,6 +5,13 @@ vi.mock('../../db/client.js', () => ({
   getDb: () => ({
     select: () => ({
       from: () => ({
+        where: () => ({
+          orderBy: async () => {
+            const error = new Error('relation "organization_holidays" does not exist');
+            (error as { code?: string }).code = '42P01';
+            throw error;
+          },
+        }),
         orderBy: async () => {
           const error = new Error('relation "organization_holidays" does not exist');
           (error as { code?: string }).code = '42P01';

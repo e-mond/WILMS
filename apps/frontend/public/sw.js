@@ -142,13 +142,23 @@ self.addEventListener('sync', (event) => {
 });
 
 self.addEventListener('push', (event) => {
-  const payload = event.data?.json() ?? {};
+  let payload = {};
+  try {
+    payload = event.data?.json() ?? {};
+  } catch {
+    payload = { body: event.data?.text() ?? '' };
+  }
+
   const title = payload.title ?? 'WILMS';
+  const category = payload.category ?? 'general';
   const options = {
     body: payload.body ?? '',
-    data: { url: payload.url ?? '/', category: payload.category ?? 'general' },
+    data: { url: payload.url ?? '/', category },
     icon: '/icons/icon-192.png',
     badge: '/icons/icon-192.png',
+    tag: payload.tag ?? `wilms-${category}`,
+    renotify: true,
+    vibrate: [80, 40, 80],
   };
 
   event.waitUntil(self.registration.showNotification(title, options));

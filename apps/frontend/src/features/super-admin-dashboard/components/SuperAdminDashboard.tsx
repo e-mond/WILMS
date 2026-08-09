@@ -13,7 +13,6 @@ import {
 import { DashboardQuickActionIcon } from '@/components/icons/DashboardQuickActionIcon';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
-import { Alert } from '@/components/ui/Alert';
 import {
   DASHBOARD_BORROWER_TONE_CLASS,
   DASHBOARD_VALUE_TONE_CLASS,
@@ -258,10 +257,6 @@ function OperationalDashboardContent({
           </Card>
         </TabsContent>
       </Tabs>
-
-      <Alert tone="info" title="Holiday requests">
-        Review collector holiday requests from Settings → Holidays or the Review holidays quick action.
-      </Alert>
 
       <ExecutiveKpiGrid className="sm:grid-cols-2 xl:grid-cols-4">
         {displayKpis.map((kpi) => (

@@ -77,19 +77,7 @@ export function AppNavbar({
 
           <div className="min-w-0 flex-1 overflow-hidden">
             {isExecutive ? (
-              <div className="min-w-0">
-                {user?.displayName ? (
-                  <p className="truncate text-xs font-medium text-text-muted">
-                    {(() => {
-                      const hour = new Date().getHours();
-                      const greet =
-                        hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-                      return `${greet}, ${user.displayName.split(/\s+/)[0]}`;
-                    })()}
-                  </p>
-                ) : null}
-                <PageBreadcrumbs items={breadcrumbs} />
-              </div>
+              <PageBreadcrumbs items={breadcrumbs} />
             ) : (
               <h1 className="truncate text-base font-semibold tracking-tight text-text-primary">
                 {pageTitle}
