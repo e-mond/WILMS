@@ -13,6 +13,7 @@ import { logger } from '../../infrastructure/logging/logger.js';
 import { recordSchedulerRun } from '../../infrastructure/scheduler/scheduler-run-state.js';
 import * as paymentSchedulerService from '../notifications/payment-scheduler.service.js';
 import * as communicationsService from '../communications/service.js';
+import * as automationService from '../automation/service.js';
 
 export const publicSchedulerRouter = Router();
 
@@ -23,6 +24,26 @@ publicSchedulerRouter.post(
     const referenceDate =
       typeof req.body?.referenceDate === 'string' ? req.body.referenceDate : undefined;
     sendData(res, await paymentSchedulerService.processPaymentNotificationJobs(referenceDate));
+  }),
+);
+
+publicSchedulerRouter.post(
+  '/automation/scheduler/run',
+  requireSchedulerAccess,
+  asyncHandler(async (_req, res) => {
+    const startedAt = new Date();
+    const correlationId = uuidv7();
+    logger.info('scheduler.automation.start', { correlationId });
+    try {
+      const result = await automationService.runDailyAutomationPass();
+      const durationMs = Date.now() - startedAt.getTime();
+      logger.info('scheduler.automation.complete', { correlationId, ...result, durationMs });
+      sendData(res, { ...result, correlationId, durationMs });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Automation scheduler failed';
+      logger.error('scheduler.automation.failed', { correlationId, error: message });
+      throw error;
+    }
   }),
 );
 

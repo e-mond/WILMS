@@ -260,6 +260,27 @@
       "when": 1785285600000,
       "tag": "0036_v175_holiday_requests",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1785372000000,
+      "tag": "0037_v180_ghana_holiday_provider",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1785458400000,
+      "tag": "0038_v180_automation_engine",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1785544800000,
+      "tag": "0039_v180_holiday_request_enrichment",
+      "breakpoints": true
     }
   ]
 }

@@ -3,6 +3,7 @@ export type HolidayRequestStatus =
   | 'SUBMITTED'
   | 'APPROVED'
   | 'REJECTED'
+  | 'CANCELLED'
   | 'APPLIED';
 
 export interface HolidayRequest {
@@ -11,6 +12,11 @@ export interface HolidayRequest {
   holidayDate: string;
   endDate: string | null;
   reason: string | null;
+  notes: string | null;
+  evidenceUrl: string | null;
+  community: string | null;
+  groupId: string | null;
+  borrowerId: string | null;
   scope: string;
   branch: string | null;
   status: HolidayRequestStatus;
@@ -29,7 +35,24 @@ export interface CreateHolidayRequestInput {
   holidayDate: string;
   endDate?: string | null;
   reason?: string | null;
+  notes?: string | null;
+  evidenceUrl?: string | null;
+  community?: string | null;
+  groupId?: string | null;
+  borrowerId?: string | null;
   scope?: string;
   branch?: string | null;
   submit?: boolean;
+}
+
+export interface HolidayImpactPreview {
+  holidayDate: string;
+  endDate: string | null;
+  affectedInstallments: number;
+  sampleShifts: Array<{
+    loanId: string;
+    weekNumber: number;
+    originalDueDate: string;
+    shiftedDueDate: string;
+  }>;
 }

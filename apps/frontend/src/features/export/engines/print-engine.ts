@@ -143,9 +143,6 @@ export function buildWilmsPrintHtml(document: WilmsExportDocument): string {
   <head>
     <meta charset="utf-8" />
     <title>${escapeHtml(document.metadata.reportTitle)} — ${escapeHtml(document.metadata.reportId)}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet" />
     <style>
       @page {
         size: A4 ${document.orientation === 'landscape' ? 'landscape' : 'portrait'};

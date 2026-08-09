@@ -16,8 +16,8 @@ export const WILMS_EXPORT_COLORS = {
 } as const;
 
 export const WILMS_EXPORT_FONTS = {
-  sans: '"DM Sans", system-ui, sans-serif',
-  serif: '"DM Serif Display", Georgia, serif',
+  sans: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  serif: 'Georgia, Cambria, "Times New Roman", Times, serif',
 } as const;
 
 export const WILMS_CONFIDENTIALITY_NOTICE =

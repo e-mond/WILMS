@@ -30,5 +30,6 @@ export * from './communications';
 export * from './communication-platform';
 export * from './organization-holidays';
 export * from './holiday-requests';
+export * from './automation';
 export * from './enterprise-workflows';
 export * from './intelligence';

@@ -18,7 +18,7 @@ const require = createRequire(path.join(root, 'apps/frontend/package.json'));
 const { Document, Packer, Paragraph, HeadingLevel, TextRun, AlignmentType } = require('docx');
 const { jsPDF } = require('jspdf');
 
-const VERSION = '1.7.3';
+const VERSION = '1.8.0';
 const BRAND = { r: 15, g: 110, b: 86 };
 const BRAND_HEX = '0F6E56';
 const CONFIDENTIAL =

@@ -4,7 +4,12 @@ export interface OrganizationHoliday {
   holidayDate: string;
   scope: string;
   branch: string | null;
+  source?: string;
+  enabled?: boolean;
+  year?: number | null;
+  externalKey?: string | null;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface CreateOrganizationHolidayInput {

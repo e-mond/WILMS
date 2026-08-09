@@ -1,4 +1,8 @@
-import type { CreateHolidayRequestInput, HolidayRequest } from '@/types/holiday-requests';
+import type {
+  CreateHolidayRequestInput,
+  HolidayImpactPreview,
+  HolidayRequest,
+} from '@/types/holiday-requests';
 import { apiClient } from '@/utils/apiClient';
 
 export const holidayRequestsService = {
@@ -41,6 +45,21 @@ export const holidayRequestsService = {
 
   apply(id: string): Promise<HolidayRequest> {
     return apiClient.post<HolidayRequest>(`/holiday-requests/${id}/apply`, {});
+  },
+
+  cancel(id: string): Promise<HolidayRequest> {
+    return apiClient.post<HolidayRequest>(`/holiday-requests/${id}/cancel`, {});
+  },
+
+  previewImpact(params: {
+    holidayDate: string;
+    endDate?: string | null;
+  }): Promise<HolidayImpactPreview> {
+    const search = new URLSearchParams({ holidayDate: params.holidayDate });
+    if (params.endDate) {
+      search.set('endDate', params.endDate);
+    }
+    return apiClient.get<HolidayImpactPreview>(`/holiday-requests/preview-impact?${search}`);
   },
 };
 

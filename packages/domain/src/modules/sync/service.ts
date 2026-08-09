@@ -149,6 +149,11 @@ export async function ingestOfflineBatch(
         holidayDate?: string;
         endDate?: string | null;
         reason?: string | null;
+        notes?: string | null;
+        evidenceUrl?: string | null;
+        community?: string | null;
+        groupId?: string | null;
+        borrowerId?: string | null;
         scope?: string;
         branch?: string | null;
         submit?: boolean;
@@ -159,6 +164,11 @@ export async function ingestOfflineBatch(
         holidayDate: String(payload.holidayDate ?? ''),
         endDate: payload.endDate ?? null,
         reason: payload.reason ?? null,
+        notes: payload.notes ?? null,
+        evidenceUrl: payload.evidenceUrl ?? null,
+        community: payload.community ?? null,
+        groupId: payload.groupId ?? null,
+        borrowerId: payload.borrowerId ?? null,
         scope: payload.scope,
         branch: payload.branch ?? null,
         requestedByUserId: actorUserId,

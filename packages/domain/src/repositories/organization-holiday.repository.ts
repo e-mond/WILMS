@@ -9,10 +9,33 @@ export interface OrganizationHolidayRecord {
   holidayDate: string;
   scope: string;
   branch: string | null;
+  source: string;
+  enabled: boolean;
+  year: number | null;
+  externalKey: string | null;
   createdAt: string;
+  updatedAt: string;
 }
 
-export async function listOrganizationHolidays(): Promise<OrganizationHolidayRecord[]> {
+function mapRow(row: typeof organizationHolidays.$inferSelect): OrganizationHolidayRecord {
+  return {
+    id: row.id,
+    name: row.name,
+    holidayDate: row.holidayDate,
+    scope: row.scope,
+    branch: row.branch,
+    source: row.source ?? 'MANUAL',
+    enabled: row.enabled ?? true,
+    year: row.year ?? null,
+    externalKey: row.externalKey ?? null,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: (row.updatedAt ?? row.createdAt).toISOString(),
+  };
+}
+
+export async function listOrganizationHolidays(options?: {
+  includeDisabled?: boolean;
+}): Promise<OrganizationHolidayRecord[]> {
   if (!isDatabaseEnabled()) {
     return [];
   }
@@ -23,16 +46,10 @@ export async function listOrganizationHolidays(): Promise<OrganizationHolidayRec
     const rows = await db
       .select()
       .from(organizationHolidays)
+      .where(options?.includeDisabled ? undefined : eq(organizationHolidays.enabled, true))
       .orderBy(asc(organizationHolidays.holidayDate));
 
-    return rows.map((row) => ({
-      id: row.id,
-      name: row.name,
-      holidayDate: row.holidayDate,
-      scope: row.scope,
-      branch: row.branch,
-      createdAt: row.createdAt.toISOString(),
-    }));
+    return rows.map(mapRow);
   } catch (error) {
     if (isUndefinedTableError(error)) {
       console.warn(
@@ -51,6 +68,10 @@ export async function insertOrganizationHoliday(input: {
   holidayDate: string;
   scope: string;
   branch?: string | null;
+  source?: string;
+  enabled?: boolean;
+  year?: number | null;
+  externalKey?: string | null;
 }): Promise<OrganizationHolidayRecord> {
   const db = getDb();
   const [row] = await db
@@ -61,22 +82,77 @@ export async function insertOrganizationHoliday(input: {
       holidayDate: input.holidayDate,
       scope: input.scope,
       branch: input.branch ?? null,
+      source: input.source ?? 'MANUAL',
+      enabled: input.enabled ?? true,
+      year: input.year ?? null,
+      externalKey: input.externalKey ?? null,
     })
     .returning();
 
-  return {
-    id: row!.id,
-    name: row!.name,
-    holidayDate: row!.holidayDate,
-    scope: row!.scope,
-    branch: row!.branch,
-    createdAt: row!.createdAt.toISOString(),
-  };
+  return mapRow(row!);
+}
+
+export async function upsertOrganizationHolidayByExternalKey(input: {
+  id: string;
+  name: string;
+  holidayDate: string;
+  scope: string;
+  source: string;
+  year: number;
+  externalKey: string;
+}): Promise<'inserted' | 'updated' | 'skipped'> {
+  const db = getDb();
+
+  const existing = await db
+    .select()
+    .from(organizationHolidays)
+    .where(eq(organizationHolidays.externalKey, input.externalKey))
+    .limit(1);
+
+  if (existing[0]) {
+    // Do not overwrite manual edits to name/date when admin customized — only refresh if still provider-owned.
+    if (existing[0].source !== 'GHANA_PROVIDER' && existing[0].source !== 'PROVIDER') {
+      return 'skipped';
+    }
+
+    await db
+      .update(organizationHolidays)
+      .set({
+        name: input.name,
+        holidayDate: input.holidayDate,
+        scope: input.scope,
+        year: input.year,
+        source: input.source,
+        updatedAt: new Date(),
+      })
+      .where(eq(organizationHolidays.id, existing[0].id));
+
+    return 'updated';
+  }
+
+  await db.insert(organizationHolidays).values({
+    id: input.id,
+    name: input.name,
+    holidayDate: input.holidayDate,
+    scope: input.scope,
+    branch: null,
+    source: input.source,
+    enabled: true,
+    year: input.year,
+    externalKey: input.externalKey,
+  });
+
+  return 'inserted';
 }
 
 export async function updateOrganizationHoliday(
   id: string,
-  input: Partial<Pick<OrganizationHolidayRecord, 'name' | 'holidayDate' | 'scope' | 'branch'>>,
+  input: Partial<
+    Pick<
+      OrganizationHolidayRecord,
+      'name' | 'holidayDate' | 'scope' | 'branch' | 'enabled' | 'source'
+    >
+  >,
 ): Promise<OrganizationHolidayRecord | null> {
   const db = getDb();
   const [row] = await db
@@ -86,6 +162,9 @@ export async function updateOrganizationHoliday(
       ...(input.holidayDate !== undefined ? { holidayDate: input.holidayDate } : {}),
       ...(input.scope !== undefined ? { scope: input.scope } : {}),
       ...(input.branch !== undefined ? { branch: input.branch } : {}),
+      ...(input.enabled !== undefined ? { enabled: input.enabled } : {}),
+      ...(input.source !== undefined ? { source: input.source } : {}),
+      updatedAt: new Date(),
     })
     .where(eq(organizationHolidays.id, id))
     .returning();
@@ -94,14 +173,7 @@ export async function updateOrganizationHoliday(
     return null;
   }
 
-  return {
-    id: row.id,
-    name: row.name,
-    holidayDate: row.holidayDate,
-    scope: row.scope,
-    branch: row.branch,
-    createdAt: row.createdAt.toISOString(),
-  };
+  return mapRow(row);
 }
 
 export async function deleteOrganizationHoliday(id: string): Promise<boolean> {

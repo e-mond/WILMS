@@ -21,6 +21,9 @@ export type ShellNavIcon =
   | 'offline-sync'
   | 'reviewed'
   | 'expenses'
+  | 'holidays'
+  | 'documentation'
+  | 'operations'
   | 'messages';
 
 /** Progressive-disclosure categories for shell navigation. */
@@ -106,7 +109,7 @@ export const SUPER_ADMIN_NAV: ShellNavItem[] = [
     href: '/ops',
     label: 'Operations',
     exact: true,
-    icon: 'queue',
+    icon: 'operations',
     group: 'system',
   },
   { href: '/reports', label: 'Reports', exact: true, icon: 'reports', group: 'reports' },
@@ -128,8 +131,8 @@ export const COLLECTOR_NAV: ShellNavItem[] = [
     group: 'financial',
   },
   { href: '/collector/my-borrowers', label: 'Borrowers', icon: 'borrowers', group: 'people' },
-  { href: '/collector/expenses', label: 'Expenses', icon: 'reports', group: 'financial' },
-  { href: '/collector/holidays', label: 'Holidays', icon: 'reports', group: 'operations' },
+  { href: '/collector/expenses', label: 'Expenses', icon: 'expenses', group: 'financial' },
+  { href: '/collector/holidays', label: 'Holidays', icon: 'holidays', group: 'operations' },
   {
     href: '/collector/reconciliation',
     label: 'Reconcile',
@@ -173,7 +176,7 @@ export const APPROVER_NAV: ShellNavItem[] = [
   {
     href: '/approver/holidays',
     label: 'Holidays',
-    icon: 'queue',
+    icon: 'holidays',
     group: 'operations',
   },
   { href: '/approver/reviewed', label: 'Reviewed', icon: 'reviewed', group: 'operations' },
