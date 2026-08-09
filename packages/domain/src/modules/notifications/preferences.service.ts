@@ -173,8 +173,13 @@ export async function shouldSendChannel(
   if (category === 'approval' && !prefs.approvalNotifications) return false;
   if (category === 'registration' && !prefs.registrationNotifications) return false;
 
-  if (!options?.critical && (category === 'announcement' || category === 'reminder' || category === 'marketing')) {
-    if (isWithinQuietHours(prefs)) {
+  if (!options?.critical) {
+    const quietChannels =
+      channel === 'PUSH' ||
+      category === 'announcement' ||
+      category === 'reminder' ||
+      category === 'marketing';
+    if (quietChannels && isWithinQuietHours(prefs)) {
       return false;
     }
   }
