@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { SettingsSectionCard, SettingsSettingRow } from '@/features/settings/components/SettingsSectionCard';
 import { Switch } from '@/components/ui/Switch';
 import { Select } from '@/components/ui/Select';
+import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/hooks/useToast';
 import { USE_MOCK_SERVICES } from '@/config/api';
@@ -26,6 +27,10 @@ const DEFAULTS: NotificationPreferences = {
   approvalNotifications: true,
   registrationNotifications: true,
   digestFrequency: 'INSTANT',
+  quietHoursEnabled: false,
+  quietHoursStart: '22:00',
+  quietHoursEnd: '07:00',
+  quietHoursTimezone: 'Africa/Accra',
 };
 
 export function NotificationPreferencesSection() {
@@ -134,6 +139,39 @@ export function NotificationPreferencesSection() {
           </Select>
         }
       />
+      <SettingsSettingRow
+        title="Quiet hours"
+        description="Suppress non-critical push during local quiet hours (Africa/Accra by default)."
+        control={
+          <Switch
+            checked={Boolean(prefs.quietHoursEnabled)}
+            label="Quiet hours"
+            onChange={(value) => update('quietHoursEnabled', value)}
+          />
+        }
+      />
+      {prefs.quietHoursEnabled ? (
+        <div className="grid gap-wilms-3 sm:grid-cols-2">
+          <label className="space-y-wilms-1 text-small text-text-muted">
+            Starts
+            <Input
+              type="time"
+              value={prefs.quietHoursStart ?? '22:00'}
+              onChange={(event) => update('quietHoursStart', event.target.value)}
+              aria-label="Quiet hours start"
+            />
+          </label>
+          <label className="space-y-wilms-1 text-small text-text-muted">
+            Ends
+            <Input
+              type="time"
+              value={prefs.quietHoursEnd ?? '07:00'}
+              onChange={(event) => update('quietHoursEnd', event.target.value)}
+              aria-label="Quiet hours end"
+            />
+          </label>
+        </div>
+      ) : null}
       <div className="flex justify-end pt-wilms-2">
         <Button type="button" size="sm" onClick={() => void save()}>
           Save preferences

@@ -77,7 +77,19 @@ export function AppNavbar({
 
           <div className="min-w-0 flex-1 overflow-hidden">
             {isExecutive ? (
-              <PageBreadcrumbs items={breadcrumbs} />
+              <div className="min-w-0">
+                {user?.displayName ? (
+                  <p className="truncate text-xs font-medium text-text-muted">
+                    {(() => {
+                      const hour = new Date().getHours();
+                      const greet =
+                        hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+                      return `${greet}, ${user.displayName.split(/\s+/)[0]}`;
+                    })()}
+                  </p>
+                ) : null}
+                <PageBreadcrumbs items={breadcrumbs} />
+              </div>
             ) : (
               <h1 className="truncate text-base font-semibold tracking-tight text-text-primary">
                 {pageTitle}
@@ -91,7 +103,7 @@ export function AppNavbar({
         </div>
 
         <div className="flex shrink-0 items-center justify-end">
-          <ShellNavbarActions hideSearch showDateTime={false} />
+          <ShellNavbarActions hideSearch showDateTime />
         </div>
       </div>
     </header>

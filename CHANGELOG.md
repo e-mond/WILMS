@@ -2,6 +2,35 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.8.0] — Enterprise Design, Automation & Platform Readiness
+
+**Date:** August 2026  
+**Branch:** `feature/v1.8-enterprise-design-automation`
+
+### Added
+
+- Self-hosted typography (no runtime Google Fonts) with CSP-safe font loading
+- Ghana public holiday provider with admin sync and local overrides
+- Premium single-calendar holiday experience with impact preview, cancel, notes/evidence fields
+- Unique module icon system across shells and quick actions
+- iOS-inspired enterprise surfaces and role workspace heroes
+- Offline shell expansion + sync progress UX for major role routes
+- Automation engine: reminder/escalation ladders, follow-up tasks, workload auto-assign hook, executive pack alerts, Settings enable/disable
+- Quiet hours UI, expanded notification inbox filters, Product Tour 3.0 steps
+- Release pack under `docs/v1.8.0/` (design, holidays, offline, automation, security, migrations, test evidence)
+
+### Fixed
+
+- CSP blocking of Google Fonts stylesheets
+- Holiday request API 500s when schema missing or DB errors unmapped
+
+### Notes
+
+- Extends v1.7.5 foundations; does not weaken financial, RBAC/SoD, reconciliation, notifications, or scheduler guarantees
+- Auth remains custom HMAC sessions
+- Apply migrations 0037–0039 before enabling Ghana sync / automation tables in production
+- Full offline writes for every entity and visual workflow builder remain iterative beyond this RC
+
 ## [1.7.5] — Offline, Push & Modernisation
 
 **Date:** August 2026  

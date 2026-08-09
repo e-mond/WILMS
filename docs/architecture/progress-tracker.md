@@ -29,6 +29,7 @@ Units marked ✅ implement core behaviour and unit tests. **Global DoD is not me
 | **v1.7.3 Documentation Suite** | ✅ Complete — branch `feature/v1.7.3-documentation-suite`; library in `documentation/`; pack in `docs/v1.7.3/` |
 | **v1.7.4 Documentation Centre** | ✅ Complete — branch `feature/v1.7.4-documentation-portal`; in-app reader/search/downloads; pack in `docs/v1.7.4/` |
 | **v1.7.5 Offline, Push & Modernisation** | ✅ Complete — branch `feature/v1.7.5-offline-push-modernisation`; pack in `docs/v1.7.5/` |
+| **v1.8.0 Enterprise Design & Automation** | 🔄 RC on `feature/v1.8-enterprise-design-automation` — pack in `docs/v1.8.0/`; apply migrations 0037–0039 on Neon before production |
 | **v1.7.1 Market Readiness** | ✅ Merged (#165 / #166); pack in `docs/v1.7.1/` |
 
 ---
