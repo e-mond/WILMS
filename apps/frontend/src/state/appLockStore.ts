@@ -1,9 +1,11 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import {
+  APP_LOCK_DEFAULT_IDLE_MS,
   APP_LOCK_MAX_ATTEMPTS,
   APP_LOCK_POST_LOGIN_GRACE_MS,
   APP_LOCK_STORAGE_KEY,
+  type AppLockIdleTimeoutMs,
 } from '@/constants/app-lock';
 import { hashPinSync, verifyPinSync } from '@/lib/security/pin-hash';
 
@@ -12,6 +14,8 @@ interface AppLockState {
   pinConfigured: boolean;
   pinHash: string | null;
   pinUserId: string | null;
+  idleTimeoutMs: AppLockIdleTimeoutMs;
+  biometricsEnabled: boolean;
   isHydrated: boolean;
   isLocked: boolean;
   failedAttempts: number;
@@ -19,6 +23,8 @@ interface AppLockState {
   sessionStartedAt: number;
   setPin: (pin: string, userId: string) => void;
   clearPin: () => void;
+  setIdleTimeoutMs: (idleTimeoutMs: AppLockIdleTimeoutMs) => void;
+  setBiometricsEnabled: (enabled: boolean) => void;
   lock: () => void;
   unlock: () => void;
   verifyAndUnlock: (pin: string, userId: string) => { success: boolean; attemptsRemaining: number };
@@ -34,6 +40,8 @@ export const useAppLockStore = create<AppLockState>()(
       pinConfigured: false,
       pinHash: null,
       pinUserId: null,
+      idleTimeoutMs: APP_LOCK_DEFAULT_IDLE_MS,
+      biometricsEnabled: false,
       isHydrated: false,
       isLocked: false,
       failedAttempts: 0,
@@ -61,11 +69,20 @@ export const useAppLockStore = create<AppLockState>()(
           pinConfigured: false,
           pinHash: null,
           pinUserId: null,
+          biometricsEnabled: false,
           isLocked: false,
           failedAttempts: 0,
           lastActivityAt: now,
           sessionStartedAt: now,
         });
+      },
+
+      setIdleTimeoutMs: (idleTimeoutMs) => {
+        set({ idleTimeoutMs });
+      },
+
+      setBiometricsEnabled: (enabled) => {
+        set({ biometricsEnabled: enabled });
       },
 
       lock: () => {
@@ -139,6 +156,8 @@ export const useAppLockStore = create<AppLockState>()(
         pinConfigured: state.pinConfigured,
         pinHash: state.pinHash,
         pinUserId: state.pinUserId,
+        idleTimeoutMs: state.idleTimeoutMs,
+        biometricsEnabled: state.biometricsEnabled,
       }),
       onRehydrateStorage: () => (state) => {
         state?.markHydrated();

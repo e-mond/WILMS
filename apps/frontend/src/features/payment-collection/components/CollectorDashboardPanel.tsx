@@ -14,6 +14,7 @@ import { EmptyState } from '@/components/feedback/EmptyState';
 import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { DetailSidebarCard, ExecutiveKpiGrid } from '@/components/layout/executive';
 import { ExecutiveDetailLayout } from '@/components/layout/ExecutiveDetailLayout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { useCollectorDashboard } from '@/features/payment-collection/hooks/useCollectorDashboard';
 import { CollectorSyncStatusCard } from '@/features/payment-collection/components/CollectorSyncStatusCard';
 import { useAuth } from '@/hooks/useAuth';
@@ -305,7 +306,7 @@ export function CollectorDashboardPanel() {
 
       <section
         aria-label="Quick actions"
-        className="grid grid-cols-2 gap-wilms-2 sm:grid-cols-4"
+        className="grid grid-cols-2 gap-wilms-2 sm:grid-cols-3 lg:grid-cols-5"
       >
         <QuickAction
           href="/collector/my-borrowers?status=PENDING"
@@ -318,6 +319,11 @@ export function CollectorDashboardPanel() {
           description={reconciliationLabel(summary.reconciliationStatus)}
         />
         <QuickAction href="/collector/expenses" label="Log expense" description="Field costs" />
+        <QuickAction
+          href="/collector/holidays"
+          label="Request holiday"
+          description="Schedule shift"
+        />
         <QuickAction
           href="/collector/admin-fee"
           label="Collector fees"
@@ -403,13 +409,14 @@ export function CollectorDashboardPanel() {
           </div>
         }
       >
-        <section className="w-full min-w-0 space-y-wilms-3 rounded-sm border border-border bg-card p-wilms-4">
-          <div className="flex flex-wrap items-center justify-between gap-wilms-2">
-            <h2 className="text-heading-3 font-semibold text-text-primary">Today&apos;s Groups</h2>
+        <Card className="w-full min-w-0">
+          <CardHeader className="flex-row flex-wrap items-center justify-between gap-wilms-2">
+            <CardTitle>Today&apos;s Groups</CardTitle>
             <p className="text-small text-text-muted">
               {todayGroups.length} group{todayGroups.length === 1 ? '' : 's'}
             </p>
-          </div>
+          </CardHeader>
+          <CardContent>
           {todayGroups.length === 0 ? (
             <EmptyState
               title="No groups due today"
@@ -422,7 +429,8 @@ export function CollectorDashboardPanel() {
               ))}
             </div>
           )}
-        </section>
+          </CardContent>
+        </Card>
 
         <section className="mt-wilms-6 space-y-wilms-3">
           <div className="flex flex-wrap items-center justify-between gap-wilms-2">

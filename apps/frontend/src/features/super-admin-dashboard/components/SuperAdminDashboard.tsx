@@ -11,6 +11,9 @@ import {
   type DashboardKpiIconName,
 } from '@/components/icons/DashboardKpiIcon';
 import { DashboardQuickActionIcon } from '@/components/icons/DashboardQuickActionIcon';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
+import { Alert } from '@/components/ui/Alert';
 import {
   DASHBOARD_BORROWER_TONE_CLASS,
   DASHBOARD_VALUE_TONE_CLASS,
@@ -129,6 +132,12 @@ const QUICK_ACTIONS = [
     icon: 'audit' as const,
     className: 'border-status-info text-status-info hover:bg-status-info-light',
   },
+  {
+    href: '/settings?section=holidays',
+    label: 'Review holidays',
+    icon: 'approve' as const,
+    className: 'border-brand-primary text-brand-primary hover:bg-brand-primary-light',
+  },
 ];
 
 export function SuperAdminDashboard() {
@@ -218,28 +227,41 @@ function OperationalDashboardContent({
 
       <div className="grid gap-wilms-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
         <DashboardReconciliationSummary compact />
-        <section
-          aria-labelledby="ops-activity-heading"
-          className="rounded-sm border border-border bg-card p-wilms-5"
-        >
-          <div className="mb-wilms-4">
-            <h2 id="ops-activity-heading" className="text-heading-3 font-semibold text-text-primary">
-              Recent activity
-            </h2>
-            <p className="text-small text-text-muted">Concise audit-backed summary</p>
-          </div>
-          <DashboardRecentActivity limit={3} />
-        </section>
+        <Card aria-labelledby="ops-activity-heading">
+          <CardHeader>
+            <CardTitle id="ops-activity-heading">Recent activity</CardTitle>
+            <CardDescription>Concise audit-backed summary</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DashboardRecentActivity limit={3} />
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="grid gap-wilms-4 lg:grid-cols-2">
-        <div className="min-w-0 rounded-sm border border-[color-mix(in_srgb,var(--color-status-active)_35%,transparent)] bg-[color-mix(in_srgb,var(--color-status-active)_8%,var(--color-card))] p-wilms-4">
-          <DashboardCollectionSummary compact />
-        </div>
-        <div className="min-w-0 rounded-sm border border-[color-mix(in_srgb,var(--color-status-at-risk)_40%,transparent)] bg-[color-mix(in_srgb,var(--color-status-at-risk)_10%,var(--color-card))] p-wilms-4">
-          <DashboardExpenseSummary compact />
-        </div>
-      </div>
+      <Tabs defaultValue="collections">
+        <TabsList aria-label="Operational summaries">
+          <TabsTrigger value="collections">Collections</TabsTrigger>
+          <TabsTrigger value="expenses">Expenses</TabsTrigger>
+        </TabsList>
+        <TabsContent value="collections">
+          <Card className="border-[color-mix(in_srgb,var(--color-status-active)_35%,transparent)] bg-[color-mix(in_srgb,var(--color-status-active)_8%,var(--color-card))]">
+            <CardContent>
+              <DashboardCollectionSummary compact />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="expenses">
+          <Card className="border-[color-mix(in_srgb,var(--color-status-at-risk)_40%,transparent)] bg-[color-mix(in_srgb,var(--color-status-at-risk)_10%,var(--color-card))]">
+            <CardContent>
+              <DashboardExpenseSummary compact />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      <Alert tone="info" title="Holiday requests">
+        Review collector holiday requests from Settings → Holidays or the Review holidays quick action.
+      </Alert>
 
       <ExecutiveKpiGrid className="sm:grid-cols-2 xl:grid-cols-4">
         {displayKpis.map((kpi) => (
@@ -310,13 +332,11 @@ function OperationalDashboardContent({
       </section>
 
       <div className="grid gap-wilms-6 xl:grid-cols-1">
-        <section
-          aria-labelledby="ops-actions-heading"
-          className="rounded-sm border border-border bg-card p-wilms-5"
-        >
-          <h2 id="ops-actions-heading" className="text-heading-3 font-semibold text-text-primary">
-            Quick actions
-          </h2>
+        <Card aria-labelledby="ops-actions-heading">
+          <CardHeader>
+            <CardTitle id="ops-actions-heading">Quick actions</CardTitle>
+          </CardHeader>
+          <CardContent>
           <ul className="mt-wilms-4 grid gap-wilms-3 sm:grid-cols-2 lg:grid-cols-3">
             {QUICK_ACTIONS.map((action) => (
               <li key={action.href}>
@@ -343,21 +363,18 @@ function OperationalDashboardContent({
               </button>
             </li>
           </ul>
-        </section>
+          </CardContent>
+        </Card>
       </div>
 
-      <section
-        aria-labelledby="borrower-status-heading"
-        className="rounded-sm border border-border bg-card p-wilms-5"
-      >
-        <div className="flex flex-wrap items-end justify-between gap-wilms-2">
-          <h2 id="borrower-status-heading" className="text-heading-3 font-semibold text-text-primary">
-            Borrower workflow status
-          </h2>
-          <p className="text-small text-text-muted">
+      <Card aria-labelledby="borrower-status-heading">
+        <CardHeader className="flex-row flex-wrap items-end justify-between gap-wilms-2">
+          <CardTitle id="borrower-status-heading">Borrower workflow status</CardTitle>
+          <CardDescription>
             Total: <span className="font-semibold text-text-primary">{borrowerTotal.toLocaleString()}</span>
-          </p>
-        </div>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
         {borrowerTotal === 0 ? (
           <div className="mt-wilms-4">
             <GuidedEmptyState
@@ -387,7 +404,8 @@ function OperationalDashboardContent({
             ))}
           </ul>
         )}
-      </section>
+        </CardContent>
+      </Card>
     </div>
   );
 }

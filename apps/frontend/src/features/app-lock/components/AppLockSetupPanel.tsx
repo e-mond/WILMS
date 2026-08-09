@@ -5,21 +5,28 @@ import { Alert } from '@/components/feedback/Alert';
 import { Button } from '@/components/ui/Button';
 import { PinEntryPad } from '@/features/app-lock/components/PinEntryPad';
 import { appLockPinSchema, setAppLockPinSchema } from '@/features/app-lock/app-lock.schema';
-import { APP_LOCK_PIN_LENGTH } from '@/constants/app-lock';
+import { APP_LOCK_IDLE_TIMEOUT_OPTIONS_MS, APP_LOCK_PIN_LENGTH } from '@/constants/app-lock';
 import { useAuth } from '@/hooks/useAuth';
 import { useAppLockStore } from '@/state/appLockStore';
+import { Select } from '@/components/ui/Select';
+import { isWebAuthnAvailable, registerAppLockCredential } from '@/lib/security/webauthn-app-lock';
 
 type SetupStep = 'intro' | 'enter' | 'confirm';
 
 export function AppLockSetupPanel({ mandatory = false }: { mandatory?: boolean }) {
   const { user } = useAuth();
   const isEnabled = useAppLockStore((state) => state.isEnabled);
+  const idleTimeoutMs = useAppLockStore((state) => state.idleTimeoutMs);
+  const biometricsEnabled = useAppLockStore((state) => state.biometricsEnabled);
   const setPin = useAppLockStore((state) => state.setPin);
   const clearPin = useAppLockStore((state) => state.clearPin);
+  const setIdleTimeoutMs = useAppLockStore((state) => state.setIdleTimeoutMs);
+  const setBiometricsEnabled = useAppLockStore((state) => state.setBiometricsEnabled);
   const [step, setStep] = useState<SetupStep>('intro');
   const [draftPin, setDraftPin] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const webAuthnSupported = typeof window !== 'undefined' && isWebAuthnAvailable();
 
   const resetFlow = () => {
     setStep('intro');
@@ -81,8 +88,56 @@ export function AppLockSetupPanel({ mandatory = false }: { mandatory?: boolean }
       ) : null}
 
       {isEnabled ? (
-        <div className="mt-wilms-4 space-y-wilms-3">
+        <div className="mt-wilms-4 space-y-wilms-3" data-tour="app-lock">
           <p className="text-small font-semibold text-success">Enabled on this device</p>
+          <label className="block text-small text-text-muted">
+            Auto-lock after inactivity
+            <Select
+              className="mt-1"
+              value={String(idleTimeoutMs)}
+              onChange={(event) =>
+                setIdleTimeoutMs(Number(event.target.value) as (typeof APP_LOCK_IDLE_TIMEOUT_OPTIONS_MS)[number])
+              }
+            >
+              {APP_LOCK_IDLE_TIMEOUT_OPTIONS_MS.map((ms) => (
+                <option key={ms} value={ms}>
+                  {ms < 60_000 ? `${ms / 1000} seconds` : `${ms / 60_000} minutes`}
+                </option>
+              ))}
+            </Select>
+          </label>
+          {webAuthnSupported ? (
+            <div className="flex flex-wrap items-center gap-wilms-3">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  void (async () => {
+                    try {
+                      await registerAppLockCredential(user?.id ?? 'wilms-user');
+                      setBiometricsEnabled(true);
+                      setSuccessMessage('Biometric unlock enabled. PIN remains the fallback.');
+                    } catch (error) {
+                      setErrorMessage(
+                        error instanceof Error ? error.message : 'Unable to enable biometrics.',
+                      );
+                    }
+                  })();
+                }}
+              >
+                {biometricsEnabled ? 'Re-enrol biometrics' : 'Enable biometric unlock'}
+              </Button>
+              {biometricsEnabled ? (
+                <Button type="button" variant="ghost" onClick={() => setBiometricsEnabled(false)}>
+                  Disable biometrics
+                </Button>
+              ) : null}
+            </div>
+          ) : (
+            <p className="text-small text-text-muted">
+              Biometrics are not available in this browser. PIN unlock remains required.
+            </p>
+          )}
           <div className="flex flex-wrap gap-wilms-3">
             <Button type="button" variant="secondary" onClick={() => setStep('enter')}>
               Change PIN
@@ -95,7 +150,7 @@ export function AppLockSetupPanel({ mandatory = false }: { mandatory?: boolean }
           </div>
         </div>
       ) : (
-        <Button type="button" className="mt-wilms-4" onClick={() => setStep('enter')}>
+        <Button type="button" className="mt-wilms-4" onClick={() => setStep('enter')} data-tour="app-lock">
           Set up app lock
         </Button>
       )}

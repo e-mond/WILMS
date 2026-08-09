@@ -7,6 +7,8 @@ import { CurrencyAmount, DataTable, KpiCard } from '@/components/data-display';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { ExecutiveKpiGrid, ManagementToolbar } from '@/components/layout/executive';
 import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
@@ -116,13 +118,14 @@ export function ExecutiveIntelligencePanel() {
         ) : null}
       </QueryStatePanel>
 
-      <section aria-labelledby="forecast-heading" className="space-y-wilms-3">
+      <Tabs defaultValue="forecast">
         <div className="flex flex-wrap items-end justify-between gap-wilms-3">
           <div>
-            <h2 id="forecast-heading" className="text-heading-3 font-semibold text-text-primary">
-              Forecast
-            </h2>
-            <p className="text-small text-text-muted">
+            <TabsList aria-label="Executive boards">
+              <TabsTrigger value="forecast">Forecast</TabsTrigger>
+              <TabsTrigger value="guidance">Board guidance</TabsTrigger>
+            </TabsList>
+            <p className="mt-wilms-2 text-small text-text-muted">
               Schedule-based weekly due × observed collection rate.
             </p>
           </div>
@@ -140,9 +143,28 @@ export function ExecutiveIntelligencePanel() {
             </Select>
           </label>
         </div>
-
-        <ForecastSection query={forecastQuery} />
-      </section>
+        <TabsContent value="forecast">
+          <Card>
+            <CardHeader>
+              <CardTitle>Forecast</CardTitle>
+              <CardDescription>Projected collections over the selected horizon.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ForecastSection query={forecastQuery} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="guidance">
+          <Card>
+            <CardContent>
+              <p className="text-small text-text-muted">
+                Use portfolio health KPIs above with forecast trends for board packs. Export CSV from the
+                toolbar when preparing committee packs.
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

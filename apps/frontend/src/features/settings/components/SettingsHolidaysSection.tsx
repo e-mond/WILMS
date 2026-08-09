@@ -12,6 +12,7 @@ import { PERMISSION } from '@/constants/permissions';
 import { SettingsHolidaysIcon } from '@/features/settings/components/SettingsSectionIcons';
 import { SettingsSectionCard } from '@/features/settings/components/SettingsSectionCard';
 import { organizationHolidaysService } from '@/services/organizationHolidaysService';
+import { HolidayRequestReviewQueue } from '@/features/holidays/components/HolidayRequestReviewQueue';
 import type { OrganizationHoliday } from '@/types/enterprise';
 import { formatDisplayDate } from '@/utils/format-date';
 import { useToast } from '@/hooks/useToast';
@@ -126,6 +127,14 @@ export function SettingsHolidaysSection() {
             ]}
           />
         )}
+      </SettingsSectionCard>
+
+      <SettingsSectionCard
+        title="Holiday request queue"
+        description="Review collector-submitted holiday requests. Approved requests are applied to the organisation calendar."
+        icon={<SettingsHolidaysIcon />}
+      >
+        <HolidayRequestReviewQueue />
       </SettingsSectionCard>
     </div>
   );

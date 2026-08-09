@@ -4,13 +4,19 @@ export interface OfflineBannerProps {
   isOffline: boolean;
   pendingPayments: number;
   pendingExpenses: number;
+  pendingHolidays?: number;
   reviewPayments: number;
   isSyncing: boolean;
   hasQueueWarning: boolean;
+  onRetrySync?: () => void;
   className?: string;
 }
 
-function formatPendingLabel(pendingPayments: number, pendingExpenses: number): string {
+function formatPendingLabel(
+  pendingPayments: number,
+  pendingExpenses: number,
+  pendingHolidays: number,
+): string {
   const parts: string[] = [];
 
   if (pendingPayments > 0) {
@@ -21,19 +27,24 @@ function formatPendingLabel(pendingPayments: number, pendingExpenses: number): s
     parts.push(`${pendingExpenses} expense${pendingExpenses === 1 ? '' : 's'}`);
   }
 
-  return parts.join(' and ');
+  if (pendingHolidays > 0) {
+    parts.push(`${pendingHolidays} holiday request${pendingHolidays === 1 ? '' : 's'}`);
+  }
+
+  return parts.join(', ');
 }
 
 function getBannerMessage({
   isOffline,
   pendingPayments,
   pendingExpenses,
+  pendingHolidays = 0,
   reviewPayments,
   isSyncing,
   hasQueueWarning,
-}: Omit<OfflineBannerProps, 'className'>): string {
-  const pendingCount = pendingPayments + pendingExpenses;
-  const pendingLabel = formatPendingLabel(pendingPayments, pendingExpenses);
+}: Omit<OfflineBannerProps, 'className' | 'onRetrySync'>): string {
+  const pendingCount = pendingPayments + pendingExpenses + pendingHolidays;
+  const pendingLabel = formatPendingLabel(pendingPayments, pendingExpenses, pendingHolidays);
 
   if (hasQueueWarning) {
     return `Sync backlog critical: ${pendingCount} saved items waiting. Contact your supervisor.`;
@@ -44,7 +55,7 @@ function getBannerMessage({
   }
 
   if (isOffline) {
-    return 'You are offline. Payments and expenses will be saved and synced when connection returns.';
+    return 'You are offline. Changes will be saved and synced when connection returns.';
   }
 
   if (pendingCount > 0) {
@@ -59,14 +70,15 @@ function getBannerMessage({
 }
 
 export function OfflineBanner(props: OfflineBannerProps) {
-  const { className, ...status } = props;
+  const { className, onRetrySync, ...status } = props;
   const message = getBannerMessage(status);
 
   if (!message) {
     return null;
   }
 
-  const pendingCount = status.pendingPayments + status.pendingExpenses;
+  const pendingCount =
+    status.pendingPayments + status.pendingExpenses + (status.pendingHolidays ?? 0);
   const isCritical = status.hasQueueWarning;
   const isReviewOnly =
     !status.isOffline && pendingCount === 0 && status.reviewPayments > 0;
@@ -78,14 +90,27 @@ export function OfflineBanner(props: OfflineBannerProps) {
       className={cn(
         'border-b px-wilms-4 py-wilms-2 text-small font-semibold',
         isCritical
-          ? 'border-danger bg-danger-light text-text-primary'
+          ? 'border-danger bg-danger/10 text-danger'
           : isReviewOnly
-            ? 'border-status-info bg-status-info-light text-text-primary'
-            : 'border-warning bg-warning-light text-text-primary',
+            ? 'border-status-info bg-status-info-light text-status-info'
+            : status.isOffline
+              ? 'border-status-at-risk bg-status-at-risk-light text-status-at-risk'
+              : 'border-brand-primary bg-brand-primary-light text-brand-primary',
         className,
       )}
     >
-      {message}
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-wilms-2">
+        <span>{message}</span>
+        {onRetrySync && pendingCount > 0 && !status.isOffline ? (
+          <button
+            type="button"
+            className="underline underline-offset-2"
+            onClick={onRetrySync}
+          >
+            Retry sync
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }

@@ -15,6 +15,7 @@ export type OfflineQueueItemStatus =
 export const OFFLINE_QUEUE_ITEM_TYPE = {
   RECORD_PAYMENT: 'RECORD_PAYMENT',
   RECORD_EXPENSE: 'RECORD_EXPENSE',
+  HOLIDAY_REQUEST_CREATE: 'HOLIDAY_REQUEST_CREATE',
 } as const;
 
 export type OfflineQueueItemType =
@@ -30,6 +31,16 @@ export interface RecordExpenseQueuePayload {
   receiptUploadId?: string;
   recordedById: string;
   recordedByName: string;
+}
+
+export interface HolidayRequestQueuePayload {
+  name: string;
+  holidayDate: string;
+  endDate?: string | null;
+  reason?: string | null;
+  scope?: string;
+  branch?: string | null;
+  submit: boolean;
 }
 
 export interface OfflinePaymentQueueItem {
@@ -54,7 +65,21 @@ export interface OfflineExpenseQueueItem {
   lastError: string | null;
 }
 
-export type OfflineQueueItem = OfflinePaymentQueueItem | OfflineExpenseQueueItem;
+export interface OfflineHolidayQueueItem {
+  id: string;
+  type: typeof OFFLINE_QUEUE_ITEM_TYPE.HOLIDAY_REQUEST_CREATE;
+  payload: HolidayRequestQueuePayload;
+  status: OfflineQueueItemStatus;
+  createdAt: number;
+  lastAttemptAt: number | null;
+  attemptCount: number;
+  lastError: string | null;
+}
+
+export type OfflineQueueItem =
+  | OfflinePaymentQueueItem
+  | OfflineExpenseQueueItem
+  | OfflineHolidayQueueItem;
 
 export type OfflinePaymentSyncOutcome = 'applied' | 'duplicate' | 'queued_for_review';
 
@@ -67,5 +92,11 @@ export type OfflineExpenseSyncOutcome = 'applied';
 export type OfflineExpenseSyncHandler = (
   item: OfflineExpenseQueueItem,
 ) => Promise<OfflineExpenseSyncOutcome>;
+
+export type OfflineHolidaySyncOutcome = 'applied' | 'duplicate';
+
+export type OfflineHolidaySyncHandler = (
+  item: OfflineHolidayQueueItem,
+) => Promise<OfflineHolidaySyncOutcome>;
 
 export type OfflineQueueSyncState = 'idle' | 'syncing';

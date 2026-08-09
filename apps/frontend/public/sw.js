@@ -1,15 +1,31 @@
-const CACHE_VERSION = 'wilms-v174-shell';
+const CACHE_VERSION = 'wilms-v175-shell';
 const SHELL_ASSETS = [
   '/',
   '/login',
   '/dashboard',
   '/executive',
+  '/ops',
   '/reports',
   '/documentation',
   '/settings',
+  '/borrowers',
+  '/loans',
+  '/expenses',
+  '/notifications',
   '/collector/dashboard',
   '/collector/my-borrowers',
   '/collector/reconciliation',
+  '/collector/expenses',
+  '/collector/holidays',
+  '/collector/settings',
+  '/approver/pending',
+  '/approver/holidays',
+  '/approver/sync-conflicts',
+  '/approver/settings',
+  '/officer/register',
+  '/officer/settings',
+  '/auditor/reports',
+  '/auditor/settings',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon-192-maskable.png',
@@ -138,6 +154,9 @@ self.addEventListener('notificationclick', (event) => {
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
       for (const client of clients) {
         if ('focus' in client) {
+          if ('navigate' in client && typeof client.navigate === 'function') {
+            return client.navigate(targetUrl).then((navigated) => navigated ?? client.focus());
+          }
           return client.focus();
         }
       }

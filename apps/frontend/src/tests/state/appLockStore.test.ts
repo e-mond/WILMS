@@ -8,6 +8,8 @@ describe('appLockStore', () => {
       isEnabled: false,
       pinHash: null,
       pinUserId: null,
+      idleTimeoutMs: 9 * 60_000,
+      biometricsEnabled: false,
       isHydrated: true,
       isLocked: false,
       failedAttempts: 0,
@@ -53,5 +55,10 @@ describe('appLockStore', () => {
 
     expect(useAppLockStore.getState().isEnabled).toBe(false);
     expect(useAppLockStore.getState().pinHash).toBeNull();
+  });
+
+  it('persists configurable idle timeout', () => {
+    useAppLockStore.getState().setIdleTimeoutMs(5 * 60_000);
+    expect(useAppLockStore.getState().idleTimeoutMs).toBe(5 * 60_000);
   });
 });

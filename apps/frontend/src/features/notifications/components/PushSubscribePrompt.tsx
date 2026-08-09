@@ -19,18 +19,39 @@ export function PushSubscribePrompt() {
   const [supported, setSupported] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [unavailableReason, setUnavailableReason] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setSupported('serviceWorker' in navigator && 'PushManager' in window);
+    void notificationPreferencesService.getVapidPublicKey().then(({ publicKey }) => {
+      if (!publicKey) {
+        setUnavailableReason(
+          'Push delivery is not configured on this environment (VAPID keys missing). In-app alerts still work.',
+        );
+      }
+    });
   }, []);
 
   async function enablePush() {
     if (!supported) return;
     setLoading(true);
+    setErrorMessage(null);
     try {
       const registration = await navigator.serviceWorker.register('/sw.js');
       const { publicKey } = await notificationPreferencesService.getVapidPublicKey();
-      if (!publicKey) return;
+      if (!publicKey) {
+        setUnavailableReason(
+          'Push delivery is not configured on this environment (VAPID keys missing). In-app alerts still work.',
+        );
+        return;
+      }
+
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        setErrorMessage('Notification permission was not granted.');
+        return;
+      }
 
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
@@ -41,6 +62,7 @@ export function PushSubscribePrompt() {
       setSubscribed(true);
     } catch (error) {
       console.error('[push] subscribe failed', error);
+      setErrorMessage(error instanceof Error ? error.message : 'Unable to enable push notifications.');
     } finally {
       setLoading(false);
     }
@@ -51,9 +73,21 @@ export function PushSubscribePrompt() {
   }
 
   return (
-    <div className="rounded-md border border-border bg-background p-wilms-4">
-      <p className="text-body text-text-primary">Enable browser push notifications for real-time alerts.</p>
-      <Button type="button" size="sm" className="mt-wilms-3" disabled={loading} onClick={() => void enablePush()}>
+    <div className="rounded-sm border border-border bg-background p-wilms-4" data-tour="push-notifications">
+      <p className="text-body text-text-primary">
+        Enable browser push notifications for approvals, holiday status, sync conflicts, and reconciliation alerts.
+      </p>
+      {unavailableReason ? (
+        <p className="mt-wilms-2 text-small text-text-muted">{unavailableReason}</p>
+      ) : null}
+      {errorMessage ? <p className="mt-wilms-2 text-small text-danger">{errorMessage}</p> : null}
+      <Button
+        type="button"
+        size="sm"
+        className="mt-wilms-3"
+        disabled={loading || Boolean(unavailableReason)}
+        onClick={() => void enablePush()}
+      >
         {loading ? 'Enabling…' : 'Enable push notifications'}
       </Button>
     </div>

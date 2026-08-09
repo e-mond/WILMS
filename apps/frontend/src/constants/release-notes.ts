@@ -6,13 +6,13 @@ export interface ReleaseNotes {
 }
 
 export const CURRENT_RELEASE_NOTES: ReleaseNotes = {
-  version: '1.7.4',
+  version: '1.7.5',
   summary:
-    'Documentation Centre — read, search, print, and download the official WILMS product library inside the application.',
+    'Offline-ready field operations, holiday requests, push alerts, modern dashboards, and stronger App Lock.',
   highlights: [
-    'Enterprise Documentation Centre with book-quality reading layout and interactive contents.',
-    'Search across the full documentation library with section snippets.',
-    'Download PDF and Word editions directly from the app; presentation mode for board reviews.',
-    'Accessible from the Super Admin sidebar and Settings → Documentation.',
+    'Field-critical offline for every role with sync status and conflict review.',
+    'Collectors can request holidays; approvers review with maker-checker before schedule apply.',
+    'Web Push for approvals, holiday status, sync conflicts, and reconciliation alerts.',
+    'Modern dashboard widgets and Product Tour steps for Offline, Push, Holidays, and App Lock.',
   ],
 };
