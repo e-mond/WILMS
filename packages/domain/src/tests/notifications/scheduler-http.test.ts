@@ -21,14 +21,17 @@ describe('scheduler HTTP access', () => {
       throw new Error('Failed to bind test server');
     }
     baseUrl = `http://127.0.0.1:${address.port}`;
-  });
+  }, 60_000);
 
   afterAll(async () => {
     vi.unstubAllEnvs();
+    if (!server) {
+      return;
+    }
     await new Promise<void>((resolve, reject) => {
       server.close((err) => (err ? reject(err) : resolve()));
     });
-  });
+  }, 30_000);
 
   it('rejects scheduler requests without valid token', async () => {
     const response = await fetch(`${baseUrl}/notifications/scheduler/run`, {

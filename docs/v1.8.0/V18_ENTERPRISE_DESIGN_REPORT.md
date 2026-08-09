@@ -10,3 +10,11 @@
 ## Design direction
 
 iOS / visionOS-inspired enterprise surfaces: soft cards, glass headers, unique icons, generous spacing — applied incrementally across role dashboards in Phase E.
+
+## Post-release UI update
+
+- Shared table language with optional mobile stack cards
+- Removed permanent navbar Help/connection chrome
+- Calmer Super Admin / Collector / Approver / Executive / Reconciliation / Communication compose
+- Raise Flag entity search (no manual Entity ID)
+- No new release tag; version remains 1.8.0

@@ -1,6 +1,7 @@
 'use client';
 
 import { RoleWorkspaceHero } from '@/components/layout/RoleWorkspaceHero';
+import { usePendingApplications } from '@/features/approval-workflow/hooks/usePendingApplications';
 import {
   selectPendingExpenseCount,
   selectPendingHolidayCount,
@@ -10,6 +11,9 @@ import {
 } from '@/state/offlineQueueStore';
 
 export function ApproverWorkspaceHome() {
+  const { data: pendingApplications } = usePendingApplications();
+  const pendingApplicationCount = pendingApplications?.length ?? 0;
+
   const items = useOfflineQueueStore((state) => state.items);
   const pendingPayments = selectPendingPaymentCount(items);
   const pendingExpenses = selectPendingExpenseCount(items);
@@ -20,11 +24,12 @@ export function ApproverWorkspaceHome() {
   return (
     <RoleWorkspaceHero
       title="Approval workspace"
-      subtitle="Clear pending applications, holiday requests, and offline sync conflicts with maker-checker intact."
+      subtitle="Pending applications, holiday requests, and offline exceptions."
       metrics={[
         {
-          label: 'Pending queue',
-          value: 'Applications',
+          label: 'Pending applications',
+          value: pendingApplicationCount,
+          tone: pendingApplicationCount > 0 ? 'warning' : 'success',
           href: '/approver/pending',
         },
         {
@@ -40,26 +45,10 @@ export function ApproverWorkspaceHome() {
           href: '/approver/sync-conflicts',
         },
         {
-          label: 'Holidays',
-          value: 'Review',
+          label: 'Holiday requests',
+          value: pendingHolidays > 0 ? pendingHolidays : 'Review',
+          tone: pendingHolidays > 0 ? 'warning' : 'default',
           href: '/approver/holidays',
-        },
-      ]}
-      actions={[
-        {
-          href: '/approver/pending',
-          label: 'Open pending queue',
-          description: 'Approve or return borrower applications',
-        },
-        {
-          href: '/approver/sync-conflicts',
-          label: 'Resolve offline sync',
-          description: 'Review conflicts and queued field captures',
-        },
-        {
-          href: '/approver/holidays',
-          label: 'Holiday approvals',
-          description: 'Maker-checker holiday request decisions',
         },
       ]}
     />

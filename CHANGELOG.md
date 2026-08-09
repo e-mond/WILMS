@@ -5,7 +5,8 @@ All notable changes to WILMS are documented in this file.
 ## [1.8.0] — Enterprise Design, Automation & Platform Readiness
 
 **Date:** August 2026  
-**Branch:** `feature/v1.8-enterprise-design-automation`
+**Branch:** `feature/v1.8-enterprise-design-automation`  
+**Post-release update:** August 2026 (`fix/v1.8.0-ui-modernisation`) — same release identity; **no new tag / no v1.8.1**
 
 ### Added
 
@@ -18,17 +19,39 @@ All notable changes to WILMS are documented in this file.
 - Automation engine: reminder/escalation ladders, follow-up tasks, workload auto-assign hook, executive pack alerts, Settings enable/disable
 - Quiet hours UI, expanded notification inbox filters, Product Tour 3.0 steps
 - Release pack under `docs/v1.8.0/` (design, holidays, offline, automation, security, migrations, test evidence)
+- Shared `DataTable` mobile stack layout for responsive financial tables
+- Communication Center inline two-column compose console (audience | composer/preview)
+- Raise Flag entity search (name/phone/group/reference) without manual Entity ID entry
+
+### Changed (post-release UI update)
+
+- Super Admin / Collector / Approver dashboards: calmer hierarchy, less redundant chrome
+- Reconciliation collector form + admin review queue (status filter, stacked mobile rows, detail drawer)
+- Executive intelligence: removed Board guidance tab; tightened portfolio KPI hierarchy
+- Status badges use consistent pill language; KPI/card elevation restrained
+
+### Removed (post-release UI update)
+
+- Navbar Help button and Online/connection chip; floating Help FAB + connection chip
+- Collector dashboard quick-action grid and hero sync/connection KPI strip (offline engine retained)
+- Approver workspace explanatory action tiles (“Open pending queue” prose block)
+- Raise Flag visible Entity ID free-text field
+- Executive “Board guidance” panel
 
 ### Fixed
 
 - CSP blocking of Google Fonts stylesheets
 - Holiday request API 500s when schema missing or DB errors unmapped
+- Domain type-check TS2556 in `push-inapp-preferences.test.ts` (typed mock rest args)
+- Settings profile photo upload 403 for roles without `CAPTURE_DOCUMENTS` (own `profile-photo` allowed)
+- Unused serif font preload warnings (serif `preload: false`)
 
 ### Notes
 
 - Extends v1.7.5 foundations; does not weaken financial, RBAC/SoD, reconciliation, notifications, or scheduler guarantees
 - Auth remains custom HMAC sessions
 - Apply migrations 0037–0039 before enabling Ghana sync / automation tables in production
+- **This post-release update requires no new database migration**
 - Full offline writes for every entity and visual workflow builder remain iterative beyond this RC
 
 ## [1.7.5] — Offline, Push & Modernisation

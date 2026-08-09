@@ -19,9 +19,13 @@ import { PERMISSION, roleHasPermission } from '../../infrastructure/permissions/
 import type { SessionUser } from '../../middleware/authenticate.js';
 import { requireAuth } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/require-permission.js';
+import { getRequestPermissions } from '../../middleware/request-permissions.js';
+import { permissionSetHasAny } from '../../infrastructure/permissions/resolve-user-permissions.js';
 import { validateBody } from '../../middleware/validate-body.js';
 import { isDatabaseEnabled } from '../../db/client.js';
 import * as uploadRepository from '../../repositories/upload.repository.js';
+
+const PROFILE_PHOTO_PURPOSE = 'profile-photo';
 
 const uploadSchema = z.object({
   purpose: z.string().min(1),
@@ -114,10 +118,29 @@ uploadsRouter.get(
 
 uploadsRouter.post(
   '/uploads',
-  requirePermission(PERMISSION.CAPTURE_DOCUMENTS),
   validateBody(uploadSchema),
   asyncHandler(async (req, res) => {
+    const session = req.session;
+    if (!session) {
+      throw new AppError('Authentication required.', ERROR_CODE.UNAUTHORIZED, 401);
+    }
+
     const input = req.body as z.infer<typeof uploadSchema>;
+    const isOwnProfilePhoto =
+      input.purpose === PROFILE_PHOTO_PURPOSE &&
+      Boolean(input.entityId) &&
+      input.entityId === session.userId;
+
+    if (!isOwnProfilePhoto) {
+      const permissions = await getRequestPermissions(req);
+      if (!permissionSetHasAny(permissions, [PERMISSION.CAPTURE_DOCUMENTS])) {
+        throw new AppError(
+          'You do not have permission to perform this action.',
+          ERROR_CODE.UNAUTHORIZED,
+          403,
+        );
+      }
+    }
 
     if (!input.dataUrl) {
       throw new AppError('Upload payload requires dataUrl until multipart is enabled.', ERROR_CODE.VALIDATION, 422);
@@ -152,7 +175,7 @@ uploadsRouter.post(
       sizeBytes: buffer.length,
       entityId: input.entityId,
       buffer,
-      ownerUserId: req.session?.userId,
+      ownerUserId: session.userId,
     });
 
     sendData(res, toUploadRecord(stored), 201);

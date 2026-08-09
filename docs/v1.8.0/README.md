@@ -12,7 +12,8 @@ Branch: `feature/v1.8-enterprise-design-automation`
 | [AUTOMATION_ENGINE_REPORT.md](./AUTOMATION_ENGINE_REPORT.md) | Schedulers & reminders |
 | [WORKFLOW_ENGINE_REPORT.md](./WORKFLOW_ENGINE_REPORT.md) | Triggers / actions |
 | [PUSH_NOTIFICATION_REPORT.md](./PUSH_NOTIFICATION_REPORT.md) | Push categories |
-| [DASHBOARD_REDESIGN_REPORT.md](./DASHBOARD_REDESIGN_REPORT.md) | iOS-inspired dashboards |
+| [DASHBOARD_REDESIGN_REPORT.md](./DASHBOARD_REDESIGN_REPORT.md) | iOS-inspired dashboards (+ post-release UI) |
+| [POST_RELEASE_UI_UPDATE_REPORT.md](./POST_RELEASE_UI_UPDATE_REPORT.md) | Post-release UI + CI fix (no new tag) |
 | [SECURITY_HARDENING_REPORT.md](./SECURITY_HARDENING_REPORT.md) | Security posture |
 | [PERFORMANCE_REPORT.md](./PERFORMANCE_REPORT.md) | Perf targets |
 | [MIGRATION_REPORT.md](./MIGRATION_REPORT.md) | Migrations 0037–0039 |

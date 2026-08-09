@@ -16,7 +16,6 @@ import { DetailSidebarCard, ExecutiveKpiGrid } from '@/components/layout/executi
 import { ExecutiveDetailLayout } from '@/components/layout/ExecutiveDetailLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { useCollectorDashboard } from '@/features/payment-collection/hooks/useCollectorDashboard';
-import { CollectorSyncStatusCard } from '@/features/payment-collection/components/CollectorSyncStatusCard';
 import { useAuth } from '@/hooks/useAuth';
 import { ApiError } from '@/types/api';
 import {
@@ -74,7 +73,7 @@ function MetricTile({
     return (
       <Link
         href={href}
-        className="flex min-h-[72px] flex-col justify-center rounded-sm border border-border/70 bg-card/60 px-wilms-3 py-wilms-2 transition-colors hover:border-brand-primary/50 hover:bg-card"
+        className="flex min-h-[72px] flex-col justify-center rounded-xl border border-border/70 bg-background/60 px-wilms-3 py-wilms-2 transition-colors hover:border-brand-primary/40 hover:bg-brand-primary-light/20"
       >
         {content}
       </Link>
@@ -82,21 +81,9 @@ function MetricTile({
   }
 
   return (
-    <div className="flex min-h-[72px] flex-col justify-center rounded-sm border border-border/70 bg-card/60 px-wilms-3 py-wilms-2">
+    <div className="flex min-h-[72px] flex-col justify-center rounded-xl border border-border/70 bg-background/60 px-wilms-3 py-wilms-2">
       {content}
     </div>
-  );
-}
-
-function QuickAction({ href, label, description }: { href: string; label: string; description: string }) {
-  return (
-    <Link
-      href={href}
-      className="flex min-h-[56px] flex-col justify-center rounded-sm border border-border bg-card px-wilms-3 py-wilms-2 transition-colors hover:border-brand-primary/50 hover:bg-brand-primary-light/30"
-    >
-      <span className="text-small font-semibold text-brand-primary">{label}</span>
-      <span className="text-xs text-text-muted">{description}</span>
-    </Link>
   );
 }
 
@@ -231,29 +218,14 @@ export function CollectorDashboardPanel() {
   const pendingBorrowers = borrowers.filter((entry) => entry.paymentStatus !== 'COLLECTED');
 
   return (
-    <div className="min-w-0 space-y-wilms-4" data-testid="collector-field-dashboard">
-      <div className="sticky top-0 z-20 -mx-wilms-1 flex gap-wilms-2 bg-background/95 px-wilms-1 py-wilms-2 backdrop-blur md:static md:bg-transparent md:p-0 md:backdrop-blur-none">
-        <Link
-          href="/collector/my-borrowers?status=PENDING"
-          className="inline-flex min-h-[48px] flex-1 items-center justify-center rounded-sm bg-brand-primary px-wilms-4 text-small font-semibold text-card"
-        >
-          Quick payment
-        </Link>
-        <Link
-          href="/collector/reconciliation"
-          className="inline-flex min-h-[48px] flex-1 items-center justify-center rounded-sm border border-brand-primary px-wilms-4 text-small font-semibold text-brand-primary"
-        >
-          Reconcile
-        </Link>
-      </div>
-
-      <section className="overflow-hidden rounded-sm border border-brand-primary bg-gradient-to-br from-brand-primary-light via-card to-card p-wilms-4 sm:p-wilms-5">
+    <div className="min-w-0 space-y-wilms-5" data-testid="collector-field-dashboard">
+      <section className="overflow-hidden rounded-2xl border border-border/80 bg-card p-wilms-4 shadow-[var(--shadow-card)] sm:p-wilms-5">
         <div className="flex flex-col gap-wilms-4">
           <div className="min-w-0">
             <p className="text-small font-semibold uppercase tracking-wide text-brand-primary">
-              Today&apos;s Collection
+              Today&apos;s collection
             </p>
-            <p className="mt-wilms-1 break-words text-heading-1 font-bold text-text-primary">
+            <p className="mt-wilms-1 break-words text-heading-1 font-semibold text-text-primary">
               <CurrencyAmount value={summary.collectedPesewas} />
             </p>
             <p className="mt-wilms-2 text-small text-text-muted">
@@ -261,7 +233,7 @@ export function CollectorDashboardPanel() {
               {formatDisplayDate(summary.date)} · {summary.paymentDayLabel}
             </p>
             <div
-              className="mt-wilms-3 h-2.5 max-w-md overflow-hidden rounded-full bg-background"
+              className="mt-wilms-3 h-2 max-w-md overflow-hidden rounded-full bg-background"
               role="progressbar"
               aria-valuenow={hero.progressPercent}
               aria-valuemin={0}
@@ -304,40 +276,13 @@ export function CollectorDashboardPanel() {
         </div>
       </section>
 
-      <section
-        aria-label="Quick actions"
-        className="grid grid-cols-2 gap-wilms-2 sm:grid-cols-3 lg:grid-cols-5"
-      >
-        <QuickAction
-          href="/collector/my-borrowers?status=PENDING"
-          label="Record payments"
-          description={`${hero.pendingBorrowers} pending`}
-        />
-        <QuickAction
-          href="/collector/reconciliation"
-          label="Reconcile"
-          description={reconciliationLabel(summary.reconciliationStatus)}
-        />
-        <QuickAction href="/collector/expenses" label="Log expense" description="Field costs" />
-        <QuickAction
-          href="/collector/holidays"
-          label="Request holiday"
-          description="Schedule shift"
-        />
-        <QuickAction
-          href="/collector/admin-fee"
-          label="Collector fees"
-          description="Admin fee entry"
-        />
-      </section>
-
       {alerts.length > 0 ? (
-        <div className="-mx-wilms-1 flex gap-wilms-2 overflow-x-auto px-wilms-1 pb-wilms-1">
+        <div className="-mx-wilms-1 flex gap-wilms-2 overflow-x-auto px-wilms-1 pb-wilms-1" aria-label="Operational alerts">
           {alerts.map((alert) => (
             <div
               key={alert.id}
               className={cn(
-                'shrink-0 rounded-sm border px-wilms-3 py-wilms-2 text-small font-semibold',
+                'shrink-0 rounded-full border px-wilms-3 py-wilms-2 text-small font-semibold',
                 alert.tone === 'error' && 'border-danger bg-danger/10 text-danger',
                 alert.tone === 'warning' && 'border-status-at-risk bg-status-at-risk-light text-status-at-risk',
                 alert.tone === 'info' && 'border-status-info bg-status-info-light text-status-info',
@@ -348,8 +293,6 @@ export function CollectorDashboardPanel() {
           ))}
         </div>
       ) : null}
-
-      <CollectorSyncStatusCard />
 
       <ExecutiveKpiGrid className="grid-cols-2 lg:grid-cols-4">
         <KpiCard
@@ -450,90 +393,62 @@ export function CollectorDashboardPanel() {
               description={`No borrowers have ${summary.paymentDayLabel} as their assigned payment day.`}
             />
           ) : (
-            <>
-              <div className="space-y-wilms-3 md:hidden">
-                {borrowers.map((borrower) => (
-                  <article
-                    key={borrower.borrowerId}
-                    className="rounded-sm border border-border bg-card p-wilms-4"
-                  >
+            <DataTable<CollectorDashboardBorrower>
+              variant="executive"
+              mobileLayout="stack"
+              caption="Borrowers due for collection today"
+              data={borrowers}
+              getRowId={(row) => row.borrowerId}
+              columns={[
+                {
+                  id: 'borrower',
+                  header: 'Borrower',
+                  priority: 'primary',
+                  cell: (row) => (
                     <div className="flex items-center gap-wilms-3">
-                      <Avatar
-                        label={borrower.borrowerName}
-                        photoUrl={borrower.borrowerPhotoUrl}
-                        size="sm"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-text-primary">{borrower.borrowerName}</p>
-                        <p className="text-small text-text-muted">{borrower.groupName}</p>
+                      <Avatar label={row.borrowerName} photoUrl={row.borrowerPhotoUrl} size="sm" />
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold text-text-primary">{row.borrowerName}</p>
+                        <p className="truncate text-small text-text-muted">{row.groupName}</p>
                       </div>
-                      <CollectorPaymentStatusBadge status={borrower.paymentStatus} />
                     </div>
-                    <div className="mt-wilms-3 flex items-center justify-between gap-wilms-2">
-                      <CurrencyAmount value={borrower.expectedPesewas} />
-                      <Link
-                        href={`/collector/payment/${borrower.borrowerId}`}
-                        className="inline-flex min-h-[44px] items-center text-small font-semibold text-brand-primary"
-                      >
-                        Record payment
-                      </Link>
-                    </div>
-                  </article>
-                ))}
-              </div>
-              <div className="hidden md:block">
-                <DataTable<CollectorDashboardBorrower>
-                  variant="executive"
-                  caption="Borrowers due for collection today"
-                  data={borrowers}
-                  getRowId={(row) => row.borrowerId}
-                  columns={[
-                    {
-                      id: 'borrower',
-                      header: 'Borrower',
-                      cell: (row) => (
-                        <div className="flex items-center gap-wilms-3">
-                          <Avatar label={row.borrowerName} photoUrl={row.borrowerPhotoUrl} size="sm" />
-                          <div className="min-w-0">
-                            <p className="truncate font-semibold text-text-primary">{row.borrowerName}</p>
-                            <p className="truncate text-small text-text-muted">{row.groupName}</p>
-                          </div>
-                        </div>
-                      ),
-                    },
-                    {
-                      id: 'expected',
-                      header: 'Expected',
-                      cell: (row) => <CurrencyAmount value={row.expectedPesewas} />,
-                    },
-                    {
-                      id: 'collected',
-                      header: 'Collected',
-                      cell: (row) => (
-                        <CurrencyAmount value={row.collectedPesewas} className="text-status-active" />
-                      ),
-                    },
-                    {
-                      id: 'status',
-                      header: 'Status',
-                      cell: (row) => <CollectorPaymentStatusBadge status={row.paymentStatus} />,
-                    },
-                    {
-                      id: 'action',
-                      header: 'Action',
-                      cell: (row) => (
-                        <Link
-                          href={`/collector/payment/${row.borrowerId}`}
-                          className="text-small font-semibold text-brand-primary hover:underline"
-                        >
-                          Record payment
-                        </Link>
-                      ),
-                    },
-                  ]}
-                />
-              </div>
-            </>
+                  ),
+                },
+                {
+                  id: 'expected',
+                  header: 'Expected',
+                  priority: 'secondary',
+                  cell: (row) => <CurrencyAmount value={row.expectedPesewas} />,
+                },
+                {
+                  id: 'collected',
+                  header: 'Collected',
+                  priority: 'secondary',
+                  cell: (row) => (
+                    <CurrencyAmount value={row.collectedPesewas} className="text-status-active" />
+                  ),
+                },
+                {
+                  id: 'status',
+                  header: 'Status',
+                  priority: 'meta',
+                  cell: (row) => <CollectorPaymentStatusBadge status={row.paymentStatus} />,
+                },
+                {
+                  id: 'action',
+                  header: 'Action',
+                  priority: 'meta',
+                  cell: (row) => (
+                    <Link
+                      href={`/collector/payment/${row.borrowerId}`}
+                      className="text-small font-semibold text-brand-primary hover:underline"
+                    >
+                      Record payment
+                    </Link>
+                  ),
+                },
+              ]}
+            />
           )}
         </section>
 
