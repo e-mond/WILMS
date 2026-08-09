@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { BookOpen } from 'lucide-react';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
@@ -68,15 +69,20 @@ function WorkerLastRunCard({
 }) {
   if (!run) {
     return (
-      <div className="rounded-sm border border-border bg-card p-wilms-3">
-        <p className="font-medium text-text-primary">{title}</p>
-        <p className="mt-wilms-1 text-small text-text-muted">No run recorded yet.</p>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-small text-text-muted">No run recorded yet.</p>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="rounded-sm border border-border bg-card p-wilms-3">
+    <Card>
+      <CardContent className="p-wilms-3">
       <div className="flex items-start justify-between gap-wilms-2">
         <p className="font-medium text-text-primary">{title}</p>
         <span
@@ -108,7 +114,8 @@ function WorkerLastRunCard({
           </div>
         ) : null}
       </dl>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 

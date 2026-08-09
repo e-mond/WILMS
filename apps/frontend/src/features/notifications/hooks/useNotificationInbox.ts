@@ -1,6 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { notificationService } from '@/services';
 import { ApiError } from '@/types/api';
+import {
+  OFFLINE_CACHE_KEYS,
+  readOfflineSnapshot,
+  writeOfflineSnapshot,
+} from '@/lib/offline/offlineSnapshotStore';
 
 export const notificationInboxQueryKey = ['notification-inbox'] as const;
 export const notificationUnreadCountQueryKey = ['notification-unread-count'] as const;
@@ -16,7 +21,21 @@ function shouldRetryNotificationQuery(failureCount: number, error: unknown): boo
 export function useNotificationInbox(enabled = true, refetchInterval?: number) {
   return useQuery({
     queryKey: notificationInboxQueryKey,
-    queryFn: () => notificationService.listInbox(),
+    queryFn: async () => {
+      try {
+        const data = await notificationService.listInbox();
+        void writeOfflineSnapshot(OFFLINE_CACHE_KEYS.notificationsList, data);
+        return data;
+      } catch (error) {
+        const cached = await readOfflineSnapshot<Awaited<
+          ReturnType<typeof notificationService.listInbox>
+        >>(OFFLINE_CACHE_KEYS.notificationsList);
+        if (cached) {
+          return cached.value;
+        }
+        throw error;
+      }
+    },
     enabled,
     staleTime: 30_000,
     refetchInterval,

@@ -32,6 +32,8 @@ describe('AppLockHandler', () => {
       isEnabled: true,
       pinHash: 'abc',
       pinUserId: 'user-collector',
+      idleTimeoutMs: 9 * 60_000,
+      biometricsEnabled: false,
       isHydrated: true,
       isLocked: true,
       failedAttempts: 0,

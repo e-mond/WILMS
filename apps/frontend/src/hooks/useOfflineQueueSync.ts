@@ -9,6 +9,8 @@ import { OFFLINE_QUEUE_ITEM_STATUS, OFFLINE_QUEUE_ITEM_TYPE } from '@/types/offl
 import type {
   OfflineExpenseQueueItem,
   OfflineExpenseSyncHandler,
+  OfflineHolidayQueueItem,
+  OfflineHolidaySyncHandler,
   OfflinePaymentSyncHandler,
   OfflineQueueItem,
 } from '@/types/offline-queue';
@@ -17,6 +19,7 @@ import { useOfflineStatus } from '@/hooks/useOfflineStatus';
 interface UseOfflineQueueSyncOptions {
   paymentSyncHandler?: OfflinePaymentSyncHandler | null;
   expenseSyncHandler?: OfflineExpenseSyncHandler | null;
+  holidaySyncHandler?: OfflineHolidaySyncHandler | null;
 }
 
 function getDrainableItems(items: OfflineQueueItem[]): OfflineQueueItem[] {
@@ -32,6 +35,7 @@ function getDrainableItems(items: OfflineQueueItem[]): OfflineQueueItem[] {
 export function useOfflineQueueSync({
   paymentSyncHandler = null,
   expenseSyncHandler = null,
+  holidaySyncHandler = null,
 }: UseOfflineQueueSyncOptions) {
   const { isOnline } = useOfflineStatus();
   const battery = useBatteryStatus();
@@ -46,13 +50,15 @@ export function useOfflineQueueSync({
   const removeSyncedItems = useOfflineQueueStore((state) => state.removeSyncedItems);
   const setSyncState = useOfflineQueueStore((state) => state.setSyncState);
 
+  const hasAnyHandler = Boolean(paymentSyncHandler || expenseSyncHandler || holidaySyncHandler);
+
   const runSync = useCallback(async () => {
     if (
       !isOnline ||
       isSyncingRef.current ||
       !isAutoSyncEnabled() ||
       shouldPauseBackgroundSync(battery.savingMode, battery.savingMode) ||
-      (!paymentSyncHandler && !expenseSyncHandler)
+      !hasAnyHandler
     ) {
       return;
     }
@@ -60,7 +66,8 @@ export function useOfflineQueueSync({
     const drainable = getDrainableItems(useOfflineQueueStore.getState().items).filter(
       (item) =>
         (item.type === OFFLINE_QUEUE_ITEM_TYPE.RECORD_PAYMENT && paymentSyncHandler) ||
-        (item.type === OFFLINE_QUEUE_ITEM_TYPE.RECORD_EXPENSE && expenseSyncHandler),
+        (item.type === OFFLINE_QUEUE_ITEM_TYPE.RECORD_EXPENSE && expenseSyncHandler) ||
+        (item.type === OFFLINE_QUEUE_ITEM_TYPE.HOLIDAY_REQUEST_CREATE && holidaySyncHandler),
     );
 
     if (drainable.length === 0) {
@@ -83,8 +90,11 @@ export function useOfflineQueueSync({
             } else {
               markSynced(item.id);
             }
-          } else {
+          } else if (item.type === OFFLINE_QUEUE_ITEM_TYPE.RECORD_EXPENSE) {
             await expenseSyncHandler!(item as OfflineExpenseQueueItem);
+            markSynced(item.id);
+          } else {
+            await holidaySyncHandler!(item as OfflineHolidayQueueItem);
             markSynced(item.id);
           }
         } catch (error) {
@@ -116,17 +126,19 @@ export function useOfflineQueueSync({
     setSyncState,
     paymentSyncHandler,
     expenseSyncHandler,
+    holidaySyncHandler,
     battery.savingMode,
+    hasAnyHandler,
   ]);
 
   useEffect(() => {
-    if (isOnline && (paymentSyncHandler || expenseSyncHandler)) {
+    if (isOnline && hasAnyHandler) {
       void runSync();
     }
-  }, [isOnline, items.length, runSync, paymentSyncHandler, expenseSyncHandler]);
+  }, [isOnline, items.length, runSync, hasAnyHandler]);
 
   useEffect(() => {
-    if (!isOnline || (!paymentSyncHandler && !expenseSyncHandler)) {
+    if (!isOnline || !hasAnyHandler) {
       return;
     }
 
@@ -147,7 +159,7 @@ export function useOfflineQueueSync({
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [isOnline, items, runSync, paymentSyncHandler, expenseSyncHandler]);
+  }, [isOnline, items, runSync, hasAnyHandler]);
 
   return {
     syncState,

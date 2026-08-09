@@ -4,6 +4,7 @@ import { getDb, isDatabaseEnabled, runInTransaction } from '../../db/client.js';
 import { offlineSyncConflicts, offlineSyncOperations } from '../../db/schema/offline-sync.js';
 import { FINANCIAL_OPERATION_TYPES } from './constants.js';
 import * as paymentService from '../payments/service.js';
+import * as holidayRequestService from '../holiday-requests/service.js';
 
 export interface OfflineSyncOperationInput {
   idempotencyKey: string;
@@ -95,6 +96,39 @@ export async function ingestOfflineBatch(
         operationId,
         conflictId: conflict[0]?.id,
       });
+
+      try {
+        const { listUsers } = await import('../../repositories/user.repository.js');
+        const { createInAppNotification } = await import(
+          '../../infrastructure/notifications/in-app-notify.js'
+        );
+        const { sendPushToUser } = await import('../notifications/push.service.js');
+        const users = await listUsers();
+        const recipients = users.filter(
+          (user) =>
+            (user.role === 'SUPER_ADMIN' || user.role === 'APPROVER') && user.status === 'ACTIVE',
+        );
+        await Promise.all(
+          recipients.map(async (user) => {
+            await createInAppNotification({
+              userId: user.id,
+              event: 'SUPERVISOR_ALERT',
+              title: 'Offline sync conflict',
+              body: 'A financial offline operation requires review.',
+              href: '/approver/sync-conflicts',
+            });
+            await sendPushToUser(user.id, {
+              title: 'Offline sync conflict',
+              body: 'A financial offline operation requires review.',
+              url: '/approver/sync-conflicts',
+              category: 'offline-sync',
+            });
+          }),
+        );
+      } catch {
+        // Best-effort alerts.
+      }
+
       continue;
     }
 
@@ -108,6 +142,37 @@ export async function ingestOfflineBatch(
       status: 'APPLIED',
       result: { message: 'Non-financial operation accepted.' },
     });
+
+    if (op.type === 'HOLIDAY_REQUEST_CREATE') {
+      const payload = op.payload as {
+        name?: string;
+        holidayDate?: string;
+        endDate?: string | null;
+        reason?: string | null;
+        scope?: string;
+        branch?: string | null;
+        submit?: boolean;
+      };
+
+      const created = await holidayRequestService.createHolidayRequest({
+        name: String(payload.name ?? ''),
+        holidayDate: String(payload.holidayDate ?? ''),
+        endDate: payload.endDate ?? null,
+        reason: payload.reason ?? null,
+        scope: payload.scope,
+        branch: payload.branch ?? null,
+        requestedByUserId: actorUserId,
+        submit: Boolean(payload.submit),
+      });
+
+      await db
+        .update(offlineSyncOperations)
+        .set({
+          result: { holidayRequestId: created.id, status: created.status },
+          updatedAt: new Date(),
+        })
+        .where(eq(offlineSyncOperations.id, operationId));
+    }
 
     results.push({
       idempotencyKey: op.idempotencyKey,

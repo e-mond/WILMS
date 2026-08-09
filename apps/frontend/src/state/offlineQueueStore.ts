@@ -9,6 +9,7 @@ import {
   OFFLINE_QUEUE_ITEM_TYPE,
 } from '@/types/offline-queue';
 import type {
+  HolidayRequestQueuePayload,
   OfflineQueueItem,
   OfflineQueueSyncState,
   RecordExpenseQueuePayload,
@@ -20,6 +21,7 @@ interface OfflineQueueState {
   syncState: OfflineQueueSyncState;
   enqueuePayment: (payload: RecordPaymentQueuePayload) => OfflineQueueItem;
   enqueueExpense: (payload: RecordExpenseQueuePayload) => OfflineQueueItem;
+  enqueueHolidayRequest: (payload: HolidayRequestQueuePayload) => OfflineQueueItem;
   markSyncing: (id: string) => void;
   markSynced: (id: string) => void;
   markQueuedForReview: (id: string) => void;
@@ -55,6 +57,19 @@ function createExpenseQueueItem(payload: RecordExpenseQueuePayload): OfflineQueu
   };
 }
 
+function createHolidayQueueItem(payload: HolidayRequestQueuePayload): OfflineQueueItem {
+  return {
+    id: crypto.randomUUID(),
+    type: OFFLINE_QUEUE_ITEM_TYPE.HOLIDAY_REQUEST_CREATE,
+    payload,
+    status: OFFLINE_QUEUE_ITEM_STATUS.PENDING,
+    createdAt: Date.now(),
+    lastAttemptAt: null,
+    attemptCount: 0,
+    lastError: null,
+  };
+}
+
 export const useOfflineQueueStore = create<OfflineQueueState>()(
   persist(
     (set) => ({
@@ -71,6 +86,14 @@ export const useOfflineQueueStore = create<OfflineQueueState>()(
 
       enqueueExpense: (payload) => {
         const item = createExpenseQueueItem(payload);
+        set((state) => ({
+          items: [...state.items, item],
+        }));
+        return item;
+      },
+
+      enqueueHolidayRequest: (payload) => {
+        const item = createHolidayQueueItem(payload);
         set((state) => ({
           items: [...state.items, item],
         }));
@@ -181,6 +204,12 @@ export function selectPendingPaymentCount(items: OfflineQueueItem[]): number {
 export function selectPendingExpenseCount(items: OfflineQueueItem[]): number {
   return selectPendingQueueItems(items).filter(
     (item) => item.type === OFFLINE_QUEUE_ITEM_TYPE.RECORD_EXPENSE,
+  ).length;
+}
+
+export function selectPendingHolidayCount(items: OfflineQueueItem[]): number {
+  return selectPendingQueueItems(items).filter(
+    (item) => item.type === OFFLINE_QUEUE_ITEM_TYPE.HOLIDAY_REQUEST_CREATE,
   ).length;
 }
 
