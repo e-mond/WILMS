@@ -45,8 +45,5 @@
     "docs:generate": "node scripts/generate-documentation-suite.mjs",
     "docs:sync": "node scripts/sync-documentation-assets.mjs",
     "docs:prepare": "npm run docs:generate && npm run docs:sync"
-  },
-  "dependencies": {
-    "@testing-library/dom": "^10.4.1"
   }
 }
