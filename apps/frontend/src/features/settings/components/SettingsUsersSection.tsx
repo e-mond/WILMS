@@ -198,6 +198,7 @@ export function SettingsUsersSection() {
           <TableSkeleton rows={8} columns={6} />
         ) : (
           <DataTable
+            mobileLayout="stack"
             variant="executive"
             layout="auto"
             caption="System users"
@@ -206,6 +207,7 @@ export function SettingsUsersSection() {
             columns={[
               {
                 id: 'user',
+              priority: 'primary',
                 header: 'User',
                 className: cn(TABLE_CELL, 'min-w-[16rem]'),
                 cell: (row) => (

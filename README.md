@@ -22,7 +22,7 @@
 | **Data store** | Neon PostgreSQL (Drizzle ORM) |
 | **Auth model** | Custom HMAC-signed session cookies (`wilms_session`) |
 
-> **Single entry point.** This README is the authoritative repository overview. Deep-dive docs live under [`docs/`](docs/README.md). The official product library lives under [`documentation/`](documentation/DOCUMENTATION_LIBRARY_INDEX.md) and is readable in-app at **/documentation** (Documentation Centre). Release evidence packs live under [`docs/v1.7/`](docs/v1.7/).
+> **Single entry point.** This README is the authoritative repository overview. Deep-dive docs live under [`docs/`](docs/README.md). The official product library lives under [`documentation/`](documentation/DOCUMENTATION_LIBRARY_INDEX.md) and is readable in-app at **/documentation** (Documentation Centre). Release evidence packs live under [`docs/v1.8.0/`](docs/v1.8.0/).
 
 ---
 
@@ -65,7 +65,7 @@
 
 **WILMS — Women’s Interest-Free Loan Management System**
 
-Badges at the top of this document reflect the current production release posture: **v1.7.0**, Node 22, Next.js 14, TypeScript (strict), Neon PostgreSQL, Vercel deployment, and proprietary licensing.
+Badges at the top of this document reflect the current production release posture: **v1.8.0**, Node 22, Next.js 14, TypeScript (strict), Neon PostgreSQL, Vercel deployment, and proprietary licensing.
 
 Related version artefacts:
 
@@ -73,8 +73,8 @@ Related version artefacts:
 | --- | --- |
 | Release identity | [`VERSION.md`](VERSION.md) |
 | Change history | [`CHANGELOG.md`](CHANGELOG.md) |
-| Package versions | Root + workspace `package.json` files (`1.7.0`) |
-| Release pack | [`docs/v1.7/`](docs/v1.7/) |
+| Package versions | Root + workspace `package.json` files (`1.8.0`) |
+| Release pack | [`docs/v1.8.0/`](docs/v1.8.0/) |
 
 ---
 
@@ -118,7 +118,7 @@ WILMS provides a controlled digital operating system for those workflows.
 - Executive intelligence, forecasting, and exportable compliance artefacts
 - Role-scoped portals with permission overrides and force-logout
 
-### Maturity and production readiness (v1.7.0)
+### Maturity and production readiness (v1.8.0)
 
 | Dimension | Status |
 | --- | --- |
@@ -126,10 +126,14 @@ WILMS provides a controlled digital operating system for those workflows.
 | Financial integrity controls | Production (operational ledger; statutory GL planned for v2.0) |
 | RBAC / audit | Production |
 | Communication center | Production (v1.6+) |
-| Executive reporting & forecasting | Production (v1.7.0) |
-| Export center & ops incidents | Production (v1.7.0) |
+| Executive reporting & forecasting | Production (v1.7+) |
+| Export center & ops incidents | Production (v1.7+) |
+| Holidays (Ghana provider + enrichment) | Production (**v1.8.0**) |
+| Automation engine & Settings controls | Production (**v1.8.0**) |
+| Field-critical offline (payments / expenses / holiday create) | Production (**v1.8.0**) |
+| Enterprise UI / CSP-safe self-hosted fonts | Production (**v1.8.0**) |
 | Deployment model | Full-stack on **Vercel** + **Neon** |
-| Borrower self-service portal | Not in scope for v1.7.0 |
+| Borrower self-service portal | Not in scope for v1.8.0 |
 
 ---
 
@@ -151,7 +155,9 @@ WILMS provides a controlled digital operating system for those workflows.
 | **RBAC** | Role defaults + per-user permission overrides |
 | **Operations dashboard** | Health, workers, financial snapshot, incidents, maintenance windows |
 | **Exports** | Tracked CSV / Excel / PDF export jobs |
-| **Workflow automation** | Cron-driven reminders, overdue ladders, operational digests |
+| **Workflow automation** | Automation engine: reminder/escalation ladders, follow-ups, Settings enable/run |
+| **Holidays** | Ghana public holiday sync, impact preview, collector holiday requests |
+| **Offline field ops** | Queue + sync for payments, expenses, holiday creates; shell cache for reads |
 
 ---
 
@@ -231,7 +237,7 @@ WILMS/
 ├── CHANGELOG.md
 ├── VERSION.md
 ├── CONTRIBUTING.md
-└── package.json           # npm workspaces root (wilms@1.7.0)
+└── package.json           # npm workspaces root (wilms@1.8.0)
 ```
 
 | Path | Purpose |
@@ -492,6 +498,10 @@ flowchart LR
 | Forecasting & early warnings | Production | **v1.7.0** |
 | Export center | Production | **v1.7.0** |
 | Ops incidents & maintenance windows | Production | **v1.7.0** |
+| Ghana holiday provider & enrichment | Production | **v1.8.0** |
+| Automation engine (Settings) | Production | **v1.8.0** |
+| Field-critical offline + sync UX | Production | **v1.8.0** |
+| Enterprise design / self-hosted fonts | Production | **v1.8.0** |
 | Borrower self-service portal | Not started | Roadmap |
 
 ---
@@ -506,7 +516,8 @@ flowchart LR
 | **Inbox** | In-app notifications with unread state |
 | **Communication center** | Compose, audiences, templates, analytics |
 | **Product tour** | Guided first-run orientation for key admin surfaces |
-| **Responsive design** | Mobile-first collector flows; desktop density for HQ |
+| **Responsive design** | Mobile-first collector flows; selective `DataTable` stack layout on ops lists; dense financial reports keep horizontal scroll |
+| **Offline UX** | Contextual offline banner + sync progress (not permanent navbar Online chrome) |
 | **Loading / empty / error** | Skeletons, empty states, retryable query error presentations |
 | **Accessibility** | Focus management, ARIA on dialogs/listboxes, keyboard navigation |
 
@@ -728,7 +739,7 @@ Full reference: [`docs/environment.md`](docs/environment.md) and [`.env.example`
 | **ORM** | Drizzle |
 | **Location** | `packages/domain/src/db/migrations/` |
 | **Journal** | `packages/domain/src/db/migrations/meta/_journal.json` |
-| **Latest (v1.7.0)** | `0035_finance_reporting_intelligence.sql` |
+| **Latest (v1.8.0)** | `0036`–`0039` (holiday requests, Ghana provider, automation engine, holiday enrichment) |
 
 ### Workflow
 
@@ -750,7 +761,7 @@ Full reference: [`docs/environment.md`](docs/environment.md) and [`.env.example`
 
 - Prefer **forward fixes** for additive migrations
 - Destructive rollbacks require explicit DBA review and restore-from-backup planning
-- Application code that reads new tables should soft-fail or feature-gate until migration is confirmed (v1.7.0 ops lists soft-fail on undefined tables)
+- Application code that reads new tables should soft-fail or feature-gate until migration is confirmed (ops/intelligence lists soft-fail on undefined tables)
 
 ---
 
@@ -841,7 +852,7 @@ Vercel (Next.js full-stack)
 ### Deploy checklist
 
 1. Set Vercel env vars (session secret, `DATABASE_URL`, mail/SMS, cron secrets)
-2. Apply pending Neon migrations (`0035` for v1.7.0 intelligence tables)
+2. Apply pending Neon migrations through **`0039`** for v1.8.0 (`0035` intelligence + `0036`–`0039` holidays/automation)
 3. Deploy Preview → smoke login + health + critical APIs
 4. Promote Production
 5. Confirm Cron schedule is enabled
@@ -902,7 +913,9 @@ Report accessibility defects with role, route, and keyboard repro steps.
 | [`docs/exports/`](docs/exports/) | Export architecture |
 | [`docs/analytics/`](docs/analytics/) | Forecasting assumptions |
 | [`docs/audit/`](docs/audit/) | Audit architecture |
-| [`docs/v1.7/`](docs/v1.7/) | v1.7.0 release pack |
+| [`docs/v1.8.0/`](docs/v1.8.0/) | **v1.8.0** release pack + production readiness matrix |
+| [`docs/offline-architecture.md`](docs/offline-architecture.md) | Offline capability matrix (1.8.0 truth) |
+| [`docs/v1.7/`](docs/v1.7/) | Prior v1.7.0 release pack |
 | [`docs/v1.6/`](docs/v1.6/) / [`docs/v1.6.2/`](docs/v1.6.2/) | Prior release packs |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Contribution workflow |
 | [`CHANGELOG.md`](CHANGELOG.md) | Release notes |
@@ -914,12 +927,11 @@ Report accessibility defects with role, route, and keyboard repro steps.
 
 | Release | Focus |
 | --- | --- |
-| **v1.7.0 (current)** | Executive intelligence, forecasting, export center, ops incidents/maintenance, reporting indexes |
-| **v1.8 — Integrations & Payments** | Deeper payment-provider integrations, settlement tooling, external system connectors |
-| **v1.9 — Enterprise automation** | Expanded workflow automation, richer policy engines, operator playbooks |
+| **v1.8.0 (current)** | Enterprise design, Ghana holidays, automation engine, field-critical offline, CSP-safe fonts, post-release UI closure |
+| **v1.9 — Integrations & Payments** | Deeper payment-provider integrations, settlement tooling, external system connectors |
 | **v2.0 — General Ledger & multi-branch** | Statutory double-entry GL, multi-branch structures, enhanced consolidation |
 
-Roadmap items do not change v1.7.0 financial formulas without an explicit release and migration plan.
+Roadmap items do not change v1.8.0 financial formulas without an explicit release and migration plan.
 
 ---
 
@@ -944,7 +956,7 @@ Full guide: [`CONTRIBUTING.md`](CONTRIBUTING.md).
 | Technical defects | Repository issues or internal engineering tracker |
 | Deployment / Neon / Vercel | [`docs/deployment-guide.md`](docs/deployment-guide.md), [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) |
 | Security incidents | Follow organisation incident process; capture in Operations incidents |
-| Release evidence | [`docs/v1.7/`](docs/v1.7/) |
+| Release evidence | [`docs/v1.8.0/`](docs/v1.8.0/) |
 
 When filing a defect, include: environment, role, route, request ID (if available), and reproduction steps. Never paste secrets.
 
@@ -962,13 +974,15 @@ Unauthorised copying, distribution, modification, or disclosure is prohibited ex
 
 ## 30. Final project summary
 
-**WILMS v1.7.0** is a production-ready Women’s Interest-Free Loan Management System that digitises the full operational stack of community microfinance — from registration and disbursement through weekly collections, reconciliation, communications, and executive oversight.
+**WILMS v1.8.0** is a production-ready Women’s Interest-Free Loan Management System that digitises the full operational stack of community microfinance — from registration and disbursement through weekly collections, reconciliation, communications, holidays, automation, and executive oversight.
 
 Built as a TypeScript modular monolith on **Next.js**, **Vercel**, and **Neon**, WILMS combines:
 
 - rigorous **interest-free pool accounting**
 - **role-based portals** with separation of duties
-- **multi-channel notifications** and a communication center
+- **multi-channel notifications**, push preferences, and a communication center
+- **field-critical offline** for payments, expenses, and holiday creates
+- **automation engine** controls in Settings
 - **executive intelligence**, forecasting, and exportable compliance artefacts
 - an **operations control centre** for health, incidents, and maintenance
 
@@ -976,4 +990,4 @@ It is suitable for NGO programme delivery, government technical evaluation, inst
 
 ---
 
-**WILMS v1.7.0** — Operational excellence for interest-free women’s lending.
+**WILMS v1.8.0** — Operational excellence for interest-free women’s lending.
