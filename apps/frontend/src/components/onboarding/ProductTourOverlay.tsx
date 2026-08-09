@@ -109,6 +109,34 @@ const TOUR_STEPS_BY_ROLE: Partial<Record<UserRole, ProductTourStep[]>> = {
       href: '/settings?section=roles',
       targetSelector: '[data-tour-nav="/settings"]',
     },
+    {
+      id: 'offline',
+      title: 'Offline readiness',
+      body: 'WILMS caches key shell pages and queues field changes. Watch the offline banner and retry sync when connectivity returns.',
+      href: '/dashboard',
+      targetSelector: '[data-testid="operational-dashboard"]',
+    },
+    {
+      id: 'push',
+      title: 'Push notifications',
+      body: 'Enable browser push in Settings → Notifications for approvals, holiday status, sync conflicts, and reconciliation alerts.',
+      href: '/settings',
+      targetSelector: '[data-tour="push-notifications"]',
+    },
+    {
+      id: 'holidays',
+      title: 'Holiday requests',
+      body: 'Review collector holiday requests under Settings → Holidays. Maker-checker prevents self-approval.',
+      href: '/settings?section=holidays',
+      targetSelector: '[data-tour-nav="/settings"]',
+    },
+    {
+      id: 'app-lock',
+      title: 'App Lock',
+      body: 'Set a PIN, choose an idle timeout, and optionally enrol biometrics to protect field devices.',
+      href: '/settings',
+      targetSelector: '[data-tour="app-lock"]',
+    },
   ],
   [USER_ROLE.COLLECTOR]: [
     {
@@ -150,6 +178,27 @@ const TOUR_STEPS_BY_ROLE: Partial<Record<UserRole, ProductTourStep[]>> = {
       body: 'Watch the bell icon for alerts and system events.',
       targetSelector: '[data-tour="notifications-bell"]',
     },
+    {
+      id: 'holidays',
+      title: 'Holidays',
+      body: 'Request organisation holidays that shift repayment schedules after approval. Drafts can be queued offline.',
+      href: '/collector/holidays',
+      targetSelector: '[data-tour-nav="/collector/holidays"]',
+    },
+    {
+      id: 'offline',
+      title: 'Offline queue',
+      body: 'When offline, payments, expenses, and holiday requests are saved locally and synced when you reconnect.',
+      href: '/collector/dashboard',
+      targetSelector: '[data-tour-nav="/collector/dashboard"]',
+    },
+    {
+      id: 'app-lock',
+      title: 'App Lock',
+      body: 'Protect this device with a PIN under Settings. Biometrics can unlock when available; PIN remains the fallback.',
+      href: '/collector/settings',
+      targetSelector: '[data-tour="app-lock"], [data-tour-nav="/collector/settings"]',
+    },
   ],
   [USER_ROLE.REGISTRATION_OFFICER]: [
     {
@@ -184,6 +233,20 @@ const TOUR_STEPS_BY_ROLE: Partial<Record<UserRole, ProductTourStep[]>> = {
       body: 'Open the queue to inspect borrower profiles, documents, and guarantors — then approve or reject with a reason.',
       href: '/approver/pending',
       targetSelector: '[data-tour-nav="/approver/pending"]',
+    },
+    {
+      id: 'holidays',
+      title: 'Holiday requests',
+      body: 'Review collector holiday requests with maker-checker. You cannot approve a request you created.',
+      href: '/approver/holidays',
+      targetSelector: '[data-tour-nav="/approver/holidays"]',
+    },
+    {
+      id: 'offline-sync',
+      title: 'Offline sync conflicts',
+      body: 'Approve or reject financial operations captured while collectors were offline.',
+      href: '/approver/sync-conflicts',
+      targetSelector: '[data-tour-nav="/approver/sync-conflicts"]',
     },
   ],
   [USER_ROLE.AUDITOR]: [

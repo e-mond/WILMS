@@ -2,6 +2,26 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.7.5] — Offline, Push & Modernisation
+
+**Date:** August 2026  
+**Branch:** `feature/v1.7.5-offline-push-modernisation`
+
+### Added
+
+- Collector holiday request lifecycle (Draft → Submitted → Approved/Rejected → Applied) with maker-checker
+- Field-critical offline for all roles: broader shell cache, expanded queue types, sync/conflict UX
+- Web Push triggers for high-value notification categories (approvals, holidays, conflicts, recon)
+- Dashboard Card/Tabs/Skeleton/Alert kit; role dashboard migrations
+- App Lock configurable idle timeout and optional WebAuthn unlock; Product Tour steps for Offline, Push, Holidays, App Lock
+
+### Notes
+
+- Extends existing offline, holiday, push, App Lock, and tour foundations — not greenfield stacks
+- Financial formulas, RBAC/SoD, reconciliation, in-app notifications, and scheduler guarantees unchanged
+- Auth remains custom HMAC sessions
+- True offline-everywhere and full-app shadcn/Radix migration remain out of scope
+
 ## [1.7.4] — Documentation Centre
 
 **Date:** August 2026  

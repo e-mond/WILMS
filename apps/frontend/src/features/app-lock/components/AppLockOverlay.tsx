@@ -11,6 +11,7 @@ import { APP_LOCK_MAX_ATTEMPTS } from '@/constants/app-lock';
 import { useLogout } from '@/hooks/useLogout';
 import { useAuth } from '@/hooks/useAuth';
 import { useAppLockStore } from '@/state/appLockStore';
+import { assertAppLockCredential, isWebAuthnAvailable } from '@/lib/security/webauthn-app-lock';
 
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -19,9 +20,12 @@ export function AppLockOverlay() {
   const { user } = useAuth();
   const { logout, isLoggingOut } = useLogout();
   const failedAttempts = useAppLockStore((state) => state.failedAttempts);
+  const biometricsEnabled = useAppLockStore((state) => state.biometricsEnabled);
+  const unlock = useAppLockStore((state) => state.unlock);
   const verifyAndUnlock = useAppLockStore((state) => state.verifyAndUnlock);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [biometricBusy, setBiometricBusy] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
   const pinPadRef = useRef<PinEntryPadHandle>(null);
 
@@ -130,9 +134,38 @@ export function AppLockOverlay() {
             void handleComplete(pin);
           }}
           errorMessage={errorMessage}
-          disabled={isVerifying || isLoggingOut}
+          disabled={isVerifying || isLoggingOut || biometricBusy}
           autoFocus
         />
+
+        {biometricsEnabled && isWebAuthnAvailable() ? (
+          <Button
+            type="button"
+            variant="secondary"
+            className="mt-wilms-4 w-full"
+            disabled={isVerifying || isLoggingOut || biometricBusy}
+            onClick={() => {
+              void (async () => {
+                setBiometricBusy(true);
+                setErrorMessage(null);
+                try {
+                  const ok = await assertAppLockCredential();
+                  if (ok) {
+                    unlock();
+                  } else {
+                    setErrorMessage('Biometric unlock failed. Enter your PIN.');
+                  }
+                } catch {
+                  setErrorMessage('Biometric unlock cancelled. Enter your PIN.');
+                } finally {
+                  setBiometricBusy(false);
+                }
+              })();
+            }}
+          >
+            {biometricBusy ? 'Waiting for biometrics…' : 'Unlock with biometrics'}
+          </Button>
+        ) : null}
 
         <div className="mt-wilms-6 border-t border-border pt-wilms-4 text-center">
           <Button

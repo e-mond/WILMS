@@ -23,6 +23,7 @@ import { NotificationSoundBridge } from '@/components/notifications/Notification
 import { ProductTourOverlay } from '@/components/onboarding/ProductTourOverlay';
 import { ConsoleExtensionNoiseFilter } from '@/components/dev/ConsoleExtensionNoiseFilter';
 import { ServiceWorkerRegistrar } from '@/components/pwa/ServiceWorkerRegistrar';
+import { AppOfflineShell } from '@/components/offline/AppOfflineShell';
 import { getServerSession } from '@/lib/auth/server-session';
 import '@/styles/globals.css';
 
@@ -83,7 +84,7 @@ export default function RootLayout({
                 <ConsoleExtensionNoiseFilter />
                 <NotificationSoundBridge />
                 <ProductTourOverlay />
-                {children}
+                <AppOfflineShell>{children}</AppOfflineShell>
               </AppBootstrap>
               </PermissionProvider>
             </QueryProvider>

@@ -20,10 +20,19 @@ export function AppLockHandler() {
   const isStoreHydrated = useAppLockStore((state) => state.isHydrated);
   const lastActivityAt = useAppLockStore((state) => state.lastActivityAt);
   const sessionStartedAt = useAppLockStore((state) => state.sessionStartedAt);
+  const idleTimeoutMs = useAppLockStore((state) => state.idleTimeoutMs);
   const recordActivity = useAppLockStore((state) => state.recordActivity);
   const lock = useAppLockStore((state) => state.lock);
   const unlock = useAppLockStore((state) => state.unlock);
   const syncUser = useAppLockStore((state) => state.syncUser);
+
+  const effectiveIdleMs =
+    typeof window !== 'undefined' &&
+    typeof (window as typeof window & { __WILMS_E2E_APP_LOCK_IDLE_MS?: number })
+      .__WILMS_E2E_APP_LOCK_IDLE_MS === 'number'
+      ? (window as typeof window & { __WILMS_E2E_APP_LOCK_IDLE_MS?: number })
+          .__WILMS_E2E_APP_LOCK_IDLE_MS!
+      : idleTimeoutMs || APP_LOCK_IDLE_MS;
 
   const shouldWatch =
     isHydrated &&
@@ -84,7 +93,7 @@ export function AppLockHandler() {
     }
 
     const elapsed = Date.now() - lastActivityAt;
-    const delay = Math.max(APP_LOCK_IDLE_MS - elapsed, 0);
+    const delay = Math.max(effectiveIdleMs - elapsed, 0);
 
     const timerId = window.setTimeout(() => {
       lock();
@@ -93,33 +102,54 @@ export function AppLockHandler() {
     return () => {
       window.clearTimeout(timerId);
     };
-  }, [isLocked, lastActivityAt, lock, sessionStartedAt, shouldWatch]);
+  }, [
+    effectiveIdleMs,
+    isLocked,
+    lastActivityAt,
+    lock,
+    sessionStartedAt,
+    shouldWatch,
+  ]);
 
   useEffect(() => {
     if (!shouldWatch) {
       return;
     }
 
-    const handleVisibility = () => {
+    const maybeLockAfterBackground = () => {
       const state = useAppLockStore.getState();
       if (Date.now() - state.sessionStartedAt < APP_LOCK_POST_LOGIN_GRACE_MS) {
         return;
       }
 
       const elapsed = Date.now() - state.lastActivityAt;
-      if (elapsed < APP_LOCK_IDLE_MS) {
+      if (elapsed < (state.idleTimeoutMs || APP_LOCK_IDLE_MS)) {
         return;
       }
 
-      if (document.visibilityState === 'hidden' || document.visibilityState === 'visible') {
-        lock();
+      lock();
+    };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'hidden') {
+        maybeLockAfterBackground();
+        return;
+      }
+      if (document.visibilityState === 'visible') {
+        maybeLockAfterBackground();
       }
     };
 
+    const handlePageHide = () => {
+      maybeLockAfterBackground();
+    };
+
     document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('pagehide', handlePageHide);
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('pagehide', handlePageHide);
     };
   }, [lock, shouldWatch]);
 

@@ -25,6 +25,8 @@ describe('AppLockSetupPanel', () => {
       isEnabled: false,
       pinHash: null,
       pinUserId: null,
+      idleTimeoutMs: 9 * 60_000,
+      biometricsEnabled: false,
       isHydrated: true,
       isLocked: false,
       failedAttempts: 0,

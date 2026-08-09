@@ -1,15 +1,31 @@
 import { apiClient } from '@/utils/apiClient';
 import { OFFLINE_QUEUE_ITEM_TYPE } from '@/types/offline-queue';
-import type { OfflinePaymentQueueItem } from '@/types/offline-queue';
+import type {
+  OfflineHolidayQueueItem,
+  OfflinePaymentQueueItem,
+} from '@/types/offline-queue';
 import type { ResolveSyncConflictInput, SyncConflictListResponse } from '@/types/sync-conflict';
 import type { IOfflineSyncService, OfflineSyncBatchResult } from '@/types/services';
 
-const offlineSyncService: IOfflineSyncService = {
+const offlineSyncService: IOfflineSyncService & {
+  submitOfflineHolidayBatch: (items: OfflineHolidayQueueItem[]) => Promise<OfflineSyncBatchResult>;
+} = {
   submitOfflinePaymentBatch(items: OfflinePaymentQueueItem[]): Promise<OfflineSyncBatchResult> {
     return apiClient.post<OfflineSyncBatchResult>('/sync/offline/batch', {
       operations: items.map((item) => ({
         idempotencyKey: item.id,
         type: OFFLINE_QUEUE_ITEM_TYPE.RECORD_PAYMENT,
+        payload: item.payload,
+        clientCreatedAt: new Date(item.createdAt).toISOString(),
+      })),
+    });
+  },
+
+  submitOfflineHolidayBatch(items: OfflineHolidayQueueItem[]): Promise<OfflineSyncBatchResult> {
+    return apiClient.post<OfflineSyncBatchResult>('/sync/offline/batch', {
+      operations: items.map((item) => ({
+        idempotencyKey: item.id,
+        type: OFFLINE_QUEUE_ITEM_TYPE.HOLIDAY_REQUEST_CREATE,
         payload: item.payload,
         clientCreatedAt: new Date(item.createdAt).toISOString(),
       })),
@@ -33,6 +49,10 @@ export default offlineSyncService;
 
 /** @deprecated Import offlineSyncService from `@/services` instead. */
 export const submitOfflinePaymentBatch = offlineSyncService.submitOfflinePaymentBatch.bind(
+  offlineSyncService,
+);
+
+export const submitOfflineHolidayBatch = offlineSyncService.submitOfflineHolidayBatch.bind(
   offlineSyncService,
 );
 

@@ -69,6 +69,16 @@ export const PAGE_GUIDANCE = {
     body: 'Log transport and other collection-related expenses for audit and reimbursement tracking.',
     example: 'Record expenses on the same day as the collection activity.',
   },
+  collectorHolidays: {
+    title: 'Holiday requests',
+    body: 'Request organisation holidays that shift repayment schedules after maker-checker approval.',
+    example: 'Save a draft while offline, then submit when you reconnect for approver review.',
+  },
+  approverHolidays: {
+    title: 'Review holiday requests',
+    body: 'Approve or reject collector holiday requests. You cannot approve a request you created.',
+    example: 'Approve only after confirming the date does not conflict with critical collections.',
+  },
   approverPending: {
     title: 'Approval queue',
     body: 'Review new borrower applications submitted by registration officers. Approve, reject with reason, or blacklist when required.',

@@ -4,6 +4,18 @@ export const APP_LOCK_PIN_LENGTH = 6;
 
 export const APP_LOCK_MAX_ATTEMPTS = 5;
 
+export const APP_LOCK_IDLE_TIMEOUT_OPTIONS_MS = [
+  60_000,
+  3 * 60_000,
+  5 * 60_000,
+  9 * 60_000,
+  15 * 60_000,
+] as const;
+
+export type AppLockIdleTimeoutMs = (typeof APP_LOCK_IDLE_TIMEOUT_OPTIONS_MS)[number];
+
+export const APP_LOCK_DEFAULT_IDLE_MS: AppLockIdleTimeoutMs = 9 * 60_000;
+
 const configuredIdleMs = Number(process.env.NEXT_PUBLIC_APP_LOCK_IDLE_MS);
 
 function resolveAppLockIdleMs(): number {
@@ -19,10 +31,10 @@ function resolveAppLockIdleMs(): number {
 
   return Number.isFinite(configuredIdleMs) && configuredIdleMs > 0
     ? configuredIdleMs
-    : 9 * 60 * 1000;
+    : APP_LOCK_DEFAULT_IDLE_MS;
 }
 
-/** Idle time before the lock screen appears (field device security). */
+/** Idle time before the lock screen appears (field device security). Prefer store value when set. */
 export const APP_LOCK_IDLE_MS = resolveAppLockIdleMs();
 
 function resolveAppLockPostLoginGraceMs(): number {

@@ -129,6 +129,7 @@ export const COLLECTOR_NAV: ShellNavItem[] = [
   },
   { href: '/collector/my-borrowers', label: 'Borrowers', icon: 'borrowers', group: 'people' },
   { href: '/collector/expenses', label: 'Expenses', icon: 'reports', group: 'financial' },
+  { href: '/collector/holidays', label: 'Holidays', icon: 'reports', group: 'operations' },
   {
     href: '/collector/reconciliation',
     label: 'Reconcile',
@@ -167,6 +168,12 @@ export const APPROVER_NAV: ShellNavItem[] = [
     href: '/approver/sync-conflicts',
     label: 'Offline Sync',
     icon: 'offline-sync',
+    group: 'operations',
+  },
+  {
+    href: '/approver/holidays',
+    label: 'Holidays',
+    icon: 'queue',
     group: 'operations',
   },
   { href: '/approver/reviewed', label: 'Reviewed', icon: 'reviewed', group: 'operations' },

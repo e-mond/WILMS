@@ -11,7 +11,7 @@ import * as syncService from './service.js';
 
 const offlineOperationSchema = z.object({
   idempotencyKey: z.string().min(1),
-  type: z.enum(['RECORD_PAYMENT']),
+  type: z.enum(['RECORD_PAYMENT', 'HOLIDAY_REQUEST_CREATE']),
   payload: z.record(z.unknown()),
   clientCreatedAt: z.string().min(1),
 });
@@ -43,7 +43,11 @@ syncRouter.use(requireAuth);
 
 syncRouter.post(
   '/sync/offline/batch',
-  requirePermission(PERMISSION.RECORD_COLLECTIONS),
+  requirePermission(
+    PERMISSION.RECORD_COLLECTIONS,
+    PERMISSION.ACCESS_COLLECTOR_PORTAL,
+    PERMISSION.MANAGE_SYSTEM_SETTINGS,
+  ),
   validateBody(batchBodySchema),
   asyncHandler(async (req, res) => {
     try {
