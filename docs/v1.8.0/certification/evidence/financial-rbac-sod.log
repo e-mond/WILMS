@@ -1,0 +1,21 @@
+
+> @wilms/domain@1.8.0 test
+> vitest run src/tests/enterprise/financial-integrity-p0.test.ts src/tests/financial/financial-endpoints-rbac.test.ts src/tests/borrowers/sod-self-approve.test.ts src/tests/reconciliation/sod-self-review.test.ts src/tests/collector-portal/rbac.test.ts src/tests/borrowers/borrower-list-rbac.test.ts
+
+
+ RUN  v3.2.7 C:/Users/eddie/OneDrive/Desktop/WILMS/packages/domain
+
+ ✓ src/tests/enterprise/financial-integrity-p0.test.ts (6 tests) 164ms
+ ✓ src/tests/reconciliation/sod-self-review.test.ts (1 test) 7581ms
+   ✓ reconciliation review SoD > blocks the submitting collector from reviewing their own reconciliation  7577ms
+ ✓ src/tests/borrowers/sod-self-approve.test.ts (1 test) 9114ms
+   ✓ borrower approval SoD > blocks the submitting officer from approving their own registration  9110ms
+ ✓ src/tests/borrowers/borrower-list-rbac.test.ts (5 tests) 390ms
+ ✓ src/tests/collector-portal/rbac.test.ts (6 tests) 494ms
+ ✓ src/tests/financial/financial-endpoints-rbac.test.ts (7 tests) 678ms
+
+ Test Files  6 passed (6)
+      Tests  26 passed (26)
+   Start at  19:25:06
+   Duration  16.76s (transform 13.15s, setup 0ms, collect 46.59s, tests 18.42s, environment 4ms, prepare 2.94s)
+

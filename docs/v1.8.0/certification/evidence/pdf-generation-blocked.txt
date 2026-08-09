@@ -1,0 +1,1 @@
+Full styled PDF via md-to-pdf BLOCKED (Chromium download hang). Cover PDF generated with Node; authoritative narrative remains the .md report.

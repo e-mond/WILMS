@@ -1,0 +1,12 @@
+
+> wilms@1.8.0 type-check
+> npm run type-check -w @wilms/frontend && npm run type-check -w @wilms/domain
+
+
+> @wilms/frontend@1.8.0 type-check
+> tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json
+
+
+> @wilms/domain@1.8.0 type-check
+> tsc --noEmit
+

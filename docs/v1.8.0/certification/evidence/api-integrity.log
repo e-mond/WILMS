@@ -1,0 +1,35 @@
+
+> wilms@1.8.0 verify:api-integrity
+> node scripts/rc1-api-integrity.mjs
+
+RC1 API Integrity (static)
+Frontend apiClient calls: 224
+Backend routes: 266
+Matched: 224
+Missing backend: 0
+Orphan backend routes: 49
+Next.js pages: 64
+
+Orphan backend routes (document if intentional):
+  GET /adjustments/:id — adjustments
+  GET user-agent — auth
+  GET user-agent — auth
+  GET /borrowers/my-registrations — borrowers
+  GET /borrowers/reviewed — borrowers
+  GET /borrowers/check-phone — borrowers
+  GET /borrowers/check-id — borrowers
+  GET /borrowers/check-name — borrowers
+  GET /borrowers/check-active-loan — borrowers
+  GET /borrowers/check-blacklist — borrowers
+  GET /borrowers/drafts/:id — borrowers
+  DELETE /borrowers/:id/registration — borrowers
+  GET /collectors/:id — collectors
+  PATCH /communications/templates/:id — communications
+  GET /communications/templates/:id/versions — communications
+  PATCH /communications/audience-segments/:id — communications
+  POST /communications/messages/:id/read — communications
+  GET /communications/messages/:id/attachments — communications
+  POST /group-member-replacements/:id/approve — enterprise
+  GET /loan-schedule-changes/pending — enterprise
+
+PASS: all frontend apiClient paths have backend routes

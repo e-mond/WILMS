@@ -1,0 +1,9 @@
+
+> wilms@1.8.0 lint
+> npm run lint -w @wilms/frontend
+
+
+> @wilms/frontend@1.8.0 lint
+> next lint
+
+✔ No ESLint warnings or errors

@@ -1,0 +1,5 @@
+
+> wilms@1.8.0 bundle:budget-check
+> node scripts/bundle-budget-check.mjs
+
+No JS chunks found — run npm run build first.
