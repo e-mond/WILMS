@@ -1,0 +1,38 @@
+name: Apply Database Migrations
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Database target'
+        required: true
+        type: choice
+        options:
+          - production
+          - staging
+
+concurrency:
+  group: apply-db-migrations-${{ inputs.target }}
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.target == 'production' && 'Production' || 'Preview' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Apply pending migrations
+        run: node scripts/apply-pending-migrations.mjs
+        env:
+          DATABASE_URL: ${{ inputs.target == 'production' && secrets.DATABASE_URL || secrets.STAGING_DATABASE_URL }}
+
+      - name: Summarise
+        run: echo "Migrations applied for ${{ inputs.target }}"

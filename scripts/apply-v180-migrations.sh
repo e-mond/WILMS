@@ -1,15 +1,23 @@
 #!/usr/bin/env bash
-# Apply WILMS v1.8.0 migrations (0037–0039) against Neon / Postgres.
-# drizzle-kit loads DATABASE_URL from the repository root `.env` only.
+# Apply pending WILMS migrations (including v1.8.0 0037–0039).
 set -euo pipefail
-
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
+ENV_FILE="${1:-}"
+if [[ -n "${ENV_FILE}" ]]; then
+  node scripts/apply-pending-migrations.mjs --env-file "${ENV_FILE}"
+  exit 0
+fi
+
 if [[ -z "${DATABASE_URL:-}" ]]; then
+  if [[ -f apps/backend/.env.local ]]; then
+    node scripts/apply-pending-migrations.mjs --env-file apps/backend/.env.local
+    exit 0
+  fi
   if [[ -f .env ]]; then
-    # shellcheck disable=SC1091
     set -a
+    # shellcheck disable=SC1091
     source .env
     set +a
   fi
@@ -17,13 +25,10 @@ fi
 
 if [[ -z "${DATABASE_URL:-}" ]]; then
   echo "DATABASE_URL is not set."
-  echo "Add it to the repository root .env, then re-run:"
-  echo "  npm run db:migrate -w @wilms/domain"
-  echo "or:"
-  echo "  ./scripts/apply-v180-migrations.sh"
+  echo "Usage:"
+  echo "  ./scripts/apply-v180-migrations.sh apps/backend/.env.local"
+  echo "  DATABASE_URL=... ./scripts/apply-v180-migrations.sh"
   exit 1
 fi
 
-echo "Applying drizzle migrations (includes 0037 Ghana holidays, 0038 automation, 0039 holiday enrichment)…"
-npm run db:migrate -w @wilms/domain
-echo "Migration apply finished."
+node scripts/apply-pending-migrations.mjs
