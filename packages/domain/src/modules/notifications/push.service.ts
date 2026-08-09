@@ -27,6 +27,7 @@ function mapPushCategory(
     case 'holiday':
     case 'offline-sync':
     case 'operational':
+    case 'approval':
       return 'approval';
     case 'automation':
     case 'reminder':
@@ -36,8 +37,13 @@ function mapPushCategory(
       return 'payment';
     case 'loan':
       return 'loan';
+    case 'registration':
+      return 'registration';
+    case 'marketing':
+      return 'marketing';
     case 'executive':
     case 'system':
+    case 'announcement':
       return 'announcement';
     default:
       return undefined;

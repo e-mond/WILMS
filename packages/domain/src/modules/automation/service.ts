@@ -3,7 +3,6 @@ import { desc, eq } from 'drizzle-orm';
 import { getDb, isDatabaseEnabled } from '../../db/client.js';
 import { automationRuns, automationRules, automationTasks } from '../../db/schema/automation.js';
 import { createInAppNotification } from '../../infrastructure/notifications/in-app-notify.js';
-import { sendPushToUser } from '../notifications/push.service.js';
 
 export const PAYMENT_REMINDER_OFFSETS_DAYS = [-3, -1, 0, 1, 3, 7, 14, 30] as const;
 export const OVERDUE_ESCALATION_DAYS = [7, 14, 30, 60, 90] as const;
@@ -229,12 +228,6 @@ export async function createFollowUpTask(input: {
       body: input.title,
       href: '/collector/dashboard',
     });
-    await sendPushToUser(assigneeUserId, {
-      title: 'Follow-up task assigned',
-      body: input.title,
-      url: '/collector/dashboard',
-      category: 'automation',
-    });
   }
 
   return { id, status: 'OPEN', assigneeUserId };
@@ -262,17 +255,120 @@ async function notifyExecutivesOfPack(summary: string): Promise<number> {
           body: summary,
           href: '/executive',
         });
-        await sendPushToUser(user.id, {
-          title: 'Executive automation pack ready',
-          body: summary,
-          url: '/executive',
-          category: 'automation',
-        });
       }),
     );
 
     return executives.length;
   } catch {
+    return 0;
+  }
+}
+
+const INACTIVE_REENGAGE_MESSAGES = [
+  'It has been a while since you signed in to WILMS. Open the dashboard to review new collections, holidays, and programme updates.',
+  'We noticed you have not been active in WILMS for over a week. Please sign in to check recent alerts and keep the programme current.',
+  'Your Super Admin session has been quiet for more than seven days. Log in to WILMS to review pending work and system updates.',
+  'A quick reminder from WILMS: it has been over a week since your last login. Sign in when you can to check for updates.',
+] as const;
+
+function pickInactiveReengageMessage(seed: string): string {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i += 1) {
+    hash = (hash + seed.charCodeAt(i) * (i + 1)) % INACTIVE_REENGAGE_MESSAGES.length;
+  }
+  return INACTIVE_REENGAGE_MESSAGES[hash]!;
+}
+
+/** Email + in-app nudge for Super Admins with lastLoginAt older than 7 days (weekly dedupe). */
+export async function processInactiveSuperAdminReengagement(now = new Date()): Promise<number> {
+  if (!isDatabaseEnabled()) {
+    return 0;
+  }
+
+  try {
+    const { listUsers } = await import('../../repositories/user.repository.js');
+    const {
+      tryAcquireNotificationDelivery,
+      markNotificationDeliveryStatus,
+    } = await import('../../infrastructure/notifications/notification-dedupe.js');
+    const { getMailProvider } = await import('../../infrastructure/mail/index.js');
+    const { getSettings } = await import('../settings/service.js');
+
+    const cutoff = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const isoWeek = (() => {
+      const tmp = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+      const dayNum = tmp.getUTCDay() || 7;
+      tmp.setUTCDate(tmp.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
+      const week = Math.ceil(((tmp.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+      return `${tmp.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
+    })();
+
+    const users = await listUsers();
+    const inactive = users.filter((user) => {
+      if (user.role !== 'SUPER_ADMIN' || user.status !== 'ACTIVE' || !user.email?.trim()) {
+        return false;
+      }
+      const last = user.lastLoginAt ? new Date(user.lastLoginAt) : null;
+      if (!last || Number.isNaN(last.getTime())) {
+        // Never logged in after invite — skip until first login establishes activity baseline.
+        return false;
+      }
+      return last.getTime() < cutoff.getTime();
+    });
+
+    const settings = await getSettings();
+    const mail = getMailProvider();
+    let sent = 0;
+
+    for (const user of inactive) {
+      const dedupeKey = `inactive-sa-reengage:${isoWeek}:${user.id}`;
+      const acquired = await tryAcquireNotificationDelivery({
+        dedupeKey,
+        recipient: user.id,
+        channel: 'EMAIL',
+        notificationType: 'INACTIVE_SUPER_ADMIN_REENGAGE',
+        userId: user.id,
+      });
+      if (!acquired) {
+        continue;
+      }
+
+      const body = pickInactiveReengageMessage(`${user.id}:${isoWeek}`);
+      await createInAppNotification({
+        userId: user.id,
+        event: 'LOGIN_ALERT',
+        title: 'It has been a while',
+        body,
+        href: '/dashboard',
+        dedupeKey,
+      });
+
+      if (settings.emailNotificationsEnabled && mail.isConfigured()) {
+        try {
+          await mail.send({
+            to: user.email,
+            subject: 'WILMS — it has been a while',
+            text: `Hi ${user.displayName || 'Super Admin'},\n\n${body}\n\nSign in: open WILMS and check for updates.\n\n— WILMS`,
+            html: `<p>Hi ${user.displayName || 'Super Admin'},</p><p>${body}</p><p>Sign in to WILMS to check for updates.</p><p>— WILMS</p>`,
+          });
+        } catch (error) {
+          console.error('[automation] inactive re-engage email failed:', error);
+        }
+      }
+
+      await markNotificationDeliveryStatus({
+        dedupeKey,
+        recipient: user.id,
+        channel: 'EMAIL',
+        status: 'SENT',
+      });
+      sent += 1;
+    }
+
+    return sent;
+  } catch (error) {
+    console.error('[automation] inactive Super Admin re-engagement failed:', error);
     return 0;
   }
 }
@@ -283,6 +379,7 @@ export async function runDailyAutomationPass(): Promise<{
   escalationsEvaluated: number;
   followUpsCreated: number;
   executivePackRecipients: number;
+  inactiveSuperAdminNudges: number;
   runId: string | null;
 }> {
   const rulesEnsured = await ensureDefaultAutomationRules();
@@ -290,6 +387,7 @@ export async function runDailyAutomationPass(): Promise<{
   const escalationsEvaluated = OVERDUE_ESCALATION_DAYS.length;
   let followUpsCreated = 0;
   let executivePackRecipients = 0;
+  let inactiveSuperAdminNudges = 0;
 
   const rules = await listAutomationRules();
   const enabled = new Set(
@@ -328,6 +426,8 @@ export async function runDailyAutomationPass(): Promise<{
     );
   }
 
+  inactiveSuperAdminNudges = await processInactiveSuperAdminReengagement();
+
   if (!isDatabaseEnabled()) {
     return {
       rulesEnsured,
@@ -335,6 +435,7 @@ export async function runDailyAutomationPass(): Promise<{
       escalationsEvaluated,
       followUpsCreated,
       executivePackRecipients,
+      inactiveSuperAdminNudges,
       runId: null,
     };
   }
@@ -350,9 +451,10 @@ export async function runDailyAutomationPass(): Promise<{
       escalationsEvaluated,
       followUpsCreated,
       executivePackRecipients,
+      inactiveSuperAdminNudges,
       reminderOffsets: [...PAYMENT_REMINDER_OFFSETS_DAYS],
       escalationThresholds: [...OVERDUE_ESCALATION_DAYS],
-      note: 'Payment reminder SMS/email/push continue via the existing notification scheduler; this pass records heartbeat, follow-ups, and executive pack alerts.',
+      note: 'Payment reminder SMS/email/push continue via the existing notification scheduler; this pass records heartbeat, follow-ups, executive pack alerts, and inactive Super Admin nudges.',
     },
     finishedAt: new Date(),
   });
@@ -363,6 +465,7 @@ export async function runDailyAutomationPass(): Promise<{
     escalationsEvaluated,
     followUpsCreated,
     executivePackRecipients,
+    inactiveSuperAdminNudges,
     runId,
   };
 }

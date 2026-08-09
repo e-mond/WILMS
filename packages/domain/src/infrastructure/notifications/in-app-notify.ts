@@ -105,26 +105,39 @@ export async function createInAppNotification(input: {
     const items = memoryInbox.get(input.userId) ?? [];
     items.unshift({ id, event: input.event, title: input.title, body: input.body });
     memoryInbox.set(input.userId, items);
-    return;
+  } else {
+    const db = getDb();
+    await db.insert(notifications).values({
+      id,
+      userId: input.userId,
+      title: input.title,
+      body: input.body,
+      event: input.event as typeof notifications.$inferInsert.event,
+      channel: 'IN_APP' as typeof notifications.$inferInsert.channel,
+      severity,
+      href: input.href ?? null,
+      borrowerId: input.borrowerId ?? null,
+      loanId: input.loanId ?? null,
+      isRead: false,
+      sentAt: now,
+      dedupeKey: input.dedupeKey ?? null,
+      correlationId: input.correlationId ?? null,
+    });
   }
 
-  const db = getDb();
-  await db.insert(notifications).values({
-    id,
-    userId: input.userId,
-    title: input.title,
-    body: input.body,
-    event: input.event as typeof notifications.$inferInsert.event,
-    channel: 'IN_APP' as typeof notifications.$inferInsert.channel,
-    severity,
-    href: input.href ?? null,
-    borrowerId: input.borrowerId ?? null,
-    loanId: input.loanId ?? null,
-    isRead: false,
-    sentAt: now,
-    dedupeKey: input.dedupeKey ?? null,
-    correlationId: input.correlationId ?? null,
-  });
+  // Mirror every successful in-app write with Web Push (preference / quiet-hour gated).
+  try {
+    const { sendPushToUser } = await import('../../modules/notifications/push.service.js');
+    await sendPushToUser(input.userId, {
+      title: input.title,
+      body: input.body,
+      url: input.href,
+      category: mapInAppCategory(input.event),
+      critical: severity === 'CRITICAL',
+    });
+  } catch (error) {
+    console.error('[push] mirror of in-app notification failed:', error);
+  }
 }
 
 export async function createInAppNotificationsForUsers(

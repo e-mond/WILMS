@@ -4,6 +4,7 @@ import { useEffect, useId, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { photoCaptureSessionService } from '@/services';
 import type { PhotoCaptureSession } from '@/types/photo-capture-session';
+import { MINIMAL_JPEG_DATA_URL } from '@/utils/data-url-bytes';
 import { resolveUploadPreviewUrl } from '@/utils/upload-file';
 import { cn } from '@/utils/cn';
 
@@ -141,15 +142,9 @@ export function PhoneCaptureSessionPanel({
     setCaptureError(null);
 
     try {
-      const placeholder =
-        'data:image/svg+xml;base64,' +
-        btoa(
-          `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="400"><rect width="100%" height="100%" fill="#111827"/><text x="50%" y="50%" fill="#D4AF37" font-size="20" text-anchor="middle">WILMS Phone Capture</text></svg>`,
-        );
-
       const updated = await photoCaptureSessionService.simulatePhoneCapture(
         session.sessionToken,
-        placeholder,
+        MINIMAL_JPEG_DATA_URL,
       );
       setSession(updated);
 
