@@ -170,6 +170,7 @@ export function CollectorMyBorrowersPanel() {
       ) : null}
 
       <DataTable<CollectorDashboardBorrower>
+        mobileLayout="stack"
         variant="executive"
         caption="Assigned borrowers due for collection"
         data={borrowers}
@@ -178,6 +179,7 @@ export function CollectorMyBorrowersPanel() {
         columns={[
           {
             id: 'borrower',
+              priority: 'primary',
             header: 'Borrower',
             cell: (row) => (
               <div>

@@ -106,6 +106,7 @@ export function SettingsExpensesSection() {
         icon={<SettingsExpensesIcon />}
       >
         <DataTable<ExpenseRecord>
+          mobileLayout="stack"
           variant="executive"
           layout="auto"
           caption="Expense records"
@@ -114,6 +115,7 @@ export function SettingsExpensesSection() {
           columns={[
             {
               id: 'id',
+              priority: 'primary',
               header: 'Expense ID',
               className: 'whitespace-nowrap align-middle font-mono text-small tabular-nums',
               cell: (row) => resolveExpenseDisplayId(row),

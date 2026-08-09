@@ -69,10 +69,19 @@ Financial calculation logic was **not** modified. UI continues to consume author
 
 ## Remaining issues
 
-- Pre-existing Vite warning: duplicate `case 'messages'` in `ShellNavIcon.tsx` (not introduced by this update)
-- Full visual QA across every listed viewport size not automated; responsive behaviour covered by shared primitives + targeted responsive tests
-- Manual offline device smoke (navigator.onLine false) not executed in this environment
+Addressed in `fix/v1.8.0-production-readiness` (see [`PRODUCTION_READINESS_MATRIX.md`](./PRODUCTION_READINESS_MATRIX.md)):
+
+- ShellNavIcon duplicate `messages` case removed
+- Selective DataTable stack rollout completed for ops lists
+- README uplifted to 1.8.0; offline root doc synced
+
+Still residual after production-readiness closure:
+
+- Full visual QA across every listed viewport size not automated
+- Manual offline device smoke not executed in agent environment
+- Playwright a11y webServer may fail when build-time Google font CDN is unreachable
 
 ## Final verdict
 
-**READY FOR STAGING**
+Post-release UI unit: **READY FOR STAGING**  
+Production-readiness closure: **READY WITH CONDITIONS** (see matrix)

@@ -319,6 +319,7 @@ export function RiskFlagsPanel() {
       />
 
       <DataTable<RiskFlagSummary>
+        mobileLayout="stack"
         variant="executive"
         caption="Risk flags"
         data={slice}
@@ -328,6 +329,7 @@ export function RiskFlagsPanel() {
         columns={[
           {
             id: 'id',
+              priority: 'primary',
             header: sortHeader('Flag ID', 'id'),
             cell: (row) => (
               <span className="whitespace-nowrap font-semibold text-executive-gold">{row.id}</span>

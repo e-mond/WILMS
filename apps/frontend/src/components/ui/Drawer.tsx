@@ -11,7 +11,7 @@ import {
 import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/utils/cn';
-import { X } from 'lucide-react'; // Assuming lucide-react icons are available
+import { X } from 'lucide-react';
 
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -43,7 +43,13 @@ export function Drawer({
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const wasOpenRef = useRef(false);
+  const [portalReady, setPortalReady] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    setPortalReady(true);
+  }, []);
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
@@ -80,48 +86,79 @@ export function Drawer({
     [onClose, isOpen],
   );
 
-  // Handle mount/unmount with animation support
   useEffect(() => {
     if (isOpen) {
       setIsAnimating(true);
-      previousFocusRef.current = document.activeElement as HTMLElement | null;
-      document.addEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'hidden';
-    } else {
-      // Allow exit animation before unmounting
-      const timer = setTimeout(() => {
-        setIsAnimating(false);
-      }, 300); // Match transition duration
-      return () => clearTimeout(timer);
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+
+    const timer = window.setTimeout(() => {
+      setIsAnimating(false);
+    }, 300);
+
+    return () => {
+      window.clearTimeout(timer);
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      wasOpenRef.current = false;
+      return;
+    }
+
+    const shouldAutofocus = !wasOpenRef.current;
+    wasOpenRef.current = true;
+
+    if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+      previousFocusRef.current = document.activeElement;
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    let focusTimer: number | undefined;
+    if (shouldAutofocus) {
+      focusTimer = window.setTimeout(() => {
+        const panel = panelRef.current;
+        if (!panel?.isConnected) {
+          return;
+        }
+
+        const target =
+          panel.querySelector<HTMLElement>('[autofocus]') ??
+          panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)[0];
+
+        if (target?.isConnected) {
+          target.focus({ preventScroll: true });
+        }
+      }, 50);
     }
 
     return () => {
+      if (focusTimer !== undefined) {
+        window.clearTimeout(focusTimer);
+      }
       document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = '';
+
       const previous = previousFocusRef.current;
       previousFocusRef.current = null;
-      if (previous?.isConnected) {
-        previous.focus();
+
+      // Defer focus restore so React can finish portal unmount without removeChild races.
+      if (previous) {
+        window.setTimeout(() => {
+          if (previous.isConnected) {
+            previous.focus({ preventScroll: true });
+          }
+        }, 0);
       }
     };
-  }, [isOpen, handleKeyDown]);
+  }, [handleKeyDown, isOpen]);
 
-  // Auto-focus first focusable element
-  useEffect(() => {
-    if (!isOpen || !panelRef.current) return;
-
-    const timer = window.setTimeout(() => {
-      const focusable = panelRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
-      const first = focusable?.[0];
-      if (first?.isConnected) {
-        first.focus();
-      }
-    }, 50);
-
-    return () => window.clearTimeout(timer);
-  }, [isOpen]);
-
-  if (!isOpen && !isAnimating) {
+  if (!portalReady || (!isOpen && !isAnimating) || typeof document === 'undefined') {
     return null;
   }
 
@@ -131,15 +168,11 @@ export function Drawer({
         ? 'translate-x-0'
         : '-translate-x-full'
       : isOpen
-      ? 'translate-x-0'
-      : 'translate-x-full';
+        ? 'translate-x-0'
+        : 'translate-x-full';
 
   return createPortal(
-    <div
-      className="fixed inset-0 z-50 flex"
-      role="presentation"
-    >
-      {/* Backdrop */}
+    <div className="fixed inset-0 z-50 flex" role="presentation">
       <button
         type="button"
         aria-label="Close drawer overlay"
@@ -152,7 +185,6 @@ export function Drawer({
         tabIndex={-1}
       />
 
-      {/* Drawer Panel */}
       <div
         ref={panelRef}
         role="dialog"
@@ -161,7 +193,6 @@ export function Drawer({
         aria-labelledby={titleId}
         className={cn(
           'relative z-10 flex h-full flex-col border-border shadow-xl transition-transform duration-300 ease-out',
-          // Responsive width
           width,
           'max-w-[92vw] sm:max-w-[420px]',
           sidebarVariant === 'executive'
@@ -179,12 +210,11 @@ export function Drawer({
           </h2>
         ) : null}
 
-        {/* Header */}
         {!hideHeader ? (
           <div className="flex items-center justify-between gap-4 border-b border-border px-6 py-4">
             <h2
               id={titleId}
-              className="text-lg font-semibold text-text-primary truncate pr-2"
+              className="truncate pr-2 text-lg font-semibold text-text-primary"
             >
               {title}
             </h2>
@@ -192,7 +222,7 @@ export function Drawer({
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="h-8 w-8 p-0 flex-shrink-0"
+              className="h-8 w-8 flex-shrink-0 p-0"
             >
               <X className="h-4 w-4" aria-hidden="true" />
               <span className="sr-only">Close</span>
@@ -200,15 +230,7 @@ export function Drawer({
           </div>
         ) : null}
 
-        {/* Content */}
-        <div
-          className={cn(
-            'flex-1 overflow-y-auto',
-            hideHeader ? 'p-0' : 'p-6',
-          )}
-        >
-          {children}
-        </div>
+        <div className={cn('flex-1 overflow-y-auto', hideHeader ? 'p-0' : 'p-6')}>{children}</div>
       </div>
     </div>,
     document.body,

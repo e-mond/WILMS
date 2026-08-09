@@ -32,7 +32,8 @@ describe('LoanPortfolioList', () => {
     );
 
     expect(await screen.findByText('Total Outstanding')).toBeInTheDocument();
-    expect(screen.getByText('Ama Mensah')).toBeInTheDocument();
+    // Stack + desktop table both mount in jsdom (responsive classes only).
+    expect(screen.getAllByText('Ama Mensah').length).toBeGreaterThan(0);
     expect(screen.getAllByText('GH₵350.00').length).toBeGreaterThan(0);
   });
 
@@ -44,10 +45,10 @@ describe('LoanPortfolioList', () => {
       </TestQueryProvider>,
     );
 
-    await screen.findByText('Ama Mensah');
+    await screen.findAllByText('Ama Mensah');
     await user.selectOptions(screen.getByLabelText('Filter by loan status'), 'COMPLETED');
 
-    expect(await screen.findByText('Ama Mensan')).toBeInTheDocument();
+    expect((await screen.findAllByText('Ama Mensan')).length).toBeGreaterThan(0);
     expect(screen.queryByText('Ama Mensah')).not.toBeInTheDocument();
     expect(screen.getByText(/Showing 1 of \d+ loans/)).toBeInTheDocument();
   });

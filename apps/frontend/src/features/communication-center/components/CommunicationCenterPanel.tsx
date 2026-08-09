@@ -234,6 +234,7 @@ export function CommunicationCenterPanel() {
             </Select>
           </div>
           <DataTable<import('@/types/communication').CommunicationMessage>
+            mobileLayout="stack"
             variant="executive"
             data={messagesQuery.data ?? []}
             getRowId={(row) => row.id}
@@ -306,6 +307,7 @@ export function CommunicationCenterPanel() {
           onRetry={() => void templatesQuery.refetch()}
         >
           <DataTable<import('@/types/communication').CommunicationTemplate>
+            mobileLayout="stack"
             variant="executive"
             data={templatesQuery.data ?? []}
             getRowId={(row) => row.id}
@@ -341,6 +343,7 @@ export function CommunicationCenterPanel() {
           onRetry={() => void failedQuery.refetch()}
         >
           <DataTable<import('@/types/communication').FailedDelivery>
+            mobileLayout="stack"
             variant="executive"
             data={failedQuery.data ?? []}
             getRowId={(row) => row.id}

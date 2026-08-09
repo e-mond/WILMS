@@ -1,8 +1,11 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { PermissionGate } from '@/components/auth/PermissionGate';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { PERMISSION } from '@/constants/permissions';
+import { usePermission } from '@/hooks/usePermissions';
 import { uploadService } from '@/services';
 import { communicationService } from '@/services';
 import { UPLOAD_PURPOSE } from '@/types/upload';
@@ -39,9 +42,14 @@ export function AttachmentUploader({ attachments, onChange, messageId }: Attachm
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const canCaptureDocuments = usePermission(PERMISSION.CAPTURE_DOCUMENTS);
 
   async function handleFiles(files: FileList | null) {
     if (!files?.length) return;
+    if (!canCaptureDocuments) {
+      setError('You do not have permission to upload document attachments.');
+      return;
+    }
 
     setUploading(true);
     setError(null);
@@ -93,6 +101,10 @@ export function AttachmentUploader({ attachments, onChange, messageId }: Attachm
   }
 
   async function handleReplace(attachment: MessageAttachment, file: File) {
+    if (!canCaptureDocuments) {
+      setError('You do not have permission to upload document attachments.');
+      return;
+    }
     if (!ALLOWED_TYPES.includes(file.type) || file.size > MAX_BYTES) {
       setError('Replacement file is invalid.');
       return;
@@ -121,24 +133,34 @@ export function AttachmentUploader({ attachments, onChange, messageId }: Attachm
   return (
     <div className="space-y-wilms-3">
       <div className="flex flex-wrap items-center gap-wilms-2">
-        <input
-          ref={inputRef}
-          type="file"
-          multiple
-          accept={ALLOWED_TYPES.join(',')}
-          className="hidden"
-          onChange={(event) => void handleFiles(event.target.files)}
-        />
-        <Button
-          type="button"
-          size="sm"
-          variant="secondary"
-          disabled={uploading}
-          onClick={() => inputRef.current?.click()}
-        >
-          {uploading ? 'Uploading…' : 'Add attachment'}
-        </Button>
-        <span className="text-small text-text-muted">PDF, DOCX, XLSX, CSV, PNG, JPG, WEBP — max 10 MB</span>
+        <PermissionGate permission={PERMISSION.CAPTURE_DOCUMENTS}>
+          <input
+            ref={inputRef}
+            type="file"
+            multiple
+            accept={ALLOWED_TYPES.join(',')}
+            className="hidden"
+            onChange={(event) => void handleFiles(event.target.files)}
+          />
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            disabled={uploading}
+            onClick={() => inputRef.current?.click()}
+          >
+            {uploading ? 'Uploading…' : 'Add attachment'}
+          </Button>
+          <span className="text-small text-text-muted">
+            PDF, DOCX, XLSX, CSV, PNG, JPG, WEBP — max 10 MB
+          </span>
+        </PermissionGate>
+        {!canCaptureDocuments ? (
+          <p className="text-small text-text-muted">
+            Document attachments require capture-documents permission. Profile photos can still be
+            updated in Settings.
+          </p>
+        ) : null}
       </div>
 
       {error ? <p className="text-small text-danger">{error}</p> : null}
@@ -170,22 +192,24 @@ export function AttachmentUploader({ attachments, onChange, messageId }: Attachm
                 >
                   Download
                 </a>
-                <label className="inline-flex cursor-pointer items-center">
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept={ALLOWED_TYPES.join(',')}
-                    onChange={(event) => {
-                      const file = event.target.files?.[0];
-                      if (file) {
-                        void handleReplace(attachment, file);
-                      }
-                    }}
-                  />
-                  <span className="rounded-sm border border-border px-wilms-3 py-wilms-1 text-small">
-                    Replace
-                  </span>
-                </label>
+                {canCaptureDocuments ? (
+                  <label className="inline-flex cursor-pointer items-center">
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept={ALLOWED_TYPES.join(',')}
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        if (file) {
+                          void handleReplace(attachment, file);
+                        }
+                      }}
+                    />
+                    <span className="rounded-sm border border-border px-wilms-3 py-wilms-1 text-small">
+                      Replace
+                    </span>
+                  </label>
+                ) : null}
                 <Button
                   type="button"
                   size="sm"
