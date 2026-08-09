@@ -55,7 +55,7 @@ describe('SuperAdminDashboard', () => {
     mockGetDashboardSummary.mockImplementation(() => dashboardServiceMock.getDashboardSummary());
   });
 
-  it('renders operational dashboard work queues and links to executive view', async () => {
+  it('renders operational dashboard attention queues and links to executive view', async () => {
     render(
       <TestQueryProvider>
         <AsideSlotProvider>
@@ -72,12 +72,8 @@ describe('SuperAdminDashboard', () => {
       },
       { timeout: 15_000 },
     );
-    expect(screen.getByText('What needs attention today')).toBeInTheDocument();
-    expect(screen.getByText("Today’s work queue")).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /open executive view/i })).toHaveAttribute(
-      'href',
-      '/executive',
-    );
+    expect(screen.getByText('Financial operations')).toBeInTheDocument();
+    expect(screen.getByText('Needs attention')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /^executive view$/i })).toHaveAttribute(
       'href',
       '/executive',

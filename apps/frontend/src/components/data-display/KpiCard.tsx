@@ -43,7 +43,7 @@ export function KpiCard({
   return (
     <div
       className={cn(
-        'rounded-[var(--radius-card)] border border-border bg-card motion-card-lift',
+        'rounded-[var(--radius-card)] border border-border/80 bg-card shadow-[var(--shadow-card)] motion-card-lift',
         isExecutive ? 'flex flex-col justify-between' : null,
         'p-[var(--density-kpi-padding)]',
         className,
@@ -75,8 +75,8 @@ export function KpiCard({
       ) : (
         <div
           className={cn(
-            'mt-wilms-2 font-mono font-bold tabular-nums tracking-tight',
-            isExecutive ? 'text-display' : 'text-display',
+            'mt-wilms-2 font-mono font-semibold tabular-nums tracking-tight text-heading-2',
+            isExecutive && 'text-heading-1',
             valueClassName,
           )}
         >

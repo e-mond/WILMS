@@ -3,7 +3,6 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { AppLockNavbarButton } from '@/components/layout/shell/navbar/AppLockNavbarButton';
-import { ConnectionStatusChip } from '@/components/layout/shell/navbar/ConnectionStatusChip';
 import { GlobalSearchTrigger } from '@/components/layout/shell/navbar/GlobalSearchPanel';
 import { NotificationInboxTrigger } from '@/components/layout/shell/navbar/NotificationInboxPanel';
 import { ShellMobileOverflowMenu } from '@/components/layout/shell/navbar/ShellMobileOverflowMenu';
@@ -12,11 +11,10 @@ import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { PERMISSION } from '@/constants/permissions';
 import { useAuth } from '@/hooks/useAuth';
-import { useUiStore } from '@/state/uiStore';
 import { useShellLayoutStore } from '@/state/shellLayoutStore';
 import { resolveSettingsHref } from '@/utils/settings-route';
 import { cn } from '@/utils/cn';
-import { HelpCircle, Settings } from 'lucide-react';
+import { Settings } from 'lucide-react';
 
 export interface ShellNavbarActionsProps {
   showDateTime?: boolean;
@@ -71,7 +69,6 @@ export function ShellNavbarActions({
 }: ShellNavbarActionsProps) {
   const { user } = useAuth();
   const settingsHref = resolveSettingsHref(user?.role);
-  const openHelpMenu = useUiStore((state) => state.openHelpMenu);
   const isSidebarCollapsed = useShellLayoutStore((state) => state.isSidebarCollapsed);
   /** When the sidebar is expanded, keep the identity chip compact so the bar does not overflow. */
   const profileCompact = compact || !isSidebarCollapsed;
@@ -101,17 +98,6 @@ export function ShellNavbarActions({
     <div className="flex min-w-0 shrink-0 flex-nowrap items-center gap-0.5 sm:gap-1">
       {user && !hideSearch && !compact ? <GlobalSearchTrigger variant="desktop" /> : null}
       {user && !hideSearch && compact ? <GlobalSearchTrigger /> : null}
-
-      {!compact ? <ConnectionStatusChip /> : null}
-
-      {!compact ? (
-        <>
-          <NavbarIconButton label="Help and guided tour" onClick={openHelpMenu}>
-            <HelpCircle className="h-4 w-4" aria-hidden="true" />
-          </NavbarIconButton>
-          <NavbarDivider />
-        </>
-      ) : null}
 
       {user ? (
         <PermissionGate

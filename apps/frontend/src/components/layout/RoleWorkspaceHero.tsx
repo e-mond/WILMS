@@ -4,8 +4,6 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { useAuth } from '@/hooks/useAuth';
-import { useOfflineStatus } from '@/hooks/useOfflineStatus';
-import { useSystemStatus } from '@/hooks/useSystemStatus';
 import { cn } from '@/utils/cn';
 
 export interface RoleWorkspaceQuickAction {
@@ -58,8 +56,6 @@ export function RoleWorkspaceHero({
   className,
 }: RoleWorkspaceHeroProps) {
   const { user } = useAuth();
-  const { isOffline } = useOfflineStatus();
-  const { label: syncLabel } = useSystemStatus();
   const firstName = user?.displayName?.split(/\s+/)[0] ?? 'there';
   const greeting = greetingForHour(new Date().getHours());
 
@@ -72,26 +68,13 @@ export function RoleWorkspaceHero({
           </p>
           <CardTitle className="text-heading-2 tracking-tight">{title}</CardTitle>
           <CardDescription>{subtitle}</CardDescription>
-          <div className="flex flex-wrap gap-wilms-2 pt-wilms-1 text-xs font-semibold">
-            <span
-              className={cn(
-                'rounded-full border px-wilms-2 py-0.5',
-                isOffline
-                  ? 'border-status-at-risk/40 bg-status-at-risk-light text-status-at-risk'
-                  : 'border-status-active/40 bg-status-active-light text-status-active',
-              )}
-            >
-              {isOffline ? 'Offline' : 'Online'}
-            </span>
-            <span className="rounded-full border border-border/70 bg-background/70 px-wilms-2 py-0.5 text-text-muted">
-              {syncLabel}
-            </span>
-            {user?.role ? (
-              <span className="rounded-full border border-border/70 bg-background/70 px-wilms-2 py-0.5 text-text-muted">
+          {user?.role ? (
+            <div className="pt-wilms-1">
+              <span className="rounded-full border border-border/70 bg-background/70 px-wilms-2 py-0.5 text-xs font-semibold text-text-muted">
                 {user.role.replaceAll('_', ' ')}
               </span>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
         </CardHeader>
         {metrics.length > 0 ? (
           <CardContent className="grid gap-wilms-3 pt-0 sm:grid-cols-2 lg:grid-cols-4">

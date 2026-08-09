@@ -53,12 +53,10 @@ describe('CollectorDashboardPanel', () => {
       </TestQueryProvider>,
     );
 
-    expect(
-      await screen.findByText("Today's Collection", {}, { timeout: 8000 }),
-    ).toBeInTheDocument();
-    expect(screen.getByTestId('collector-field-dashboard')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /quick payment/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /^reconcile$/i })).toBeInTheDocument();
+    expect(await screen.findByTestId('collector-field-dashboard', {}, { timeout: 8000 })).toBeInTheDocument();
+    expect(screen.getByText("Today's collection")).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /quick payment/i })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/quick actions/i)).not.toBeInTheDocument();
     expect(screen.getByText('Groups today')).toBeInTheDocument();
     expect(screen.getAllByText('Ama Mensah').length).toBeGreaterThan(0);
     expect(screen.getAllByText('GH₵50.00').length).toBeGreaterThan(0);
