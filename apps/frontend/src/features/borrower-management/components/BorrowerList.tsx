@@ -225,6 +225,7 @@ export function BorrowerList() {
       ) : (
         <>
           <DataTable<BorrowerSummary>
+            mobileLayout="stack"
             variant="executive"
             caption="Borrower directory"
             data={filteredBorrowers}
@@ -233,6 +234,7 @@ export function BorrowerList() {
             columns={[
               {
                 id: 'id',
+              priority: 'primary',
                 header: 'Borrower ID',
                 cell: (row) => (
                   <span className="whitespace-nowrap font-semibold text-brand-primary">

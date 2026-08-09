@@ -105,6 +105,7 @@ export function CollectorExpenseHistoryPanel() {
       </div>
 
       <DataTable<ExpenseRecord>
+        mobileLayout="stack"
         variant="executive"
         layout="auto"
         caption="Collector expense history"
@@ -114,6 +115,7 @@ export function CollectorExpenseHistoryPanel() {
         columns={[
           {
             id: 'id',
+              priority: 'primary',
             header: 'Expense ID',
             className: 'whitespace-nowrap font-mono text-small tabular-nums',
             cell: (row) => resolveExpenseDisplayId(row),

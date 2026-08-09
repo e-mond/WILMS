@@ -238,6 +238,7 @@ export function LoanPortfolioList() {
       ) : (
         <>
           <DataTable<LoanPortfolioEntry>
+            mobileLayout="stack"
             variant="executive"
             layout="auto"
             caption="Loan portfolio"
@@ -247,6 +248,7 @@ export function LoanPortfolioList() {
             columns={[
               {
                 id: 'loanId',
+              priority: 'primary',
                 header: 'Loan ID',
                 className: 'whitespace-nowrap font-mono text-small tabular-nums',
                 cell: (row) => (
