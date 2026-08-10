@@ -105,7 +105,7 @@ No fabricated screenshots, browser logs, or device timings were added.
 |-------|--------|
 | Branch | `feature/v1.8.0-offline-pilot-cert` |
 | Related tag | `v1.8.0-offline-rc1` |
-| Commit (fill at PR tip) | *(set after commit)* |
+| Commit (fill at PR tip) | `09c0331fdf8f3f29a8bd39a3d66344919f07a213` |
 | Tests passed | type-check (frontend+domain), lint, offline-relevant unit subset, frontend production build |
 | Tests blocked | Device matrix, interactive PWA, full suite claim, performance numbers |
 | Executive recommendation | **YES WITH CONDITIONS** |
