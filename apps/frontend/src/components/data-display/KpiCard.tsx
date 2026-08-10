@@ -3,6 +3,7 @@ import { DASHBOARD_TREND_TONE_CLASS } from '@/constants/dashboard-display';
 import type { DashboardValueTone } from '@/types/dashboard';
 import { cn } from '@/utils/cn';
 import { TrendingDown, TrendingUp, Minus } from 'lucide-react';
+import { resolveKpiIcon } from './resolveKpiIcon';
 
 export interface KpiCardProps {
   label: string;
@@ -39,6 +40,7 @@ export function KpiCard({
   const isExecutive = variant === 'executive';
   const TrendIcon =
     trendDirection === 'up' ? TrendingUp : trendDirection === 'down' ? TrendingDown : Minus;
+  const resolvedIcon = icon ?? resolveKpiIcon(label);
 
   return (
     <div
@@ -58,14 +60,9 @@ export function KpiCard({
         >
           {label}
         </p>
-        {icon ? (
-          <span
-            className="rounded-md bg-background p-1.5 text-text-muted"
-            aria-hidden="true"
-          >
-            {icon}
-          </span>
-        ) : null}
+        <span className="rounded-md bg-background p-1.5 text-text-muted" aria-hidden="true">
+          {resolvedIcon}
+        </span>
       </div>
       {isLoading ? (
         <div

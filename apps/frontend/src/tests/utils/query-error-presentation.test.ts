@@ -5,11 +5,15 @@ import { resolveQueryErrorPresentation } from '@/utils/query-error-presentation'
 describe('resolveQueryErrorPresentation', () => {
   it('maps network errors to offline messaging', () => {
     const result = resolveQueryErrorPresentation(
-      new ApiError('Unable to reach the server. Check your connection.', API_ERROR_CODE.NETWORK),
+      new ApiError(
+        'Unable to reach WILMS. Check your internet connection, then try again.',
+        API_ERROR_CODE.NETWORK,
+      ),
     );
 
     expect(result.variant).toBe('offline');
-    expect(result.title).toContain('Unable to reach');
+    expect(result.title).toMatch(/Unable to reach WILMS|You are offline/);
+    expect(result.description.toLowerCase()).toMatch(/connection|offline|sync/);
     expect(result.canRetry).toBe(true);
   });
 
