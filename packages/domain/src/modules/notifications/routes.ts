@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { PERMISSION } from '@wilms/shared-rbac';
 import { asyncHandler } from '../../http/async-handler.js';
+import { AppError, ERROR_CODE } from '../../http/errors.js';
 import { sendData } from '../../http/response.js';
 import { requireAuth } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/require-permission.js';
@@ -134,13 +135,20 @@ notificationsRouter.post(
   '/notifications/push/subscribe',
   validateBody(pushSubscriptionSchema),
   asyncHandler(async (req, res) => {
-    const body = req.body as z.infer<typeof pushSubscriptionSchema>;
-    await pushService.savePushSubscription(req.session!.userId, {
-      endpoint: body.endpoint,
-      keys: body.keys,
-      userAgent: req.get('user-agent'),
-    });
-    sendData(res, { ok: true });
+    try {
+      const body = req.body as z.infer<typeof pushSubscriptionSchema>;
+      await pushService.savePushSubscription(req.session!.userId, {
+        endpoint: body.endpoint,
+        keys: body.keys,
+        userAgent: req.get('user-agent'),
+      });
+      sendData(res, { ok: true });
+    } catch (error) {
+      if (error instanceof Error && error.message.startsWith('VALIDATION:')) {
+        throw new AppError(error.message.slice('VALIDATION:'.length), ERROR_CODE.VALIDATION, 422);
+      }
+      throw error;
+    }
   }),
 );
 

@@ -5,6 +5,7 @@ import { isDatabaseEnabled, getDb, runInTransaction } from '../../db/client.js';
 import { expenses } from '../../db/schema/expenses.js';
 import { users } from '../../db/schema/users.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
+import { runWithIdempotency } from '../../infrastructure/idempotency/run-with-idempotency.js';
 import {
   notifyExpenseReviewed,
   notifyExpenseSubmitted,
@@ -121,7 +122,40 @@ export async function listExpenses(filter?: {
   };
 }
 
-export async function createExpense(input: {
+export async function createExpense(
+  input: {
+    category: string;
+    amountPesewas: number;
+    expenseDate: string;
+    reason: string;
+    notes?: string;
+    receiptFileName?: string;
+    receiptUploadId?: string;
+    gpsLabel?: string;
+    recordedById: string;
+    recordedByName: string;
+  },
+  idempotencyKey?: string,
+): Promise<ExpenseRecord> {
+  return runWithIdempotency({
+    scope: 'EXPENSE_CREATE',
+    actorUserId: input.recordedById,
+    idempotencyKey,
+    requestPayload: {
+      category: input.category,
+      amountPesewas: input.amountPesewas,
+      expenseDate: input.expenseDate,
+      reason: input.reason,
+      notes: input.notes,
+      receiptUploadId: input.receiptUploadId,
+      gpsLabel: input.gpsLabel,
+    },
+    responseStatus: 201,
+    execute: async () => createExpenseInner(input),
+  });
+}
+
+async function createExpenseInner(input: {
   category: string;
   amountPesewas: number;
   expenseDate: string;

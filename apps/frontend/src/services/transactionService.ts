@@ -7,10 +7,16 @@ import type {
   FinancialTransaction,
   RecordAdminFeeInput,
 } from '@/types/transaction';
+import { financialMutation } from '@/utils/financialMutation';
 
 const transactionService: ITransactionService = {
-  recordAdminFee(input: RecordAdminFeeInput): Promise<FinancialTransaction> {
-    return apiClient.post<FinancialTransaction>('/transactions/admin-fee', input);
+  async recordAdminFee(input: RecordAdminFeeInput): Promise<FinancialTransaction> {
+    const { result } = await financialMutation(
+      (headers) =>
+        apiClient.post<FinancialTransaction>('/transactions/admin-fee', input, { headers }),
+      { domain: 'generic' },
+    );
+    return result;
   },
 
   getAdminFeeStatus(borrowerId: string): Promise<AdminFeeStatus> {

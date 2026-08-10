@@ -281,6 +281,13 @@
       "when": 1785544800000,
       "tag": "0039_v180_holiday_request_enrichment",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1785631200000,
+      "tag": "0040_v180_phase33_idempotency_scopes",
+      "breakpoints": true
     }
   ]
 }

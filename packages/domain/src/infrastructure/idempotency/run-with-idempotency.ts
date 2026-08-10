@@ -16,7 +16,9 @@ export type IdempotencyScope =
   | 'ADJUSTMENT_APPROVE'
   | 'REVERSAL_EXECUTE'
   | 'RECONCILIATION_SUBMIT'
-  | 'PAYMENT_MISSED_MARK';
+  | 'PAYMENT_MISSED_MARK'
+  | 'EXPENSE_CREATE'
+  | 'ADMIN_FEE_RECORD';
 
 export function hashIdempotencyPayload(payload: unknown): string {
   return createHash('sha256').update(JSON.stringify(payload ?? null)).digest('hex');
@@ -65,7 +67,7 @@ export async function runWithIdempotency<T>(
     responseStatus: number;
     execute: () => Promise<T>;
   },
-  tx: WilmsDb = getDb(),
+  tx?: WilmsDb,
 ): Promise<T> {
   const flags = getFeatureFlags();
   const key = input.idempotencyKey?.trim();
@@ -84,6 +86,9 @@ export async function runWithIdempotency<T>(
   if (!isDatabaseEnabled()) {
     return input.execute();
   }
+
+  // Resolve DB only after memory-mode / no-key early returns (default-arg getDb() broke offline tests).
+  const db = tx ?? getDb();
 
   const requestHash =
     input.requestHash ??
@@ -104,7 +109,7 @@ export async function runWithIdempotency<T>(
             idempotencyKey: key,
             requestHash,
           },
-          tx,
+          db,
         );
       } catch (error) {
         if (error instanceof Error && error.message === 'IDEMPOTENCY_KEY_REUSED') {
@@ -147,11 +152,11 @@ export async function runWithIdempotency<T>(
             responseStatus: input.responseStatus,
             responseBody: result,
           },
-          tx,
+          db,
         );
         return result;
       } catch (error) {
-        await tx.delete(idempotencyKeys).where(eq(idempotencyKeys.id, begin.id));
+        await db.delete(idempotencyKeys).where(eq(idempotencyKeys.id, begin.id));
         throw error;
       }
     },

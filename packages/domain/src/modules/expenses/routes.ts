@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { asyncHandler } from '../../http/async-handler.js';
 import { AppError, ERROR_CODE } from '../../http/errors.js';
+import { mapFinancialRouteError } from '../../http/map-financial-error.js';
 import { sendData } from '../../http/response.js';
+import { readIdempotencyKey } from '../../infrastructure/idempotency/run-with-idempotency.js';
 import { PERMISSION } from '../../infrastructure/permissions/matrix.js';
 import { permissionSetHasAny } from '../../infrastructure/permissions/resolve-user-permissions.js';
 import { requireAuth } from '../../middleware/authenticate.js';
@@ -45,15 +47,23 @@ expensesRouter.post(
   '/expenses',
   requirePermission(PERMISSION.RECORD_EXPENSES),
   asyncHandler(async (req, res) => {
-    sendData(
-      res,
-      await expenseService.createExpense({
-        ...req.body,
-        recordedById: req.session!.userId,
-        recordedByName: req.session!.displayName ?? req.body.recordedByName ?? 'Staff',
-      }),
-      201,
-    );
+    try {
+      const idempotencyKey = readIdempotencyKey(req);
+      sendData(
+        res,
+        await expenseService.createExpense(
+          {
+            ...req.body,
+            recordedById: req.session!.userId,
+            recordedByName: req.session!.displayName ?? req.body.recordedByName ?? 'Staff',
+          },
+          idempotencyKey,
+        ),
+        201,
+      );
+    } catch (error) {
+      mapFinancialRouteError(error);
+    }
   }),
 );
 
