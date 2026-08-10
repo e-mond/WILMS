@@ -20,6 +20,7 @@ import { PwaIosInstallPrompt } from '@/components/pwa/PwaIosInstallPrompt';
 import { AppUpdatePrompt } from '@/components/pwa/AppUpdatePrompt';
 import { ChunkRecoveryHandler } from '@/components/pwa/ChunkRecoveryHandler';
 import { NotificationSoundBridge } from '@/components/notifications/NotificationSoundBridge';
+import { PushDefaultSubscribeBanner } from '@/features/notifications/components/PushDefaultSubscribeBanner';
 import { ProductTourOverlay } from '@/components/onboarding/ProductTourOverlay';
 import { ConsoleExtensionNoiseFilter } from '@/components/dev/ConsoleExtensionNoiseFilter';
 import { ServiceWorkerRegistrar } from '@/components/pwa/ServiceWorkerRegistrar';
@@ -77,6 +78,7 @@ export default function RootLayout({
             <QueryProvider>
               <PermissionProvider>
                 <AppBootstrap>
+                <PushDefaultSubscribeBanner />
                 <RouteTransitionLoader />
                 <FocusOnRouteChange />
                 <SessionExpiryHandler />

@@ -2,12 +2,15 @@
 
 import Link from 'next/link';
 import { useMemo } from 'react';
+import { Clock3 } from 'lucide-react';
 import { CurrencyAmount, KpiCard } from '@/components/data-display';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { ExecutiveKpiGrid } from '@/components/layout/executive';
 import { useReconciliationList } from '@/features/reconciliation/hooks/useReconciliationReview';
 import { needsReconciliationReview } from '@/utils/reconciliation-review';
 import { cn } from '@/utils/cn';
+
+const PENDING_AGING_ICON = <Clock3 className="h-4 w-4" aria-hidden="true" />;
 
 function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -80,24 +83,28 @@ export function DashboardReconciliationSummary({ compact = false }: { compact?: 
       value: summary.pendingToday,
       trend: summary.pendingToday === 0 ? 'Clear' : 'Needs review',
       tone: summary.pendingToday > 0 ? 'warn' : 'ok',
+      icon: PENDING_AGING_ICON,
     },
     {
       label: 'Pending >1 Day',
       value: summary.pendingOver1,
       trend: summary.pendingOver1 > 0 ? 'Aging' : 'Stable',
       tone: summary.pendingOver1 > 0 ? 'warn' : 'ok',
+      icon: PENDING_AGING_ICON,
     },
     {
       label: 'Pending >3 Days',
       value: summary.pendingOver3,
       trend: summary.pendingOver3 > 0 ? 'Escalate' : 'Stable',
       tone: summary.pendingOver3 > 0 ? 'danger' : 'ok',
+      icon: PENDING_AGING_ICON,
     },
     {
       label: 'Total Submitted',
       value: summary.submittedCount,
       trend: `${summary.pendingTotal} open`,
       tone: 'info' as const,
+      icon: undefined,
     },
   ] as const;
 
@@ -130,7 +137,9 @@ export function DashboardReconciliationSummary({ compact = false }: { compact?: 
 
       <ExecutiveKpiGrid
         className={cn(
-          compact ? 'sm:grid-cols-2' : 'sm:grid-cols-2 xl:grid-cols-4',
+          compact
+            ? 'sm:grid-cols-2 lg:!grid-cols-2 2xl:!grid-cols-2'
+            : 'sm:grid-cols-2 xl:grid-cols-4',
         )}
       >
         {metrics.map((metric) => (
@@ -138,6 +147,7 @@ export function DashboardReconciliationSummary({ compact = false }: { compact?: 
             key={metric.label}
             variant="executive"
             label={metric.label}
+            icon={metric.icon}
             value={metric.value}
             trend={metric.trend}
             valueClassName={cn(

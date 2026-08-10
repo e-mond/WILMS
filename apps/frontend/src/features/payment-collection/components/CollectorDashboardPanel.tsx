@@ -237,6 +237,9 @@ export function CollectorDashboardPanel() {
             <p className="mt-wilms-2 text-small text-text-muted">
               Target <CurrencyAmount value={hero.targetPesewas} /> · {hero.progressPercent}% achieved ·{' '}
               {formatDisplayDate(summary.date)} · {summary.paymentDayLabel}
+              {summary.nextCollectionDueDate
+                ? ` · Next due ${formatDisplayDate(summary.nextCollectionDueDate)}`
+                : null}
             </p>
             <div
               className="mt-wilms-3 h-2 max-w-md overflow-hidden rounded-full bg-background"

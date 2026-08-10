@@ -6,11 +6,12 @@ import * as scheduleRepo from '../../repositories/loan-schedule.repository.js';
 import * as reconciliationRepo from '../../repositories/reconciliation.repository.js';
 import { isDatabaseEnabled } from '../../db/client.js';
 import { decimalToPesewas } from '../../domain/money.js';
-import { isLoanDueOnDate, localIsoDate } from '../../domain/reconciliation/weekday.js';
+import { isLoanDueOnDate, localIsoDate, resolveNextCollectionDueDate } from '../../domain/reconciliation/weekday.js';
 
 export interface CollectorDashboardSummary {
   date: string;
   paymentDayLabel: string;
+  nextCollectionDueDate: string | null;
   borrowersDueCount: number;
   expectedPesewas: number;
   collectedPesewas: number;
@@ -169,6 +170,7 @@ export async function getCollectorDashboard(
 
   let expectedPesewas = 0;
   const borrowerRows: CollectorDashboard['borrowers'] = [];
+  const paymentDays: string[] = [];
 
   if (isDatabaseEnabled()) {
     const activeLoans = await loanRepo.listLoans({ externalStatus: 'ACTIVE' });
@@ -177,6 +179,11 @@ export async function getCollectorDashboard(
         .filter((loan) => scopedBorrowers.some((borrower) => borrower.id === loan.borrowerId))
         .map((loan) => [loan.borrowerId, loan] as const),
     );
+    for (const loan of loansByBorrower.values()) {
+      if (loan.paymentDay) {
+        paymentDays.push(loan.paymentDay);
+      }
+    }
     const loanIds = [...loansByBorrower.values()].map((loan) => loan.id);
     const dueWeeks = await scheduleRepo.listScheduleWeeksForLoansOnDate(loanIds, referenceDate);
     const weekByLoanId = new Map(
@@ -281,6 +288,7 @@ export async function getCollectorDashboard(
       weekday: 'long',
       timeZone: 'UTC',
     }),
+    nextCollectionDueDate: resolveNextCollectionDueDate(paymentDays, referenceDate),
     borrowersDueCount: dueBorrowers.length,
     expectedPesewas,
     collectedPesewas,
