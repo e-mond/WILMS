@@ -456,7 +456,13 @@ export function NotificationInboxTrigger() {
         'hover:bg-background hover:border-brand-primary/40',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-1',
       )}
-      onClick={openNotificationPanel}
+      onClick={() => {
+        openNotificationPanel();
+        // Valid user gesture: attempt push activation when permission is still default/granted.
+        void import('@/features/notifications/enablePushSubscription').then(({ enablePushSubscription }) =>
+          enablePushSubscription({ requestPermission: true }),
+        );
+      }}
     >
       <NotificationBellIcon className="h-[18px] w-[18px]" />
       <span className="sr-only">

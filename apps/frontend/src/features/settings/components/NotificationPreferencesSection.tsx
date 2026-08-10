@@ -101,7 +101,7 @@ export function NotificationPreferencesSection() {
       description="Control email, SMS, push, and in-app alerts."
       icon={<SettingsNotificationsIcon />}
     >
-      <PushSubscribePrompt />
+      <PushSubscribePrompt autoEnableWhenGranted />
       <div className="flex flex-wrap items-center justify-between gap-wilms-2 border-b border-border/60 pb-wilms-3">
         <div>
           <p className="text-small font-semibold text-text-primary">Test Web Push</p>

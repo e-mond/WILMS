@@ -151,30 +151,70 @@ const guarantorBaseSchema = z.object({
     'Please select guarantor ID type.',
   ),
   guarantorIdNumber: z.string().trim().min(1, 'Please provide guarantor ID number.'),
-  guarantorPhoto: z
-    .instanceof(File, { message: 'Guarantor passport photo is required.' })
-    .refine((file) => file.type.startsWith('image/'), 'Guarantor photo must be an image file.')
-    .refine(
-      (file) => file.size <= MAX_BORROWER_PHOTO_BYTES,
-      'Guarantor photo must be 5 MB or smaller.',
-    ),
+  guarantorPhoto: z.union([z.instanceof(File), z.null()]).optional(),
   guarantorPhotoUploadId: z.string().optional(),
 });
 
-export const guarantorSchema = guarantorBaseSchema.superRefine((data, ctx) => {
-  refineBorrowerId(ctx, data.guarantorIdType, data.guarantorIdNumber, 'guarantorIdNumber');
-});
+export const guarantorSchema = guarantorBaseSchema
+  .superRefine((data, ctx) => {
+    refineBorrowerId(ctx, data.guarantorIdType, data.guarantorIdNumber, 'guarantorIdNumber');
+    const hasFile = data.guarantorPhoto instanceof File;
+    const hasUpload = Boolean(data.guarantorPhotoUploadId?.trim());
+    if (!hasFile && !hasUpload) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Guarantor passport photo is required.',
+        path: ['guarantorPhoto'],
+      });
+    } else if (hasFile && data.guarantorPhoto instanceof File) {
+      if (!data.guarantorPhoto.type.startsWith('image/')) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Guarantor photo must be an image file.',
+          path: ['guarantorPhoto'],
+        });
+      }
+      if (data.guarantorPhoto.size > MAX_BORROWER_PHOTO_BYTES) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Guarantor photo must be 5 MB or smaller.',
+          path: ['guarantorPhoto'],
+        });
+      }
+    }
+  });
 
-export const photoSchema = z.object({
-  photo: z
-    .instanceof(File, { message: 'Passport photo is required.' })
-    .refine((file) => file.type.startsWith('image/'), 'Photo must be an image file.')
-    .refine(
-      (file) => file.size <= MAX_BORROWER_PHOTO_BYTES,
-      'Photo must be 5 MB or smaller.',
-    ),
-  photoUploadId: z.string().optional(),
-});
+export const photoSchema = z
+  .object({
+    photo: z.union([z.instanceof(File), z.null()]).optional(),
+    photoUploadId: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    const hasFile = data.photo instanceof File;
+    const hasUpload = Boolean(data.photoUploadId?.trim());
+    if (!hasFile && !hasUpload) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Passport photo is required.',
+        path: ['photo'],
+      });
+    } else if (hasFile && data.photo instanceof File) {
+      if (!data.photo.type.startsWith('image/')) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Photo must be an image file.',
+          path: ['photo'],
+        });
+      }
+      if (data.photo.size > MAX_BORROWER_PHOTO_BYTES) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Photo must be 5 MB or smaller.',
+          path: ['photo'],
+        });
+      }
+    }
+  });
 
 const optionalUploadId = z.string().optional();
 
@@ -214,6 +254,24 @@ export const borrowerRegistrationSchema = personalDetailsBaseSchema
         path: ['typeOfWorkOther'],
       });
     }
+    const hasBorrowerPhoto =
+      data.photo instanceof File || Boolean(data.photoUploadId?.trim());
+    if (!hasBorrowerPhoto) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Passport photo is required.',
+        path: ['photo'],
+      });
+    }
+    const hasGuarantorPhoto =
+      data.guarantorPhoto instanceof File || Boolean(data.guarantorPhotoUploadId?.trim());
+    if (!hasGuarantorPhoto) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Guarantor passport photo is required.',
+        path: ['guarantorPhoto'],
+      });
+    }
   })
   .refine((data) => data.guarantorPhone !== data.phone, {
     message: 'Guarantor phone must differ from borrower phone.',
@@ -241,7 +299,7 @@ export const REGISTRATION_STEP_FIELD_NAMES = [
   Object.keys(addressSchema.shape),
   Object.keys(businessSchema.shape),
   Object.keys(guarantorBaseSchema.shape),
-  ['photo'],
+  ['photo', 'photoUploadId'],
   [
     'borrowerSignatureUploadId',
     'borrowerThumbprintUploadId',

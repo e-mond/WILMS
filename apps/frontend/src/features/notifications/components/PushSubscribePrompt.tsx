@@ -2,20 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
+import { enablePushSubscription } from '@/features/notifications/enablePushSubscription';
 import notificationPreferencesService from '@/services/notificationPreferencesService';
 
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
-  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
-
-export function PushSubscribePrompt() {
+export function PushSubscribePrompt({
+  autoEnableWhenGranted = false,
+  hideMarketingCopy = false,
+}: {
+  /** When permission is already granted, subscribe without showing a CTA. */
+  autoEnableWhenGranted?: boolean;
+  hideMarketingCopy?: boolean;
+}) {
   const [supported, setSupported] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -41,43 +38,37 @@ export function PushSubscribePrompt() {
         const existing = await registration?.pushManager.getSubscription();
         if (existing) {
           setSubscribed(true);
+          return;
+        }
+        if (autoEnableWhenGranted && Notification.permission === 'granted') {
+          const result = await enablePushSubscription({ requestPermission: false });
+          if (result.ok) {
+            setSubscribed(true);
+          } else if (result.reason === 'vapid_missing') {
+            setUnavailableReason(result.message);
+          }
         }
       } catch {
         // Ignore probe failures; user can still attempt enable.
       }
     })();
-  }, []);
+  }, [autoEnableWhenGranted]);
 
   async function enablePush() {
     if (!supported) return;
     setLoading(true);
     setErrorMessage(null);
     try {
-      const registration = await navigator.serviceWorker.register('/sw.js');
-      const { publicKey } = await notificationPreferencesService.getVapidPublicKey();
-      if (!publicKey) {
-        setUnavailableReason(
-          'Push delivery is not configured on this environment (VAPID keys missing). In-app alerts still work.',
-        );
+      const result = await enablePushSubscription({ requestPermission: true });
+      if (result.ok) {
+        setSubscribed(true);
         return;
       }
-
-      const permission = await Notification.requestPermission();
-      if (permission !== 'granted') {
-        setErrorMessage('Notification permission was not granted.');
+      if (result.reason === 'vapid_missing') {
+        setUnavailableReason(result.message);
         return;
       }
-
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey),
-      });
-
-      await notificationPreferencesService.subscribePush(subscription.toJSON());
-      setSubscribed(true);
-    } catch (error) {
-      console.error('[push] subscribe failed', error);
-      setErrorMessage(error instanceof Error ? error.message : 'Unable to enable push notifications.');
+      setErrorMessage(result.message);
     } finally {
       setLoading(false);
     }
@@ -87,11 +78,22 @@ export function PushSubscribePrompt() {
     return null;
   }
 
+  if (hideMarketingCopy && !unavailableReason && !errorMessage && Notification.permission === 'granted') {
+    return null;
+  }
+
   return (
     <div className="rounded-sm border border-border bg-background p-wilms-4" data-tour="push-notifications">
-      <p className="text-body text-text-primary">
-        Enable browser push notifications for approvals, holiday status, sync conflicts, and reconciliation alerts.
-      </p>
+      {!hideMarketingCopy ? (
+        <p className="text-body text-text-primary">
+          Enable browser push notifications for approvals, holiday status, sync conflicts, and
+          reconciliation alerts.
+        </p>
+      ) : (
+        <p className="text-body text-text-primary">
+          Browser push could not be activated automatically.
+        </p>
+      )}
       {unavailableReason ? (
         <p className="mt-wilms-2 text-small text-text-muted">{unavailableReason}</p>
       ) : null}

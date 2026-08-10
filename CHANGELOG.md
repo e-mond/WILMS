@@ -10,6 +10,8 @@ All notable changes to WILMS are documented in this file.
 **Production-readiness closure:** August 2026 (`fix/v1.8.0-production-readiness`) — same release identity; **no new tag / no retag of `v1.8.0`**
 **Phase 33 adversarial audit:** August 2026 (`audit/v1.8.0-phase33-adversarial`) — same release identity; **no new tag / no retag of `v1.8.0`**
 **Ops / UX follow-ups:** August 2026 (`fix/v1.8.0-dashboard-ops-followups`, `fix/v1.8.0-kpi-offline-release`) — same release identity; **no new tag / no v1.8.1**
+**Offline-first architecture sprint:** August 2026 (`feature/v1.8.0-offline-first-pwa`, tag `v1.8.0-offline-rc1`) — Phases 0–8 docs + default-off `WILMS_OFFLINE_MODE`; **no new product tag / no v1.8.1**
+**SA UX / registration / communications follow-up:** August 2026 (`fix/v1.8.0-sa-ux-comms-registration`) — same release identity
 
 ### Added
 
@@ -22,12 +24,15 @@ All notable changes to WILMS are documented in this file.
 - Automation engine: reminder/escalation ladders, follow-up tasks, workload auto-assign hook, executive pack alerts, Settings enable/disable
 - Quiet hours UI, expanded notification inbox filters, Product Tour 3.0 steps
 - Release pack under `docs/v1.8.0/` (design, holidays, offline, automation, security, migrations, test evidence)
+- Offline-first documentation library under `documentation/offline/` (discovery through Phase 8 recommendation D)
 - Shared `DataTable` mobile stack layout for responsive financial tables
 - Communication Center inline two-column compose console (audience | composer/preview)
 - Raise Flag entity search (name/phone/group/reference) without manual Entity ID entry
 - Web Push mirrored from every successful in-app notification (preference / quiet-hour gated)
 - Super Admin inactive re-engagement email (last login > 7 days; weekly dedupe via automation pass)
 - Dashboard Recent Alerts aside populated from the signed-in user’s recent inbox (preview of some, not all)
+- Default-off `WILMS_OFFLINE_MODE` / `NEXT_PUBLIC_WILMS_OFFLINE_MODE` for flag-gated shell navigate fallback
+- Super Admin My Account: personal notification preferences, automatic push subscribe when permission already granted, and App Lock PIN setup
 
 ### Changed (post-release UI update)
 
@@ -78,6 +83,14 @@ All notable changes to WILMS are documented in this file.
 - Offline / network errors use clearer copy (banner, toasts, query panels, API client)
 - Collector due-today lists only true due-day borrowers/groups; Quick Help restored; registration quick-action cards removed
 - Settings **Send test push**; Neon `dev` vs production branch guide; migration apply helper for `0040`
+- Offline-first Phases 0–8 under `documentation/offline/`; `WILMS_OFFLINE_MODE` default off; SW navigate fallback only when flag on
+
+### Fixed (SA UX / registration / communications)
+
+- Registration submit accepted draft photo upload IDs (no longer silently fails Zod `File`-only checks); validation errors toast and jump to the failing step
+- Borrower status labels no longer truncate when the sidebar is expanded
+- Super Admin My Account hosts notification preferences + App Lock setup; push auto-subscribes when browser permission is already granted
+- Communication Center send/schedule uses a confirmation modal instead of `window.confirm`
 
 ### Notes
 
@@ -87,6 +100,7 @@ All notable changes to WILMS are documented in this file.
 - Full offline writes for every entity and visual workflow builder remain iterative beyond this RC
 - Phase 33 pack: `docs/v1.8.0/phase-33/` — verdict **READY WITH CONDITIONS** (not PRODUCTION CERTIFIED)
 - Latest ops notes: `docs/v1.8.0/NEON_BRANCHES.md`
+- Offline expansions stay behind `WILMS_OFFLINE_MODE=false` until Phase 9 device certification
 
 ## [1.7.5] — Offline, Push & Modernisation
 
