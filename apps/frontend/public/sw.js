@@ -44,6 +44,10 @@ const SHELL_ASSET_SET = new Set(SHELL_ASSETS);
 
 const PAYMENT_SYNC_TAG = 'wilms-payment-sync';
 const PAYMENT_SYNC_MESSAGE = 'WILMS_PAYMENT_SYNC';
+const SET_OFFLINE_MODE_MESSAGE = 'WILMS_SET_OFFLINE_MODE';
+
+/** When false (default), navigations stay network-only — production parity. */
+let offlineModeEnabled = false;
 
 function shouldBypassCache(pathname, request) {
   if (request.mode === 'navigate') {
@@ -63,6 +67,12 @@ function networkFetch(request) {
   }
 
   return fetch(request, { redirect: 'follow' });
+}
+
+function cachedShellFallback(pathname) {
+  return caches
+    .match(pathname)
+    .then((cached) => cached || caches.match('/login') || caches.match('/'));
 }
 
 self.addEventListener('install', (event) => {
@@ -94,6 +104,11 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') {
     self.skipWaiting();
+    return;
+  }
+
+  if (event.data?.type === SET_OFFLINE_MODE_MESSAGE) {
+    offlineModeEnabled = Boolean(event.data.enabled);
   }
 });
 
@@ -105,6 +120,20 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) {
+    return;
+  }
+
+  // Phase 5: flag-gated navigate fallback for precached shell routes only.
+  if (
+    request.mode === 'navigate' &&
+    offlineModeEnabled &&
+    SHELL_ASSET_SET.has(url.pathname)
+  ) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => response)
+        .catch(() => cachedShellFallback(url.pathname)),
+    );
     return;
   }
 
