@@ -2,8 +2,9 @@
 
 import { useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { CurrencyAmount, DataTable } from '@/components/data-display';
+import { CurrencyAmount, DataTable, KpiCard } from '@/components/data-display';
 import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
+import { ExecutiveKpiGrid } from '@/components/layout/executive';
 import { Button } from '@/components/ui/Button';
 import { SettingsSectionCard } from '@/features/settings/components/SettingsSectionCard';
 import { useExpenses } from '@/features/expenses/hooks/useExpenses';
@@ -71,24 +72,20 @@ export function SettingsExpensesSection() {
   return (
     <div className="space-y-wilms-4">
       <div className="flex flex-wrap items-end justify-between gap-wilms-3">
-        <div className="grid min-w-0 flex-1 gap-wilms-3 sm:grid-cols-3">
-          <div className="rounded-sm border border-border bg-card p-wilms-4">
-            <p className="text-small text-text-muted">Pending review</p>
-            <p className="text-heading-3 font-bold text-text-primary">{data.summary.pendingCount}</p>
-          </div>
-          <div className="rounded-sm border border-border bg-card p-wilms-4">
-            <p className="text-small text-text-muted">Approved amount</p>
-            <p className="text-heading-3 font-bold text-status-active">
-              <CurrencyAmount value={data.summary.approvedTotalPesewas} />
-            </p>
-          </div>
-          <div className="rounded-sm border border-border bg-card p-wilms-4">
-            <p className="text-small text-text-muted">Pending amount</p>
-            <p className="text-heading-3 font-bold text-text-primary">
-              <CurrencyAmount value={data.summary.pendingTotalPesewas} />
-            </p>
-          </div>
-        </div>
+        <ExecutiveKpiGrid className="min-w-0 flex-1 sm:grid-cols-3">
+          <KpiCard variant="executive" label="Pending review" value={data.summary.pendingCount} />
+          <KpiCard
+            variant="executive"
+            label="Approved amount"
+            value={<CurrencyAmount value={data.summary.approvedTotalPesewas} />}
+            valueClassName="text-status-active"
+          />
+          <KpiCard
+            variant="executive"
+            label="Pending amount"
+            value={<CurrencyAmount value={data.summary.pendingTotalPesewas} />}
+          />
+        </ExecutiveKpiGrid>
         <ExportCsvButton
           label="Export expenses"
           filename={`expense-report-${new Date().toISOString().slice(0, 10)}.csv`}

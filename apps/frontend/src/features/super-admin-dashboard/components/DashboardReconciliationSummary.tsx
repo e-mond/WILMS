@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { useMemo } from 'react';
+import { CurrencyAmount, KpiCard } from '@/components/data-display';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
-import { CurrencyAmount } from '@/components/data-display';
+import { ExecutiveKpiGrid } from '@/components/layout/executive';
 import { useReconciliationList } from '@/features/reconciliation/hooks/useReconciliationReview';
 import { needsReconciliationReview } from '@/utils/reconciliation-review';
 import { cn } from '@/utils/cn';
@@ -127,36 +128,27 @@ export function DashboardReconciliationSummary({ compact = false }: { compact?: 
         </Link>
       </div>
 
-      <dl
+      <ExecutiveKpiGrid
         className={cn(
-          'grid gap-wilms-3',
-          // Compact sits beside Recent Activity — 4 cols overflow and overlap labels.
-          compact ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-4',
+          compact ? 'sm:grid-cols-2' : 'sm:grid-cols-2 xl:grid-cols-4',
         )}
       >
         {metrics.map((metric) => (
-          <div
+          <KpiCard
             key={metric.label}
-            className="min-w-0 overflow-hidden rounded-sm border border-border/70 bg-card/80 px-wilms-4 py-wilms-4"
-          >
-            <dt className="truncate text-small font-semibold text-text-muted" title={metric.label}>
-              {metric.label}
-            </dt>
-            <dd
-              className={cn(
-                'mt-wilms-2 text-heading-2 font-bold tabular-nums',
-                metric.tone === 'ok' && 'text-status-active',
-                metric.tone === 'warn' && 'text-status-at-risk',
-                metric.tone === 'danger' && 'text-danger',
-                metric.tone === 'info' && 'text-text-primary',
-              )}
-            >
-              {metric.value}
-            </dd>
-            <p className="mt-wilms-2 truncate text-small text-text-muted">{metric.trend}</p>
-          </div>
+            variant="executive"
+            label={metric.label}
+            value={metric.value}
+            trend={metric.trend}
+            valueClassName={cn(
+              metric.tone === 'ok' && 'text-status-active',
+              metric.tone === 'warn' && 'text-status-at-risk',
+              metric.tone === 'danger' && 'text-danger',
+              metric.tone === 'info' && 'text-text-primary',
+            )}
+          />
         ))}
-      </dl>
+      </ExecutiveKpiGrid>
 
       <div className="overflow-x-auto rounded-sm border border-border bg-card">
         <table className="min-w-full text-left text-small">

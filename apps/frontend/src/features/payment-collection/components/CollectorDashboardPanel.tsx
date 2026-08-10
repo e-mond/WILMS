@@ -9,6 +9,7 @@ import {
   DataTable,
   KpiCard,
 } from '@/components/data-display';
+import { resolveKpiIcon } from '@/components/data-display/resolveKpiIcon';
 import { Alert } from '@/components/feedback/Alert';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
@@ -64,7 +65,12 @@ function MetricTile({
 }) {
   const content = (
     <>
-      <p className="text-small text-text-muted">{label}</p>
+      <div className="flex items-start justify-between gap-wilms-2">
+        <p className="text-small text-text-muted">{label}</p>
+        <span className="rounded-md bg-background p-1 text-text-muted" aria-hidden="true">
+          {resolveKpiIcon(label)}
+        </span>
+      </div>
       <p className={cn('mt-wilms-1 text-body font-bold text-text-primary', valueClassName)}>{value}</p>
     </>
   );
