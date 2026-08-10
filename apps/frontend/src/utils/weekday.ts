@@ -33,3 +33,31 @@ export function localIsoDate(date = new Date()): string {
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
+
+/**
+ * Earliest collection day on or after `fromIsoDate` that matches any assigned
+ * payment weekday. Returns null when no payment days are available.
+ */
+export function resolveNextCollectionDueDate(
+  paymentDays: string[],
+  fromIsoDate: string,
+): string | null {
+  const normalized = [
+    ...new Set(paymentDays.map(normalizePaymentDay).filter((day) => Boolean(day))),
+  ];
+  if (normalized.length === 0) {
+    return null;
+  }
+
+  const start = new Date(`${fromIsoDate}T12:00:00Z`);
+  for (let offset = 0; offset < 7; offset += 1) {
+    const candidate = new Date(start);
+    candidate.setUTCDate(start.getUTCDate() + offset);
+    const iso = candidate.toISOString().slice(0, 10);
+    if (normalized.includes(getWeekdayNameFromIsoDate(iso))) {
+      return iso;
+    }
+  }
+
+  return null;
+}

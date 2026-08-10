@@ -16,7 +16,9 @@ import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { PERMISSION } from '@/constants/permissions';
+import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Modal } from '@/components/ui/Modal';
 import {
   REGISTRATION_DATE_FILTERS,
   REGISTRATION_WORKFLOW_STATUS,
@@ -33,6 +35,7 @@ import {
 import { useDeleteRegistration } from '@/features/borrower-registration/hooks/useDeleteRegistration';
 import { useMyRegistrations } from '@/features/borrower-registration/hooks/useMyRegistrations';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/useToast';
 import type { OfficerRegistrationSummary } from '@/types/borrower';
 import { formatDisplayDate } from '@/utils/format-date';
 import {
@@ -84,12 +87,14 @@ function RegistrationStatusBadge({ status }: { status: RegistrationWorkflowStatu
 export function MyRegistrationsList() {
   const generatedBy = useWilmsExportActor();
   const { user } = useAuth();
+  const toast = useToast();
   const { data, isLoading, isError, error, refetch } = useMyRegistrations(user?.id);
   const { showLoading, isTimedOut } = useQueryLoadingPolicy({ isLoading });
   const deleteMutation = useDeleteRegistration(user?.id);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [dateFilter, setDateFilter] = useState<RegistrationDateFilter>('');
+  const [pendingDelete, setPendingDelete] = useState<OfficerRegistrationSummary | null>(null);
 
   const filteredRegistrations = useMemo(
     () => filterRegistrations(data ?? [], searchQuery, statusFilter, dateFilter),
@@ -118,17 +123,31 @@ export function MyRegistrationsList() {
     [filteredRegistrations, generatedBy],
   );
 
-  const handleDelete = async (registration: OfficerRegistrationSummary) => {
+  const requestDelete = (registration: OfficerRegistrationSummary) => {
     if (!registration.canDelete) {
       return;
     }
+    setPendingDelete(registration);
+  };
 
-    const confirmed = window.confirm(
-      `Delete registration for ${registration.fullName}? This cannot be undone.`,
-    );
+  const confirmDelete = async () => {
+    if (!pendingDelete) {
+      return;
+    }
 
-    if (confirmed) {
-      await deleteMutation.mutateAsync(registration.id);
+    try {
+      await deleteMutation.mutateAsync({
+        registrationId: pendingDelete.id,
+        isDraft: Boolean(pendingDelete.isDraft),
+      });
+      toast.success(
+        pendingDelete.isDraft
+          ? `Draft for ${pendingDelete.fullName} deleted.`
+          : `Registration for ${pendingDelete.fullName} deleted.`,
+      );
+      setPendingDelete(null);
+    } catch {
+      toast.error('Unable to delete registration. Try again.');
     }
   };
 
@@ -318,7 +337,7 @@ export function MyRegistrationsList() {
                       type="button"
                       className="text-small font-semibold text-danger hover:underline"
                       disabled={deleteMutation.isPending}
-                      onClick={() => handleDelete(row)}
+                      onClick={() => requestDelete(row)}
                     >
                       Delete
                     </button>
@@ -329,6 +348,42 @@ export function MyRegistrationsList() {
           },
         ]}
       />
+
+      <Modal
+        isOpen={Boolean(pendingDelete)}
+        title={pendingDelete?.isDraft ? 'Delete draft registration' : 'Delete registration'}
+        onClose={() => {
+          if (!deleteMutation.isPending) {
+            setPendingDelete(null);
+          }
+        }}
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={deleteMutation.isPending}
+              onClick={() => setPendingDelete(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
+              disabled={deleteMutation.isPending || !pendingDelete}
+              onClick={() => void confirmDelete()}
+            >
+              {deleteMutation.isPending ? 'Deleting…' : 'Delete'}
+            </Button>
+          </>
+        }
+      >
+        <p className="text-body text-text-muted">
+          {pendingDelete?.isDraft
+            ? `Delete the draft for ${pendingDelete.fullName}? This cannot be undone.`
+            : `Delete registration for ${pendingDelete?.fullName}? This cannot be undone.`}
+        </p>
+      </Modal>
     </div>
   );
 }

@@ -53,14 +53,18 @@ export function KpiCard({
     >
       <div className="flex items-start justify-between gap-wilms-3">
         <p
+          title={typeof label === 'string' ? label : undefined}
           className={cn(
-            'font-semibold text-text-muted',
+            'min-w-0 flex-1 truncate font-semibold text-text-muted',
             isExecutive ? 'text-small uppercase tracking-wide' : 'text-small',
           )}
         >
           {label}
         </p>
-        <span className="rounded-md bg-background p-1.5 text-text-muted" aria-hidden="true">
+        <span
+          className="shrink-0 rounded-md bg-background p-1.5 text-text-muted"
+          aria-hidden="true"
+        >
           {resolvedIcon}
         </span>
       </div>

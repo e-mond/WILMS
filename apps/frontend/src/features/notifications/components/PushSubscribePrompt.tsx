@@ -31,6 +31,21 @@ export function PushSubscribePrompt() {
         );
       }
     });
+
+    void (async () => {
+      if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        return;
+      }
+      try {
+        const registration = await navigator.serviceWorker.getRegistration('/sw.js');
+        const existing = await registration?.pushManager.getSubscription();
+        if (existing) {
+          setSubscribed(true);
+        }
+      } catch {
+        // Ignore probe failures; user can still attempt enable.
+      }
+    })();
   }, []);
 
   async function enablePush() {

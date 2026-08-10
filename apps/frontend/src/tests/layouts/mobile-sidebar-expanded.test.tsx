@@ -1,5 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SuperAdminShell } from '@/layouts/SuperAdminShell';
@@ -35,7 +34,7 @@ function renderShell(ui: ReactNode) {
   );
 }
 
-describe('mobile sidebar with desktop collapsed preference', () => {
+describe('super admin mobile navigation without hamburger drawer', () => {
   beforeEach(() => {
     useThemeStore.setState({ mode: THEME_MODE.LIGHT, isHydrated: true });
     useUiStore.setState({ toasts: [], isMobileNavOpen: false, isAsideDrawerOpen: false });
@@ -43,32 +42,21 @@ describe('mobile sidebar with desktop collapsed preference', () => {
     localStorage.removeItem('wilms-executive-default-dark-applied');
   });
 
-  it('opens an expanded mobile drawer even when desktop sidebar is collapsed', async () => {
-    const user = userEvent.setup();
+  it('does not expose a hamburger navigation trigger', () => {
     renderShell(
       <SuperAdminShell>
         <div>Content</div>
       </SuperAdminShell>,
     );
 
-    const openButtons = screen.getAllByRole('button', { name: 'Open navigation menu' });
-    await user.click(openButtons[openButtons.length - 1]!);
-
-    const drawer = screen.getByRole('dialog', { name: 'Super Admin navigation' });
-    expect(drawer.querySelector('[data-mobile-nav-drawer="true"]')).toBeTruthy();
-    expect(within(drawer).queryByRole('button', { name: /Expand sidebar|Collapse sidebar/ })).toBeNull();
-    expect(within(drawer).getByRole('link', { name: 'Dashboard' })).toBeVisible();
-    expect(within(drawer).getByRole('button', { name: 'Log out' })).toBeVisible();
-  });
-
-  it('exposes a header menu trigger on the office mobile bar', () => {
-    renderShell(
-      <SuperAdminShell>
-        <div>Content</div>
-      </SuperAdminShell>,
-    );
-
-    const openButtons = screen.getAllByRole('button', { name: 'Open navigation menu' });
-    expect(openButtons.length).toBeGreaterThanOrEqual(2);
+    expect(screen.queryByRole('button', { name: 'Open navigation menu' })).not.toBeInTheDocument();
+    expect(
+      screen.getAllByRole('navigation', { name: 'Super Admin bottom navigation' }).length,
+    ).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getAllByRole('link', { name: 'Dashboard' }).some((link) =>
+        link.getAttribute('href') === '/dashboard',
+      ),
+    ).toBe(true);
   });
 });
