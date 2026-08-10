@@ -1,0 +1,12 @@
+=== type-check frontend ===
+
+> @wilms/frontend@1.8.0 type-check
+> tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json
+
+EXIT:0
+=== type-check domain ===
+
+> @wilms/domain@1.8.0 type-check
+> tsc --noEmit
+
+EXIT:0

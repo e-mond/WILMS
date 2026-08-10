@@ -1,0 +1,29 @@
+=== domain feature-flags ===
+
+> @wilms/domain@1.8.0 test
+> vitest run --run src/tests/platform/feature-flags.test.ts
+
+
+ RUN  v3.2.7 C:/Users/eddie/OneDrive/Desktop/WILMS/packages/domain
+
+ ✓ src/tests/platform/feature-flags.test.ts (4 tests) 5ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  22:44:39
+   Duration  2.14s (transform 422ms, setup 0ms, collect 385ms, tests 5ms, environment 0ms, prepare 546ms)
+
+EXIT:0
+=== frontend offline-mode ===
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ RUN  v3.2.6 C:/Users/eddie/OneDrive/Desktop/WILMS/apps/frontend
+
+···
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  22:44:48
+   Duration  8.38s (transform 240ms, setup 2.51s, collect 108ms, tests 20ms, environment 2.42s, prepare 343ms)
+
+EXIT:0
