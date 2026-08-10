@@ -23,7 +23,7 @@ Evidence-first security and financial integrity audit (code / unit / local only)
 
 ## Evidence
 
-- [`evidence/phase33-adversarial-tests.log`](./evidence/phase33-adversarial-tests.log)
+- [`evidence/TEST_EVIDENCE.md`](./evidence/TEST_EVIDENCE.md) (local `*.log` files are gitignored)
 
 ## Key remediations
 

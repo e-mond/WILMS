@@ -76,6 +76,21 @@ export function NotificationPreferencesSection() {
     }
   }
 
+  async function sendTestPush() {
+    if (USE_MOCK_SERVICES) {
+      toast.success('Mock mode: push delivery is not sent.');
+      return;
+    }
+    try {
+      const result = await notificationPreferencesService.sendTestPush();
+      toast.success(`Test push sent (${result.sent} device${result.sent === 1 ? '' : 's'}).`);
+    } catch {
+      toast.error(
+        'Could not send a test push. Enable browser notifications for this account, then try again.',
+      );
+    }
+  }
+
   if (loading) {
     return null;
   }
@@ -87,6 +102,17 @@ export function NotificationPreferencesSection() {
       icon={<SettingsNotificationsIcon />}
     >
       <PushSubscribePrompt />
+      <div className="flex flex-wrap items-center justify-between gap-wilms-2 border-b border-border/60 pb-wilms-3">
+        <div>
+          <p className="text-small font-semibold text-text-primary">Test Web Push</p>
+          <p className="text-xs text-text-muted">
+            Sends a probe notification to this browser after you enable push above.
+          </p>
+        </div>
+        <Button type="button" variant="secondary" onClick={() => void sendTestPush()}>
+          Send test push
+        </Button>
+      </div>
       <SettingsSettingRow
         title="Email"
         description="Receive email notifications."

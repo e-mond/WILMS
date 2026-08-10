@@ -21,6 +21,10 @@ const notificationPreferencesService = {
   unsubscribePush(endpoint: string): Promise<{ ok: true }> {
     return apiClient.post('/notifications/push/unsubscribe', { endpoint });
   },
+
+  sendTestPush(): Promise<{ sent: number; failed: number; skipped?: boolean }> {
+    return apiClient.post('/notifications/push/test', {});
+  },
 };
 
 export default notificationPreferencesService;

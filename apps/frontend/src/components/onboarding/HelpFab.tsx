@@ -114,7 +114,7 @@ export function HelpFabButton({ className }: { className?: string }) {
   return (
     <button
       type="button"
-      aria-label="Help"
+      aria-label="Quick help"
       className={cn(
         'inline-flex h-12 w-12 items-center justify-center rounded-full',
         'border border-border bg-card text-brand-primary shadow-md transition-colors hover:bg-background',
