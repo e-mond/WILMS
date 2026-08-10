@@ -294,34 +294,36 @@ export async function getCollectorDashboard(
     reconciliationVariancePesewas,
   };
 
-  const todayGroups = assignedGroups.map((group) => {
-    const groupBorrowers = borrowerRows.filter((row) => row.groupId === group.id);
-    const dueGroupBorrowers = groupBorrowers.filter((row) => row.expectedPesewas > 0);
-    const groupExpected = dueGroupBorrowers.reduce((sum, row) => sum + row.expectedPesewas, 0);
-    const groupCollected = groupBorrowers.reduce((sum, row) => sum + row.collectedPesewas, 0);
-    const collectedCount = dueGroupBorrowers.filter(
-      (row) => row.paymentStatus === 'COLLECTED',
-    ).length;
-    const pendingCount = dueGroupBorrowers.filter(
-      (row) => row.paymentStatus === 'PENDING',
-    ).length;
+  const todayGroups = assignedGroups
+    .map((group) => {
+      const groupBorrowers = borrowerRows.filter((row) => row.groupId === group.id);
+      const dueGroupBorrowers = groupBorrowers.filter((row) => row.expectedPesewas > 0);
+      const groupExpected = dueGroupBorrowers.reduce((sum, row) => sum + row.expectedPesewas, 0);
+      const groupCollected = dueGroupBorrowers.reduce((sum, row) => sum + row.collectedPesewas, 0);
+      const collectedCount = dueGroupBorrowers.filter(
+        (row) => row.paymentStatus === 'COLLECTED',
+      ).length;
+      const pendingCount = dueGroupBorrowers.filter(
+        (row) => row.paymentStatus === 'PENDING',
+      ).length;
 
-    return {
-      groupId: group.id,
-      groupName: group.displayName,
-      community: group.community,
-      leaderName: '—',
-      groupPhotoUrl: '',
-      collectedCount,
-      expectedCount: dueGroupBorrowers.length,
-      pendingCount,
-      expectedPesewas: groupExpected,
-      amountCollectedPesewas: groupCollected,
-      progressPercent:
-        groupExpected === 0 ? 0 : Math.round((groupCollected / groupExpected) * 100),
-      status: 'ACTIVE',
-    };
-  });
+      return {
+        groupId: group.id,
+        groupName: group.displayName,
+        community: group.community,
+        leaderName: '—',
+        groupPhotoUrl: '',
+        collectedCount,
+        expectedCount: dueGroupBorrowers.length,
+        pendingCount,
+        expectedPesewas: groupExpected,
+        amountCollectedPesewas: groupCollected,
+        progressPercent:
+          groupExpected === 0 ? 0 : Math.round((groupCollected / groupExpected) * 100),
+        status: 'ACTIVE',
+      };
+    })
+    .filter((group) => group.expectedCount > 0);
 
   const recentPayments = collectorPayments.slice(0, 10).map((payment) => {
     const borrower = borrowers.find((entry) => entry.id === payment.borrowerId);
@@ -366,7 +368,8 @@ export async function getCollectorDashboard(
       borrowersManaged: scopedBorrowers.length,
       groupsAssigned: assignedGroups.length,
     },
-    borrowers: borrowerRows,
+    // Only borrowers with a due installment on the reference date (not the full assigned book).
+    borrowers: dueBorrowers,
     missedAlerts,
   };
 }

@@ -1,11 +1,25 @@
 'use client';
 
-import { HelpMenuModal } from '@/components/onboarding/HelpFab';
+import { HelpFabButton, HelpMenuModal } from '@/components/onboarding/HelpFab';
+import { useAuth } from '@/hooks/useAuth';
 
 /**
- * Shell chrome for optional help menu (opened from product tour / uiStore).
- * Connection status and Help FAB are intentionally not permanently mounted.
+ * Global shell chrome: Quick Help FAB on every authenticated dashboard/workspace,
+ * plus the help menu modal used by the product tour.
  */
 export function FloatingShellControls() {
-  return <HelpMenuModal />;
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  return (
+    <>
+      <div className="fixed bottom-wilms-5 right-wilms-5 z-[90] print:hidden">
+        <HelpFabButton />
+      </div>
+      <HelpMenuModal />
+    </>
+  );
 }
