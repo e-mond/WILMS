@@ -1,12 +1,23 @@
 'use client';
 
 import { useEffect } from 'react';
-import { PWA_SW_PATH } from '@/constants/pwa';
+import { isOfflineModeEnabled } from '@/config/offline-mode';
+import { PWA_SW_PATH, PWA_SW_SET_OFFLINE_MODE } from '@/constants/pwa';
 import { usePwaUpdateStore } from '@/state/pwaUpdateStore';
 import { logger } from '@/utils/logger';
 
 function trackWaitingWorker(worker: ServiceWorker) {
   usePwaUpdateStore.getState().setUpdateAvailable(worker);
+}
+
+function postOfflineModeToWorker(worker: ServiceWorker | null | undefined) {
+  if (!worker) {
+    return;
+  }
+  worker.postMessage({
+    type: PWA_SW_SET_OFFLINE_MODE,
+    enabled: isOfflineModeEnabled(),
+  });
 }
 
 export function ServiceWorkerRegistrar() {
@@ -27,6 +38,13 @@ export function ServiceWorkerRegistrar() {
           logger.info('Service worker registered', { scope: registration.scope });
         }
 
+        postOfflineModeToWorker(registration.active);
+        postOfflineModeToWorker(registration.waiting);
+        postOfflineModeToWorker(registration.installing);
+        if (navigator.serviceWorker.controller) {
+          postOfflineModeToWorker(navigator.serviceWorker.controller);
+        }
+
         if (registration.waiting) {
           trackWaitingWorker(registration.waiting);
         }
@@ -38,6 +56,9 @@ export function ServiceWorkerRegistrar() {
           }
 
           installing.addEventListener('statechange', () => {
+            if (installing.state === 'activated' || installing.state === 'installed') {
+              postOfflineModeToWorker(installing);
+            }
             if (
               installing.state === 'installed' &&
               navigator.serviceWorker.controller &&
