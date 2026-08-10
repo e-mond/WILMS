@@ -3,6 +3,24 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
+import {
+  Banknote,
+  BellRing,
+  Briefcase,
+  CircleAlert,
+  CircleCheck,
+  FileX2,
+  HandCoins,
+  Percent,
+  PieChart,
+  Send,
+  Timer,
+  TrendingUp,
+  UserRound,
+  Users,
+  UsersRound,
+  Wallet,
+} from 'lucide-react';
 import { CurrencyAmount, DataTable, KpiCard } from '@/components/data-display';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { ExecutiveKpiGrid, ManagementToolbar } from '@/components/layout/executive';
@@ -180,7 +198,7 @@ function ExecutiveDashboardContent({ data }: { data: ExecutiveDashboard }) {
   );
 
   return (
-    <div className="space-y-wilms-10 print:space-y-6">
+    <div className="space-y-wilms-8 print:space-y-6">
       <ManagementToolbar
         search={
           <p className="text-small text-text-muted">
@@ -206,12 +224,15 @@ function ExecutiveDashboardContent({ data }: { data: ExecutiveDashboard }) {
         }
       />
 
-      <section aria-labelledby="financial-kpi-heading" className="space-y-wilms-5">
-        <div>
+      <section
+        aria-labelledby="financial-kpi-heading"
+        className="space-y-wilms-5 pt-wilms-6"
+      >
+        <div className="space-y-wilms-2">
           <h2 id="financial-kpi-heading" className="text-heading-2 font-semibold text-text-primary">
             Portfolio & cash
           </h2>
-          <p className="mt-wilms-1 text-small text-text-muted">
+          <p className="text-small text-text-muted">
             Board-level liquidity, recovery, and portfolio position
           </p>
         </div>
@@ -219,102 +240,152 @@ function ExecutiveDashboardContent({ data }: { data: ExecutiveDashboard }) {
           <KpiCard
             variant="executive"
             label="Portfolio"
+            icon={<Briefcase className="h-4 w-4" aria-hidden="true" />}
             value={<CurrencyAmount value={financial.totalPortfolioPesewas ?? 0} />}
           />
           <KpiCard
             variant="executive"
             label="Outstanding"
+            icon={<CircleAlert className="h-4 w-4" aria-hidden="true" />}
             value={<CurrencyAmount value={financial.outstandingPesewas ?? 0} />}
           />
           <KpiCard
             variant="executive"
             label="Collected"
+            icon={<Banknote className="h-4 w-4" aria-hidden="true" />}
             value={<CurrencyAmount value={financial.collectedPesewas ?? 0} />}
           />
           <KpiCard
             variant="executive"
             label="Collection rate"
+            icon={<Percent className="h-4 w-4" aria-hidden="true" />}
             value={`${financial.collectionRatePercent ?? 0}%`}
           />
           <KpiCard
             variant="executive"
             label="Operating cash"
+            icon={<Wallet className="h-4 w-4" aria-hidden="true" />}
             value={<CurrencyAmount value={financial.liquidityPesewas ?? 0} />}
           />
           <KpiCard
             variant="executive"
             label="Expense ratio"
+            icon={<PieChart className="h-4 w-4" aria-hidden="true" />}
             value={`${financial.expenseRatioPercent ?? 0}%`}
           />
           <KpiCard
             variant="executive"
             label="Recovery rate"
+            icon={<TrendingUp className="h-4 w-4" aria-hidden="true" />}
             value={`${financial.recoveryRatePercent ?? 0}%`}
           />
           <KpiCard
             variant="executive"
             label="Write-offs"
+            icon={<FileX2 className="h-4 w-4" aria-hidden="true" />}
             value={<CurrencyAmount value={financial.writeOffsPesewas ?? 0} />}
           />
         </ExecutiveKpiGrid>
       </section>
 
-      <section aria-labelledby="risk-kpi-heading" className="space-y-wilms-5">
-        <div>
+      <section
+        aria-labelledby="risk-kpi-heading"
+        className="space-y-wilms-5 border-t border-border/70 pt-wilms-6"
+      >
+        <div className="space-y-wilms-2">
           <h2 id="risk-kpi-heading" className="text-heading-2 font-semibold text-text-primary">
             Delinquency & PAR
           </h2>
-          <p className="mt-wilms-1 text-small text-text-muted">Portfolio at risk across 30 / 60 / 90 day bands</p>
+          <p className="text-small text-text-muted">Portfolio at risk across 30 / 60 / 90 day bands</p>
         </div>
         <ExecutiveKpiGrid>
           <KpiCard
             variant="executive"
             label="PAR30 rate"
+            icon={<Timer className="h-4 w-4" aria-hidden="true" />}
             value={`${risk.par30RatePercent ?? 0}%`}
             valueClassName="text-warning"
           />
           <KpiCard
             variant="executive"
             label="PAR60 rate"
+            icon={<Timer className="h-4 w-4" aria-hidden="true" />}
             value={`${risk.par60RatePercent ?? 0}%`}
             valueClassName="text-warning"
           />
           <KpiCard
             variant="executive"
             label="PAR90 rate"
+            icon={<Timer className="h-4 w-4" aria-hidden="true" />}
             value={`${risk.par90RatePercent ?? 0}%`}
             valueClassName="text-danger"
           />
-          <KpiCard variant="executive" label="PAR30 count" value={risk.par30Count ?? 0} />
-          <KpiCard variant="executive" label="PAR60 count" value={risk.par60Count ?? 0} />
-          <KpiCard variant="executive" label="PAR90 count" value={risk.par90Count ?? 0} />
+          <KpiCard
+            variant="executive"
+            label="PAR30 count"
+            icon={<Users className="h-4 w-4" aria-hidden="true" />}
+            value={risk.par30Count ?? 0}
+          />
+          <KpiCard
+            variant="executive"
+            label="PAR60 count"
+            icon={<Users className="h-4 w-4" aria-hidden="true" />}
+            value={risk.par60Count ?? 0}
+          />
+          <KpiCard
+            variant="executive"
+            label="PAR90 count"
+            icon={<Users className="h-4 w-4" aria-hidden="true" />}
+            value={risk.par90Count ?? 0}
+          />
         </ExecutiveKpiGrid>
       </section>
 
-      <section aria-labelledby="operational-kpi-heading" className="space-y-wilms-5">
-        <div>
+      <section
+        aria-labelledby="operational-kpi-heading"
+        className="space-y-wilms-5 border-t border-border/70 pt-wilms-6"
+      >
+        <div className="space-y-wilms-2">
           <h2 id="operational-kpi-heading" className="text-heading-2 font-semibold text-text-primary">
             Scale & productivity
           </h2>
-          <p className="mt-wilms-1 text-small text-text-muted">Active book size and operational throughput</p>
+          <p className="text-small text-text-muted">Active book size and operational throughput</p>
         </div>
         <ExecutiveKpiGrid>
-          <KpiCard variant="executive" label="Active groups" value={operational.activeGroups ?? 0} />
+          <KpiCard
+            variant="executive"
+            label="Active groups"
+            icon={<UsersRound className="h-4 w-4" aria-hidden="true" />}
+            value={operational.activeGroups ?? 0}
+          />
           <KpiCard
             variant="executive"
             label="Active borrowers"
+            icon={<UserRound className="h-4 w-4" aria-hidden="true" />}
             value={operational.activeBorrowers ?? 0}
           />
-          <KpiCard variant="executive" label="Active loans" value={operational.activeLoans ?? 0} />
-          <KpiCard variant="executive" label="Closed loans" value={operational.closedLoans ?? 0} />
+          <KpiCard
+            variant="executive"
+            label="Active loans"
+            icon={<HandCoins className="h-4 w-4" aria-hidden="true" />}
+            value={operational.activeLoans ?? 0}
+          />
+          <KpiCard
+            variant="executive"
+            label="Closed loans"
+            icon={<CircleCheck className="h-4 w-4" aria-hidden="true" />}
+            value={operational.closedLoans ?? 0}
+          />
           <KpiCard
             variant="executive"
             label="Reconciliation alerts"
+            icon={<BellRing className="h-4 w-4" aria-hidden="true" />}
             value={operational.reconciliationAlerts ?? 0}
           />
           <KpiCard
             variant="executive"
             label="Notifications sent"
+            icon={<Send className="h-4 w-4" aria-hidden="true" />}
             value={operational.notificationSent ?? 0}
           />
         </ExecutiveKpiGrid>

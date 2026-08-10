@@ -169,3 +169,33 @@ notificationsRouter.get(
     sendData(res, { publicKey: process.env.VAPID_PUBLIC_KEY?.trim() ?? null });
   }),
 );
+
+notificationsRouter.post(
+  '/notifications/push/test',
+  asyncHandler(async (req, res) => {
+    const result = await pushService.sendPushToUser(req.session!.userId, {
+      title: 'WILMS test push',
+      body: `Probe at ${new Date().toISOString()} — if you see this, Web Push is working.`,
+      url: '/dashboard',
+      category: 'announcement',
+      critical: true,
+    });
+
+    if (result.skipped) {
+      throw new AppError(
+        'Push is disabled by your notification preferences or quiet hours.',
+        ERROR_CODE.VALIDATION,
+        422,
+      );
+    }
+    if (result.sent === 0) {
+      throw new AppError(
+        'No active push subscription found for your account. Enable browser notifications first.',
+        ERROR_CODE.VALIDATION,
+        422,
+      );
+    }
+
+    sendData(res, result);
+  }),
+);
