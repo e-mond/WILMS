@@ -9,6 +9,7 @@ All notable changes to WILMS are documented in this file.
 **Post-release update:** August 2026 (`fix/v1.8.0-ui-modernisation`) — same release identity; **no new tag / no v1.8.1**  
 **Production-readiness closure:** August 2026 (`fix/v1.8.0-production-readiness`) — same release identity; **no new tag / no retag of `v1.8.0`**
 **Phase 33 adversarial audit:** August 2026 (`audit/v1.8.0-phase33-adversarial`) — same release identity; **no new tag / no retag of `v1.8.0`**
+**Ops / UX follow-ups:** August 2026 (`fix/v1.8.0-dashboard-ops-followups`, `fix/v1.8.0-kpi-offline-release`) — same release identity; **no new tag / no v1.8.1**
 
 ### Added
 
@@ -71,6 +72,13 @@ All notable changes to WILMS are documented in this file.
 - Push subscribe capped at 10 endpoints per user
 - Documentation truth: REQ-034 / architecture collector-fraud wording aligned to immutable payments (409)
 
+### Changed (dashboard / offline follow-ups)
+
+- KPI cards resolve default icons from labels on every dashboard and list page
+- Offline / network errors use clearer copy (banner, toasts, query panels, API client)
+- Collector due-today lists only true due-day borrowers/groups; Quick Help restored; registration quick-action cards removed
+- Settings **Send test push**; Neon `dev` vs production branch guide; migration apply helper for `0040`
+
 ### Notes
 
 - Extends v1.7.5 foundations; does not weaken financial, RBAC/SoD, reconciliation, notifications, or scheduler guarantees
@@ -78,6 +86,7 @@ All notable changes to WILMS are documented in this file.
 - Apply migrations **0037–0040** before enabling Ghana sync / automation tables and Phase 33 idempotency scopes in production
 - Full offline writes for every entity and visual workflow builder remain iterative beyond this RC
 - Phase 33 pack: `docs/v1.8.0/phase-33/` — verdict **READY WITH CONDITIONS** (not PRODUCTION CERTIFIED)
+- Latest ops notes: `docs/v1.8.0/NEON_BRANCHES.md`
 
 ## [1.7.5] — Offline, Push & Modernisation
 

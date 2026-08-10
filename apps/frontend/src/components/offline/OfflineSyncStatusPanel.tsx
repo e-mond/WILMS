@@ -43,14 +43,21 @@ export function OfflineSyncStatusPanel({
       <div className="mx-auto flex max-w-6xl flex-col gap-wilms-2">
         <div className="flex flex-wrap items-center justify-between gap-wilms-2">
           <p className="text-small text-text-secondary">
-            Offline queue: {pending} pending
-            {failedCount > 0 ? ` · ${failedCount} failed` : ''}
+            {failedCount > 0
+              ? `${failedCount} item${failedCount === 1 ? '' : 's'} failed to sync`
+              : 'Offline queue'}
+            {pending > 0 ? ` · ${pending} pending` : ''}
             {reviewPayments > 0 ? ` · ${reviewPayments} awaiting review` : ''}
-            {isSyncing ? ' · syncing' : ''}
+            {isSyncing ? ' · syncing now' : ''}
           </p>
           <div className="flex flex-wrap items-center gap-wilms-2">
-            <Button size="sm" variant="secondary" disabled={isSyncing || pending === 0} onClick={onRetrySync}>
-              {isSyncing ? 'Syncing…' : 'Retry sync'}
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={isSyncing || (pending === 0 && failedCount === 0)}
+              onClick={onRetrySync}
+            >
+              {isSyncing ? 'Syncing…' : failedCount > 0 ? 'Retry failed items' : 'Retry sync'}
             </Button>
             <Link
               href="/approver/sync-conflicts"

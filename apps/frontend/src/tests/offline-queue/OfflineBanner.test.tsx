@@ -16,7 +16,24 @@ describe('OfflineBanner', () => {
     );
 
     expect(screen.getByRole('status')).toHaveTextContent(
-      'Offline. Working from locally stored data. Changes will sync automatically.',
+      'You are offline. WILMS is using locally stored data; new changes will sync automatically when you reconnect.',
+    );
+  });
+
+  it('mentions pending items while offline', () => {
+    render(
+      <OfflineBanner
+        isOffline
+        pendingPayments={1}
+        pendingExpenses={1}
+        reviewPayments={0}
+        isSyncing={false}
+        hasQueueWarning={false}
+      />,
+    );
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'You are offline. 1 payment, 1 expense saved on this device',
     );
   });
 
@@ -62,7 +79,7 @@ describe('OfflineBanner', () => {
       />,
     );
 
-    expect(screen.getByRole('status')).toHaveTextContent('1 payment, 2 expenses pending sync.');
+    expect(screen.getByRole('status')).toHaveTextContent('1 payment, 2 expenses waiting to sync.');
   });
 
   it('renders nothing when online with empty queue', () => {

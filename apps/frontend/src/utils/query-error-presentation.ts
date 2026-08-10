@@ -20,8 +20,13 @@ export function resolveQueryErrorPresentation(error: unknown): QueryErrorPresent
     switch (error.code) {
       case API_ERROR_CODE.NETWORK:
         return {
-          title: 'Unable to reach the server',
-          description: 'Check your internet connection and try again.',
+          title: typeof navigator !== 'undefined' && navigator.onLine === false
+            ? 'You are offline'
+            : 'Unable to reach WILMS',
+          description:
+            typeof navigator !== 'undefined' && navigator.onLine === false
+              ? 'This page is using locally saved data. Payments, expenses, and holiday requests will sync when you reconnect.'
+              : 'Check your internet connection and try again. If you recently went offline, open Sync in Settings to retry queued items.',
           canRetry: true,
           variant: 'offline',
         };

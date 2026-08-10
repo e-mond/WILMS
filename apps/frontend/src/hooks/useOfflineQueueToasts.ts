@@ -38,7 +38,8 @@ export function useOfflineQueueToasts() {
   useEffect(() => {
     if (!wasOfflineRef.current && isOffline) {
       offlineToastIdRef.current = toast.offline('You are offline', {
-        message: 'Payments and expenses will be saved locally and synced when connection returns.',
+        message:
+          'Payments, expenses, and holiday requests are saved on this device and will sync when you reconnect.',
       });
     }
 
@@ -48,7 +49,7 @@ export function useOfflineQueueToasts() {
         offlineToastIdRef.current = null;
       }
       toast.info('Back online', {
-        message: 'Connection restored.',
+        message: 'Connection restored. Syncing any saved items now.',
         dedupeKey: 'connectivity:back-online',
       });
     }
@@ -69,13 +70,15 @@ export function useOfflineQueueToasts() {
 
       if (pendingCount === 0 && reviewCount > 0) {
         toast.info('Submitted for review', {
-          message: `${reviewCount} payment${reviewCount === 1 ? '' : 's'} sent to approver queue.`,
+          message: `${reviewCount} payment${reviewCount === 1 ? '' : 's'} sent to the approver queue.`,
         });
       } else if (pendingCount === 0 && reviewCount === 0) {
-        toast.sync('Sync complete', { message: 'All offline items uploaded.' });
+        toast.sync('Sync complete', {
+          message: 'All offline items uploaded successfully.',
+        });
       } else {
         toast.warning('Sync incomplete', {
-          message: `${pendingLabel} still pending.`,
+          message: `${pendingLabel} could not sync. Open Sync in Settings and tap Retry sync.`,
         });
       }
     }
@@ -87,7 +90,7 @@ export function useOfflineQueueToasts() {
 
       if (pendingCount > 0) {
         toast.sync('Syncing saved items', {
-          message: `Uploading ${formatPendingLabel(pendingPayments, pendingExpenses)}...`,
+          message: `Uploading ${formatPendingLabel(pendingPayments, pendingExpenses)}…`,
           durationMs: 3_000,
         });
       }

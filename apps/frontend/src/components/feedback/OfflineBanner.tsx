@@ -47,19 +47,22 @@ function getBannerMessage({
   const pendingLabel = formatPendingLabel(pendingPayments, pendingExpenses, pendingHolidays);
 
   if (hasQueueWarning) {
-    return `Sync backlog critical: ${pendingCount} saved items waiting. Contact your supervisor.`;
+    return `Sync backlog critical: ${pendingCount} saved item${pendingCount === 1 ? '' : 's'} waiting. Open Sync in Settings or contact your supervisor.`;
   }
 
   if (isOffline) {
-    return 'Offline. Working from locally stored data. Changes will sync automatically.';
+    if (pendingCount > 0) {
+      return `You are offline. ${pendingLabel} saved on this device — they will sync when you reconnect.`;
+    }
+    return 'You are offline. WILMS is using locally stored data; new changes will sync automatically when you reconnect.';
   }
 
   if (isSyncing && pendingCount > 0) {
-    return `Syncing ${pendingLabel}…`;
+    return `Syncing ${pendingLabel}… Please keep this tab open.`;
   }
 
   if (pendingCount > 0) {
-    return `${pendingLabel} pending sync.`;
+    return `${pendingLabel} waiting to sync. Tap Retry sync if they do not clear.`;
   }
 
   if (reviewPayments > 0) {

@@ -150,6 +150,13 @@ async function request<T>(
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      throw new ApiError(
+        'You are offline. WILMS will keep working from saved data; reconnect to sync changes.',
+        API_ERROR_CODE.NETWORK,
+      );
+    }
+
     const method = (init.method ?? 'GET').toUpperCase();
     if (method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS') {
       await ensureCsrfToken();
@@ -194,7 +201,14 @@ async function request<T>(
       throw new ApiError('The request timed out. Please try again.', API_ERROR_CODE.TIMEOUT);
     }
 
-    throw new ApiError('Unable to reach the server. Check your connection.', API_ERROR_CODE.NETWORK);
+    const offline =
+      typeof navigator !== 'undefined' && navigator.onLine === false;
+    throw new ApiError(
+      offline
+        ? 'You are offline. Changes are saved on this device and will sync when you reconnect.'
+        : 'Unable to reach WILMS. Check your internet connection, then try again.',
+      API_ERROR_CODE.NETWORK,
+    );
   } finally {
     clearTimeout(timeoutId);
   }
