@@ -30,6 +30,7 @@ import {
   AudienceComposer,
   type AudienceComposerValue,
 } from '@/features/communication-center/components/AudienceComposer';
+import { Modal } from '@/components/ui/Modal';
 import { cn } from '@/utils/cn';
 
 const TABS = [
@@ -87,6 +88,8 @@ export function CommunicationCenterPanel() {
   const [scheduleMode, setScheduleMode] = useState('');
   const [scheduledAt, setScheduledAt] = useState('');
   const [attachments, setAttachments] = useState<MessageAttachment[]>([]);
+  const [confirmSendOpen, setConfirmSendOpen] = useState(false);
+
   const { success: toastSuccess, error: toastError } = useToast();
   const queryClient = useQueryClient();
 
@@ -499,18 +502,7 @@ export function CommunicationCenterPanel() {
                   disabled={
                     !subject.trim() || !bodyHtml.trim() || channels.length === 0 || createMessage.isPending
                   }
-                  onClick={() => {
-                    if (
-                      !window.confirm(
-                        scheduleMode
-                          ? 'Schedule this message for the selected audience?'
-                          : 'Send this message now to the selected audience?',
-                      )
-                    ) {
-                      return;
-                    }
-                    createMessage.mutate();
-                  }}
+                  onClick={() => setConfirmSendOpen(true)}
                 >
                   {createMessage.isPending ? 'Sending…' : scheduleMode ? 'Schedule' : 'Send'}
                 </Button>
@@ -519,6 +511,51 @@ export function CommunicationCenterPanel() {
           </Card>
         </div>
       ) : null}
+
+      <Modal
+        isOpen={confirmSendOpen}
+        title={scheduleMode ? 'Schedule message?' : 'Send message?'}
+        onClose={() => {
+          if (!createMessage.isPending) {
+            setConfirmSendOpen(false);
+          }
+        }}
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={createMessage.isPending}
+              onClick={() => setConfirmSendOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={createMessage.isPending}
+              onClick={() => {
+                createMessage.mutate(undefined, {
+                  onSettled: () => setConfirmSendOpen(false),
+                });
+              }}
+            >
+              {createMessage.isPending
+                ? scheduleMode
+                  ? 'Scheduling…'
+                  : 'Sending…'
+                : scheduleMode
+                  ? 'Confirm schedule'
+                  : 'Confirm send'}
+            </Button>
+          </>
+        }
+      >
+        <p className="text-body text-text-muted">
+          {scheduleMode
+            ? 'Schedule this message for the selected audience?'
+            : 'Send this message now to the selected audience?'}
+        </p>
+      </Modal>
 
       <TemplateBuilderModal
         isOpen={showTemplateBuilder}

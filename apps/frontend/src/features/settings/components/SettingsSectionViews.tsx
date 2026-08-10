@@ -23,6 +23,8 @@ import { settingsService } from '@/services';
 import type { SystemSettings, UpdateSystemSettingsInput } from '@/types/settings';
 import { CurrencyAmount } from '@/components/data-display';
 import { LOAN_DURATION_WEEK_OPTIONS, formatLoanDurationLabel } from '@/constants/loan-duration';
+import { AppLockSetupPanel } from '@/features/app-lock/components/AppLockSetupPanel';
+import { NotificationPreferencesSection } from '@/features/settings/components/NotificationPreferencesSection';
 import {
   SettingsAuditIcon,
   SettingsIntegrationsIcon,
@@ -218,52 +220,57 @@ export function MyAccountSectionView() {
   }
 
   return (
-    <SettingsSectionCard
-      title="My Account"
-      description="Your profile and personal preferences."
-      icon={<SettingsProfileIcon />}
-    >
-      <SettingsSettingRow
-        title="Display Name"
-        description="Shown in the shell header and audit trail."
-        control={
-          <Input value={displayName} onChange={(event) => setDisplayName(event.target.value)} aria-label="Display name" />
-        }
-      />
-      <SettingsSettingRow
-        title="Email Address"
-        description="Primary contact email."
-        control={<Input value={email} onChange={(event) => setEmail(event.target.value)} aria-label="Email" />}
-      />
-      <SettingsSettingRow
-        title="Role"
-        description="Current access level."
-        control={<Input value={data.roleLabel} readOnly aria-label="Role" />}
-      />
-      <SettingsSettingRow
-        title="Phone"
-        description="Contact number on file."
-        control={<Input value={data.phone ?? '—'} readOnly aria-label="Phone" />}
-      />
-      <div className="flex justify-end pt-wilms-2">
-        <Button
-          type="button"
-          size="sm"
-          disabled={updateMe.isPending}
-          onClick={() => {
-            void updateMe
-              .mutateAsync({ displayName, email })
-              .then(() => toast.success('Profile updated'))
-              .catch((error: unknown) => {
-                const message = error instanceof Error ? error.message : 'Try again shortly.';
-                toast.error('Unable to update profile', { message });
-              });
-          }}
-        >
-          Save profile
-        </Button>
-      </div>
-    </SettingsSectionCard>
+    <div className="space-y-wilms-4">
+      <SettingsSectionCard
+        title="My Account"
+        description="Your profile and personal preferences."
+        icon={<SettingsProfileIcon />}
+      >
+        <SettingsSettingRow
+          title="Display Name"
+          description="Shown in the shell header and audit trail."
+          control={
+            <Input value={displayName} onChange={(event) => setDisplayName(event.target.value)} aria-label="Display name" />
+          }
+        />
+        <SettingsSettingRow
+          title="Email Address"
+          description="Primary contact email."
+          control={<Input value={email} onChange={(event) => setEmail(event.target.value)} aria-label="Email" />}
+        />
+        <SettingsSettingRow
+          title="Role"
+          description="Current access level."
+          control={<Input value={data.roleLabel} readOnly aria-label="Role" />}
+        />
+        <SettingsSettingRow
+          title="Phone"
+          description="Contact number on file."
+          control={<Input value={data.phone ?? '—'} readOnly aria-label="Phone" />}
+        />
+        <div className="flex justify-end pt-wilms-2">
+          <Button
+            type="button"
+            size="sm"
+            disabled={updateMe.isPending}
+            onClick={() => {
+              void updateMe
+                .mutateAsync({ displayName, email })
+                .then(() => toast.success('Profile updated'))
+                .catch((error: unknown) => {
+                  const message = error instanceof Error ? error.message : 'Try again shortly.';
+                  toast.error('Unable to update profile', { message });
+                });
+            }}
+          >
+            Save profile
+          </Button>
+        </div>
+      </SettingsSectionCard>
+
+      <NotificationPreferencesSection />
+      <AppLockSetupPanel />
+    </div>
   );
 }
 

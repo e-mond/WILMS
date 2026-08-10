@@ -915,6 +915,7 @@ Report accessibility defects with role, route, and keyboard repro steps.
 | [`docs/audit/`](docs/audit/) | Audit architecture |
 | [`docs/v1.8.0/`](docs/v1.8.0/) | **v1.8.0** release pack + production readiness matrix |
 | [`docs/offline-architecture.md`](docs/offline-architecture.md) | Offline capability matrix (1.8.0 truth) |
+| [`documentation/offline/`](documentation/offline/) | Offline-first Phases 0–8 (flag-gated expansions; default off) |
 | [`docs/v1.7/`](docs/v1.7/) | Prior v1.7.0 release pack |
 | [`docs/v1.6/`](docs/v1.6/) / [`docs/v1.6.2/`](docs/v1.6.2/) | Prior release packs |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Contribution workflow |
@@ -927,7 +928,7 @@ Report accessibility defects with role, route, and keyboard repro steps.
 
 | Release | Focus |
 | --- | --- |
-| **v1.8.0 (current)** | Enterprise design, Ghana holidays, automation engine, field-critical offline, CSP-safe fonts, post-release UI closure |
+| **v1.8.0 (current)** | Enterprise design, Ghana holidays, automation engine, field-critical offline, CSP-safe fonts, offline-first flag (`WILMS_OFFLINE_MODE` default off), post-release UI closure |
 | **v1.9 — Integrations & Payments** | Deeper payment-provider integrations, settlement tooling, external system connectors |
 | **v2.0 — General Ledger & multi-branch** | Statutory double-entry GL, multi-branch structures, enhanced consolidation |
 
