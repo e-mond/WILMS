@@ -54,36 +54,35 @@ describe('role shells', () => {
     localStorage.removeItem('wilms-executive-default-dark-applied');
   });
 
-  async function openMobileNavigation(user: ReturnType<typeof userEvent.setup>, roleLabel: string) {
-    const openButtons = screen.getAllByRole('button', { name: 'Open navigation menu' });
-    await user.click(openButtons[openButtons.length - 1]!);
-    const drawerName = /navigation$/i.test(roleLabel) ? roleLabel : `${roleLabel} navigation`;
-    return screen.getByRole('dialog', { name: drawerName });
-  }
-
-  it('renders super admin sidebar navigation with shared office chrome', async () => {
-    const user = userEvent.setup();
-    renderShell(<SuperAdminShell><div>Content</div></SuperAdminShell>);
+  it('renders super admin navigation with operational mobile chrome (no hamburger drawer)', () => {
+    renderShell(
+      <SuperAdminShell>
+        <div>Content</div>
+      </SuperAdminShell>,
+    );
 
     expect(screen.getByText('Content')).toBeInTheDocument();
-    const drawer = await openMobileNavigation(user, 'Super Admin');
-    expect(within(drawer).getByRole('navigation', { name: 'Super Admin' })).toBeInTheDocument();
-    expect(within(drawer).getByRole('button', { name: 'Log out' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Open navigation menu' })).not.toBeInTheDocument();
+    expect(
+      screen.getAllByRole('navigation', { name: 'Super Admin bottom navigation' }).length,
+    ).toBeGreaterThanOrEqual(1);
     expect(
       screen.getAllByRole('button', { name: /Switch to (dark|light) mode/ }).length,
     ).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/All systems operational/)).toBeInTheDocument();
 
     for (const item of SUPER_ADMIN_NAV) {
-      expect(within(drawer).getByRole('link', { name: item.label })).toHaveAttribute(
-        'href',
-        item.href,
-      );
+      const links = screen.getAllByRole('link', { name: item.label });
+      expect(links.some((link) => link.getAttribute('href') === item.href)).toBe(true);
     }
   });
 
   it('renders collector navigation with responsive executive shell chrome', () => {
-    renderShell(<CollectorShell><div>Collector content</div></CollectorShell>);
+    renderShell(
+      <CollectorShell>
+        <div>Collector content</div>
+      </CollectorShell>,
+    );
 
     expect(screen.getByText('Collector content')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Open navigation menu' })).not.toBeInTheDocument();
@@ -103,7 +102,11 @@ describe('role shells', () => {
   });
 
   it('renders registration officer navigation with office header and footer', () => {
-    renderShell(<RegistrationOfficerShell><div>Officer content</div></RegistrationOfficerShell>);
+    renderShell(
+      <RegistrationOfficerShell>
+        <div>Officer content</div>
+      </RegistrationOfficerShell>,
+    );
 
     expect(screen.getAllByText('WILMS').length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByRole('button', { name: 'Open navigation menu' })).not.toBeInTheDocument();
@@ -119,7 +122,11 @@ describe('role shells', () => {
   });
 
   it('renders approver queue navigation with office header and footer', () => {
-    renderShell(<ApproverShell><div>Approver content</div></ApproverShell>);
+    renderShell(
+      <ApproverShell>
+        <div>Approver content</div>
+      </ApproverShell>,
+    );
 
     expect(screen.getAllByText('WILMS').length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByRole('button', { name: 'Open navigation menu' })).not.toBeInTheDocument();
@@ -139,10 +146,14 @@ describe('role shells', () => {
     useThemeStore.setState({ mode: THEME_MODE.LIGHT, isHydrated: true });
     const user = userEvent.setup();
 
-    renderShell(<SuperAdminShell><div>Content</div></SuperAdminShell>);
+    renderShell(
+      <SuperAdminShell>
+        <div>Content</div>
+      </SuperAdminShell>,
+    );
 
     const themeButtons = screen.getAllByRole('button', { name: 'Switch to dark mode' });
-    await user.click(themeButtons[0]);
+    await user.click(themeButtons[0]!);
     expect(useThemeStore.getState().mode).toBe(THEME_MODE.DARK);
   });
 });

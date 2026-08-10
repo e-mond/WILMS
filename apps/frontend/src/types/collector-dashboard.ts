@@ -70,6 +70,7 @@ export interface CollectorDashboardStats {
 export interface CollectorDashboardSummary {
   date: string;
   paymentDayLabel: string;
+  nextCollectionDueDate: string | null;
   borrowersDueCount: number;
   expectedPesewas: number;
   collectedPesewas: number;

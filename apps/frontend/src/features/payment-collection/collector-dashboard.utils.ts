@@ -12,9 +12,9 @@ import {
   type ReconciliationStatus,
 } from '@/types/collector-dashboard';
 import { resolvePersonPhotoUrl } from '@/utils/person-photo';
-import { getWeekdayNameFromIsoDate, isLoanDueOnDate } from '@/utils/weekday';
+import { getWeekdayNameFromIsoDate, isLoanDueOnDate, resolveNextCollectionDueDate } from '@/utils/weekday';
 
-export { getWeekdayNameFromIsoDate, isLoanDueOnDate };
+export { getWeekdayNameFromIsoDate, isLoanDueOnDate, resolveNextCollectionDueDate };
 
 export interface CollectorDashboardLoanInput {
   id: string;
@@ -175,6 +175,10 @@ export function buildCollectorDashboardCore(input: BuildCollectorDashboardInput)
     summary: {
       date: input.referenceDate,
       paymentDayLabel: getWeekdayNameFromIsoDate(input.referenceDate),
+      nextCollectionDueDate: resolveNextCollectionDueDate(
+        input.loans.map((loan) => loan.paymentDay),
+        input.referenceDate,
+      ),
       borrowersDueCount: borrowers.length,
       expectedPesewas,
       collectedPesewas,
