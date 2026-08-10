@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useMemo } from 'react';
 import { CurrencyAmount, KpiCard } from '@/components/data-display';
+import { resolveKpiIcon } from '@/components/data-display/resolveKpiIcon';
 import { GuidedEmptyState } from '@/components/feedback/GuidedEmptyState';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { ExecutiveKpiGrid } from '@/components/layout/executive';
@@ -173,7 +174,11 @@ function OperationalDashboardContent({
             key={kpi.id}
             variant="executive"
             label={kpi.label}
-            icon={KPI_ICON_NAMES[kpi.id] ? <DashboardKpiIcon name={KPI_ICON_NAMES[kpi.id]} /> : null}
+            icon={
+              KPI_ICON_NAMES[kpi.id] ? (
+                <DashboardKpiIcon name={KPI_ICON_NAMES[kpi.id]} />
+              ) : undefined
+            }
             value={
               kpi.valueKind === 'count' ? (
                 <span
@@ -212,7 +217,12 @@ function OperationalDashboardContent({
                 href={item.href}
                 className="flex min-h-[88px] flex-col justify-between rounded-2xl border border-border/80 bg-card p-wilms-4 shadow-[var(--shadow-card)] transition-colors hover:border-brand-primary/40"
               >
-                <p className="font-semibold text-text-primary">{item.label}</p>
+                <div className="flex items-start justify-between gap-wilms-2">
+                  <p className="font-semibold text-text-primary">{item.label}</p>
+                  <span className="rounded-md bg-background p-1.5 text-text-muted" aria-hidden="true">
+                    {resolveKpiIcon(item.label)}
+                  </span>
+                </div>
                 <p
                   className={cn(
                     'mt-wilms-3 text-heading-3 font-semibold tabular-nums',
@@ -290,7 +300,7 @@ function OperationalDashboardContent({
                       DASHBOARD_BORROWER_TONE_CLASS[segment.tone].bar,
                     )}
                   />
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p
                       className={cn(
                         'truncate text-small font-semibold',
@@ -301,6 +311,9 @@ function OperationalDashboardContent({
                     </p>
                     <p className="text-small text-text-muted">{segment.count.toLocaleString()}</p>
                   </div>
+                  <span className="rounded-md bg-background p-1.5 text-text-muted" aria-hidden="true">
+                    {resolveKpiIcon(segment.label)}
+                  </span>
                 </li>
               ))}
             </ul>
