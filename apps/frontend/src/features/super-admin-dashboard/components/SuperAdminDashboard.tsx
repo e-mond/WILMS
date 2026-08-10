@@ -288,7 +288,7 @@ function OperationalDashboardContent({
               actionLabel="Open borrowers"
             />
           ) : (
-            <ul className="grid gap-wilms-3 sm:grid-cols-2 xl:grid-cols-5">
+            <ul className="grid gap-wilms-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
               {data.borrowerSegments.map((segment) => (
                 <li
                   key={segment.id}
@@ -303,7 +303,7 @@ function OperationalDashboardContent({
                   <div className="min-w-0 flex-1">
                     <p
                       className={cn(
-                        'truncate text-small font-semibold',
+                        'whitespace-normal break-words text-small font-semibold leading-tight',
                         DASHBOARD_BORROWER_TONE_CLASS[segment.tone].text,
                       )}
                     >
@@ -311,7 +311,7 @@ function OperationalDashboardContent({
                     </p>
                     <p className="text-small text-text-muted">{segment.count.toLocaleString()}</p>
                   </div>
-                  <span className="rounded-md bg-background p-1.5 text-text-muted" aria-hidden="true">
+                  <span className="shrink-0 rounded-md bg-background p-1.5 text-text-muted" aria-hidden="true">
                     {resolveKpiIcon(segment.label)}
                   </span>
                 </li>

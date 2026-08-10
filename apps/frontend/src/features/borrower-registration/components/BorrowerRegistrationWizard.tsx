@@ -87,6 +87,16 @@ function applySchemaErrors(
   }
 }
 
+function getStepForSchemaField(field: string): number {
+  const index = REGISTRATION_STEP_FIELD_NAMES.findIndex((fields) =>
+    (fields as readonly string[]).includes(field),
+  );
+  if (field === 'guarantorPhoto' || field === 'guarantorPhotoUploadId') {
+    return 3;
+  }
+  return index >= 0 ? index : 0;
+}
+
 export function BorrowerRegistrationWizard() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
@@ -464,76 +474,99 @@ export function BorrowerRegistrationWizard() {
     setCurrentStep((step) => Math.max(step - 1, 0));
   };
 
-  const onSubmit = handleSubmit(async (values) => {
-    setSubmitError(null);
+  const onSubmit = handleSubmit(
+    async (values) => {
+      setSubmitError(null);
 
-    const parsed = borrowerRegistrationSchema.safeParse(values);
-    if (!parsed.success) {
-      applySchemaErrors(parsed.error.issues, setError);
-      return;
-    }
-
-    const conflictChecks = await runRegistrationConflictChecks({
-      fullName: parsed.data.fullName,
-      phone: parsed.data.phone,
-      idType: parsed.data.idType,
-      idNumber: parsed.data.idNumber,
-    });
-
-    if (conflictChecks.blocking.length > 0) {
-      setConflictReport(conflictChecks);
-      setWarningsAcknowledged(false);
-
-      for (const conflict of conflictChecks.blocking) {
-        if (conflict.field) {
-          setError(conflict.field, {
-            type: 'manual',
-            message: conflict.message,
-          });
-        }
+      const parsed = borrowerRegistrationSchema.safeParse(values);
+      if (!parsed.success) {
+        applySchemaErrors(parsed.error.issues, setError);
+        const firstField = parsed.error.issues.find((issue) => typeof issue.path[0] === 'string')
+          ?.path[0];
+        const targetStep =
+          typeof firstField === 'string' ? getStepForSchemaField(firstField) : 0;
+        setCurrentStep(targetStep);
+        const message =
+          parsed.error.issues[0]?.message ??
+          'Please fix the highlighted registration fields before submitting.';
+        setSubmitError(message);
+        notifyMutationError('Registration incomplete', new Error(message), message);
+        return;
       }
 
-      setCurrentStep(getConflictTargetStep(conflictChecks.blocking));
-      return;
-    }
+      const conflictChecks = await runRegistrationConflictChecks({
+        fullName: parsed.data.fullName,
+        phone: parsed.data.phone,
+        idType: parsed.data.idType,
+        idNumber: parsed.data.idNumber,
+      });
 
-    if (conflictChecks.warnings.length > 0 && !warningsAcknowledged) {
-      setConflictReport(conflictChecks);
-      return;
-    }
+      if (conflictChecks.blocking.length > 0) {
+        setConflictReport(conflictChecks);
+        setWarningsAcknowledged(false);
 
-    if (!user?.id) {
-      setSubmitError('You must be signed in to register a borrower.');
-      return;
-    }
+        for (const conflict of conflictChecks.blocking) {
+          if (conflict.field) {
+            setError(conflict.field, {
+              type: 'manual',
+              message: conflict.message,
+            });
+          }
+        }
 
-    try {
-      if (draftId) {
-        await borrowerService.updateRegistrationDraft(
-          draftId,
-          parsed.data as Record<string, unknown>,
-          REGISTRATION_STEPS.length - 1,
+        setCurrentStep(getConflictTargetStep(conflictChecks.blocking));
+        return;
+      }
+
+      if (conflictChecks.warnings.length > 0 && !warningsAcknowledged) {
+        setConflictReport(conflictChecks);
+        return;
+      }
+
+      if (!user?.id) {
+        setSubmitError('You must be signed in to register a borrower.');
+        return;
+      }
+
+      try {
+        if (draftId) {
+          await borrowerService.updateRegistrationDraft(
+            draftId,
+            parsed.data as Record<string, unknown>,
+            REGISTRATION_STEPS.length - 1,
+          );
+        }
+
+        const result = draftId
+          ? await borrowerService.submitRegistrationDraft(draftId)
+          : await borrowerService.registerBorrower(toRegisterBorrowerPayload(parsed.data, user.id));
+        setRegisteredBorrowerId(result.id);
+        setConflictReport({ blocking: [], warnings: [] });
+        notifyMutationSuccess(
+          'Borrower registered',
+          'The application is pending approver review.',
+        );
+      } catch (error) {
+        notifyMutationError('Registration failed', error, 'Unable to submit registration.');
+        setSubmitError(
+          error instanceof ApiError
+            ? error.message
+            : 'Unable to submit registration. Please try again.',
         );
       }
-
-      const result = draftId
-        ? await borrowerService.submitRegistrationDraft(draftId)
-        : await borrowerService.registerBorrower(toRegisterBorrowerPayload(parsed.data, user.id));
-      setRegisteredBorrowerId(result.id);
-      setConflictReport({ blocking: [], warnings: [] });
-      notifyMutationSuccess(
-        'Borrower registered',
-        'The application is pending approver review.',
-      );
-    } catch (error) {
-      notifyMutationError('Registration failed', error, 'Unable to submit registration.');
-      setSubmitError(
-        error instanceof ApiError
-          ? error.message
-          : 'Unable to submit registration. Please try again.',
-      );
-    }
-  });
+    },
+    (invalid) => {
+      const firstField = Object.keys(invalid)[0];
+      if (firstField) {
+        setCurrentStep(getStepForSchemaField(firstField));
+      }
+      const message =
+        (firstField && invalid[firstField as keyof typeof invalid]?.message) ||
+        'Please fix the highlighted registration fields before submitting.';
+      setSubmitError(String(message));
+      notifyMutationError('Registration incomplete', new Error(String(message)), String(message));
+    },
+  );
 
   if (registeredBorrowerId) {
     return (
