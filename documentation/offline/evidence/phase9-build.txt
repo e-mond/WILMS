@@ -1,0 +1,792 @@
+=== build frontend ===
+
+> @wilms/frontend@1.8.0 build
+> next build
+
+  ▲ Next.js 14.2.35
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+ ⚠ Compiled with warnings
+
+../../node_modules/nodemailer/lib/addressparser/index.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\addressparser\index.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mime-node\index.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\addressparser\index.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mime-node\index.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/addressparser/index.js
+../../node_modules/nodemailer/lib/mime-node/index.js
+../../node_modules/nodemailer/lib/ses-transport/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/base64/index.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\base64\index.js|rsc
+    Used by 3 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mime-node\index.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\base64\index.js|rsc
+    Used by 3 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mime-node\index.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/base64/index.js
+../../node_modules/nodemailer/lib/mime-node/index.js
+../../node_modules/nodemailer/lib/ses-transport/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/dkim/index.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\dkim\index.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mailer\index.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\dkim\index.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mailer\index.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/dkim/index.js
+../../node_modules/nodemailer/lib/mailer/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/dkim/message-parser.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\dkim\message-parser.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\dkim\index.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\dkim\message-parser.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\dkim\index.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/dkim/message-parser.js
+../../node_modules/nodemailer/lib/dkim/index.js
+../../node_modules/nodemailer/lib/mailer/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/dkim/relaxed-body.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\dkim\relaxed-body.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\dkim\index.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\dkim\relaxed-body.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\dkim\index.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/dkim/relaxed-body.js
+../../node_modules/nodemailer/lib/dkim/index.js
+../../node_modules/nodemailer/lib/mailer/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/dkim/sign.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\dkim\sign.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\dkim\index.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\dkim\sign.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\dkim\index.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/dkim/sign.js
+../../node_modules/nodemailer/lib/dkim/index.js
+../../node_modules/nodemailer/lib/mailer/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/errors.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\errors.js|rsc
+    Used by 13 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\nodemailer.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\errors.js|rsc
+    Used by 13 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\nodemailer.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/errors.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/fetch/cookies.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\fetch\cookies.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\fetch\index.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\fetch\cookies.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\fetch\index.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/fetch/cookies.js
+../../node_modules/nodemailer/lib/fetch/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/fetch/index.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\fetch\index.js|rsc
+    Used by 5 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\nodemailer.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\fetch\index.js|rsc
+    Used by 5 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\nodemailer.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/fetch/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/json-transport/index.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\json-transport\index.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\nodemailer.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\json-transport\index.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\nodemailer.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/json-transport/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/mail-composer/index.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mail-composer\index.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mailer\index.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mail-composer\index.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mailer\index.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/mail-composer/index.js
+../../node_modules/nodemailer/lib/mailer/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/mailer/index.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mailer\index.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\nodemailer.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mailer\index.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\nodemailer.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/mailer/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/mailer/mail-message.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mailer\mail-message.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mailer\index.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mailer\mail-message.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mailer\index.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/mailer/mail-message.js
+../../node_modules/nodemailer/lib/mailer/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/mime-funcs/index.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mime-funcs\index.js|rsc
+    Used by 5 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mailer\mail-message.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mime-funcs\index.js|rsc
+    Used by 5 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mailer\mail-message.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/mime-funcs/index.js
+../../node_modules/nodemailer/lib/mailer/mail-message.js
+../../node_modules/nodemailer/lib/mailer/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/mime-funcs/mime-types.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mime-funcs\mime-types.js|rsc
+    Used by 3 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mailer\index.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mime-funcs\mime-types.js|rsc
+    Used by 3 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mailer\index.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/mime-funcs/mime-types.js
+../../node_modules/nodemailer/lib/mailer/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/mime-node/index.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mime-node\index.js|rsc
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\ses-transport\index.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mime-node\index.js|rsc
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\ses-transport\index.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/mime-node/index.js
+../../node_modules/nodemailer/lib/ses-transport/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/mime-node/last-newline.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mime-node\last-newline.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mime-node\index.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mime-node\last-newline.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mime-node\index.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/mime-node/last-newline.js
+../../node_modules/nodemailer/lib/mime-node/index.js
+../../node_modules/nodemailer/lib/ses-transport/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/mime-node/le-unix.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mime-node\le-unix.js|rsc
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\sendmail-transport\index.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mime-node\le-unix.js|rsc
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\sendmail-transport\index.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/mime-node/le-unix.js
+../../node_modules/nodemailer/lib/sendmail-transport/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/mime-node/le-windows.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mime-node\le-windows.js|rsc
+    Used by 5 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\sendmail-transport\index.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mime-node\le-windows.js|rsc
+    Used by 5 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\sendmail-transport\index.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/mime-node/le-windows.js
+../../node_modules/nodemailer/lib/sendmail-transport/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/nodemailer.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\nodemailer.js|rsc
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\apps\frontend\src\lib\mail\gmail-smtp.ts|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\nodemailer.js|rsc
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\infrastructure\mail\smtp-adapter.ts|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/punycode/index.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\punycode\index.js|rsc
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\shared\url.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\punycode\index.js|rsc
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\shared\url.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/punycode/index.js
+../../node_modules/nodemailer/lib/shared/url.js
+../../node_modules/nodemailer/lib/shared/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/qp/index.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\qp\index.js|rsc
+    Used by 3 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mime-node\index.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\qp\index.js|rsc
+    Used by 3 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mime-node\index.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/qp/index.js
+../../node_modules/nodemailer/lib/mime-node/index.js
+../../node_modules/nodemailer/lib/ses-transport/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/sendmail-transport/index.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\sendmail-transport\index.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\nodemailer.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\sendmail-transport\index.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\nodemailer.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/sendmail-transport/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/ses-transport/index.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\ses-transport\index.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\nodemailer.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\ses-transport\index.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\nodemailer.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/ses-transport/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/shared/index.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\shared\index.js|rsc
+    Used by 15 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\nodemailer.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\shared\index.js|rsc
+    Used by 15 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\nodemailer.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/shared/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/shared/url.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\shared\url.js|rsc
+    Used by 5 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\shared\index.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\shared\url.js|rsc
+    Used by 5 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mailer\index.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/shared/url.js
+../../node_modules/nodemailer/lib/shared/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/smtp-connection/data-stream.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\smtp-connection\data-stream.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\smtp-connection\index.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\smtp-connection\data-stream.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\smtp-connection\index.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/smtp-connection/data-stream.js
+../../node_modules/nodemailer/lib/smtp-connection/index.js
+../../node_modules/nodemailer/lib/smtp-pool/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/smtp-connection/http-proxy-client.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\smtp-connection\http-proxy-client.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mailer\index.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\smtp-connection\http-proxy-client.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\mailer\index.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/smtp-connection/http-proxy-client.js
+../../node_modules/nodemailer/lib/mailer/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/smtp-connection/index.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\smtp-connection\index.js|rsc
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\smtp-pool\index.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\smtp-connection\index.js|rsc
+    Used by 4 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\smtp-transport\index.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/smtp-connection/index.js
+../../node_modules/nodemailer/lib/smtp-pool/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/smtp-pool/index.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\smtp-pool\index.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\nodemailer.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\smtp-pool\index.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\nodemailer.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/smtp-pool/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/smtp-pool/pool-resource.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\smtp-pool\pool-resource.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\smtp-pool\index.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\smtp-pool\pool-resource.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\smtp-pool\index.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/smtp-pool/pool-resource.js
+../../node_modules/nodemailer/lib/smtp-pool/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/smtp-transport/index.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\smtp-transport\index.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\nodemailer.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\smtp-transport\index.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\nodemailer.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/smtp-transport/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/stream-transport/index.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\stream-transport\index.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\nodemailer.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\stream-transport\index.js|rsc
+    Used by 2 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\nodemailer.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/stream-transport/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/well-known/index.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\well-known\index.js|rsc
+    Used by 3 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\smtp-pool\index.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\well-known\index.js|rsc
+    Used by 3 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\smtp-transport\index.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/well-known/index.js
+../../node_modules/nodemailer/lib/smtp-pool/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/lib/xoauth2/index.js
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\xoauth2\index.js|rsc
+    Used by 3 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\smtp-transport\index.js|rsc
+* javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\xoauth2\index.js|rsc
+    Used by 3 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\smtp-transport\index.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/xoauth2/index.js
+../../node_modules/nodemailer/lib/smtp-transport/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/zod/lib/index.mjs
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* javascript/esm|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\zod\lib\index.mjs|rsc
+    Used by 3 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\apps\frontend\src\features\authentication\login.schema.ts|rsc
+* javascript/esm|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\zod\lib\index.mjs|rsc
+    Used by 19 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\packages\domain\src\modules\collectors\routes.ts|rsc
+
+Import trace for requested module:
+../../node_modules/zod/lib/index.mjs
+./src/features/authentication/login.schema.ts
+./src/app/api/auth/login/route.ts
+
+../../node_modules/nodemailer/lib/well-known/services.json
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* json|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\well-known\services.json|rsc
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\well-known\index.js|rsc
+* json|c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\well-known\services.json|rsc
+    Used by 1 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\well-known\index.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/lib/well-known/services.json
+../../node_modules/nodemailer/lib/well-known/index.js
+../../node_modules/nodemailer/lib/smtp-pool/index.js
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+../../node_modules/nodemailer/package.json
+There are multiple modules with names that only differ in casing.
+This can lead to unexpected behavior when compiling on a filesystem with other case-semantic.
+Use equal casing. Compare these module identifiers:
+* json|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\package.json|rsc
+    Used by 10 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\nodemailer.js|rsc
+* json|c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\package.json|rsc
+    Used by 10 module(s), i. e.
+    javascript/auto|C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-flight-loader\index.js!C:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js??ruleSet[1].rules[16].oneOf[3].use[0]!c:\Users\eddie\OneDrive\Desktop\WILMS\node_modules\nodemailer\lib\nodemailer.js|rsc
+
+Import trace for requested module:
+../../node_modules/nodemailer/package.json
+../../node_modules/nodemailer/lib/nodemailer.js
+./src/lib/mail/gmail-smtp.ts
+./src/app/api/mail/send/route.ts
+
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/65) ...
+   Generating static pages (16/65) 
+   Generating static pages (32/65) 
+   Generating static pages (48/65) 
+ ✓ Generating static pages (65/65)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                  Size     First Load JS
+┌ ƒ /                                        171 B          87.9 kB
+├ ƒ /_not-found                              171 B          87.9 kB
+├ ƒ /accept-invitation                       3.94 kB        91.7 kB
+├ ƒ /adjustments                             7.53 kB         161 kB
+├ ƒ /api/auth/complete-onboarding            0 B                0 B
+├ ○ /api/auth/csrf                           0 B                0 B
+├ ƒ /api/auth/forgot-password                0 B                0 B
+├ ƒ /api/auth/login                          0 B                0 B
+├ ƒ /api/auth/logout                         0 B                0 B
+├ ƒ /api/auth/reset-password                 0 B                0 B
+├ ƒ /api/auth/verify-otp                     0 B                0 B
+├ ƒ /api/cron/notifications                  0 B                0 B
+├ ƒ /api/mail/gmail                          0 B                0 B
+├ ƒ /api/mail/send                           0 B                0 B
+├ ƒ /api/t/c/[token]/[linkId]                0 B                0 B
+├ ƒ /api/t/o/[token]                         0 B                0 B
+├ ƒ /api/wilms/[...path]                     0 B                0 B
+├ ƒ /approver/holidays                       7.46 kB         131 kB
+├ ƒ /approver/pending                        7.66 kB         145 kB
+├ ƒ /approver/pending/[id]                   6.29 kB         573 kB
+├ ƒ /approver/reviewed                       5.63 kB         140 kB
+├ ƒ /approver/settings                       173 B           191 kB
+├ ƒ /approver/sync-conflicts                 6.25 kB         140 kB
+├ ƒ /auditor/audit-log                       172 B           556 kB
+├ ƒ /auditor/reports                         1.59 kB         558 kB
+├ ƒ /auditor/settings                        174 B           191 kB
+├ ƒ /borrowers                               6.12 kB         556 kB
+├ ƒ /borrowers/[id]                          4.36 kB         555 kB
+├ ƒ /borrowers/[id]/loan                     4.3 kB          138 kB
+├ ƒ /capture/[token]                         2.84 kB        90.5 kB
+├ ƒ /collector/admin-fee                     7.09 kB         141 kB
+├ ƒ /collector/admin-fee/[borrowerId]        4.34 kB         144 kB
+├ ƒ /collector/dashboard                     8.17 kB         142 kB
+├ ƒ /collector/expenses                      7.69 kB         572 kB
+├ ƒ /collector/groups/[id]/collection-sheet  5.38 kB         139 kB
+├ ƒ /collector/holidays                      13.4 kB         125 kB
+├ ƒ /collector/messages                      171 B          87.9 kB
+├ ƒ /collector/my-borrowers                  8.23 kB         142 kB
+├ ƒ /collector/payment/[id]                  8.46 kB         170 kB
+├ ƒ /collector/reconciliation                6.16 kB         167 kB
+├ ƒ /collector/security                      171 B          87.9 kB
+├ ƒ /collector/settings                      174 B           191 kB
+├ ƒ /collectors                              5.29 kB         558 kB
+├ ƒ /collectors/[id]                         5.86 kB         140 kB
+├ ƒ /communication-center                    17.2 kB         151 kB
+├ ƒ /complete-profile                        1.79 kB         130 kB
+├ ƒ /dashboard                               13.3 kB         563 kB
+├ ƒ /documentation                           5.09 kB         102 kB
+├ ƒ /executive                               5.96 kB         546 kB
+├ ƒ /expenses                                7.61 kB         554 kB
+├ ƒ /exports                                 171 B          87.9 kB
+├ ƒ /forgot-password                         4.57 kB         143 kB
+├ ƒ /groups                                  4.63 kB         558 kB
+├ ƒ /groups/[id]                             7.18 kB         557 kB
+├ ƒ /loan-pools                              8.55 kB         581 kB
+├ ƒ /loans                                   6.02 kB         556 kB
+├ ƒ /loans/[id]                              5.06 kB         144 kB
+├ ƒ /loans/new                               12.6 kB         177 kB
+├ ƒ /login                                   5.18 kB         147 kB
+├ ƒ /officer/my-registrations                7.9 kB          558 kB
+├ ƒ /officer/my-registrations/[id]           1.72 kB         556 kB
+├ ƒ /officer/register                        17.6 kB         584 kB
+├ ƒ /officer/settings                        175 B           191 kB
+├ ƒ /ops                                     12.3 kB         136 kB
+├ ƒ /reports                                 1.24 kB         557 kB
+├ ƒ /reports/aging-analysis                  1.25 kB         551 kB
+├ ƒ /reports/audit-log                       172 B           556 kB
+├ ƒ /reports/collector-performance           1.2 kB          551 kB
+├ ƒ /reports/daily-collection                9.04 kB         560 kB
+├ ƒ /reports/defaulters                      1.2 kB          551 kB
+├ ƒ /reports/financial-ledger                4.41 kB         551 kB
+├ ƒ /reports/group-risk                      1.14 kB         551 kB
+├ ƒ /reports/loan-portfolio                  6.7 kB          553 kB
+├ ƒ /reports/write-offs                      1.3 kB          551 kB
+├ ƒ /reset-password                          4.46 kB         129 kB
+├ ƒ /risk-flags                              13.3 kB         563 kB
+├ ƒ /session-expired                         184 B          96.6 kB
+└ ƒ /settings                                17 kB           593 kB
++ First Load JS shared by all                87.7 kB
+  ├ chunks/1528-542934f25ad6d08d.js          31.9 kB
+  ├ chunks/1dd3208c-0de19412f71d69f1.js      53.6 kB
+  └ other shared chunks (total)              2.21 kB
+
+
+ƒ Middleware                                 30.5 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+EXIT:0
