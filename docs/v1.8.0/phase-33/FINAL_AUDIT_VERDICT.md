@@ -40,4 +40,4 @@ WILMS **v1.8.0** — no version bump, no retag.
 | Codebase | `CODEBASE_HEALTH_REPORT.md` |
 | Register | `FINDINGS_MASTER_REGISTER.md` |
 | Executive | `EXECUTIVE_RISK_SUMMARY.md` |
-| Test log | `evidence/phase33-adversarial-tests.log` |
+| Test evidence | `evidence/TEST_EVIDENCE.md` (local `*.log` gitignored) |
