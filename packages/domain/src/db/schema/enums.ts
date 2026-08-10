@@ -214,6 +214,8 @@ export const idempotencyScopeEnum = pgEnum('idempotency_scope', [
   'REVERSAL_EXECUTE',
   'RECONCILIATION_SUBMIT',
   'PAYMENT_MISSED_MARK',
+  'EXPENSE_CREATE',
+  'ADMIN_FEE_RECORD',
 ]);
 
 export const loanPoolStatusEnum = pgEnum('loan_pool_status', [

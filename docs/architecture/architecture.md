@@ -219,7 +219,7 @@ RBAC is enforced at three levels:
 | Token exposure | Auth tokens stored in httpOnly cookies only — never localStorage |
 | Sensitive data in URL | ID numbers, phone numbers, GPS never passed as query params |
 | Environment secrets | All API keys server-side only; never in client bundle |
-| Collector fraud | GPS + timestamp auto-captured; same-day edit alerts; reconciliation required |
+| Collector fraud | GPS + timestamp auto-captured; posted payments immutable (reverse/adjust); reconciliation required |
 | Session expiry | TanStack Query auth error → redirect to login; offline queue preserved |
 
 ---

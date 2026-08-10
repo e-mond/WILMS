@@ -35,8 +35,13 @@ function resolveCaptureUrl(sessionToken: string): string {
   return `${base}/capture/${sessionToken}`;
 }
 
+/** Full UUID entropy (128 bits) under a `pcs_` prefix — used by createSession and unit tests. */
+export function buildPhotoCaptureSessionToken(): string {
+  return `pcs_${randomUUID().replace(/-/g, '')}`;
+}
+
 function createToken(): string {
-  return `pcs_${randomUUID().replace(/-/g, '').slice(0, 16)}`;
+  return buildPhotoCaptureSessionToken();
 }
 
 function toApiSession(record: photoCaptureRepository.PhotoCaptureSessionRecord): PhotoCaptureSession {

@@ -739,7 +739,7 @@ Full reference: [`docs/environment.md`](docs/environment.md) and [`.env.example`
 | **ORM** | Drizzle |
 | **Location** | `packages/domain/src/db/migrations/` |
 | **Journal** | `packages/domain/src/db/migrations/meta/_journal.json` |
-| **Latest (v1.8.0)** | `0036`–`0039` (holiday requests, Ghana provider, automation engine, holiday enrichment) |
+| **Latest (v1.8.0)** | `0036`–`0040` (holidays/automation + Phase 33 `EXPENSE_CREATE` / `ADMIN_FEE_RECORD` idempotency scopes) |
 
 ### Workflow
 
@@ -852,7 +852,7 @@ Vercel (Next.js full-stack)
 ### Deploy checklist
 
 1. Set Vercel env vars (session secret, `DATABASE_URL`, mail/SMS, cron secrets)
-2. Apply pending Neon migrations through **`0039`** for v1.8.0 (`0035` intelligence + `0036`–`0039` holidays/automation)
+2. Apply pending Neon migrations through **`0040`** for v1.8.0 (`0035` intelligence + `0036`–`0039` holidays/automation + `0040` financial idempotency scopes)
 3. Deploy Preview → smoke login + health + critical APIs
 4. Promote Production
 5. Confirm Cron schedule is enabled

@@ -15,6 +15,7 @@ import { isDatabaseEnabled } from '../../db/client.js';
 import { getSettings } from '../settings/service.js';
 import * as userRepo from '../../repositories/user.repository.js';
 import { notifyAdminFeeRecorded } from '../../infrastructure/notifications/admin-fee-notifications.js';
+import { runWithIdempotency } from '../../infrastructure/idempotency/run-with-idempotency.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import { formatLoanDisplayId } from '@wilms/shared-utils';
 
@@ -73,7 +74,24 @@ function assertApprovedBorrower(borrowerId: string) {
   });
 }
 
-export async function recordAdminFee(input: {
+export async function recordAdminFee(
+  input: {
+    borrowerId: string;
+    collectorId: string;
+  },
+  idempotencyKey?: string,
+): Promise<FinancialTransaction> {
+  return runWithIdempotency({
+    scope: 'ADMIN_FEE_RECORD',
+    actorUserId: input.collectorId,
+    idempotencyKey,
+    requestPayload: { borrowerId: input.borrowerId, collectorId: input.collectorId },
+    responseStatus: 201,
+    execute: async () => recordAdminFeeInner(input),
+  });
+}
+
+async function recordAdminFeeInner(input: {
   borrowerId: string;
   collectorId: string;
 }): Promise<FinancialTransaction> {

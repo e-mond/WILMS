@@ -1,13 +1,19 @@
+import type { ExpenseRecord } from '@/types/expense';
 import type { IExpenseService } from '@/types/services';
 import { apiClient } from '@/utils/apiClient';
+import { financialMutation } from '@/utils/financialMutation';
 
 const expenseService: IExpenseService = {
   listExpenses() {
     return apiClient.get('/expenses');
   },
 
-  createExpense(input) {
-    return apiClient.post('/expenses', input);
+  async createExpense(input) {
+    const { result } = await financialMutation(
+      (headers) => apiClient.post<ExpenseRecord>('/expenses', input, { headers }),
+      { domain: 'generic' },
+    );
+    return result;
   },
 
   reviewExpense(id, input) {

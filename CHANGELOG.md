@@ -8,6 +8,7 @@ All notable changes to WILMS are documented in this file.
 **Branch:** `feature/v1.8-enterprise-design-automation`  
 **Post-release update:** August 2026 (`fix/v1.8.0-ui-modernisation`) — same release identity; **no new tag / no v1.8.1**  
 **Production-readiness closure:** August 2026 (`fix/v1.8.0-production-readiness`) — same release identity; **no new tag / no retag of `v1.8.0`**
+**Phase 33 adversarial audit:** August 2026 (`audit/v1.8.0-phase33-adversarial`) — same release identity; **no new tag / no retag of `v1.8.0`**
 
 ### Added
 
@@ -56,17 +57,27 @@ All notable changes to WILMS are documented in this file.
 ### Changed (production-readiness closure)
 
 - Selective `DataTable` `mobileLayout="stack"` on ops list tables (borrowers, collectors, groups, risk flags, loans, expenses, settings users, communication center); dense financial/report/audit tables remain scroll
-- Root README fully uplifted to **v1.8.0** identity (migrations **0036–0039**, doc map → `docs/v1.8.0/`)
+- Root README fully uplifted to **v1.8.0** identity (migrations **0036–0040**, doc map → `docs/v1.8.0/`)
 - `docs/offline-architecture.md` synced to 1.8.0 offline + upload capability matrix
 - Production readiness matrix under `docs/v1.8.0/PRODUCTION_READINESS_MATRIX.md`
+
+### Security / integrity (Phase 33 adversarial audit)
+
+- Idempotency scopes `EXPENSE_CREATE` and `ADMIN_FEE_RECORD` (migration `0040`) on expense create and admin-fee record; frontend clients send `Idempotency-Key`
+- Loan pool disbursement hard-stop uses `SELECT … FOR UPDATE` (`findPoolByIdForUpdate`)
+- Photo-capture session tokens use full UUID entropy (`pcs_` + 32 hex)
+- Serverless/production CORS fail-closed when origin is unset or localhost
+- Scheduler: wrong presented token fails closed (no session fallthrough)
+- Push subscribe capped at 10 endpoints per user
+- Documentation truth: REQ-034 / architecture collector-fraud wording aligned to immutable payments (409)
 
 ### Notes
 
 - Extends v1.7.5 foundations; does not weaken financial, RBAC/SoD, reconciliation, notifications, or scheduler guarantees
 - Auth remains custom HMAC sessions
-- Apply migrations 0037–0039 before enabling Ghana sync / automation tables in production
-- **This production-readiness closure requires no new database migration**
+- Apply migrations **0037–0040** before enabling Ghana sync / automation tables and Phase 33 idempotency scopes in production
 - Full offline writes for every entity and visual workflow builder remain iterative beyond this RC
+- Phase 33 pack: `docs/v1.8.0/phase-33/` — verdict **READY WITH CONDITIONS** (not PRODUCTION CERTIFIED)
 
 ## [1.7.5] — Offline, Push & Modernisation
 
