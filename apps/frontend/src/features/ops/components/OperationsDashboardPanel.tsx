@@ -318,18 +318,8 @@ export function OperationsDashboardPanel() {
                   />
                   <KpiCard
                     variant="executive"
-                    label="Active loans"
-                    value={report.financial.activeLoans}
-                  />
-                  <KpiCard
-                    variant="executive"
-                    label="Active borrowers"
-                    value={report.financial.activeBorrowers}
-                  />
-                  <KpiCard
-                    variant="executive"
-                    label="Pools"
-                    value={report.financial.poolCount}
+                    label="Disbursed"
+                    value={formatPesewas(report.financial.totalDisbursedPesewas)}
                   />
                   <KpiCard
                     variant="executive"
