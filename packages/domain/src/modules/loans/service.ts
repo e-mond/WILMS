@@ -437,7 +437,8 @@ export async function disburseLoan(
         }
 
         if (resolvedPoolId) {
-          const pool = await poolRepo.findPoolById(resolvedPoolId, tx);
+          // Lock pool row before hard-stop so concurrent disbursements cannot over-allocate.
+          const pool = await poolRepo.findPoolByIdForUpdate(resolvedPoolId, tx);
           if (!pool) {
             throw new Error('VALIDATION:Selected loan pool was not found.');
           }

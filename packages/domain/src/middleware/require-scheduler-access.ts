@@ -6,6 +6,7 @@ import { timingSafeEqual } from 'node:crypto';
 import type { NextFunction, Request, Response } from 'express';
 import { PERMISSION } from '@wilms/shared-rbac';
 import { env } from '../config/env.js';
+import { AppError, ERROR_CODE } from '../http/errors.js';
 import { requireAuth } from './authenticate.js';
 import { requirePermission } from './require-permission.js';
 
@@ -28,13 +29,20 @@ export function extractSchedulerToken(req: Request): string {
 /**
  * Allow external cron via WILMS_SCHEDULER_TOKEN, else authenticated operator
  * with MANAGE_COMMUNICATION_SCHEDULER.
+ *
+ * If a scheduler token is configured and a token is presented but incorrect,
+ * fail closed (do not fall through to session auth).
  */
 export function requireSchedulerAccess(req: Request, res: Response, next: NextFunction): void {
   const expected = env.schedulerToken;
   if (expected) {
     const presented = extractSchedulerToken(req);
-    if (presented && schedulerTokenMatches(presented, expected)) {
-      next();
+    if (presented) {
+      if (schedulerTokenMatches(presented, expected)) {
+        next();
+        return;
+      }
+      next(new AppError('Invalid scheduler token.', ERROR_CODE.UNAUTHORIZED, 401));
       return;
     }
   }

@@ -31,6 +31,17 @@ export function validateEnvironment(): EnvValidationReport {
     if (!serverless && !process.env.WILMS_CORS_ORIGIN?.trim()) {
       errors.push('WILMS_CORS_ORIGIN is required in production for the Node API process.');
     }
+    const corsLooksLocal =
+      /^(https?:\/\/)?(127\.0\.0\.1|localhost)(:\d+)?$/i.test(env.corsOrigin.trim()) ||
+      env.corsOrigin.includes('127.0.0.1') ||
+      env.corsOrigin.includes('localhost');
+    if (serverless && (!process.env.WILMS_CORS_ORIGIN?.trim() || corsLooksLocal)) {
+      errors.push(
+        'WILMS_CORS_ORIGIN must be set to the production app origin in serverless production (localhost defaults are not allowed).',
+      );
+    } else if (corsLooksLocal && process.env.WILMS_CORS_ORIGIN?.trim()) {
+      errors.push('WILMS_CORS_ORIGIN must not use a localhost origin in production.');
+    }
     if (serverless && !env.redisUrl) {
       warnings.push(
         'REDIS_URL / WILMS_REDIS_URL is unset in serverless production — rate limits are in-memory per instance. Set Redis before certifying multi-instance abuse protection.',

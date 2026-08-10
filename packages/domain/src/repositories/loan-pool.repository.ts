@@ -19,6 +19,17 @@ export async function findPoolById(id: string, tx: WilmsDb = getDb()) {
   return row;
 }
 
+/** Row lock for pool hard-stop checks inside a disbursement transaction. */
+export async function findPoolByIdForUpdate(id: string, tx: WilmsDb) {
+  const [row] = await tx
+    .select()
+    .from(loanPools)
+    .where(eq(loanPools.id, id))
+    .for('update')
+    .limit(1);
+  return row;
+}
+
 export async function listRecentAllocations(poolId: string, limit = 10, tx: WilmsDb = getDb()) {
   return tx
     .select()

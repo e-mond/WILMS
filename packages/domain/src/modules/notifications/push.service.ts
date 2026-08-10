@@ -50,18 +50,40 @@ function mapPushCategory(
   }
 }
 
+/** Cap endpoints per user to limit authenticated push-subscription spam (Phase 33 H8). */
+export const MAX_PUSH_SUBSCRIPTIONS_PER_USER = 10;
+
 export async function savePushSubscription(
   userId: string,
   input: PushSubscriptionInput,
 ): Promise<void> {
   if (!isDatabaseEnabled()) {
     const existing = memorySubs.get(userId) ?? [];
-    memorySubs.set(userId, [...existing.filter((s) => s.endpoint !== input.endpoint), input]);
+    const withoutEndpoint = existing.filter((s) => s.endpoint !== input.endpoint);
+    if (
+      withoutEndpoint.length >= MAX_PUSH_SUBSCRIPTIONS_PER_USER &&
+      !existing.some((s) => s.endpoint === input.endpoint)
+    ) {
+      throw new Error(
+        `VALIDATION:A maximum of ${MAX_PUSH_SUBSCRIPTIONS_PER_USER} push subscriptions is allowed per user.`,
+      );
+    }
+    memorySubs.set(userId, [...withoutEndpoint, input]);
     return;
   }
 
   const db = getDb();
   const now = new Date();
+  const existingForUser = await db
+    .select({ endpoint: pushSubscriptions.endpoint })
+    .from(pushSubscriptions)
+    .where(eq(pushSubscriptions.userId, userId));
+  const alreadyOwnsEndpoint = existingForUser.some((row) => row.endpoint === input.endpoint);
+  if (!alreadyOwnsEndpoint && existingForUser.length >= MAX_PUSH_SUBSCRIPTIONS_PER_USER) {
+    throw new Error(
+      `VALIDATION:A maximum of ${MAX_PUSH_SUBSCRIPTIONS_PER_USER} push subscriptions is allowed per user.`,
+    );
+  }
 
   await db
     .insert(pushSubscriptions)

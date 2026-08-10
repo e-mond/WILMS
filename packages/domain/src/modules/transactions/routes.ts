@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { asyncHandler } from '../../http/async-handler.js';
 import { AppError, ERROR_CODE } from '../../http/errors.js';
+import { mapFinancialRouteError } from '../../http/map-financial-error.js';
 import { sendData } from '../../http/response.js';
+import { readIdempotencyKey } from '../../infrastructure/idempotency/run-with-idempotency.js';
 import { PERMISSION } from '../../infrastructure/permissions/matrix.js';
 import { requireAuth } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/require-permission.js';
@@ -23,7 +25,7 @@ function mapError(error: unknown): never {
       );
     }
   }
-  throw error;
+  mapFinancialRouteError(error);
 }
 
 export const transactionsRouter = Router();
@@ -35,7 +37,8 @@ transactionsRouter.post(
   requirePermission(PERMISSION.RECORD_COLLECTIONS),
   asyncHandler(async (req, res) => {
     try {
-      sendData(res, await transactionService.recordAdminFee(req.body), 201);
+      const idempotencyKey = readIdempotencyKey(req);
+      sendData(res, await transactionService.recordAdminFee(req.body, idempotencyKey), 201);
     } catch (error) {
       mapError(error);
     }
