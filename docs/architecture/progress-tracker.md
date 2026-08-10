@@ -32,6 +32,8 @@ Units marked ✅ implement core behaviour and unit tests. **Global DoD is not me
 | **v1.8.0 Enterprise Design & Automation** | ✅ Pack in `docs/v1.8.0/`; migrations **0037–0040** |
 | **v1.8.0 Phase 33 Adversarial Audit** | ✅ Merged (#179) — `docs/v1.8.0/phase-33/`; READY WITH CONDITIONS |
 | **v1.8.0 dashboard / offline follow-ups** | 🔄 `fix/v1.8.0-kpi-offline-release` — KPI icons + offline error copy |
+| **v1.8.0 Offline Phases 0–8** | ✅ Merged (#185/#186) — `documentation/offline/`; flag default off; tag `v1.8.0-offline-rc1` |
+| **v1.8.0 Offline Phase 9 pilot cert** | 🔄 `feature/v1.8.0-offline-pilot-cert` — YES WITH CONDITIONS; device matrix BLOCKED |
 | **v1.7.1 Market Readiness** | ✅ Merged (#165 / #166); pack in `docs/v1.7.1/` |
 
 ---
