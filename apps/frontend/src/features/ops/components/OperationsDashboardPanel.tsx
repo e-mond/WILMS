@@ -5,11 +5,13 @@ import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { BookOpen } from 'lucide-react';
 import { PermissionGate } from '@/components/auth/PermissionGate';
+import { KpiCard } from '@/components/data-display';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
+import { ExecutiveKpiGrid } from '@/components/layout/executive';
 import { PERMISSION } from '@/constants/permissions';
 import { DOCUMENTATION_STATS } from '@/features/documentation/catalog';
 import { useToast } from '@/hooks/useToast';
@@ -273,20 +275,11 @@ export function OperationsDashboardPanel() {
               Workers
             </h2>
             <p className="text-small text-text-muted">{report.workers.note}</p>
-            <dl className="grid gap-wilms-2 text-small sm:grid-cols-3">
-              <div>
-                <dt className="text-text-muted">Redis</dt>
-                <dd className="font-medium text-text-primary">{report.workers.redis}</dd>
-              </div>
-              <div>
-                <dt className="text-text-muted">Queue</dt>
-                <dd className="font-medium text-text-primary">{report.workers.queue}</dd>
-              </div>
-              <div>
-                <dt className="text-text-muted">Scheduler</dt>
-                <dd className="font-medium text-text-primary">{report.workers.scheduler}</dd>
-              </div>
-            </dl>
+            <ExecutiveKpiGrid className="sm:grid-cols-3">
+              <KpiCard variant="executive" label="Redis" value={report.workers.redis} />
+              <KpiCard variant="executive" label="Queue" value={report.workers.queue} />
+              <KpiCard variant="executive" label="Scheduler" value={report.workers.scheduler} />
+            </ExecutiveKpiGrid>
             {report.workers.lastRuns ? (
               <div className="mt-wilms-3 grid gap-wilms-3 sm:grid-cols-2">
                 <WorkerLastRunCard
@@ -307,44 +300,53 @@ export function OperationsDashboardPanel() {
             </h2>
             {report.financial ? (
               <>
-                <dl className="grid gap-wilms-2 text-small sm:grid-cols-2 lg:grid-cols-3">
-                  <div>
-                    <dt className="text-text-muted">Available capital</dt>
-                    <dd className="font-medium text-text-primary">
-                      {formatPesewas(report.financial.availableCapitalPesewas)}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-text-muted">Collected</dt>
-                    <dd className="font-medium text-text-primary">
-                      {formatPesewas(report.financial.totalCollectedPesewas)}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-text-muted">Outstanding</dt>
-                    <dd className="font-medium text-text-primary">
-                      {formatPesewas(report.financial.outstandingPesewas)}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-text-muted">Expenses</dt>
-                    <dd className="font-medium text-text-primary">
-                      {formatPesewas(report.financial.totalExpensesPesewas)}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-text-muted">Net operating cash</dt>
-                    <dd className="font-medium text-text-primary">
-                      {formatPesewas(report.financial.netOperatingCashPesewas)}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-text-muted">Collection rate</dt>
-                    <dd className="font-medium text-text-primary">
-                      {report.financial.collectionRatePercent}%
-                    </dd>
-                  </div>
-                </dl>
+                <ExecutiveKpiGrid className="sm:grid-cols-2 lg:grid-cols-3">
+                  <KpiCard
+                    variant="executive"
+                    label="Available capital"
+                    value={formatPesewas(report.financial.availableCapitalPesewas)}
+                  />
+                  <KpiCard
+                    variant="executive"
+                    label="Collected"
+                    value={formatPesewas(report.financial.totalCollectedPesewas)}
+                  />
+                  <KpiCard
+                    variant="executive"
+                    label="Outstanding"
+                    value={formatPesewas(report.financial.outstandingPesewas)}
+                  />
+                  <KpiCard
+                    variant="executive"
+                    label="Active loans"
+                    value={report.financial.activeLoans}
+                  />
+                  <KpiCard
+                    variant="executive"
+                    label="Active borrowers"
+                    value={report.financial.activeBorrowers}
+                  />
+                  <KpiCard
+                    variant="executive"
+                    label="Pools"
+                    value={report.financial.poolCount}
+                  />
+                  <KpiCard
+                    variant="executive"
+                    label="Expenses"
+                    value={formatPesewas(report.financial.totalExpensesPesewas)}
+                  />
+                  <KpiCard
+                    variant="executive"
+                    label="Net operating cash"
+                    value={formatPesewas(report.financial.netOperatingCashPesewas)}
+                  />
+                  <KpiCard
+                    variant="executive"
+                    label="Collection rate"
+                    value={`${report.financial.collectionRatePercent}%`}
+                  />
+                </ExecutiveKpiGrid>
                 {report.financial.alerts.length > 0 ? (
                   <p className="text-small text-warning" role="status">
                     Alerts: {report.financial.alerts.join(', ')}

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import {
   AlertTriangle,
   BadgeCheck,
+  Ban,
   Banknote,
   BarChart3,
   Bell,
@@ -44,8 +45,14 @@ function icon(node: ReactNode): ReactNode {
 export function resolveKpiIcon(label: string): ReactNode {
   const key = label.trim().toLowerCase();
 
-  if (/par\s*90|write-?off|risk rating|flagged|suspended|overdue|missed|danger|variance/.test(key)) {
-    return icon(<ShieldAlert className={ICON_CLASS} aria-hidden="true" />);
+  if (/blacklist|defaulted|write-?off|par\s*90|risk rating|flagged|suspended|overdue|missed|danger|variance/.test(key)) {
+    return icon(
+      /blacklist/.test(key) ? (
+        <Ban className={ICON_CLASS} aria-hidden="true" />
+      ) : (
+        <ShieldAlert className={ICON_CLASS} aria-hidden="true" />
+      ),
+    );
   }
   if (/par\s*60|par\s*30|aging|delinquen|at risk|alert/.test(key)) {
     return icon(<AlertTriangle className={ICON_CLASS} aria-hidden="true" />);
@@ -92,7 +99,7 @@ export function resolveKpiIcon(label: string): ReactNode {
   if (/flag/.test(key)) {
     return icon(<Flag className={ICON_CLASS} aria-hidden="true" />);
   }
-  if (/closed|complete|approved|success|active loans|showing|total registered/.test(key)) {
+  if (/closed|complete|approved|success|^active$|active loans|active borrowers|showing|total registered/.test(key)) {
     return icon(<BadgeCheck className={ICON_CLASS} aria-hidden="true" />);
   }
   if (/draft|review|application/.test(key)) {
