@@ -7,11 +7,18 @@ describe('feature flags', () => {
     delete process.env.WILMS_FLAG_REQUIRE_IDEMPOTENCY;
     delete process.env.WILMS_FLAG_GL_DUAL_WRITE;
     delete process.env.WILMS_FLAG_DURABLE_QUEUES;
+    delete process.env.WILMS_OFFLINE_MODE;
+    delete process.env.WILMS_FLAG_OFFLINE_MODE;
   });
 
   it('keeps glDualWrite false by default', () => {
     const flags = resolveFeatureFlags();
     expect(flags.glDualWrite).toBe(false);
+  });
+
+  it('keeps offlineMode false by default (production parity)', () => {
+    const flags = resolveFeatureFlags();
+    expect(flags.offlineMode).toBe(false);
   });
 
   it('honours env overrides', () => {
@@ -20,5 +27,11 @@ describe('feature flags', () => {
     const flags = resolveFeatureFlags();
     expect(flags.requireIdempotency).toBe(true);
     expect(flags.durableQueues).toBe(false);
+  });
+
+  it('enables offlineMode via WILMS_OFFLINE_MODE', () => {
+    process.env.WILMS_OFFLINE_MODE = 'true';
+    const flags = resolveFeatureFlags();
+    expect(flags.offlineMode).toBe(true);
   });
 });

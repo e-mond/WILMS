@@ -33,6 +33,11 @@ export interface FeatureFlags {
   tracingEnabled: boolean;
   /** Stub for v1.5 GL dual-write — always false until GL ships. */
   glDualWrite: boolean;
+  /**
+   * Offline-first sprint expansions (shell fallback, IDB queue migration, expanded caches).
+   * Default false — existing collector payment/expense/holiday queues remain unchanged when off.
+   */
+  offlineMode: boolean;
 }
 
 export function resolveFeatureFlags(
@@ -66,6 +71,10 @@ export function resolveFeatureFlags(
     ),
     glDualWrite: parseBool(
       overrides.glDualWrite ?? process.env.WILMS_FLAG_GL_DUAL_WRITE,
+      false,
+    ),
+    offlineMode: parseBool(
+      overrides.offlineMode ?? process.env.WILMS_OFFLINE_MODE ?? process.env.WILMS_FLAG_OFFLINE_MODE,
       false,
     ),
   };
