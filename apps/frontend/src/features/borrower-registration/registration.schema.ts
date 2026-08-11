@@ -184,37 +184,37 @@ export const guarantorSchema = guarantorBaseSchema
     }
   });
 
-export const photoSchema = z
-  .object({
-    photo: z.union([z.instanceof(File), z.null()]).optional(),
-    photoUploadId: z.string().optional(),
-  })
-  .superRefine((data, ctx) => {
-    const hasFile = data.photo instanceof File;
-    const hasUpload = Boolean(data.photoUploadId?.trim());
-    if (!hasFile && !hasUpload) {
+const photoBaseSchema = z.object({
+  photo: z.union([z.instanceof(File), z.null()]).optional(),
+  photoUploadId: z.string().optional(),
+});
+
+export const photoSchema = photoBaseSchema.superRefine((data, ctx) => {
+  const hasFile = data.photo instanceof File;
+  const hasUpload = Boolean(data.photoUploadId?.trim());
+  if (!hasFile && !hasUpload) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Passport photo is required.',
+      path: ['photo'],
+    });
+  } else if (hasFile && data.photo instanceof File) {
+    if (!data.photo.type.startsWith('image/')) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Passport photo is required.',
+        message: 'Photo must be an image file.',
         path: ['photo'],
       });
-    } else if (hasFile && data.photo instanceof File) {
-      if (!data.photo.type.startsWith('image/')) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Photo must be an image file.',
-          path: ['photo'],
-        });
-      }
-      if (data.photo.size > MAX_BORROWER_PHOTO_BYTES) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Photo must be 5 MB or smaller.',
-          path: ['photo'],
-        });
-      }
     }
-  });
+    if (data.photo.size > MAX_BORROWER_PHOTO_BYTES) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Photo must be 5 MB or smaller.',
+        path: ['photo'],
+      });
+    }
+  }
+});
 
 const optionalUploadId = z.string().optional();
 
@@ -242,7 +242,7 @@ export const borrowerRegistrationSchema = personalDetailsBaseSchema
   .merge(addressSchema)
   .merge(businessSchema)
   .merge(guarantorBaseSchema)
-  .merge(photoSchema)
+  .merge(photoBaseSchema)
   .merge(signatureSchema)
   .superRefine((data, ctx) => {
     refineBorrowerId(ctx, data.idType, data.idNumber, 'idNumber');
