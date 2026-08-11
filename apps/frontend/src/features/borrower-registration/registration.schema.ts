@@ -158,31 +158,53 @@ const guarantorBaseSchema = z.object({
 export const guarantorSchema = guarantorBaseSchema
   .superRefine((data, ctx) => {
     refineBorrowerId(ctx, data.guarantorIdType, data.guarantorIdNumber, 'guarantorIdNumber');
-    const hasFile = data.guarantorPhoto instanceof File;
-    const hasUpload = Boolean(data.guarantorPhotoUploadId?.trim());
-    if (!hasFile && !hasUpload) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Guarantor passport photo is required.',
-        path: ['guarantorPhoto'],
-      });
-    } else if (hasFile && data.guarantorPhoto instanceof File) {
-      if (!data.guarantorPhoto.type.startsWith('image/')) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Guarantor photo must be an image file.',
-          path: ['guarantorPhoto'],
-        });
-      }
-      if (data.guarantorPhoto.size > MAX_BORROWER_PHOTO_BYTES) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Guarantor photo must be 5 MB or smaller.',
-          path: ['guarantorPhoto'],
-        });
-      }
-    }
+    refineOptionalImageFile(
+      ctx,
+      data.guarantorPhoto,
+      'guarantorPhoto',
+      'Guarantor passport photo is required.',
+      data.guarantorPhotoUploadId,
+    );
   });
+
+function refineOptionalImageFile(
+  ctx: z.RefinementCtx,
+  file: File | null | undefined,
+  path: 'photo' | 'guarantorPhoto',
+  requiredMessage: string,
+  uploadId?: string,
+) {
+  const hasFile = file instanceof File;
+  const hasUpload = Boolean(uploadId?.trim());
+  if (!hasFile && !hasUpload) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: requiredMessage,
+      path: [path],
+    });
+    return;
+  }
+  if (!hasFile || !(file instanceof File)) {
+    return;
+  }
+  if (!file.type.startsWith('image/')) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: path === 'photo' ? 'Photo must be an image file.' : 'Guarantor photo must be an image file.',
+      path: [path],
+    });
+  }
+  if (file.size > MAX_BORROWER_PHOTO_BYTES) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message:
+        path === 'photo'
+          ? 'Photo must be 5 MB or smaller.'
+          : 'Guarantor photo must be 5 MB or smaller.',
+      path: [path],
+    });
+  }
+}
 
 const photoBaseSchema = z.object({
   photo: z.union([z.instanceof(File), z.null()]).optional(),
@@ -190,30 +212,13 @@ const photoBaseSchema = z.object({
 });
 
 export const photoSchema = photoBaseSchema.superRefine((data, ctx) => {
-  const hasFile = data.photo instanceof File;
-  const hasUpload = Boolean(data.photoUploadId?.trim());
-  if (!hasFile && !hasUpload) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'Passport photo is required.',
-      path: ['photo'],
-    });
-  } else if (hasFile && data.photo instanceof File) {
-    if (!data.photo.type.startsWith('image/')) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Photo must be an image file.',
-        path: ['photo'],
-      });
-    }
-    if (data.photo.size > MAX_BORROWER_PHOTO_BYTES) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Photo must be 5 MB or smaller.',
-        path: ['photo'],
-      });
-    }
-  }
+  refineOptionalImageFile(
+    ctx,
+    data.photo,
+    'photo',
+    'Passport photo is required.',
+    data.photoUploadId,
+  );
 });
 
 const optionalUploadId = z.string().optional();
@@ -254,24 +259,20 @@ export const borrowerRegistrationSchema = personalDetailsBaseSchema
         path: ['typeOfWorkOther'],
       });
     }
-    const hasBorrowerPhoto =
-      data.photo instanceof File || Boolean(data.photoUploadId?.trim());
-    if (!hasBorrowerPhoto) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Passport photo is required.',
-        path: ['photo'],
-      });
-    }
-    const hasGuarantorPhoto =
-      data.guarantorPhoto instanceof File || Boolean(data.guarantorPhotoUploadId?.trim());
-    if (!hasGuarantorPhoto) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Guarantor passport photo is required.',
-        path: ['guarantorPhoto'],
-      });
-    }
+    refineOptionalImageFile(
+      ctx,
+      data.photo,
+      'photo',
+      'Passport photo is required.',
+      data.photoUploadId,
+    );
+    refineOptionalImageFile(
+      ctx,
+      data.guarantorPhoto,
+      'guarantorPhoto',
+      'Guarantor passport photo is required.',
+      data.guarantorPhotoUploadId,
+    );
   })
   .refine((data) => data.guarantorPhone !== data.phone, {
     message: 'Guarantor phone must differ from borrower phone.',
