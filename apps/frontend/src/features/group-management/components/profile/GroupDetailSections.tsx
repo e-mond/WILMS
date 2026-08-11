@@ -115,52 +115,60 @@ export interface GroupCollectorSectionProps {
 
 export function GroupCollectorSection({ group }: GroupCollectorSectionProps) {
   const collector = group.collector;
+  const isAssigned = collector.id !== 'unassigned';
 
   return (
     <ProfileSection title="Assigned Collector Information">
-      <div className="flex flex-col gap-wilms-4 lg:flex-row lg:items-start">
-        <Avatar
-          label={collector.fullName}
-          photoUrl={resolveEntityPhotoUrl({
-            name: collector.fullName,
-            id: collector.id,
-            photoUrl: collector.photoUrl,
-          })}
-          size="lg"
-        />
-        <div className="min-w-0 flex-1">
-          <ProfileFieldGrid
-            columns={3}
-            items={[
-              { label: 'Full Name', value: collector.fullName },
-              { label: 'Collector ID', value: resolveCollectorDisplayId(collector) },
-              { label: 'Phone Number', value: collector.phone },
-              { label: 'Email', value: collector.email ?? 'Not provided' },
-              { label: 'Assigned Zone', value: collector.zone },
-              { label: 'Assigned Groups', value: collector.assignedGroupCount },
-              { label: 'Collection Rate', value: `${collector.collectionRatePercent}%` },
-              {
-                label: 'Last Activity',
-                value: new Date(collector.lastActiveAt).toLocaleString('en-GH', {
-                  dateStyle: 'medium',
-                  timeStyle: 'short',
-                }),
-              },
-              {
-                label: 'Collector Profile',
-                value: (
-                  <Link
-                    href={`/collectors/${collector.id}`}
-                    className="font-semibold text-brand-primary hover:underline"
-                  >
-                    View collector profile
-                  </Link>
-                ),
-              },
-            ]}
+      {!isAssigned ? (
+        <p className="text-small text-text-muted">
+          No collector is assigned to this group. Use Membership Management to assign one — every
+          group must have a collector.
+        </p>
+      ) : (
+        <div className="flex flex-col gap-wilms-4 lg:flex-row lg:items-start">
+          <Avatar
+            label={collector.fullName}
+            photoUrl={resolveEntityPhotoUrl({
+              name: collector.fullName,
+              id: collector.id,
+              photoUrl: collector.photoUrl,
+            })}
+            size="lg"
           />
+          <div className="min-w-0 flex-1">
+            <ProfileFieldGrid
+              columns={3}
+              items={[
+                { label: 'Full Name', value: collector.fullName },
+                { label: 'Collector ID', value: resolveCollectorDisplayId(collector) },
+                { label: 'Phone Number', value: collector.phone },
+                { label: 'Email', value: collector.email ?? 'Not provided' },
+                { label: 'Assigned Zone', value: collector.zone },
+                { label: 'Assigned Groups', value: collector.assignedGroupCount },
+                { label: 'Collection Rate', value: `${collector.collectionRatePercent}%` },
+                {
+                  label: 'Last Activity',
+                  value: new Date(collector.lastActiveAt).toLocaleString('en-GH', {
+                    dateStyle: 'medium',
+                    timeStyle: 'short',
+                  }),
+                },
+                {
+                  label: 'Collector Profile',
+                  value: (
+                    <Link
+                      href={`/collectors/${collector.id}`}
+                      className="font-semibold text-brand-primary hover:underline"
+                    >
+                      View collector profile
+                    </Link>
+                  ),
+                },
+              ]}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </ProfileSection>
   );
 }

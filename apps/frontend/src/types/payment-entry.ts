@@ -46,4 +46,6 @@ export interface PaymentEntryContext {
   maxPayableWeeks?: number;
   canAcceptPayment: boolean;
   blockReason?: string;
+  /** True when the oldest unpaid week is already marked MISSED. */
+  recordedMissed?: boolean;
 }

@@ -1,4 +1,4 @@
-import { and, eq, isNull, sql } from 'drizzle-orm';
+import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
 import { BORROWER_STATUS } from '@wilms/shared-contracts';
 import { formatBorrowerDisplayId } from '@wilms/shared-utils';
@@ -6,13 +6,15 @@ import { env } from '../../config/env.js';
 import { isDatabaseEnabled, getDb } from '../../db/client.js';
 import { groupMembers, groups } from '../../db/schema/groups.js';
 import { getBorrower, listBorrowers, listGroups, listPayments } from '../../db/persistence.js';
-import type { BorrowerRecord, GroupRecord } from '../../db/store.js';
+import type { BorrowerRecord, GroupRecord, PaymentRecord } from '../../db/store.js';
 import * as userRepo from '../../repositories/user.repository.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import { groupRepository } from '../../repositories/index.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import { notifyGroupCreated, notifyCollectorAssigned, notifyGroupAssigned } from '../../infrastructure/notifications/event-dispatch.js';
 import { createInAppNotification } from '../../infrastructure/notifications/in-app-notify.js';
+import { decimalToPesewas } from '../../domain/money.js';
+import { collectors } from '../../db/schema/users.js';
 
 type GroupRiskLevel = 'LOW_RISK' | 'AT_RISK' | 'FLAGGED' | 'SUSPENDED';
 type GroupStatus = 'ACTIVE' | 'AT_RISK' | 'FLAGGED' | 'SUSPENDED' | 'DISSOLVED';
@@ -133,14 +135,89 @@ function statusLabel(status: GroupStatus): string {
   }
 }
 
-function resolveMemberLoanStatus(borrower: BorrowerRecord): GroupMemberLoanStatus {
+function uploadContentUrl(uploadId?: string | null): string | null {
+  return uploadId ? `/uploads/${uploadId}/content` : null;
+}
+
+function resolveMemberLoanStatusFromLoans(
+  borrower: BorrowerRecord,
+  borrowerLoans: Array<{ externalStatus: string }>,
+): GroupMemberLoanStatus {
   if (borrower.status === BORROWER_STATUS.DEFAULTED) {
     return 'DEFAULTED';
+  }
+  if (borrowerLoans.some((loan) => loan.externalStatus === 'DEFAULTED')) {
+    return 'DEFAULTED';
+  }
+  if (borrowerLoans.some((loan) => loan.externalStatus === 'ACTIVE')) {
+    return 'ACTIVE';
+  }
+  if (borrowerLoans.some((loan) => loan.externalStatus === 'COMPLETED')) {
+    return 'COMPLETED';
   }
   if (borrower.hasActiveLoan) {
     return 'ACTIVE';
   }
   return 'NONE';
+}
+
+function resolveCycleFromLoans(
+  loanRows: Array<{ cycleBatch: string; externalStatus: string; startDate: string }>,
+  formedAt: Date,
+): { label: string; number: number; startedAt: string } {
+  const preferred =
+    loanRows.find((loan) => loan.externalStatus === 'ACTIVE') ??
+    loanRows.find((loan) => loan.cycleBatch?.trim()) ??
+    null;
+
+  if (preferred?.cycleBatch?.trim()) {
+    const label = preferred.cycleBatch.trim();
+    const match = label.match(/(\d+)/);
+    return {
+      label,
+      number: match ? Number(match[1]) : 1,
+      startedAt: preferred.startDate || formedAt.toISOString(),
+    };
+  }
+
+  const formedYear = formedAt.getFullYear();
+  return {
+    label: `Cycle ${formedYear}`,
+    number: formedYear,
+    startedAt: formedAt.toISOString(),
+  };
+}
+
+async function loadMemberLoanRows(memberIds: string[]) {
+  if (!isDatabaseEnabled() || memberIds.length === 0) {
+    return [] as Awaited<ReturnType<typeof loanRepo.listLoansForBorrowerIds>>;
+  }
+  return loanRepo.listLoansForBorrowerIds(memberIds);
+}
+
+function outstandingPesewasForLoans(
+  borrowerLoans: Array<{ externalStatus: string; loanBalance: string }>,
+): number {
+  return borrowerLoans
+    .filter((loan) => loan.externalStatus === 'ACTIVE')
+    .reduce((sum, loan) => sum + decimalToPesewas(loan.loanBalance), 0);
+}
+
+function disbursedPesewasForLoans(
+  borrowerLoans: Array<{
+    externalStatus: string;
+    disbursedAmount: string;
+    principalAmount: string;
+  }>,
+): number {
+  return borrowerLoans
+    .filter((loan) =>
+      ['ACTIVE', 'COMPLETED', 'DEFAULTED', 'WRITTEN_OFF'].includes(loan.externalStatus),
+    )
+    .reduce((sum, loan) => {
+      const disbursed = decimalToPesewas(loan.disbursedAmount);
+      return sum + (disbursed > 0 ? disbursed : decimalToPesewas(loan.principalAmount));
+    }, 0);
 }
 
 async function loadGroupRows(): Promise<
@@ -241,23 +318,78 @@ async function resolveCollector(collectorUserId: string | null | undefined) {
       assignedGroupCount: 0,
       collectionRatePercent: 0,
       lastActiveAt: new Date().toISOString(),
-      photoUrl: null,
+      photoUrl: null as string | null,
     };
   }
 
   if (isDatabaseEnabled()) {
+    const db = getDb();
     const user = await userRepo.getUserById(collectorUserId);
     if (user) {
+      const [collectorRow] = await db
+        .select()
+        .from(collectors)
+        .where(and(eq(collectors.userId, collectorUserId), isNull(collectors.deletedAt)))
+        .limit(1);
+
+      const assignedGroupCount = await countCollectorGroups(collectorUserId);
+      const collectorGroupRows = await db
+        .select({ id: groups.id })
+        .from(groups)
+        .where(and(eq(groups.collectorUserId, collectorUserId), isNull(groups.deletedAt)));
+      const groupIds = collectorGroupRows.map((row) => row.id);
+      const uniqueMemberIds =
+        groupIds.length === 0
+          ? []
+          : [
+              ...new Set(
+                (
+                  await db
+                    .select({ borrowerId: groupMembers.borrowerId })
+                    .from(groupMembers)
+                    .where(
+                      and(isNull(groupMembers.removedAt), inArray(groupMembers.groupId, groupIds)),
+                    )
+                ).map((row) => row.borrowerId),
+              ),
+            ];
+
+      const collectorLoans = await loadMemberLoanRows(uniqueMemberIds);
+      const disbursedPesewas = disbursedPesewasForLoans(collectorLoans);
+      const collectedPesewas =
+        uniqueMemberIds.length === 0
+          ? 0
+          : (await listPayments({ borrowerIds: uniqueMemberIds, limit: 2000 })).reduce(
+              (sum, payment) => sum + payment.amountPesewas,
+              0,
+            );
+      const collectionRatePercent =
+        disbursedPesewas === 0
+          ? collectedPesewas > 0
+            ? 100
+            : 0
+          : Math.min(100, Math.round((collectedPesewas / disbursedPesewas) * 100));
+
       return {
         id: user.id,
         fullName: user.displayName,
-        phone: user.phone ?? '—',
+        phone: user.phone?.trim() || '—',
         email: user.email,
-        zone: user.zone ?? '—',
-        assignedGroupCount: 0,
-        collectionRatePercent: 0,
-        lastActiveAt: (user.lastLoginAt ?? user.updatedAt).toISOString(),
-        photoUrl: null,
+        zone:
+          user.zone?.trim() ||
+          collectorRow?.assignedDistrict?.trim() ||
+          collectorRow?.assignedRegion?.trim() ||
+          user.branch?.trim() ||
+          user.region?.trim() ||
+          '—',
+        assignedGroupCount,
+        collectionRatePercent,
+        lastActiveAt: (
+          collectorRow?.lastActiveAt ??
+          user.lastLoginAt ??
+          user.updatedAt
+        ).toISOString(),
+        photoUrl: uploadContentUrl(user.profileImageUploadId),
       };
     }
   }
@@ -267,10 +399,10 @@ async function resolveCollector(collectorUserId: string | null | undefined) {
     fullName: 'Collector',
     phone: '—',
     zone: '—',
-    assignedGroupCount: 0,
+    assignedGroupCount: await countCollectorGroups(collectorUserId).catch(() => 0),
     collectionRatePercent: 0,
     lastActiveAt: new Date().toISOString(),
-    photoUrl: null,
+    photoUrl: null as string | null,
   };
 }
 
@@ -365,8 +497,9 @@ async function buildMembers(
   groupId: string,
   memberIds: string[],
   borrowers: BorrowerRecord[],
-  payments: Awaited<ReturnType<typeof listPayments>>,
-  leaderBorrowerId?: string | null,
+  payments: PaymentRecord[],
+  leaderBorrowerId: string | null | undefined,
+  loanRows: Awaited<ReturnType<typeof loanRepo.listLoansForBorrowerIds>>,
 ) {
   let memberRoles = new Map<string, GroupMemberRole>();
 
@@ -381,6 +514,13 @@ async function buildMembers(
     }
   }
 
+  const loansByBorrower = new Map<string, typeof loanRows>();
+  for (const loan of loanRows) {
+    const current = loansByBorrower.get(loan.borrowerId) ?? [];
+    current.push(loan);
+    loansByBorrower.set(loan.borrowerId, current);
+  }
+
   return memberIds
     .map((borrowerId) => {
       const borrower = borrowers.find((entry) => entry.id === borrowerId);
@@ -388,6 +528,7 @@ async function buildMembers(
         return null;
       }
 
+      const borrowerLoans = loansByBorrower.get(borrowerId) ?? [];
       const borrowerPayments = payments.filter((payment) => payment.borrowerId === borrowerId);
       const lastPaymentDate =
         borrowerPayments.length > 0
@@ -409,13 +550,13 @@ async function buildMembers(
         role:
           memberRoles.get(borrowerId) ??
           (borrowerId === leaderBorrowerId ? 'LEADER' : 'MEMBER'),
-        loanStatus: resolveMemberLoanStatus(borrower),
+        loanStatus: resolveMemberLoanStatusFromLoans(borrower, borrowerLoans),
         paymentConsistencyPercent: borrowerPayments.length > 0 ? 85 : 0,
         phone: borrower.phone,
         borrowerStatus: borrower.status,
-        outstandingPesewas: 0,
+        outstandingPesewas: outstandingPesewasForLoans(borrowerLoans),
         lastPaymentDate,
-        photoUrl: null,
+        photoUrl: uploadContentUrl(borrower.profile?.photoUploadId) ?? null,
       };
     })
     .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
@@ -428,26 +569,61 @@ export async function getGroupDetail(groupId: string): Promise<GroupDetail> {
   }
 
   const useDb = isDatabaseEnabled();
-  const [borrowers, payments, officerName, collector, statsByGroup] = await Promise.all([
+  const memberIds = row.memberIds;
+  const [borrowers, payments, officerName, collector, loanRows] = await Promise.all([
     listBorrowers(),
-    useDb ? Promise.resolve([] as Awaited<ReturnType<typeof listPayments>>) : listPayments(),
+    listPayments(useDb && memberIds.length > 0 ? { borrowerIds: memberIds, limit: 2000 } : undefined),
     resolveOfficerName(),
     resolveCollector(row.collectorUserId),
-    useDb ? groupRepository.getGroupListStats() : Promise.resolve(new Map()),
+    loadMemberLoanRows(memberIds),
   ]);
 
-  const stats = statsByGroup.get(groupId);
-  const summary = await buildGroupSummary(
-    row,
+  const members = await buildMembers(
+    row.id,
+    memberIds,
     borrowers,
     payments,
-    officerName,
-    stats,
+    row.leaderBorrowerId,
+    loanRows,
   );
-  const members = await buildMembers(row.id, row.memberIds, borrowers, payments, row.leaderBorrowerId);
   const leaderMember = members.find((member) => member.role === 'LEADER') ?? members[0];
   const leaderBorrower = borrowers.find((entry) => entry.id === leaderMember?.borrowerId);
   const status = row.status as GroupStatus;
+
+  const memberOutstandingPesewas = members.reduce(
+    (sum, member) => sum + member.outstandingPesewas,
+    0,
+  );
+  const disbursedPesewas = disbursedPesewasForLoans(loanRows);
+  const collectedPesewas = payments
+    .filter((payment) => memberIds.includes(payment.borrowerId))
+    .reduce((sum, payment) => sum + payment.amountPesewas, 0);
+  const collectionRatePercent =
+    disbursedPesewas === 0
+      ? collectedPesewas > 0
+        ? 100
+        : 0
+      : Math.min(100, Math.round((collectedPesewas / disbursedPesewas) * 100));
+  const activeMembers = members.filter(
+    (member) => member.borrowerStatus === BORROWER_STATUS.APPROVED,
+  ).length;
+  const cycle = resolveCycleFromLoans(loanRows, row.formedAt);
+
+  const summary: GroupSummaryItem = {
+    id: row.id,
+    name: row.name,
+    groupSystemId: row.systemId,
+    displayName: row.displayName,
+    community: row.community,
+    officerName,
+    formedAt: row.formedAt.toISOString(),
+    memberCount: memberIds.length,
+    activeMemberCount: activeMembers,
+    disbursedPesewas,
+    collectedPesewas,
+    collectionRatePercent,
+    riskLevel: mapDbStatusToRiskLevel(row.status),
+  };
 
   return {
     ...summary,
@@ -464,18 +640,14 @@ export async function getGroupDetail(groupId: string): Promise<GroupDetail> {
       gpsAddress: leaderBorrower?.profile.gpsAddress ?? '—',
       memberSince: row.formedAt.toISOString(),
       status: leaderBorrower?.status ?? BORROWER_STATUS.APPROVED,
-      photoUrl: null,
+      photoUrl: uploadContentUrl(leaderBorrower?.profile?.photoUploadId) ?? null,
     },
     collector,
     registrationOfficerName: officerName,
-    cycle: {
-      label: 'Current cycle',
-      number: 1,
-      startedAt: row.formedAt.toISOString(),
-    },
+    cycle,
     activeLoanCount: members.filter((member) => member.loanStatus === 'ACTIVE').length,
-    repaymentPerformancePercent: summary.collectionRatePercent,
-    outstandingPesewas: Math.max(summary.disbursedPesewas - summary.collectedPesewas, 0),
+    repaymentPerformancePercent: collectionRatePercent,
+    outstandingPesewas: memberOutstandingPesewas,
     members,
     riskHistory: [
       {
@@ -944,7 +1116,7 @@ export interface CreateGroupInput {
   name: string;
   community: string;
   displayName?: string;
-  collectorUserId?: string;
+  collectorUserId: string;
   memberBorrowerIds?: string[];
 }
 
@@ -968,11 +1140,13 @@ export async function createGroup(
     throw new Error(`VALIDATION:Groups cannot exceed ${env.maxGroupSize} members.`);
   }
 
-  if (input.collectorUserId) {
-    const collector = await userRepo.getUserById(input.collectorUserId);
-    if (!collector) {
-      throw new Error('VALIDATION:Collector not found.');
-    }
+  if (!input.collectorUserId?.trim()) {
+    throw new Error('VALIDATION:Every group must be assigned a collector.');
+  }
+
+  const collector = await userRepo.getUserById(input.collectorUserId);
+  if (!collector) {
+    throw new Error('VALIDATION:Collector not found.');
   }
 
   const groupId = groupRepository.nextGroupId();
@@ -989,7 +1163,7 @@ export async function createGroup(
     displayName,
     community,
     status: 'ACTIVE',
-    collectorUserId: input.collectorUserId ?? null,
+    collectorUserId: input.collectorUserId,
     leaderBorrowerId,
     formedAt: now,
   });
@@ -1031,19 +1205,14 @@ export async function createGroup(
     }
   }
 
-  if (input.collectorUserId) {
-    const collector = await userRepo.getUserById(input.collectorUserId);
-    if (collector) {
-      void notifyCollectorAssigned({
-        collectorEmail: collector.email,
-        collectorName: collector.displayName,
-        collectorUserId: collector.id,
-        groupName: name,
-        groupDisplayId: systemId,
-        memberCount: memberIds.length,
-      });
-    }
-  }
+  void notifyCollectorAssigned({
+    collectorEmail: collector.email,
+    collectorName: collector.displayName,
+    collectorUserId: collector.id,
+    groupName: name,
+    groupDisplayId: systemId,
+    memberCount: memberIds.length,
+  });
 
   const actor = await userRepo.getUserById(actorId);
   if (actor) {

@@ -122,7 +122,7 @@ export async function getPaymentEntryContext(borrowerId: string, referenceDate?:
     .slice()
     .sort((left, right) => right.paymentDate.localeCompare(left.paymentDate))[0];
 
-  const blockReason = validatePaymentSubmission({
+  let blockReason = validatePaymentSubmission({
     amountPesewas: loan.weeklyPaymentPesewas,
     weeklyPaymentPesewas: loan.weeklyPaymentPesewas,
     paymentDay: loan.paymentDay,
@@ -130,6 +130,13 @@ export async function getPaymentEntryContext(borrowerId: string, referenceDate?:
     scheduleWeeks,
     weeksCount: 1,
   });
+
+  /** Once the oldest unpaid week is marked missed, payment actions are locked (same as group sheet). */
+  const recordedMissed = obligationWeeks[0]?.status === 'MISSED';
+  if (!blockReason && recordedMissed) {
+    blockReason =
+      'This borrower was marked missed. Payment buttons are disabled until the missed week is cleared by operations.';
+  }
 
   const isPaymentDay = !blockReason?.includes('assigned payment day');
   const nextDue =
@@ -170,8 +177,9 @@ export async function getPaymentEntryContext(borrowerId: string, referenceDate?:
         }
       : undefined,
     maxPayableWeeks: obligationWeeks.length,
-    canAcceptPayment: !blockReason && obligationWeeks.length > 0,
+    canAcceptPayment: !blockReason && obligationWeeks.length > 0 && !recordedMissed,
     blockReason,
+    recordedMissed,
   };
 }
 
@@ -235,6 +243,13 @@ async function postPayment(
 
   if (validationError) {
     throw new Error(`VALIDATION:${validationError}`);
+  }
+
+  const payableWeeks = getPayableWeeks(scheduleWeeks, input.paymentDate);
+  if (payableWeeks[0]?.status === 'MISSED') {
+    throw new Error(
+      'VALIDATION:This borrower was marked missed. Payment cannot be recorded for a missed week from the payment entry screen.',
+    );
   }
 
   const allocation = applyPaymentToSchedule(scheduleWeeks, input.paymentDate, weeksCount);
