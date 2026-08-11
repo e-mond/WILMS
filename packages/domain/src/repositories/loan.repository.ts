@@ -64,6 +64,17 @@ export async function listLoans(filter?: { externalStatus?: string }, tx: WilmsD
     .where(and(...conditions));
 }
 
+export async function listLoansForBorrowerIds(borrowerIds: string[], tx: WilmsDb = getDb()) {
+  if (borrowerIds.length === 0) {
+    return [];
+  }
+
+  return tx
+    .select()
+    .from(loans)
+    .where(and(isNull(loans.deletedAt), inArray(loans.borrowerId, borrowerIds)));
+}
+
 export async function borrowerHasOpenLoan(borrowerId: string, tx: WilmsDb = getDb()) {
   const rows = await tx
     .select()

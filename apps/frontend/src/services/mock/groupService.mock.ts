@@ -197,6 +197,9 @@ const groupServiceMock: IGroupService = {
 
   async createGroup(input: CreateGroupInput) {
     await simulateDelay();
+    if (!input.collectorUserId?.trim()) {
+      throw new Error('Every group must be assigned a collector.');
+    }
     const memberIds = input.memberBorrowerIds ?? [];
     const detail = buildGroupDetail({
       id: `grp-${Date.now()}`,
@@ -212,6 +215,9 @@ const groupServiceMock: IGroupService = {
       collectedPesewas: 0,
       collectionRatePercent: 0,
     });
+    if (input.collectorUserId) {
+      reassignGroupCollector(detail.id, input.collectorUserId);
+    }
     groupDetailCache.set(detail.id, detail);
 
     for (const memberBorrowerId of memberIds) {

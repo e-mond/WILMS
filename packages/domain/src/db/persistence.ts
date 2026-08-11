@@ -202,3 +202,12 @@ export async function listAdminFees(filter?: { collectorId?: string }) {
   return memory.listAdminFeesInMemory(filter?.collectorId);
 }
 
+/** Admin fees recorded by a collector on a calendar day (Africa/Accra date via ISO date prefix). */
+export async function listAdminFeesForCollectorOnDate(
+  collectorId: string,
+  reconciliationDate: string,
+) {
+  const fees = await listAdminFees({ collectorId });
+  return fees.filter((fee) => fee.recordedAt.slice(0, 10) === reconciliationDate);
+}
+

@@ -86,10 +86,31 @@ describe('payment-entry.utils', () => {
       referenceDate: '2026-05-29',
     });
 
-    expect(context.canAcceptPayment).toBe(true);
+    expect(context.canAcceptPayment).toBe(false);
+    expect(context.recordedMissed).toBe(true);
+    expect(context.blockReason).toMatch(/marked missed/i);
     expect(context.obligationWeeks).toHaveLength(2);
     expect(context.totalOutstandingObligationsPesewas).toBe(10000);
     expect(context.oldestObligation?.weekNumber).toBe(4);
+  });
+
+  it('allows payment when the oldest unpaid week is still pending', () => {
+    const context = buildPaymentEntryContext({
+      borrowerId: 'borrower-001',
+      borrowerName: 'Ama Mensah',
+      phone: '+233241234567',
+      community: 'Madina',
+      loanId: 'loan-001',
+      paymentDay: 'Friday',
+      weeklyPaymentPesewas: 5000,
+      scheduleWeeks: SCHEDULE.map((week) =>
+        week.weekNumber === 4 ? { ...week, status: SCHEDULE_WEEK_STATUS.PENDING } : week,
+      ),
+      referenceDate: '2026-05-29',
+    });
+
+    expect(context.canAcceptPayment).toBe(true);
+    expect(context.recordedMissed).toBe(false);
   });
 
   it('marks the oldest obligation paid when applying a payment', () => {

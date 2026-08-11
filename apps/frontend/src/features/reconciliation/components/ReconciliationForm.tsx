@@ -237,7 +237,8 @@ export function ReconciliationForm() {
         </div>
 
         <p className="mt-wilms-3 text-small text-text-muted">
-          Expected is the sum of weekly installments for active loans due on {paymentDayLabel}.
+          Expected is the sum of weekly installments due on {paymentDayLabel}, plus any admin fees
+          you recorded today.
           {data.submittedAt ? ` · Submitted ${formatDisplayDate(data.submittedAt.slice(0, 10))}` : ''}
           {data.reviewedAt ? ` · Reviewed ${formatDisplayDate(data.reviewedAt.slice(0, 10))}` : ''}
         </p>
@@ -245,9 +246,9 @@ export function ReconciliationForm() {
 
       {!formLocked && data.expectedPesewas === 0 ? (
         <Alert title="No collections due this weekday" variant="info">
-          There are no active loans assigned to you with payment day {paymentDayLabel}. Enter{' '}
-          <strong>0</strong> physical cash if you collected nothing, or add a short explanation if you
-          are holding cash anyway.
+          There are no active loan installments or admin fees assigned to you for{' '}
+          {paymentDayLabel}. Enter <strong>0</strong> physical cash if you collected nothing, or add
+          a short explanation if you are holding cash anyway.
         </Alert>
       ) : null}
 

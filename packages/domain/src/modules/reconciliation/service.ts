@@ -37,6 +37,7 @@ import * as paymentRepo from '../../repositories/payment.repository.js';
 import * as scheduleRepo from '../../repositories/loan-schedule.repository.js';
 import * as reconciliationHistoryRepo from '../../repositories/reconciliation-history.repository.js';
 import * as reconciliationRepo from '../../repositories/reconciliation.repository.js';
+import { listAdminFeesForCollectorOnDate } from '../../db/persistence.js';
 
 const AUDIT_ACTION = {
   RECONCILIATION_SUBMITTED: 'reconciliation.submitted',
@@ -65,9 +66,10 @@ async function loadReconciliationInputs(
   collectorUserId: string,
   reconciliationDate: string,
 ) {
-  const [dueLoans, paymentRows] = await Promise.all([
+  const [dueLoans, paymentRows, adminFees] = await Promise.all([
     loanRepo.listPortfolioLoansForCollector(collectorUserId),
     paymentRepo.listConfirmedPaymentsForCollectorOnDate(collectorUserId, reconciliationDate),
+    listAdminFeesForCollectorOnDate(collectorUserId, reconciliationDate),
   ]);
 
   const scheduleWeeks = await scheduleRepo.listScheduleWeeksForLoansOnDate(
@@ -90,6 +92,7 @@ async function loadReconciliationInputs(
       amountPesewas: payment.amountPesewas,
       status: payment.status,
     })),
+    adminFeePesewas: adminFees.reduce((sum, fee) => sum + fee.amountPesewas, 0),
   };
 }
 
@@ -148,7 +151,7 @@ function paidOutsideDueExpectedPesewas(
  */
 async function withLiveExpected(summary: ReconciliationSummary): Promise<ReconciliationSummary> {
   try {
-    const { dueLoans, scheduleDues, payments } = await loadReconciliationInputs(
+    const { dueLoans, scheduleDues, payments, adminFeePesewas } = await loadReconciliationInputs(
       summary.collectorId,
       summary.date,
     );
@@ -159,7 +162,8 @@ async function withLiveExpected(summary: ReconciliationSummary): Promise<Reconci
     );
     const liveExpectedPesewas =
       scheduleAndPaymentDayExpected +
-      paidOutsideDueExpectedPesewas(dueLoans, scheduleDues, summary.date, payments);
+      paidOutsideDueExpectedPesewas(dueLoans, scheduleDues, summary.date, payments) +
+      adminFeePesewas;
     const keepSnapshotOnly = summary.status === 'APPROVED';
 
     return {
@@ -189,7 +193,7 @@ export async function getReconciliationSummary(
     return withLiveExpected(mapReconciliationRowToSummary(existing));
   }
 
-  const { dueLoans, payments, scheduleDues } = await loadReconciliationInputs(
+  const { dueLoans, payments, scheduleDues, adminFeePesewas } = await loadReconciliationInputs(
     collectorId,
     reconciliationDate,
   );
@@ -200,6 +204,7 @@ export async function getReconciliationSummary(
     dueLoans,
     payments,
     scheduleDues,
+    adminFeePesewas,
     thresholdPercent: DEFAULT_RECONCILIATION_THRESHOLD_PERCENT,
     comment: null,
     submittedAt: new Date(),
@@ -269,7 +274,7 @@ export async function submitReconciliation(
         throw new Error('VALIDATION:Reconciliation already submitted for this date.');
       }
 
-      const { dueLoans, payments, scheduleDues } = await loadReconciliationInputs(
+      const { dueLoans, payments, scheduleDues, adminFeePesewas } = await loadReconciliationInputs(
         input.collectorId,
         input.reconciliationDate,
       );
@@ -282,6 +287,7 @@ export async function submitReconciliation(
         dueLoans,
         payments,
         scheduleDues,
+        adminFeePesewas,
         thresholdPercent,
         comment: input.comment?.trim() ?? null,
         submittedAt,

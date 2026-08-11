@@ -430,7 +430,12 @@ export function PaymentEntryPanel({ borrowerId }: PaymentEntryPanelProps) {
                   type="button"
                   variant="ghost"
                   className="w-full"
-                  disabled={isOffline || payableWeeks.length < 1}
+                  disabled={
+                    isOffline ||
+                    payableWeeks.length < 1 ||
+                    Boolean(data.recordedMissed) ||
+                    data.oldestObligation?.status === 'MISSED'
+                  }
                   onClick={() => {
                     setActionError(null);
                     setPendingAction({ kind: 'miss', label: 'Mark this week as missed' });

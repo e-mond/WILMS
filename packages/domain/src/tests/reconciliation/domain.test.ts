@@ -86,4 +86,25 @@ describe('snapshot', () => {
     expect(snapshot.varianceClass).toBe(RECONCILIATION_VARIANCE_CLASS.BALANCED);
     expect(snapshot.varianceFlagged).toBe(false);
   });
+
+  it('allows balanced submit when only admin fees were recorded (no loan payments)', () => {
+    const snapshot = buildReconciliationSnapshot({
+      collectorUserId: 'collector-1',
+      reconciliationDate: '2026-06-02',
+      physicalCashPesewas: 5000,
+      dueLoans: [],
+      payments: [],
+      adminFeePesewas: 5000,
+      thresholdPercent: 10,
+      comment: null,
+      submittedAt: new Date('2026-06-02T18:00:00.000Z'),
+    });
+
+    expect(snapshot.expectedDuePesewas).toBe(5000);
+    expect(snapshot.systemRecordedPesewas).toBe(5000);
+    expect(snapshot.primaryVariancePesewas).toBe(0);
+    expect(snapshot.collectionDeltaPesewas).toBe(0);
+    expect(snapshot.varianceFlagged).toBe(false);
+    expect(snapshot.status).toBe('APPROVED');
+  });
 });

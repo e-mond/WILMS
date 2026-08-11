@@ -109,6 +109,6 @@ export interface CreateGroupInput {
   name: string;
   community: string;
   displayName?: string;
-  collectorUserId?: string;
+  collectorUserId: string;
   memberBorrowerIds?: string[];
 }

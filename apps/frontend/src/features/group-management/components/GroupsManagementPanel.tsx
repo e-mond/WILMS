@@ -14,9 +14,11 @@ import { GROUPS_REFERENCE_PAGE_SIZE } from '@/constants/groups-reference-scale';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
+import { Select } from '@/components/ui/Select';
 import { Pagination } from '@/components/ui/Pagination';
 import { useGroups } from '@/features/group-management/hooks/useGroups';
 import { useCreateGroup } from '@/features/group-management/hooks/useCreateGroup';
+import { useCollectorsManagement } from '@/features/collector-management/hooks/useCollectorsManagement';
 import { usePaginatedRows } from '@/hooks/usePaginatedRows';
 import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
@@ -25,6 +27,7 @@ import { collectorRateTextClass } from '@/utils/collector-rate-display';
 import { formatDisplayDate } from '@/utils/format-date';
 import { resolveGroupDisplayId } from '@/utils/entity-display-id';
 import { formatPesewasForCsv } from '@/utils/export-csv';
+import { notifyMutationError } from '@/utils/mutation-feedback';
 
 const RISK_FILTERS = [
   { value: '', label: 'All' },
@@ -41,12 +44,15 @@ export function GroupsManagementPanel() {
   const { data, isLoading, isError, error, refetch } = useGroups();
   const { showLoading, isTimedOut, isForbidden } = useQueryLoadingPolicy({ isLoading, isError, error });
   const createGroup = useCreateGroup();
+  const { data: collectorsData } = useCollectorsManagement();
+  const collectors = useMemo(() => collectorsData?.collectors ?? [], [collectorsData]);
   const [searchQuery, setSearchQuery] = useState('');
   const [riskFilter, setRiskFilter] = useState(riskFromUrl);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupCommunity, setNewGroupCommunity] = useState('');
+  const [newGroupCollectorId, setNewGroupCollectorId] = useState('');
 
   useEffect(() => {
     setRiskFilter(riskFromUrl);
@@ -322,18 +328,30 @@ export function GroupsManagementPanel() {
               variant="primary"
               size="sm"
               disabled={
-                createGroup.isPending || !newGroupName.trim() || !newGroupCommunity.trim()
+                createGroup.isPending ||
+                !newGroupName.trim() ||
+                !newGroupCommunity.trim() ||
+                !newGroupCollectorId
               }
               onClick={() => {
                 void createGroup
                   .mutateAsync({
                     name: newGroupName.trim(),
                     community: newGroupCommunity.trim(),
+                    collectorUserId: newGroupCollectorId,
                   })
                   .then(() => {
                     setCreateModalOpen(false);
                     setNewGroupName('');
                     setNewGroupCommunity('');
+                    setNewGroupCollectorId('');
+                  })
+                  .catch((error) => {
+                    notifyMutationError(
+                      'Group creation failed',
+                      error,
+                      'Every group must be assigned a collector.',
+                    );
                   });
               }}
             >
@@ -366,6 +384,25 @@ export function GroupsManagementPanel() {
               onChange={(event) => setNewGroupCommunity(event.target.value)}
               placeholder="Madina"
             />
+          </div>
+          <div>
+            <label htmlFor="new-group-collector" className="text-small font-semibold text-text-primary">
+              Assigned collector
+            </label>
+            <Select
+              id="new-group-collector"
+              className="mt-wilms-2"
+              value={newGroupCollectorId}
+              onChange={(event) => setNewGroupCollectorId(event.target.value)}
+              required
+            >
+              <option value="">Select collector</option>
+              {collectors.map((collector) => (
+                <option key={collector.id} value={collector.id}>
+                  {collector.displayName} · {collector.zone}
+                </option>
+              ))}
+            </Select>
           </div>
         </div>
       </Modal>

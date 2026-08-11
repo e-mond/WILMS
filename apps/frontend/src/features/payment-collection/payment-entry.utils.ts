@@ -143,6 +143,7 @@ export function buildPaymentEntryContext({
 
   let blockReason: string | undefined;
   let canAcceptPayment = Boolean(oldestObligation);
+  const recordedMissed = oldestObligation?.status === SCHEDULE_WEEK_STATUS.MISSED;
 
   if (!isPaymentDay) {
     canAcceptPayment = false;
@@ -150,6 +151,10 @@ export function buildPaymentEntryContext({
   } else if (!oldestObligation) {
     canAcceptPayment = false;
     blockReason = 'No outstanding obligation is due. Advance payments are not allowed.';
+  } else if (recordedMissed) {
+    canAcceptPayment = false;
+    blockReason =
+      'This borrower was marked missed. Payment buttons are disabled until the missed week is cleared by operations.';
   }
 
   return {
@@ -168,5 +173,6 @@ export function buildPaymentEntryContext({
     totalOutstandingObligationsPesewas,
     canAcceptPayment,
     blockReason,
+    recordedMissed,
   };
 }
