@@ -111,12 +111,21 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
   });
 
   const createGroupMutation = useMutation({
-    mutationFn: () =>
-      groupService.createGroup({
+    mutationFn: () => {
+      if (!selectedCollectorId) {
+        throw new ApiError(
+          'Select a collector before creating a group.',
+          API_ERROR_CODE.VALIDATION,
+          422,
+        );
+      }
+      return groupService.createGroup({
         name: newGroupName.trim(),
         community: data?.community ?? 'General',
+        collectorUserId: selectedCollectorId,
         memberBorrowerIds: [borrowerId],
-      }),
+      });
+    },
     onSuccess: (group) => {
       setSelectedGroupId(group.id);
       setNewGroupName('');
@@ -412,12 +421,22 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
                     value={newGroupName}
                     onChange={(event) => setNewGroupName(event.target.value)}
                   />
+                  <p className="text-caption text-text-secondary">
+                    Select a collector below, then create the group. Every group needs a collector.
+                  </p>
                   <PermissionGate permissions={[PERMISSION.APPROVE_BORROWERS, PERMISSION.MANAGE_GROUPS]}>
                     <Button
                       type="button"
                       variant="secondary"
-                      disabled={!newGroupName.trim() || createGroupMutation.isPending}
-                      onClick={() => createGroupMutation.mutate()}
+                      disabled={
+                        !newGroupName.trim() ||
+                        !selectedCollectorId ||
+                        createGroupMutation.isPending
+                      }
+                      onClick={() => {
+                        setActionError(null);
+                        createGroupMutation.mutate();
+                      }}
                     >
                       {createGroupMutation.isPending ? 'Creating…' : 'Create group & add borrower'}
                     </Button>
