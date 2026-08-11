@@ -47,6 +47,10 @@ import type { ApprovalDecisionAction } from '@/types/approval';
 
 import { ApiError, API_ERROR_CODE } from '@/types/api';
 import { useAuth } from '@/hooks/useAuth';
+import {
+  notifyMutationError,
+  notifyMutationSuccess,
+} from '@/utils/mutation-feedback';
 
 
 
@@ -157,14 +161,19 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
         : group.displayName || group.name;
       setActionError(null);
       setWorkflowMessage(`Assigned ${data?.fullName ?? 'borrower'} to ${label}.`);
-      void queryClient.invalidateQueries({ queryKey: ['groups', 'list', 'approver-review'] });
-      void queryClient.invalidateQueries({ queryKey: ['borrowers', borrowerId, 'review'] });
+      notifyMutationSuccess('Group assigned', `${data?.fullName ?? 'Borrower'} is now in ${label}.`);
+      void queryClient.invalidateQueries({ queryKey: ['groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['borrowers'] });
+      void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      void queryClient.invalidateQueries({ queryKey: ['collector-dashboard'] });
       void refetch();
     },
     onError: (error) => {
-      setActionError(
-        error instanceof ApiError ? error.message : 'Unable to assign this borrower to the group.',
-      );
+      const message =
+        "We couldn't assign the borrower to the selected group. Please try again.";
+      setActionError(message);
+      notifyMutationError('Group assignment failed', error, message);
+      console.error('[approver] assign group failed', error);
     },
   });
 

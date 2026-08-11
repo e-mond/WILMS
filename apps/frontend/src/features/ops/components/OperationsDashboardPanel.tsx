@@ -200,6 +200,29 @@ export function OperationsDashboardPanel() {
         </div>
       </section>
 
+      <section
+        aria-labelledby="ops-reassignment-heading"
+        className="rounded-sm border border-border bg-card p-wilms-4 md:p-wilms-5"
+      >
+        <div className="flex flex-col gap-wilms-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0">
+            <h2 id="ops-reassignment-heading" className="text-heading-3 font-semibold text-text-primary">
+              Reassignment controls
+            </h2>
+            <p className="mt-wilms-1 max-w-2xl text-small text-text-muted">
+              Transfer borrowers between groups, reassign collectors, and request payment-day changes
+              with preview, notifications, and audit logging.
+            </p>
+          </div>
+          <Link
+            href="/ops/reassignment"
+            className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-sm border border-border bg-surface px-wilms-4 text-small font-semibold text-text-primary hover:bg-background"
+          >
+            Open reassignment tools
+          </Link>
+        </div>
+      </section>
+
       {report ? (
         <>
           <section aria-labelledby="ops-deployment-heading" className="space-y-wilms-2">

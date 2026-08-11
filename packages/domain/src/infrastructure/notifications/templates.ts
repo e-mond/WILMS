@@ -109,8 +109,39 @@ export function buildLoanDisbursedScheduleSmsBody(input: LoanDisbursedScheduleSm
   return `WILMS: Hi ${input.borrowerName}, repay loan ${input.loanDisplayId} every ${input.paymentDay}: GHS ${weeklyGhs} for ${input.totalWeeks} weeks. First due ${input.firstDueDate}.`;
 }
 
-export function buildBorrowerRegistrationApprovalSmsBody(input: { borrowerName: string }): string {
-  return `WILMS: Hi ${input.borrowerName}, your registration has been approved. Your collector will contact you about next steps.`;
+export function buildBorrowerRegistrationApprovalSmsBody(input: {
+  borrowerName: string;
+  groupName?: string;
+  collectorName?: string;
+  nextStep?: string;
+}): string {
+  const parts = [`WILMS: Hi ${input.borrowerName}, your registration has been approved.`];
+  if (input.groupName) {
+    parts.push(`Group: ${input.groupName}.`);
+  }
+  if (input.collectorName) {
+    parts.push(`Collector: ${input.collectorName}.`);
+  }
+  parts.push(
+    input.nextStep?.trim() ||
+      'Next step: pay the admin fee so your loan application can proceed.',
+  );
+  return parts.join(' ');
+}
+
+export function buildRegistrationSubmittedSmsBody(input: { borrowerName: string }): string {
+  return `WILMS: Hi ${input.borrowerName}, we received your registration. An approver will review it shortly.`;
+}
+
+export function buildGroupAssignedSmsBody(input: {
+  borrowerName: string;
+  groupName: string;
+  collectorName?: string;
+}): string {
+  const collector = input.collectorName?.trim()
+    ? ` Your collector is ${input.collectorName}.`
+    : '';
+  return `WILMS: Hi ${input.borrowerName}, you have been assigned to group ${input.groupName}.${collector}`;
 }
 
 export function buildAdminFeeConfirmationSmsBody(input: {
@@ -341,7 +372,21 @@ export function buildRegistrationRejectedEmail(input: {
   });
 }
 
-export function buildRegistrationApprovedEmail(input: { borrowerName: string }): EmailTemplate {
+export function buildRegistrationApprovedEmail(input: {
+  borrowerName: string;
+  groupName?: string;
+  collectorName?: string;
+  nextStep?: string;
+}): EmailTemplate {
+  const nextStep =
+    input.nextStep?.trim() ||
+    'Next step: pay the admin fee so your loan application can proceed.';
+  const details = [
+    input.groupName ? `Group: ${input.groupName}` : null,
+    input.collectorName ? `Collector: ${input.collectorName}` : null,
+    nextStep,
+  ].filter(Boolean) as string[];
+
   return buildEmailTemplate({
     subject: 'WILMS registration approved',
     greeting: input.borrowerName,
@@ -350,14 +395,35 @@ export function buildRegistrationApprovedEmail(input: { borrowerName: string }):
     textLines: [
       `Dear ${input.borrowerName},`,
       '',
-      'Your registration has been approved. Your collector will contact you about next steps.',
+      'Your registration has been approved.',
+      ...details,
       '',
       '— WILMS',
     ],
     htmlBody: [
       emailAlert('Congratulations! Your registration has been approved.', 'success'),
-      emailParagraph('Your collector will contact you about next steps.'),
+      emailSummary('What happens next', details),
       emailButton('Complete Registration', 'https://wilms.vercel.app/login', 'success'),
+    ].join(''),
+  });
+}
+
+export function buildRegistrationSubmittedEmail(input: { borrowerName: string }): EmailTemplate {
+  return buildEmailTemplate({
+    subject: 'WILMS registration received',
+    greeting: input.borrowerName,
+    preheader: 'We have received your registration',
+    theme: 'info',
+    textLines: [
+      `Dear ${input.borrowerName},`,
+      '',
+      'Thank you. We have received your WILMS registration and an approver will review it shortly.',
+      '',
+      '— WILMS',
+    ],
+    htmlBody: [
+      emailAlert('Your registration has been submitted for review.', 'info'),
+      emailParagraph('An approver will review your application shortly.'),
     ].join(''),
   });
 }

@@ -16,9 +16,11 @@ import * as userRepo from '../../repositories/user.repository.js';
 import { resolveUploadAccessUrlById } from '../../infrastructure/uploads/index.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
 import {
+  notifyGroupAssigned,
   notifyRegistrationApproved,
   notifyRegistrationBlacklisted,
   notifyRegistrationRejected,
+  notifyRegistrationSubmitted,
 } from '../../infrastructure/notifications/event-dispatch.js';
 import * as draftRepo from '../../repositories/registration-draft.repository.js';
 import {
@@ -484,6 +486,14 @@ export async function registerBorrower(payload: Record<string, unknown>, actorId
     targetEntityType: 'borrower',
   });
 
+  void notifyRegistrationSubmitted({
+    borrowerId: record.id,
+    borrowerName: record.fullName,
+    borrowerPhone: record.phone,
+    borrowerEmail: record.profile.email,
+    officerUserId: actorId,
+  });
+
   return toSummary(record);
 }
 
@@ -520,6 +530,9 @@ export async function approveBorrower(id: string, actorId: string, actorDisplayN
       borrowerName: record.fullName,
       borrowerPhone: record.phone,
       borrowerEmail: record.profile.email,
+      groupName: record.groupName || undefined,
+      nextStep:
+        'Next step: you will be assigned to a group and collector, then pay the admin fee before loan creation.',
     });
   }
 

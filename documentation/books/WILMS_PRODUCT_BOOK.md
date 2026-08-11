@@ -353,14 +353,16 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    A[Loan application submitted] --> B[Approver review]
-    B -->|Approve| C[Admin fee collection]
-    C --> D{Pool sufficient?}
-    D -->|Yes| E[Disbursement]
-    D -->|No| F[Hard stop — insufficient capital]
-    B -->|Reject| G[Application rejected]
-    E --> H[Active loan with schedule]
+    A[Create loan] --> B{Pool capital sufficient?}
+    B -->|No| C[Reject create — show shortfall]
+    B -->|Yes| D[Pending approval]
+    D --> E[Approver / Super Admin approve]
+    E --> F[Admin fee already required]
+    F --> G[Disburse — pool hard-stop retained]
+    G --> H[Schedule generated + notifications]
 ```
+
+Super Admin may approve loans they created (final authority). Other roles remain under maker-checker separation of duties.
 
 ### Weekly collection workflow
 
@@ -669,8 +671,19 @@ Frontend unit tests with shard execution. Domain tests via `npm run test -w @wil
 | v1.7.0 | 2026 | Enterprise finance, executive intelligence, export jobs, ops incidents |
 | v1.7.1 | 2026 | Market readiness, dashboard separation, modal hardening |
 | v1.7.2 | 2026 | RC stabilization — financial dashboard, executive polish, Export Center actions, Product Tour 2.0 |
+| v1.8.0 | 2026 | Collector payment workflow; Phase 11 registration/loan/comms/ops hardening (same version identity) |
 
 ---
+
+## v1.8.0 Phase 11 operational hardening (summary)
+
+- Registration Approver Assign Group: reliable assignment, toast feedback, audit, notifications.
+- Super Admin may self-approve loans they created; pool capital validated at loan creation.
+- Borrower communication lifecycle extended (registration submitted, group assigned, schedule event separation).
+- Super Admin Operations reassignment tools at `/ops/reassignment` (group, collector, payment day).
+- Payment-day approval recalculates future PENDING schedule weeks.
+
+See `documentation/phase11/` for full reports.
 
 ## v1.7.3 documentation release notes
 

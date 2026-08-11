@@ -29,8 +29,10 @@ import * as scheduleRepo from '../../repositories/loan-schedule.repository.js';
 import * as poolRepo from '../../repositories/loan-pool.repository.js';
 import { groups } from '../../db/schema/groups.js';
 import { getSettings } from '../settings/service.js';
-import { decimalToPesewas } from '../../domain/money.js';
+import { decimalToPesewas, pesewasToDecimal } from '../../domain/money.js';
 import { hasAdminFee } from '../../db/persistence.js';
+import * as userRepo from '../../repositories/user.repository.js';
+import { USER_ROLE } from '@wilms/shared-rbac';
 
 async function assertAdminFeeRecorded(borrowerId: string): Promise<void> {
   if (!(await hasAdminFee(borrowerId))) {
@@ -227,6 +229,20 @@ export async function createLoan(
           }
         }
 
+        if (loanPoolId) {
+          const pool = await poolRepo.findPoolById(loanPoolId);
+          if (!pool) {
+            throw new Error('VALIDATION:Selected loan pool was not found.');
+          }
+          const availablePesewas = Math.max(0, pool.capitalPesewas - pool.outstandingPesewas);
+          if (input.amountPesewas > availablePesewas) {
+            const shortfallPesewas = input.amountPesewas - availablePesewas;
+            throw new Error(
+              `VALIDATION:Cannot create loan. Selected pool: ${pool.name}. Available capital: GH₵${pesewasToDecimal(availablePesewas)}. Requested loan: GH₵${pesewasToDecimal(input.amountPesewas)}. Additional funding required: GH₵${pesewasToDecimal(shortfallPesewas)}.`,
+            );
+          }
+        }
+
         const loan = await runInTransaction(async (tx) => {
           const row = await loanRepo.insertLoan(
             {
@@ -295,9 +311,12 @@ export async function approveLoan(loanId: string, actorId: string): Promise<Loan
   }
 
   if (loan.createdByUserId && loan.createdByUserId === actorId) {
-    throw new Error(
-      'VALIDATION:You cannot approve a loan you created. Ask another authorised approver.',
-    );
+    const actor = await userRepo.getUserById(actorId);
+    if (actor?.role !== USER_ROLE.SUPER_ADMIN) {
+      throw new Error(
+        'VALIDATION:You cannot approve a loan you created. Ask another authorised approver.',
+      );
+    }
   }
 
   await assertAdminFeeRecorded(loan.borrowerId);
@@ -445,8 +464,9 @@ export async function disburseLoan(
           const amountPesewas = decimalToPesewas(amountDecimal);
           const availablePesewas = Math.max(0, pool.capitalPesewas - pool.outstandingPesewas);
           if (amountPesewas > availablePesewas) {
+            const shortfallPesewas = amountPesewas - availablePesewas;
             throw new Error(
-              `VALIDATION:Insufficient pool capital for disbursement. Available ${availablePesewas} pesewas, requested ${amountPesewas}.`,
+              `VALIDATION:Insufficient pool capital for disbursement. Selected pool: ${pool.name}. Available capital: GH₵${pesewasToDecimal(availablePesewas)}. Requested loan: GH₵${pesewasToDecimal(amountPesewas)}. Additional funding required: GH₵${pesewasToDecimal(shortfallPesewas)}.`,
             );
           }
         }

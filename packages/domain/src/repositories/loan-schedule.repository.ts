@@ -201,6 +201,23 @@ export async function revertWeekPaid(
   return result[0]!;
 }
 
+export async function updateScheduleWeekDueDate(
+  input: {
+    loanId: string;
+    weekNumber: number;
+    dueDate: string;
+  },
+  tx: WilmsDb = getDb(),
+) {
+  await tx
+    .update(loanSchedules)
+    .set({
+      dueDate: input.dueDate,
+      updatedAt: new Date(),
+    })
+    .where(and(eq(loanSchedules.loanId, input.loanId), eq(loanSchedules.weekNumber, input.weekNumber)));
+}
+
 function addGraceDays(isoDate: string, graceDays: number): string {
   if (graceDays <= 0) {
     return isoDate;
