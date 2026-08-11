@@ -13,7 +13,6 @@ import type { IPaymentService } from '@/types/services';
 import {
   applyPaymentToOldestObligation,
   buildPaymentEntryContext,
-  isOverpaymentAttempt,
   validatePaymentSubmission,
 } from '@/features/payment-collection/payment-entry.utils';
 import overpaymentReviewServiceMock from '@/services/mock/overpaymentReviewService.mock';

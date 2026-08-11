@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => ({
   sumConfirmedPaymentsForDatePesewas: vi.fn(),
   getGroupsForCollector: vi.fn(),
   listLoans: vi.fn(),
-  listScheduleWeeksForLoansOnDate: vi.fn(),
+  listPayableScheduleWeeksForLoans: vi.fn(),
   findSubmittedReconciliationByCollectorAndDate: vi.fn(),
   isDatabaseEnabled: vi.fn(() => true),
 }));
@@ -36,7 +36,7 @@ vi.mock('../../repositories/payment.repository.js', () => ({
 }));
 
 vi.mock('../../repositories/loan-schedule.repository.js', () => ({
-  listScheduleWeeksForLoansOnDate: mocks.listScheduleWeeksForLoansOnDate,
+  listPayableScheduleWeeksForLoans: mocks.listPayableScheduleWeeksForLoans,
 }));
 
 vi.mock('../../repositories/reconciliation.repository.js', () => ({
@@ -113,10 +113,12 @@ describe('collector dashboard due-today filtering', () => {
         installmentAmount: '100.00',
       },
     ]);
-    mocks.listScheduleWeeksForLoansOnDate.mockResolvedValue([
+    mocks.listPayableScheduleWeeksForLoans.mockResolvedValue([
       {
         loanId: 'loan-due',
-        status: 'DUE',
+        weekNumber: 1,
+        dueDate: '2026-08-10',
+        status: 'PENDING',
         installmentAmount: '100.00',
       },
     ]);

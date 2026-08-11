@@ -63,7 +63,10 @@ export function PaymentEntryPanel({ borrowerId }: PaymentEntryPanelProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [gpsStatus, setGpsStatus] = useState<'idle' | 'capturing' | 'captured' | 'denied'>('idle');
 
-  const payableWeeks = data?.payableWeeks ?? data?.obligationWeeks ?? [];
+  const payableWeeks = useMemo(
+    () => data?.payableWeeks ?? data?.obligationWeeks ?? [],
+    [data?.payableWeeks, data?.obligationWeeks],
+  );
   const maxWeeks = data?.maxPayableWeeks ?? payableWeeks.length;
   const weekly = data?.weeklyPaymentPesewas ?? 0;
 
