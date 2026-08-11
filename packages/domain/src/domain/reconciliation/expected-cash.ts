@@ -18,9 +18,13 @@ export interface SystemRecordedPaymentInput {
 }
 
 /**
- * ExpectedCashFormula v1 (P14.3B.4B):
+ * ExpectedCashFormula v1 (P14.3B.4B) — day dues for reconciliation:
  * Prefer schedule weeks due on reconciliation_date (includes holiday shifts).
  * Fall back to payment-day match for active loans with no schedule row that day.
+ *
+ * Collector / portfolio "expected collections" for catch-up use the sum of all
+ * payable weeks (MISSED + PENDING due on/before reference) via
+ * listPayableScheduleWeeksForLoans — not this day-only formula.
  */
 export function calculateExpectedDuePesewas(
   loans: ExpectedDueLoanInput[],

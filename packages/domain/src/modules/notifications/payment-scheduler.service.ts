@@ -197,7 +197,13 @@ export async function processPaymentNotificationJobs(
           const daysPast = Math.floor(
             (Date.parse(`${ref}T00:00:00Z`) - Date.parse(`${week.dueDate}T00:00:00Z`)) / 86400000,
           );
-          if (daysPast === 1 || daysPast === 3 || daysPast === 7) {
+          if (
+            daysPast === 1 ||
+            daysPast === settings.latePaymentGraceDays ||
+            daysPast === settings.latePaymentGraceDays + 1 ||
+            daysPast === settings.latePaymentGraceDays + 2 ||
+            daysPast === 7
+          ) {
             await emitPaymentOverdueLadderNotification({
               borrowerId: borrower.id,
               borrowerName: borrower.fullName,
@@ -208,6 +214,7 @@ export async function processPaymentNotificationJobs(
               dueDate: week.dueDate,
               amountPesewas: weeklyPesewas,
               daysOverdue: daysPast,
+              graceDays: settings.latePaymentGraceDays,
               collectorUserId,
               correlationId,
             });

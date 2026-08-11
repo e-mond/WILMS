@@ -143,7 +143,7 @@ export function GroupCollectionSheet({ groupId }: GroupCollectionSheetProps) {
           </p>
         </div>
         <div className="flex flex-wrap gap-wilms-2">
-          {(['NORMAL', 'DOUBLE', 'PARTIAL', 'ADVANCE'] as const).map((type) => (
+          {(['NORMAL', 'DOUBLE', 'ALL'] as const).map((type) => (
             <Button
               key={type}
               type="button"

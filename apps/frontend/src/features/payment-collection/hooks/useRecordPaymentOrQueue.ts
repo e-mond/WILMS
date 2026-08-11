@@ -19,6 +19,7 @@ export interface RecordPaymentOrQueueVariables {
   paymentDate: string;
   gps: GpsCoordinates;
   loanId: string;
+  weeksCount?: number;
   isOffline: boolean;
 }
 
@@ -37,6 +38,8 @@ export function useRecordPaymentOrQueue() {
       amountPesewas,
       paymentDate,
       gps,
+      weeksCount,
+      loanId,
       isOffline,
     }: RecordPaymentOrQueueVariables): Promise<RecordPaymentOrQueueResult> => {
       const collectorId = useAuthStore.getState().user?.id;
@@ -52,6 +55,8 @@ export function useRecordPaymentOrQueue() {
           paymentDate,
           gps,
           collectorId,
+          weeksCount,
+          loanId,
         });
 
         void requestPaymentBackgroundSync();
@@ -65,6 +70,8 @@ export function useRecordPaymentOrQueue() {
         paymentDate,
         collectorId,
         gps,
+        weeksCount,
+        loanId,
       });
 
       return { mode: 'online' };

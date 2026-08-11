@@ -116,9 +116,11 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
     onSuccess: (group) => {
       setSelectedGroupId(group.id);
       setNewGroupName('');
+      setActionError(null);
       setWorkflowMessage(`Created group "${group.name}" and added ${data?.fullName ?? 'borrower'}.`);
       void queryClient.invalidateQueries({ queryKey: ['groups', 'list', 'approver-review'] });
       void queryClient.invalidateQueries({ queryKey: ['borrowers', borrowerId, 'review'] });
+      void refetch();
     },
     onError: (error) => {
       setActionError(
@@ -134,11 +136,15 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
       if (!user?.id) {
         throw new ApiError('You must be signed in to assign a group.', API_ERROR_CODE.UNAUTHORIZED, 401);
       }
-      if (!selectedGroupId || !data) {
+      if (!data) {
+        throw new ApiError('Borrower details are still loading.', API_ERROR_CODE.VALIDATION, 422);
+      }
+      if (!selectedGroupId) {
         throw new ApiError('Select a group before assigning.', API_ERROR_CODE.VALIDATION, 422);
       }
       return groupService.addMember({
         groupId: selectedGroupId,
+        borrowerId,
         fullName: data.fullName,
         phone: data.phone,
         reason: 'Approver review assignment',
@@ -149,6 +155,7 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
       const label = group.groupSystemId
         ? `${group.groupSystemId} — ${group.displayName || group.name}`
         : group.displayName || group.name;
+      setActionError(null);
       setWorkflowMessage(`Assigned ${data?.fullName ?? 'borrower'} to ${label}.`);
       void queryClient.invalidateQueries({ queryKey: ['groups', 'list', 'approver-review'] });
       void queryClient.invalidateQueries({ queryKey: ['borrowers', borrowerId, 'review'] });
@@ -384,6 +391,10 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
 
               </Select>
 
+              <p className="text-caption text-text-secondary">
+                Choose a group, then click Assign Group. The borrower is linked by borrower ID.
+              </p>
+
               {groups.length === 0 ? (
                 <div className="space-y-wilms-2">
                   <Input
@@ -408,8 +419,15 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
                   <Button
                     type="button"
                     variant="secondary"
-                    disabled={!selectedGroupId || assignGroupMutation.isPending || !user?.id}
-                    onClick={() => assignGroupMutation.mutate()}
+                    disabled={assignGroupMutation.isPending || !user?.id}
+                    onClick={() => {
+                      setActionError(null);
+                      if (!selectedGroupId) {
+                        setActionError('Select a group before assigning.');
+                        return;
+                      }
+                      assignGroupMutation.mutate();
+                    }}
                   >
                     {assignGroupMutation.isPending ? 'Assigning…' : 'Assign Group'}
                   </Button>

@@ -2,7 +2,7 @@ import type { CollectorDashboardBorrower } from '@/types/collector-dashboard';
 import { COLLECTOR_PAYMENT_STATUS } from '@/types/collector-dashboard';
 import type { GpsCoordinates } from '@/types/payment';
 
-export type SheetPaymentMode = 'NORMAL' | 'DOUBLE' | 'PARTIAL' | 'ADVANCE';
+export type SheetPaymentMode = 'NORMAL' | 'DOUBLE' | 'ALL';
 export type MemberPaymentChoice = 'PAID' | 'MISSED' | 'UNSET';
 export type SheetRowRecordedState = 'NONE' | 'COLLECTED' | 'MISSED';
 
@@ -11,28 +11,33 @@ export interface SheetMember {
   borrowerName: string;
   loanId: string;
   expectedPesewas: number;
+  weeklyPaymentPesewas: number;
+  payableWeeksCount: number;
   choice: MemberPaymentChoice;
   recorded: SheetRowRecordedState;
   rowError?: string;
 }
 
 export function resolveSheetAmountPesewas(
-  expectedPesewas: number,
+  member: Pick<SheetMember, 'expectedPesewas' | 'weeklyPaymentPesewas' | 'payableWeeksCount'>,
   mode: SheetPaymentMode,
-): number {
-  if (expectedPesewas <= 0) {
-    return 0;
-  }
+): { amountPesewas: number; weeksCount: number } {
+  const weekly = member.weeklyPaymentPesewas > 0 ? member.weeklyPaymentPesewas : member.expectedPesewas;
+  const maxWeeks = Math.max(1, member.payableWeeksCount || 1);
 
   switch (mode) {
-    case 'DOUBLE':
-      return expectedPesewas * 2;
-    case 'PARTIAL':
-      return Math.max(1, Math.floor(expectedPesewas / 2));
-    case 'ADVANCE':
+    case 'DOUBLE': {
+      const weeksCount = Math.min(2, maxWeeks);
+      return { amountPesewas: weekly * weeksCount, weeksCount };
+    }
+    case 'ALL':
+      return {
+        amountPesewas: member.expectedPesewas > 0 ? member.expectedPesewas : weekly * maxWeeks,
+        weeksCount: maxWeeks,
+      };
     case 'NORMAL':
     default:
-      return expectedPesewas;
+      return { amountPesewas: weekly, weeksCount: 1 };
   }
 }
 
@@ -55,6 +60,8 @@ export function buildInitialSheetMembers(
         borrowerName: borrower.borrowerName,
         loanId: borrower.loanId,
         expectedPesewas: borrower.expectedPesewas,
+        weeklyPaymentPesewas: borrower.weeklyPaymentPesewas ?? borrower.expectedPesewas,
+        payableWeeksCount: borrower.payableWeeksCount ?? 1,
         choice: 'UNSET' as MemberPaymentChoice,
         recorded,
       };
@@ -101,6 +108,8 @@ export interface SheetBatchDeps {
     paymentDate: string;
     collectorId: string;
     gps: GpsCoordinates;
+    weeksCount?: number;
+    loanId?: string;
   }) => Promise<unknown>;
   markMissedPayment: (input: {
     borrowerId: string;
@@ -137,16 +146,18 @@ export async function submitGroupCollectionBatch(
 
     try {
       if (member.choice === 'PAID') {
-        const amountPesewas = resolveSheetAmountPesewas(member.expectedPesewas, deps.paymentMode);
-        if (amountPesewas <= 0) {
+        const resolved = resolveSheetAmountPesewas(member, deps.paymentMode);
+        if (resolved.amountPesewas <= 0) {
           throw new Error('Expected amount is required to record payment.');
         }
         await deps.recordPayment({
           borrowerId: member.borrowerId,
-          amountPesewas,
+          amountPesewas: resolved.amountPesewas,
           paymentDate: deps.paymentDate,
           collectorId: deps.collectorId,
           gps: deps.gps,
+          weeksCount: resolved.weeksCount,
+          loanId: member.loanId || undefined,
         });
         next[index] = {
           ...member,
