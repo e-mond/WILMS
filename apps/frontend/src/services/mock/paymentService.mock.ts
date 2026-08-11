@@ -202,39 +202,64 @@ const paymentServiceMock: IPaymentService = {
       throw new ApiError('Loan schedule not found.', API_ERROR_CODE.NOT_FOUND, 404);
     }
 
-    if (
-      isOverpaymentAttempt(input.amountPesewas, context.weeklyPaymentPesewas)
-    ) {
-      await overpaymentReviewServiceMock.queueReview({
-        borrowerId: input.borrowerId,
-        borrowerName: context.borrowerName,
-        loanId: context.loanId,
-        collectorId: input.collectorId,
-        paymentDate: input.paymentDate,
-        attemptedAmountPesewas: input.amountPesewas,
-        expectedAmountPesewas: context.weeklyPaymentPesewas,
-      });
+    const weeksCount = input.weeksCount ?? 1;
+    const expectedAmount = context.weeklyPaymentPesewas * weeksCount;
+
+    if (input.amountPesewas !== expectedAmount) {
+      if (weeksCount === 1 && input.amountPesewas > context.weeklyPaymentPesewas) {
+        await overpaymentReviewServiceMock.queueReview({
+          borrowerId: input.borrowerId,
+          borrowerName: context.borrowerName,
+          loanId: context.loanId,
+          collectorId: input.collectorId,
+          paymentDate: input.paymentDate,
+          attemptedAmountPesewas: input.amountPesewas,
+          expectedAmountPesewas: context.weeklyPaymentPesewas,
+        });
+
+        throw new ApiError(
+          'Overpayment is not allowed. This attempt has been flagged for Super Admin review.',
+          API_ERROR_CODE.OVERPAYMENT,
+          422,
+        );
+      }
 
       throw new ApiError(
-        'Overpayment is not allowed. This attempt has been flagged for Super Admin review.',
-        API_ERROR_CODE.OVERPAYMENT,
+        `Payment amount must equal ${weeksCount} × weekly installment.`,
+        API_ERROR_CODE.VALIDATION,
+        422,
+      );
+    }
+
+    const payable = scheduleWeeks.filter(
+      (week) =>
+        week.status === 'MISSED' ||
+        (week.status === 'PENDING' && week.dueDate <= input.paymentDate),
+    );
+    if (weeksCount > payable.length) {
+      throw new ApiError(
+        `Only ${payable.length} payable week(s) available.`,
+        API_ERROR_CODE.VALIDATION,
         422,
       );
     }
 
     const validationError = validatePaymentSubmission({
-      amountPesewas: input.amountPesewas,
+      amountPesewas: context.weeklyPaymentPesewas,
       weeklyPaymentPesewas: context.weeklyPaymentPesewas,
       paymentDay: context.paymentDay,
       referenceDate: input.paymentDate,
       scheduleWeeks,
     });
 
-    if (validationError) {
+    if (validationError && weeksCount === 1) {
       throw new ApiError(validationError, API_ERROR_CODE.VALIDATION, 422);
     }
 
-    const updatedSchedule = applyPaymentToOldestObligation(scheduleWeeks, input.paymentDate);
+    let updatedSchedule = scheduleWeeks;
+    for (let index = 0; index < weeksCount; index += 1) {
+      updatedSchedule = applyPaymentToOldestObligation(updatedSchedule, input.paymentDate);
+    }
     saveLoanSchedule(context.loanId, updatedSchedule);
     void import('@/services/mock/borrower-escalation.sync').then((module) => {
       void module.syncBorrowerAndLoanEscalation(context.loanId, updatedSchedule);

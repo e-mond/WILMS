@@ -27,6 +27,8 @@ const legacyRecordPaymentSchema = z.object({
   amountPesewas: z.number().int().positive(),
   paymentDate: z.string().min(1),
   collectorId: z.string().min(1),
+  loanId: z.string().optional(),
+  weeksCount: z.number().int().min(1).max(52).optional(),
   gps: z
     .object({
       latitude: z.number(),

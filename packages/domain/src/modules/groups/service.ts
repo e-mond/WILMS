@@ -5,7 +5,7 @@ import { formatBorrowerDisplayId } from '@wilms/shared-utils';
 import { env } from '../../config/env.js';
 import { isDatabaseEnabled, getDb } from '../../db/client.js';
 import { groupMembers, groups } from '../../db/schema/groups.js';
-import { listBorrowers, listGroups, listPayments } from '../../db/persistence.js';
+import { getBorrower, listBorrowers, listGroups, listPayments } from '../../db/persistence.js';
 import type { BorrowerRecord, GroupRecord } from '../../db/store.js';
 import * as userRepo from '../../repositories/user.repository.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
@@ -580,14 +580,22 @@ export async function addMember(input: {
   groupId: string;
   fullName: string;
   phone: string;
+  borrowerId?: string;
 }): Promise<GroupDetail> {
   const group = await getGroupDetail(input.groupId);
   if (group.members.length >= env.maxGroupSize) {
     throw new Error(`VALIDATION:Groups cannot exceed ${env.maxGroupSize} members.`);
   }
 
-  const borrowers = await listBorrowers();
-  let borrower = borrowers.find((entry) => entry.phone === input.phone.trim());
+  let borrower =
+    input.borrowerId != null && input.borrowerId.trim() !== ''
+      ? await getBorrower(input.borrowerId.trim())
+      : undefined;
+
+  if (!borrower) {
+    const borrowers = await listBorrowers();
+    borrower = borrowers.find((entry) => entry.phone === input.phone.trim());
+  }
 
   if (!borrower && isDatabaseEnabled()) {
     const borrowerId = uuidv7();
@@ -855,6 +863,22 @@ export async function createGroup(
   });
 
   const detail = await getGroupDetail(groupId);
+
+  if (memberIds.length > 0) {
+    const { assignBorrowerToGroup } = await import('../../db/persistence.js');
+    const groupRecord = {
+      id: detail.id,
+      systemId: detail.groupSystemId,
+      name: detail.name,
+      displayName: detail.displayName || detail.name,
+      community: detail.community,
+      memberIds: detail.members.map((member) => member.borrowerId),
+      formedAt: detail.formedAt,
+    };
+    for (const memberBorrowerId of memberIds) {
+      await assignBorrowerToGroup(memberBorrowerId, groupRecord);
+    }
+  }
 
   if (input.collectorUserId) {
     const collector = await userRepo.getUserById(input.collectorUserId);

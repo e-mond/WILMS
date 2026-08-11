@@ -3,6 +3,9 @@ import { formatPaymentDisplayId } from '@wilms/shared-utils';
 import { isDatabaseEnabled, runInTransaction } from '../../db/client.js';
 import {
   applyPaymentToSchedule,
+  computeGraceAndEscalation,
+  countConsecutiveMissedWeeks,
+  getPayableWeeks,
   validatePaymentSubmission,
 } from '../../domain/payment/allocation.js';
 import {
@@ -34,6 +37,8 @@ export const recordPaymentSchema = z.object({
   paymentDate: z.string().min(1),
   collectorId: z.string().min(1),
   loanId: z.string().optional(),
+  /** Number of oldest payable weeks to clear. Defaults to 1. */
+  weeksCount: z.number().int().min(1).max(52).optional(),
   gps: z
     .object({
       latitude: z.number(),
@@ -60,6 +65,8 @@ export async function getPaymentEntryContext(borrowerId: string, referenceDate?:
       borrowerName: borrower.fullName,
       phone: borrower.phone,
       community: borrower.community,
+      groupId: borrower.groupId,
+      groupName: borrower.groupName,
       loanId: '',
       paymentDay: '',
       weeklyPaymentPesewas: 0,
@@ -67,7 +74,13 @@ export async function getPaymentEntryContext(borrowerId: string, referenceDate?:
       isPaymentDay: false,
       requiredAmountPesewas: 0,
       obligationWeeks: [],
+      missedWeeks: [],
+      payableWeeks: [],
+      totalPayableAmountPesewas: 0,
       totalOutstandingObligationsPesewas: 0,
+      maxPayableWeeks: 0,
+      consecutiveMissedWeeks: 0,
+      escalationLevel: 'NONE' as const,
       canAcceptPayment: false,
       blockReason: 'No active loan for this borrower.',
     };
@@ -85,15 +98,29 @@ export async function getPaymentEntryContext(borrowerId: string, referenceDate?:
   const scheduleRows = await scheduleRepo.listScheduleWeeks(loan.id);
   const scheduleWeeks = scheduleRows.map(mapScheduleRow);
 
-  const obligationWeeks = scheduleWeeks
-    .filter((week) => week.status !== 'PAID')
-    .filter((week) => week.status === 'MISSED' || (week.status === 'PENDING' && week.dueDate <= ref))
-    .map((week) => ({
-      weekNumber: week.weekNumber,
-      dueDate: week.dueDate,
-      amountPesewas: week.amountPesewas,
-      status: week.status,
-    }));
+  const obligationWeeks = getPayableWeeks(scheduleWeeks, ref).map((week) => ({
+    weekNumber: week.weekNumber,
+    dueDate: week.dueDate,
+    amountPesewas: week.amountPesewas,
+    status: week.status,
+  }));
+
+  const missedWeeks = obligationWeeks.filter((week) => week.status === 'MISSED');
+  const totalPayableAmountPesewas = obligationWeeks.reduce(
+    (sum, week) => sum + week.amountPesewas,
+    0,
+  );
+  const consecutiveMissedWeeks = countConsecutiveMissedWeeks(scheduleWeeks, ref);
+  const graceInfo = computeGraceAndEscalation({
+    referenceDate: ref,
+    oldestPayableDueDate: obligationWeeks[0]?.dueDate,
+    graceDays: settings.latePaymentGraceDays,
+  });
+
+  const payments = await paymentRepo.listPayments({ borrowerIds: [borrowerId], limit: 50 });
+  const lastPayment = payments
+    .slice()
+    .sort((left, right) => right.paymentDate.localeCompare(left.paymentDate))[0];
 
   const blockReason = validatePaymentSubmission({
     amountPesewas: loan.weeklyPaymentPesewas,
@@ -101,16 +128,24 @@ export async function getPaymentEntryContext(borrowerId: string, referenceDate?:
     paymentDay: loan.paymentDay,
     referenceDate: ref,
     scheduleWeeks,
+    weeksCount: 1,
   });
 
   const isPaymentDay = !blockReason?.includes('assigned payment day');
+  const nextDue =
+    scheduleWeeks.find((week) => week.status === 'PENDING' && week.dueDate > ref) ??
+    obligationWeeks[0];
 
   return {
     borrowerId,
     borrowerName: borrower.fullName,
     phone: borrower.phone,
     community: borrower.community,
+    groupId: borrower.groupId,
+    groupName: borrower.groupName,
     loanId: loan.id,
+    loanDisplayId: loan.displayId ?? loan.id,
+    outstandingPesewas: loan.outstandingPesewas,
     paymentDay: loan.paymentDay,
     weeklyPaymentPesewas: loan.weeklyPaymentPesewas,
     referenceDate: ref,
@@ -118,11 +153,24 @@ export async function getPaymentEntryContext(borrowerId: string, referenceDate?:
     requiredAmountPesewas: loan.weeklyPaymentPesewas,
     oldestObligation: obligationWeeks[0],
     obligationWeeks,
-    totalOutstandingObligationsPesewas: obligationWeeks.reduce(
-      (sum, week) => sum + week.amountPesewas,
-      0,
-    ),
-    canAcceptPayment: !blockReason,
+    missedWeeks,
+    payableWeeks: obligationWeeks,
+    totalPayableAmountPesewas,
+    totalOutstandingObligationsPesewas: totalPayableAmountPesewas,
+    nextDueDate: nextDue?.dueDate,
+    gracePeriodEnd: graceInfo.gracePeriodEnd,
+    graceDays: settings.latePaymentGraceDays,
+    escalationLevel: graceInfo.escalationLevel,
+    consecutiveMissedWeeks,
+    lastPayment: lastPayment
+      ? {
+          id: lastPayment.id,
+          paymentDate: lastPayment.paymentDate,
+          amountPesewas: lastPayment.amountPesewas,
+        }
+      : undefined,
+    maxPayableWeeks: obligationWeeks.length,
+    canAcceptPayment: !blockReason && obligationWeeks.length > 0,
     blockReason,
   };
 }
@@ -158,14 +206,7 @@ async function postPayment(
     throw new Error('VALIDATION:GPS coordinates are required to record a collection.');
   }
 
-  const duplicate = await paymentRepo.findDuplicatePayment({
-    borrowerId: input.borrowerId,
-    paymentDate: input.paymentDate,
-    amountPesewas: input.amountPesewas,
-  });
-  if (duplicate) {
-    throw new Error('DUPLICATE');
-  }
+  const weeksCount = input.weeksCount ?? 1;
 
   const loanRows = await loanRepo.listBorrowerLoans(input.borrowerId);
   const activeLoan = loanRows.find((row) => row.externalStatus === 'ACTIVE');
@@ -189,126 +230,163 @@ async function postPayment(
     paymentDay: loan.paymentDay,
     referenceDate: input.paymentDate,
     scheduleWeeks,
+    weeksCount,
   });
 
   if (validationError) {
     throw new Error(`VALIDATION:${validationError}`);
   }
 
-  const allocation = applyPaymentToSchedule(scheduleWeeks, input.paymentDate);
-  const weekNumber = allocation.weekNumber;
-  if (!weekNumber) {
+  const allocation = applyPaymentToSchedule(scheduleWeeks, input.paymentDate, weeksCount);
+  const weekNumbers = allocation.weekNumbers;
+  if (weekNumbers.length !== weeksCount) {
     throw new Error('VALIDATION:No payable obligation found.');
   }
 
-  const weekRow = scheduleRows.find((row) => row.weekNumber === weekNumber);
-  if (!weekRow) {
-    throw new Error('NOT_FOUND');
+  const weeklyAmount = loan.weeklyPaymentPesewas;
+  const amountDecimal = pesewasToDecimal(weeklyAmount);
+
+  for (const weekNumber of weekNumbers) {
+    const weekRow = scheduleRows.find((row) => row.weekNumber === weekNumber);
+    if (!weekRow || weekRow.status === 'PAID') {
+      throw new Error('DUPLICATE');
+    }
   }
 
-  const newBalancePesewas = Math.max(loan.outstandingPesewas - input.amountPesewas, 0);
-  const amountDecimal = pesewasToDecimal(input.amountPesewas);
+  if (weeksCount === 1) {
+    const duplicate = await paymentRepo.findDuplicatePayment({
+      borrowerId: input.borrowerId,
+      paymentDate: input.paymentDate,
+      amountPesewas: input.amountPesewas,
+    });
+    if (duplicate) {
+      throw new Error('DUPLICATE');
+    }
+  }
 
   const result = await runInTransaction(async (tx) => {
-    const payment = await paymentRepo.appendPayment(
-      {
-        id: paymentRepo.nextPaymentId(),
-        borrowerId: input.borrowerId,
-        collectorId: input.collectorId,
-        amountPesewas: input.amountPesewas,
-        paymentDate: input.paymentDate,
-        recordedAt: new Date().toISOString(),
-        gps: input.gps,
-        loanId: loan.id,
-        scheduleWeekNumber: weekNumber,
-      },
-      tx,
-    );
+    const createdPayments = [];
+    let loanVersion = activeLoan.version;
+    let runningBalance = loan.outstandingPesewas;
 
-    await scheduleRepo.markWeekPaid(
-      {
-        loanId: loan.id,
-        weekNumber,
-        expectedVersion: weekRow.version,
-      },
-      tx,
-    );
+    for (const weekNumber of weekNumbers) {
+      const weekRow = scheduleRows.find((row) => row.weekNumber === weekNumber);
+      if (!weekRow) {
+        throw new Error('NOT_FOUND');
+      }
 
-    const lifecycleStatus =
-      newBalancePesewas === 0 ? LOAN_LIFECYCLE.COMPLETED : LOAN_LIFECYCLE.ACTIVE;
+      runningBalance = Math.max(runningBalance - weeklyAmount, 0);
 
-    await loanRepo.updateLoanLifecycle(
-      {
-        loanId: loan.id,
-        expectedVersion: activeLoan.version,
-        lifecycleStatus,
-        loanBalance: pesewasToDecimal(newBalancePesewas),
-      },
-      tx,
-    );
-
-    await ledgerRepo.appendLedgerEntry(
-      {
-        entryType: 'REPAYMENT',
-        loanId: loan.id,
-        borrowerId: input.borrowerId,
-        paymentId: payment.id,
-        amountDecimal,
-        description: `Repayment week ${weekNumber}`,
-        actorUserId: actorId,
-        metadata: { weekNumber },
-      },
-      tx,
-    );
-
-    if (activeLoan.loanPoolId) {
-      await poolRepo.appendAllocation(
+      const payment = await paymentRepo.appendPayment(
         {
-          poolId: activeLoan.loanPoolId,
-          allocationType: 'REPAYMENT',
-          amountPesewas: input.amountPesewas,
-          loanId: loan.id,
+          id: paymentRepo.nextPaymentId(),
           borrowerId: input.borrowerId,
-          paymentId: payment.id,
-          description: `Repayment week ${weekNumber}`,
-          actorUserId: actorId,
+          collectorId: input.collectorId,
+          amountPesewas: weeklyAmount,
+          paymentDate: input.paymentDate,
+          recordedAt: new Date().toISOString(),
+          gps: input.gps,
+          loanId: loan.id,
+          scheduleWeekNumber: weekNumber,
         },
         tx,
       );
+      createdPayments.push(payment);
+
+      await scheduleRepo.markWeekPaid(
+        {
+          loanId: loan.id,
+          weekNumber,
+          expectedVersion: weekRow.version,
+        },
+        tx,
+      );
+
+      const lifecycleStatus =
+        runningBalance === 0 ? LOAN_LIFECYCLE.COMPLETED : LOAN_LIFECYCLE.ACTIVE;
+
+      await loanRepo.updateLoanLifecycle(
+        {
+          loanId: loan.id,
+          expectedVersion: loanVersion,
+          lifecycleStatus,
+          loanBalance: pesewasToDecimal(runningBalance),
+        },
+        tx,
+      );
+      loanVersion += 1;
+
+      await ledgerRepo.appendLedgerEntry(
+        {
+          entryType: 'REPAYMENT',
+          loanId: loan.id,
+          borrowerId: input.borrowerId,
+          paymentId: payment.id,
+          amountDecimal,
+          description: `Repayment week ${weekNumber}`,
+          actorUserId: actorId,
+          metadata: { weekNumber, weeksCount },
+        },
+        tx,
+      );
+
+      if (activeLoan.loanPoolId) {
+        await poolRepo.appendAllocation(
+          {
+            poolId: activeLoan.loanPoolId,
+            allocationType: 'REPAYMENT',
+            amountPesewas: weeklyAmount,
+            loanId: loan.id,
+            borrowerId: input.borrowerId,
+            paymentId: payment.id,
+            description: `Repayment week ${weekNumber}`,
+            actorUserId: actorId,
+          },
+          tx,
+        );
+      }
+    }
+
+    if (activeLoan.loanPoolId) {
       await poolRepo.refreshPoolAggregates(activeLoan.loanPoolId, tx);
     }
 
-    return payment;
+    return { payments: createdPayments, finalBalance: runningBalance };
   });
 
-  appendAuditEntry({
-    action: 'payment.recorded',
-    actorId,
-    targetEntityId: result.id,
-    targetEntityType: 'payment',
-  });
+  for (const payment of result.payments) {
+    appendAuditEntry({
+      action: 'payment.recorded',
+      actorId,
+      targetEntityId: payment.id,
+      targetEntityType: 'payment',
+      reason: weeksCount > 1 ? `Multi-week allocation (${weeksCount} weeks)` : undefined,
+    });
+  }
 
   const borrower = await borrowerRepo.getBorrower(input.borrowerId);
   if (borrower) {
     const nextDueDate = await resolveNextDueDate(loan.id);
     const weeksRemaining = await resolveWeeksRemaining(loan.id);
-    void emitPaymentConfirmedNotification({
-      paymentId: result.id,
-      borrowerId: borrower.id,
-      borrowerName: borrower.fullName,
-      borrowerPhone: borrower.phone,
-      borrowerEmail: borrower.profile?.email,
-      amountPesewas: input.amountPesewas,
-      paymentDate: input.paymentDate,
-      loanDisplayId: loan.displayId ?? loan.id,
-      loanId: loan.id,
-      outstandingBalancePesewas: newBalancePesewas,
-      weeksRemaining,
-      nextDueDate,
-      collectorUserId: input.collectorId,
-    });
+    for (const payment of result.payments) {
+      void emitPaymentConfirmedNotification({
+        paymentId: payment.id,
+        borrowerId: borrower.id,
+        borrowerName: borrower.fullName,
+        borrowerPhone: borrower.phone,
+        borrowerEmail: borrower.profile?.email,
+        amountPesewas: weeklyAmount,
+        paymentDate: input.paymentDate,
+        loanDisplayId: loan.displayId ?? loan.id,
+        loanId: loan.id,
+        outstandingBalancePesewas: result.finalBalance,
+        weeksRemaining,
+        nextDueDate,
+        collectorUserId: input.collectorId,
+      });
+    }
 
-    if (newBalancePesewas === 0) {
+    if (result.finalBalance === 0) {
       void notifyLoanFullyPaid({
         borrowerId: borrower.id,
         borrowerName: borrower.fullName,
@@ -322,18 +400,22 @@ async function postPayment(
     }
   }
 
+  const primary = result.payments[0]!;
   return {
-    id: result.id,
-    displayId: formatPaymentDisplayId({ recordedAt: result.recordedAt }),
-    borrowerId: result.borrowerId,
-    collectorId: result.collectorId,
+    id: primary.id,
+    displayId: formatPaymentDisplayId({ recordedAt: primary.recordedAt }),
+    borrowerId: primary.borrowerId,
+    collectorId: primary.collectorId,
     loanId: loan.id,
-    amountPesewas: result.amountPesewas,
-    paymentDate: result.paymentDate,
-    recordedAt: result.recordedAt,
+    amountPesewas: input.amountPesewas,
+    paymentDate: primary.paymentDate,
+    recordedAt: primary.recordedAt,
     status: 'CONFIRMED',
-    gps: result.gps,
-    weekNumber,
+    gps: primary.gps,
+    weekNumber: weekNumbers[0],
+    weekNumbers,
+    weeksCount,
+    paymentIds: result.payments.map((payment) => payment.id),
   };
 }
 

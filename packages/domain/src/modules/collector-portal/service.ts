@@ -77,6 +77,8 @@ export interface CollectorDashboard {
     groupName: string;
     loanId: string;
     expectedPesewas: number;
+    weeklyPaymentPesewas?: number;
+    payableWeeksCount?: number;
     collectedPesewas: number;
     paymentStatus: 'COLLECTED' | 'PENDING' | 'MISSED';
   }>;
@@ -185,25 +187,35 @@ export async function getCollectorDashboard(
       }
     }
     const loanIds = [...loansByBorrower.values()].map((loan) => loan.id);
-    const dueWeeks = await scheduleRepo.listScheduleWeeksForLoansOnDate(loanIds, referenceDate);
-    const weekByLoanId = new Map(
-      dueWeeks.map((week) => [
-        week.loanId,
-        {
-          status: week.status,
-          expectedPesewas: decimalToPesewas(week.installmentAmount),
-        },
-      ] as const),
+    const payableWeeks = await scheduleRepo.listPayableScheduleWeeksForLoans(
+      loanIds,
+      referenceDate,
     );
+    const payableByLoanId = new Map<
+      string,
+      { expectedPesewas: number; hasMissed: boolean; weeksCount: number }
+    >();
+    for (const week of payableWeeks) {
+      const current = payableByLoanId.get(week.loanId) ?? {
+        expectedPesewas: 0,
+        hasMissed: false,
+        weeksCount: 0,
+      };
+      current.expectedPesewas += decimalToPesewas(week.installmentAmount);
+      current.weeksCount += 1;
+      if (week.status === 'MISSED') {
+        current.hasMissed = true;
+      }
+      payableByLoanId.set(week.loanId, current);
+    }
 
     for (const borrower of scopedBorrowers) {
       const loan = loansByBorrower.get(borrower.id);
-      const scheduleDue = loan ? weekByLoanId.get(loan.id) : undefined;
-      const weeklyExpected = scheduleDue
-        ? scheduleDue.expectedPesewas
-        : loan && isLoanDueOnDate(loan.paymentDay, referenceDate)
-          ? decimalToPesewas(loan.installmentAmount)
-          : 0;
+      const payable = loan ? payableByLoanId.get(loan.id) : undefined;
+      const weeklyInstallment = loan ? decimalToPesewas(loan.installmentAmount) : 0;
+      const weeklyExpected =
+        payable?.expectedPesewas ??
+        (loan && isLoanDueOnDate(loan.paymentDay, referenceDate) ? weeklyInstallment : 0);
       expectedPesewas += weeklyExpected;
       const collectedForBorrower = collectorPayments
         .filter((payment) => payment.borrowerId === borrower.id)
@@ -212,7 +224,7 @@ export async function getCollectorDashboard(
       const paymentStatus = resolvePaymentStatus({
         weeklyExpected,
         collectedForBorrower,
-        scheduleStatus: scheduleDue?.status,
+        scheduleStatus: payable?.hasMissed ? 'MISSED' : weeklyExpected > 0 ? 'PENDING' : undefined,
       });
 
       borrowerRows.push({
@@ -224,6 +236,8 @@ export async function getCollectorDashboard(
         groupName: groupMeta?.groupName ?? (borrower.groupName || '—'),
         loanId: loan?.id ?? '',
         expectedPesewas: weeklyExpected,
+        weeklyPaymentPesewas: weeklyInstallment,
+        payableWeeksCount: payable?.weeksCount ?? (weeklyExpected > 0 ? 1 : 0),
         collectedPesewas: collectedForBorrower,
         paymentStatus,
       });

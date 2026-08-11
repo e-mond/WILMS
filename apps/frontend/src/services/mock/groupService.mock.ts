@@ -30,7 +30,7 @@ import {
   GROUP_MEMBER_LOAN_STATUS,
   GROUP_MEMBER_ROLE,
 } from '@/types/group';
-import { getBorrowerRegistryEntry } from '@/services/mock/borrower-registry.store';
+import { getBorrowerRegistryEntry, getBorrowerRegistryEntries, assignBorrowerRegistryGroup } from '@/services/mock/borrower-registry.store';
 import { getSettingsUsersStore } from '@/services/mock/settings-users.store';
 import {
   addGroupMember,
@@ -197,6 +197,7 @@ const groupServiceMock: IGroupService = {
 
   async createGroup(input: CreateGroupInput) {
     await simulateDelay();
+    const memberIds = input.memberBorrowerIds ?? [];
     const detail = buildGroupDetail({
       id: `grp-${Date.now()}`,
       name: input.name,
@@ -205,14 +206,32 @@ const groupServiceMock: IGroupService = {
       officerName: 'Super Admin',
       leaderName: '—',
       formedAt: new Date().toISOString().slice(0, 10),
-      memberCount: input.memberBorrowerIds?.length ?? 0,
-      activeMemberCount: input.memberBorrowerIds?.length ?? 0,
+      memberCount: memberIds.length,
+      activeMemberCount: memberIds.length,
       disbursedPesewas: 0,
       collectedPesewas: 0,
       collectionRatePercent: 0,
     });
     groupDetailCache.set(detail.id, detail);
-    return detail;
+
+    for (const memberBorrowerId of memberIds) {
+      const registryEntry = getBorrowerRegistryEntry(memberBorrowerId);
+      addGroupMember(detail.id, {
+        borrowerId: memberBorrowerId,
+        fullName: registryEntry?.fullName ?? 'Borrower',
+        role: GROUP_MEMBER_ROLE.MEMBER,
+        loanStatus: GROUP_MEMBER_LOAN_STATUS.NONE,
+        paymentConsistencyPercent: 100,
+      });
+      if (registryEntry) {
+        assignBorrowerRegistryGroup(registryEntry.id, {
+          id: detail.id,
+          name: detail.displayName || detail.name,
+        });
+      }
+    }
+
+    return this.getGroup(detail.id);
   },
 
   async flagGroup(input: FlagGroupInput) {
@@ -297,22 +316,38 @@ const groupServiceMock: IGroupService = {
       );
     }
 
-    const borrowerId = `${input.groupId}-added-${Date.now()}`;
+    const registryById =
+      input.borrowerId != null && input.borrowerId.trim() !== ''
+        ? getBorrowerRegistryEntry(input.borrowerId.trim())
+        : undefined;
+    const registryByPhone = getBorrowerRegistryEntries().find(
+      (entry) => entry.phone === input.phone.trim(),
+    );
+    const registryEntry = registryById ?? registryByPhone;
+    const borrowerId = registryEntry?.id ?? `${input.groupId}-added-${Date.now()}`;
+    const fullName = registryEntry?.fullName ?? input.fullName.trim();
 
     addGroupMember(input.groupId, {
       borrowerId,
-      fullName: input.fullName.trim(),
+      fullName,
       role: GROUP_MEMBER_ROLE.MEMBER,
       loanStatus: GROUP_MEMBER_LOAN_STATUS.NONE,
       paymentConsistencyPercent: 100,
     });
+
+    if (registryEntry) {
+      assignBorrowerRegistryGroup(registryEntry.id, {
+        id: group.id,
+        name: group.displayName || group.name,
+      });
+    }
 
     await auditServiceMock.createEntry({
       action: AUDIT_ACTION.GROUP_MEMBER_ADDED,
       targetEntityType: AUDIT_TARGET_ENTITY.GROUP,
       targetEntityId: input.groupId,
       actorId: input.actorUserId,
-      reason: `${input.reason.trim()} · ${input.fullName.trim()} (${input.phone.trim()})`,
+      reason: `${input.reason.trim()} · ${fullName} (${input.phone.trim()})`,
     });
 
     invalidateGroup(input.groupId);
