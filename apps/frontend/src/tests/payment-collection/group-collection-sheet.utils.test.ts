@@ -22,6 +22,8 @@ function member(overrides: Partial<SheetMember> = {}): SheetMember {
     borrowerName: 'Ama',
     loanId: 'loan-1',
     expectedPesewas: 5000,
+    weeklyPaymentPesewas: 5000,
+    payableWeeksCount: 1,
     choice: 'UNSET',
     recorded: 'NONE',
     ...overrides,
@@ -30,10 +32,16 @@ function member(overrides: Partial<SheetMember> = {}): SheetMember {
 
 describe('group-collection-sheet.utils', () => {
   it('resolves payment mode amounts', () => {
-    expect(resolveSheetAmountPesewas(5000, 'NORMAL')).toBe(5000);
-    expect(resolveSheetAmountPesewas(5000, 'DOUBLE')).toBe(10_000);
-    expect(resolveSheetAmountPesewas(5000, 'PARTIAL')).toBe(2500);
-    expect(resolveSheetAmountPesewas(5000, 'ADVANCE')).toBe(5000);
+    expect(resolveSheetAmountPesewas(member(), 'NORMAL')).toEqual({
+      amountPesewas: 5000,
+      weeksCount: 1,
+    });
+    expect(
+      resolveSheetAmountPesewas(member({ payableWeeksCount: 3, expectedPesewas: 15_000 }), 'DOUBLE'),
+    ).toEqual({ amountPesewas: 10_000, weeksCount: 2 });
+    expect(
+      resolveSheetAmountPesewas(member({ payableWeeksCount: 3, expectedPesewas: 15_000 }), 'ALL'),
+    ).toEqual({ amountPesewas: 15_000, weeksCount: 3 });
   });
 
   it('filters members by group and greys collected/missed rows', () => {

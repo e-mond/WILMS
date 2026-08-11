@@ -94,6 +94,8 @@ export interface CollectorDashboardBorrower {
   groupName: string;
   loanId: string;
   expectedPesewas: number;
+  weeklyPaymentPesewas?: number;
+  payableWeeksCount?: number;
   collectedPesewas: number;
   paymentStatus: CollectorPaymentStatus;
 }

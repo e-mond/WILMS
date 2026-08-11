@@ -406,7 +406,7 @@ export async function emitPaymentDueTodayNotification(input: {
   recordNotificationMetric('payment_due_today');
 }
 
-/** Escalating overdue reminders at 1 / 3 / 7 days past due. */
+/** Escalating overdue / grace reminders (schedule-aware ladder). */
 export async function emitPaymentOverdueLadderNotification(input: {
   borrowerId: string;
   borrowerName: string;
@@ -416,17 +416,35 @@ export async function emitPaymentOverdueLadderNotification(input: {
   loanDisplayId: string;
   dueDate: string;
   amountPesewas: number;
-  daysOverdue: 1 | 3 | 7;
+  daysOverdue: number;
+  graceDays?: number;
   collectorUserId?: string;
   correlationId?: string;
 }): Promise<void> {
+  const graceDays = input.graceDays ?? 3;
   const dedupeKey = `payment-overdue-${input.daysOverdue}d:${input.loanId}:${input.dueDate}`;
   const settings = await getSettings();
   const amountGhs = formatGhsAmount(input.amountPesewas);
-  const title = `${input.daysOverdue}-day overdue payment`;
-  const body = `WILMS: Hi ${input.borrowerName}, your payment of GHS ${amountGhs} for ${input.loanDisplayId} is ${input.daysOverdue} day(s) overdue (due ${input.dueDate}).`;
 
-  if (input.borrowerPhone) {
+  let title = `${input.daysOverdue}-day overdue payment`;
+  let body = `WILMS: Hi ${input.borrowerName}, your payment of GHS ${amountGhs} for ${input.loanDisplayId} is ${input.daysOverdue} day(s) overdue (due ${input.dueDate}).`;
+  let collectorBody = `${input.borrowerName} is ${input.daysOverdue} day(s) overdue (GHS ${amountGhs}).`;
+
+  if (input.daysOverdue === graceDays) {
+    title = 'Grace period ending';
+    body = `WILMS: Hi ${input.borrowerName}, your grace period ends tomorrow for GHS ${amountGhs} (${input.loanDisplayId}). Please contact your collector if you have already paid.`;
+    collectorBody = `Grace ending for ${input.borrowerName} (GHS ${amountGhs}).`;
+  } else if (input.daysOverdue === graceDays + 1) {
+    title = 'Collector overdue alert';
+    collectorBody = `${input.borrowerName} is past grace (${input.daysOverdue} day(s), GHS ${amountGhs}). Follow up required.`;
+  } else if (input.daysOverdue === graceDays + 2) {
+    title = 'Super Admin delinquency alert';
+  } else if (input.daysOverdue >= 7) {
+    title = 'Escalated delinquency';
+    body = `WILMS: Hi ${input.borrowerName}, your payment is now overdue and has been escalated (GHS ${amountGhs}, ${input.loanDisplayId}).`;
+  }
+
+  if (input.borrowerPhone && input.daysOverdue !== graceDays + 1 && input.daysOverdue !== graceDays + 2) {
     await dispatchBorrowerSms({
       dedupeKey,
       notificationType: 'PAYMENT_OVERDUE',
@@ -442,19 +460,43 @@ export async function emitPaymentOverdueLadderNotification(input: {
 
   const collectorId =
     input.collectorUserId ?? (await resolveCollectorUserIdForBorrower(input.borrowerId));
-  if (collectorId) {
+  if (collectorId && input.daysOverdue !== graceDays + 2) {
     await dispatchStaffInApp({
       dedupeKey,
       notificationType: 'PAYMENT_OVERDUE',
       userId: collectorId,
       event: 'MISSED_PAYMENT',
       title,
-      body: `${input.borrowerName} is ${input.daysOverdue} day(s) overdue (GHS ${amountGhs}).`,
+      body: collectorBody,
       href: `/collector/payment/${input.borrowerId}`,
       borrowerId: input.borrowerId,
       loanId: input.loanId,
       correlationId: input.correlationId,
     });
+  }
+
+  if (input.daysOverdue === graceDays + 2 || input.daysOverdue >= 7) {
+    if (isDatabaseEnabled()) {
+      const db = getDb();
+      const admins = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(and(eq(users.role, USER_ROLE.SUPER_ADMIN), isNull(users.deletedAt)));
+      for (const admin of admins) {
+        await dispatchStaffInApp({
+          dedupeKey: `${dedupeKey}:admin`,
+          notificationType: 'SUPERVISOR_ALERT',
+          userId: admin.id,
+          event: 'MISSED_PAYMENT',
+          title,
+          body: `${input.borrowerName} delinquency day ${input.daysOverdue} (GHS ${amountGhs}, loan ${input.loanDisplayId}).`,
+          href: '/reports/defaulters',
+          borrowerId: input.borrowerId,
+          loanId: input.loanId,
+          correlationId: input.correlationId,
+        });
+      }
+    }
   }
 
   recordNotificationMetric('payment_missed');

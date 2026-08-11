@@ -1,4 +1,4 @@
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray, lte, or } from 'drizzle-orm';
 import type { WilmsDb } from '../db/client.js';
 import { getDb } from '../db/client.js';
 import { loanSchedules } from '../db/schema/loan-schedules.js';
@@ -31,6 +31,37 @@ export async function listScheduleWeeks(loanId: string, tx: WilmsDb = getDb()) {
     .from(loanSchedules)
     .where(eq(loanSchedules.loanId, loanId))
     .orderBy(loanSchedules.weekNumber);
+}
+
+/** Batch lookup of all payable schedule weeks (MISSED or PENDING due on/before date). */
+export async function listPayableScheduleWeeksForLoans(
+  loanIds: string[],
+  referenceDate: string,
+  tx: WilmsDb = getDb(),
+) {
+  if (loanIds.length === 0) {
+    return [];
+  }
+
+  return tx
+    .select({
+      loanId: loanSchedules.loanId,
+      weekNumber: loanSchedules.weekNumber,
+      dueDate: loanSchedules.dueDate,
+      status: loanSchedules.status,
+      installmentAmount: loanSchedules.installmentAmount,
+    })
+    .from(loanSchedules)
+    .where(
+      and(
+        inArray(loanSchedules.loanId, loanIds),
+        or(
+          eq(loanSchedules.status, 'MISSED'),
+          and(eq(loanSchedules.status, 'PENDING'), lte(loanSchedules.dueDate, referenceDate)),
+        ),
+      ),
+    )
+    .orderBy(loanSchedules.loanId, loanSchedules.weekNumber);
 }
 
 /** Batch lookup of schedule weeks due on a date for many loans (collector dashboard). */

@@ -98,6 +98,8 @@ export interface AddGroupMemberInput {
   phone: string;
   reason: string;
   actorUserId: string;
+  /** Prefer this over phone matching when assigning an existing borrower. */
+  borrowerId?: string;
 }
 
 export interface TransferGroupMemberInput extends GroupMembershipChangeInput {

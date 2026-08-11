@@ -18,6 +18,8 @@ export interface RecordPaymentInput {
   amountPesewas: number;
   paymentDate: string;
   collectorId: string;
+  loanId?: string;
+  weeksCount?: number;
   /** Provided for offline queue replay; captured live when omitted. */
   gps?: GpsCoordinates;
 }
@@ -66,4 +68,6 @@ export interface RecordPaymentQueuePayload {
   paymentDate: string;
   gps: GpsCoordinates;
   collectorId: string;
+  weeksCount?: number;
+  loanId?: string;
 }

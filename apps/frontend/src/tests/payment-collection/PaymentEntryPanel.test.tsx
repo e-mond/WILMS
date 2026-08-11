@@ -20,6 +20,7 @@ vi.mock('@/services', () => ({
   paymentService: {
     getPaymentEntryContext: mockGetPaymentEntryContext,
     recordPayment: mockRecordPayment,
+    markMissedPayment: vi.fn(),
   },
 }));
 
@@ -85,7 +86,7 @@ describe('PaymentEntryPanel', () => {
 
     expect(await screen.findByRole('heading', { name: 'Ama Mensah' })).toBeInTheDocument();
     expect(screen.getByText(/Week 4/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Record weekly payment/i })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /Pay current week/i })).toBeEnabled();
   });
 
   it('queues payment for sync when offline', async () => {
@@ -100,8 +101,8 @@ describe('PaymentEntryPanel', () => {
 
     await screen.findByRole('heading', { name: 'Ama Mensah' });
     expect(screen.getByText(/Offline mode/i)).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /Save weekly payment for sync/i }));
-    await user.click(screen.getByRole('button', { name: /Save payment for sync/i }));
+    await user.click(screen.getByRole('button', { name: /Pay current week/i }));
+    await user.click(screen.getByRole('button', { name: /Save for sync/i }));
 
     await waitFor(() => {
       expect(mockCaptureGps).toHaveBeenCalled();
@@ -120,8 +121,8 @@ describe('PaymentEntryPanel', () => {
     );
 
     await screen.findByRole('heading', { name: 'Ama Mensah' });
-    await user.click(screen.getByRole('button', { name: /Record weekly payment/i }));
-    await user.click(screen.getByRole('button', { name: /Confirm payment recording/i }));
+    await user.click(screen.getByRole('button', { name: /Pay current week/i }));
+    await user.click(screen.getByRole('button', { name: /Confirm payment/i }));
 
     await waitFor(() => {
       expect(mockCaptureGps).toHaveBeenCalled();
@@ -129,6 +130,7 @@ describe('PaymentEntryPanel', () => {
         expect.objectContaining({
           borrowerId: 'borrower-001',
           amountPesewas: 5000,
+          weeksCount: 1,
           gps: expect.objectContaining({ latitude: 5.6037 }),
         }),
       );

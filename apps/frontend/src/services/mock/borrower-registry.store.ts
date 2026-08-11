@@ -53,6 +53,25 @@ export function updateBorrowerRegistryStatus(
   return updated;
 }
 
+export function assignBorrowerRegistryGroup(
+  id: string,
+  group: { id: string; name: string },
+): BorrowerRegistryEntry {
+  const existing = registryEntries.find((entry) => entry.id === id);
+
+  if (!existing) {
+    throw new Error('Borrower registry entry not found.');
+  }
+
+  const updated: BorrowerRegistryEntry = {
+    ...existing,
+    groupName: group.name,
+  };
+
+  registryEntries = registryEntries.map((entry) => (entry.id === id ? updated : entry));
+  return updated;
+}
+
 export function removeBorrowerRegistryEntry(id: string): void {
   registryEntries = registryEntries.filter((entry) => entry.id !== id);
 }
