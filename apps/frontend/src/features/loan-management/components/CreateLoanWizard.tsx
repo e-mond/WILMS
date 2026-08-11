@@ -84,7 +84,7 @@ export function CreateLoanWizard() {
   const queryClient = useQueryClient();
   const { data: eligibleBorrowers, isLoading, isError, error, refetch } = useEligibleBorrowers();
   const { data: loanPoolsData } = useLoanPools();
-  const availablePools = loanPoolsData?.pools ?? [];
+  const availablePools = useMemo(() => loanPoolsData?.pools ?? [], [loanPoolsData?.pools]);
   const [currentStep, setCurrentStep] = useState(0);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [createdLoanId, setCreatedLoanId] = useState<string | null>(null);
@@ -108,6 +108,36 @@ export function CreateLoanWizard() {
     () => eligibleBorrowers?.find((borrower) => borrower.id === formValues.borrowerId),
     [eligibleBorrowers, formValues.borrowerId],
   );
+  const selectedPool = useMemo(
+    () => availablePools.find((pool) => pool.id === formValues.loanPoolId),
+    [availablePools, formValues.loanPoolId],
+  );
+  const selectedPoolAvailablePesewas = selectedPool
+    ? Math.max(0, selectedPool.capitalPesewas - selectedPool.outstandingPesewas)
+    : null;
+  const requestedAmountPesewas = useMemo(() => {
+    const normalized = formValues.amountGhs?.trim().replace(/,/g, '') ?? '';
+    if (!normalized) {
+      return null;
+    }
+    const parsed = Number(normalized);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      return null;
+    }
+    return Math.round(parsed * 100);
+  }, [formValues.amountGhs]);
+  const poolCapitalShortfall =
+    selectedPoolAvailablePesewas != null &&
+    requestedAmountPesewas != null &&
+    requestedAmountPesewas > selectedPoolAvailablePesewas
+      ? requestedAmountPesewas - selectedPoolAvailablePesewas
+      : null;
+
+  const formatGhsFromPesewas = (pesewas: number) =>
+    `GH₵${(pesewas / 100).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
 
   const createLoanMutation = useMutation({
     mutationFn: (input: ReturnType<typeof toCreateLoanInput>) => {
@@ -143,6 +173,25 @@ export function CreateLoanWizard() {
     if (currentStep === 0 && availablePools.length > 0 && !getValues('loanPoolId')?.trim()) {
       setError('loanPoolId', { type: 'manual', message: 'Select a funding pool.' });
       return false;
+    }
+
+    if (currentStep === 1 && selectedPoolAvailablePesewas != null) {
+      const amountPesewas = (() => {
+        const normalized = getValues('amountGhs')?.trim().replace(/,/g, '') ?? '';
+        const parsed = Number(normalized);
+        if (!Number.isFinite(parsed) || parsed <= 0) {
+          return null;
+        }
+        return Math.round(parsed * 100);
+      })();
+      if (amountPesewas != null && amountPesewas > selectedPoolAvailablePesewas) {
+        const shortfall = amountPesewas - selectedPoolAvailablePesewas;
+        setError('amountGhs', {
+          type: 'manual',
+          message: `Requested amount exceeds available pool capital. Additional funding required: ${formatGhsFromPesewas(shortfall)}.`,
+        });
+        return false;
+      }
     }
 
     return true;
@@ -191,6 +240,25 @@ export function CreateLoanWizard() {
 
     if (!payload) {
       setSubmitError('Enter a valid loan amount in GHS.');
+      return;
+    }
+
+    if (
+      selectedPoolAvailablePesewas != null &&
+      payload.amountPesewas > selectedPoolAvailablePesewas
+    ) {
+      const shortfall = payload.amountPesewas - selectedPoolAvailablePesewas;
+      const message = [
+        'Cannot create loan',
+        selectedPool ? `Selected pool: ${selectedPool.name}` : null,
+        `Available capital: ${formatGhsFromPesewas(selectedPoolAvailablePesewas)}`,
+        `Requested loan: ${formatGhsFromPesewas(payload.amountPesewas)}`,
+        `Additional funding required: ${formatGhsFromPesewas(shortfall)}`,
+      ]
+        .filter(Boolean)
+        .join('. ');
+      setCurrentStep(1);
+      setSubmitError(message);
       return;
     }
 
@@ -264,7 +332,7 @@ export function CreateLoanWizard() {
       onBack={handleBack}
       onNext={() => void handleNext()}
       onSubmit={() => void onSubmit()}
-      isSubmitting={isSubmitting || createLoanMutation.isPending}
+      isSubmitting={isSubmitting || createLoanMutation.isPending || poolCapitalShortfall != null}
       submitLabel="Create loan"
       submitPermissions={[PERMISSION.APPROVE_LOANS]}
     >
@@ -311,13 +379,23 @@ export function CreateLoanWizard() {
                 })}
               >
                 <option value="">Select funding pool</option>
-                {availablePools.map((pool) => (
-                  <option key={pool.id} value={pool.id}>
-                    {pool.name} — {pool.region}
-                  </option>
-                ))}
+                {availablePools.map((pool) => {
+                  const available = Math.max(0, pool.capitalPesewas - pool.outstandingPesewas);
+                  return (
+                    <option key={pool.id} value={pool.id}>
+                      {pool.name} — {pool.region} (available{' '}
+                      {formatGhsFromPesewas(available)})
+                    </option>
+                  );
+                })}
               </Select>
             </FormField>
+          ) : null}
+          {selectedPool && selectedPoolAvailablePesewas != null ? (
+            <Alert title="Pool capital" variant="info">
+              Selected pool: {selectedPool.name}. Available capital:{' '}
+              {formatGhsFromPesewas(selectedPoolAvailablePesewas)}.
+            </Alert>
           ) : null}
         </section>
       ) : null}
@@ -338,6 +416,16 @@ export function CreateLoanWizard() {
               {...register('amountGhs')}
             />
           </FormField>
+          {poolCapitalShortfall != null && selectedPool && selectedPoolAvailablePesewas != null ? (
+            <div className="md:col-span-2">
+              <Alert title="Cannot create loan" variant="error">
+                Selected pool: {selectedPool.name}. Available capital:{' '}
+                {formatGhsFromPesewas(selectedPoolAvailablePesewas)}. Requested loan:{' '}
+                {formatGhsFromPesewas(requestedAmountPesewas ?? 0)}. Additional funding required:{' '}
+                {formatGhsFromPesewas(poolCapitalShortfall)}.
+              </Alert>
+            </div>
+          ) : null}
           <FormField
             label="Duration (weeks)"
             htmlFor="durationWeeks"

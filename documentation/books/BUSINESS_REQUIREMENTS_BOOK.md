@@ -35,9 +35,10 @@ WILMS manages women's interest-free group lending programmes. Requirements trace
 | BR-011 | Approver review with side-by-side documents | Complete | Approver portal |
 | BR-012 | Approve/reject with reason | Complete | Audited decisions |
 | BR-013 | Admin fee before disbursement | Complete | Enforced in financial engine |
-| BR-014 | Pool hard-stop on insufficient capital | Complete | Cannot over-disburse |
+| BR-014 | Pool hard-stop on insufficient capital | Complete | Create + disburse validation (v1.8.0 Phase 11) |
 | BR-015 | Disbursement with schedule generation | Complete | Weekly repayment schedule |
 | BR-016 | Loan restructuring | Partial | Manual adjustment path; automated rules planned v1.9 |
+| BR-017 | Super Admin may approve/disburse loans they created | Complete | Maker-checker exception for Super Admin only (v1.8.0) |
 | BR-017 | Interest calculation | Rejected | Interest-free product by design |
 
 ---
@@ -100,6 +101,9 @@ WILMS manages women's interest-free group lending programmes. Requirements trace
 | BR-061 | Assign collector to group | Complete | Admin/approver action |
 | BR-062 | Collector dashboard with assigned groups | Complete | Field shell |
 | BR-063 | Collector performance metrics | Partial | Basic metrics; advanced analytics v1.9 |
+| BR-064 | Approver assign borrower to group | Complete | Non-silent Assign Group (v1.8.0 Phase 11) |
+| BR-065 | Operational group/collector reassignment | Complete | `/ops/reassignment` |
+| BR-066 | Payment day change with schedule recalculation | Complete | Enterprise approve + recalc |
 
 ---
 
@@ -142,7 +146,7 @@ WILMS manages women's interest-free group lending programmes. Requirements trace
 | BR-093 | Notification deduplication | Complete | Dispatch layer |
 | BR-094 | Quiet hours | Complete | Organisation settings |
 | BR-095 | Communications center | Complete | Templates, broadcasts, threads |
-| BR-096 | Borrower SMS reminders | Planned | v2.5 engagement |
+| BR-096 | Borrower lifecycle SMS/email | Complete | Registration through delinquency ladder (v1.8.0 Phase 11) |
 
 ---
 
@@ -155,6 +159,7 @@ WILMS manages women's interest-free group lending programmes. Requirements trace
 | BR-102 | Maintenance windows | Complete | v1.7.0+ |
 | BR-103 | Vercel Cron notification dispatch | Complete | Daily 06:00 UTC |
 | BR-104 | Redis job queue | Deferred | Current scale sufficient |
+| BR-105 | Operations reassignment console | Complete | Group, collector, payment day |
 
 ---
 

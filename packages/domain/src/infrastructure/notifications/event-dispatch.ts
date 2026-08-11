@@ -13,6 +13,7 @@ import {
   buildCollectionReminderEmail,
   buildCollectionReminderSmsBody,
   buildCollectorAssignedEmail,
+  buildGroupAssignedSmsBody,
   buildGroupCreatedEmail,
   buildGroupLeaderAssignedEmail,
   buildInvitationReminderEmail,
@@ -40,6 +41,8 @@ import {
   buildRegistrationApprovedEmail,
   buildRegistrationRejectedEmail,
   buildRegistrationRejectedSmsBody,
+  buildRegistrationSubmittedEmail,
+  buildRegistrationSubmittedSmsBody,
   buildUserInvitationEmail,
   buildUserRoleChangedEmail,
   buildWelcomeEmail,
@@ -569,11 +572,58 @@ export async function notifyUserRoleChanged(input: {
 
 // ─── Registration notifications ──────────────────────────────────────────────
 
+export async function notifyRegistrationSubmitted(input: {
+  borrowerId: string;
+  borrowerName: string;
+  borrowerPhone?: string;
+  borrowerEmail?: string;
+  officerUserId?: string;
+}): Promise<void> {
+  const settings = await getSettings();
+
+  if (input.borrowerPhone) {
+    await dispatchSms({
+      event: 'REGISTRATION_SUBMITTED',
+      to: input.borrowerPhone,
+      body: buildRegistrationSubmittedSmsBody({ borrowerName: input.borrowerName }),
+      enabled: settings.smsNotificationsEnabled,
+      borrowerId: input.borrowerId,
+    });
+  }
+
+  if (input.borrowerEmail) {
+    const template = buildRegistrationSubmittedEmail({ borrowerName: input.borrowerName });
+    await dispatchEmailWhenEnabled({
+      event: 'REGISTRATION_SUBMITTED',
+      to: input.borrowerEmail,
+      subject: template.subject,
+      text: template.text,
+      html: template.html,
+      borrowerId: input.borrowerId,
+      category: 'registration',
+    });
+  }
+
+  if (input.officerUserId) {
+    void createInAppNotification({
+      userId: input.officerUserId,
+      event: 'REGISTRATION_APPROVED',
+      title: 'Registration submitted',
+      body: `${input.borrowerName} submitted a registration for review.`,
+      href: '/approver/pending',
+      borrowerId: input.borrowerId,
+    });
+  }
+}
+
 export async function notifyRegistrationApproved(input: {
   borrowerId: string;
   borrowerName: string;
   borrowerPhone?: string;
   borrowerEmail?: string;
+  groupName?: string;
+  collectorName?: string;
+  nextStep?: string;
 }): Promise<void> {
   const settings = await getSettings();
 
@@ -581,20 +631,80 @@ export async function notifyRegistrationApproved(input: {
     await dispatchSms({
       event: 'REGISTRATION_APPROVED',
       to: input.borrowerPhone,
-      body: buildBorrowerRegistrationApprovalSmsBody({ borrowerName: input.borrowerName }),
+      body: buildBorrowerRegistrationApprovalSmsBody({
+        borrowerName: input.borrowerName,
+        groupName: input.groupName,
+        collectorName: input.collectorName,
+        nextStep: input.nextStep,
+      }),
       enabled: settings.approvalSmsEnabled,
       borrowerId: input.borrowerId,
     });
   }
 
   if (input.borrowerEmail) {
-    const template = buildRegistrationApprovedEmail({ borrowerName: input.borrowerName });
+    const template = buildRegistrationApprovedEmail({
+      borrowerName: input.borrowerName,
+      groupName: input.groupName,
+      collectorName: input.collectorName,
+      nextStep: input.nextStep,
+    });
     await dispatchEmailWhenEnabled({
       event: 'REGISTRATION_APPROVED',
       to: input.borrowerEmail,
       subject: template.subject,
       text: template.text,
       html: template.html,
+      borrowerId: input.borrowerId,
+      category: 'registration',
+    });
+  }
+}
+
+export async function notifyGroupAssigned(input: {
+  borrowerId: string;
+  borrowerName: string;
+  borrowerPhone?: string;
+  borrowerEmail?: string;
+  groupName: string;
+  collectorName?: string;
+  collectorUserId?: string;
+  actorUserId?: string;
+}): Promise<void> {
+  const settings = await getSettings();
+
+  if (input.borrowerPhone) {
+    await dispatchSms({
+      event: 'GROUP_ASSIGNED',
+      to: input.borrowerPhone,
+      body: buildGroupAssignedSmsBody({
+        borrowerName: input.borrowerName,
+        groupName: input.groupName,
+        collectorName: input.collectorName,
+      }),
+      enabled: settings.smsNotificationsEnabled,
+      borrowerId: input.borrowerId,
+    });
+  }
+
+  if (input.collectorUserId) {
+    void createInAppNotification({
+      userId: input.collectorUserId,
+      event: 'COLLECTOR_ASSIGNED',
+      title: 'New group member',
+      body: `${input.borrowerName} was assigned to ${input.groupName}.`,
+      href: '/collector/my-borrowers',
+      borrowerId: input.borrowerId,
+    });
+  }
+
+  if (input.actorUserId) {
+    void createInAppNotification({
+      userId: input.actorUserId,
+      event: 'GROUP_CREATED',
+      title: 'Group assignment complete',
+      body: `${input.borrowerName} is now in ${input.groupName}.`,
+      href: '/groups',
       borrowerId: input.borrowerId,
     });
   }
@@ -787,7 +897,7 @@ export async function notifyLoanDisbursed(input: {
       input.firstDueDate
     ) {
       await dispatchSms({
-        event: 'LOAN_DISBURSED',
+        event: 'SCHEDULE_GENERATED',
         to: input.borrowerPhone,
         body: buildLoanDisbursedScheduleSmsBody({
           borrowerName: input.borrowerName,

@@ -70,3 +70,33 @@ export function getWeekdayNameFromIsoDate(isoDate: string): string {
   const day = parseIsoDate(isoDate).getUTCDay();
   return Object.entries(PAYMENT_DAY_TO_JS_DAY).find(([, value]) => value === day)?.[0] ?? 'Monday';
 }
+
+/**
+ * Recalculate future PENDING due dates onto a new payment weekday.
+ * Historical (non-PENDING) weeks are left unchanged.
+ */
+export function recalculatePendingDueDatesForPaymentDay(input: {
+  weeks: Array<{ weekNumber: number; dueDate: string; status: string }>;
+  toPaymentDay: string;
+  effectiveFrom: string;
+  holidayDates?: Iterable<string>;
+}): Array<{ weekNumber: number; dueDate: string }> {
+  const holidayDates = normalizeHolidayDates(input.holidayDates);
+  const pending = input.weeks
+    .filter((week) => week.status === 'PENDING' && week.dueDate >= input.effectiveFrom)
+    .sort((a, b) => a.weekNumber - b.weekNumber);
+
+  if (pending.length === 0) {
+    return [];
+  }
+
+  const firstDue = adjustDueDateForHolidays(
+    getFirstDueDateIso(input.effectiveFrom, input.toPaymentDay),
+    holidayDates,
+  );
+
+  return pending.map((week, index) => ({
+    weekNumber: week.weekNumber,
+    dueDate: adjustDueDateForHolidays(addDays(firstDue, index * 7), holidayDates),
+  }));
+}

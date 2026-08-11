@@ -11,7 +11,8 @@ import * as userRepo from '../../repositories/user.repository.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import { groupRepository } from '../../repositories/index.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
-import { notifyGroupCreated, notifyCollectorAssigned } from '../../infrastructure/notifications/event-dispatch.js';
+import { notifyGroupCreated, notifyCollectorAssigned, notifyGroupAssigned } from '../../infrastructure/notifications/event-dispatch.js';
+import { createInAppNotification } from '../../infrastructure/notifications/in-app-notify.js';
 
 type GroupRiskLevel = 'LOW_RISK' | 'AT_RISK' | 'FLAGGED' | 'SUSPENDED';
 type GroupStatus = 'ACTIVE' | 'AT_RISK' | 'FLAGGED' | 'SUSPENDED' | 'DISSOLVED';
@@ -508,7 +509,18 @@ export async function flagGroup(input: { groupId: string; reason: string }): Pro
 export async function reassignCollector(input: {
   groupId: string;
   collectorId: string;
+  reason?: string;
+  actorUserId?: string;
 }): Promise<GroupDetail> {
+  const group = await getGroupDetail(input.groupId);
+  const previousCollectorId =
+    group.collector?.id && group.collector.id !== 'unassigned' ? group.collector.id : null;
+
+  const newCollector = await userRepo.getUserById(input.collectorId);
+  if (!newCollector) {
+    throw new Error('VALIDATION:Collector not found.');
+  }
+
   if (isDatabaseEnabled()) {
     const db = getDb();
     await db
@@ -516,6 +528,39 @@ export async function reassignCollector(input: {
       .set({ collectorUserId: input.collectorId, updatedAt: new Date() })
       .where(eq(groups.id, input.groupId));
   }
+
+  appendAuditEntry({
+    action: 'group.collector_reassigned',
+    actorId: input.actorUserId ?? 'system',
+    targetEntityId: input.groupId,
+    targetEntityType: 'group',
+    reason:
+      input.reason?.trim() ||
+      `Reassigned collector from ${previousCollectorId ?? 'none'} to ${input.collectorId}`,
+  });
+
+  void notifyCollectorAssigned({
+    collectorEmail: newCollector.email,
+    collectorName: newCollector.displayName,
+    collectorUserId: newCollector.id,
+    groupName: group.name,
+    groupDisplayId: group.groupSystemId,
+    memberCount: group.members.length,
+  });
+
+  if (previousCollectorId && previousCollectorId !== input.collectorId) {
+    const previous = await userRepo.getUserById(previousCollectorId);
+    if (previous) {
+      void createInAppNotification({
+        userId: previous.id,
+        event: 'COLLECTOR_ASSIGNED',
+        title: 'Group reassigned',
+        body: `You are no longer the collector for ${group.displayName || group.name}.`,
+        href: '/collector/dashboard',
+      });
+    }
+  }
+
   return getGroupDetail(input.groupId);
 }
 
@@ -581,6 +626,8 @@ export async function addMember(input: {
   fullName: string;
   phone: string;
   borrowerId?: string;
+  reason?: string;
+  actorUserId?: string;
 }): Promise<GroupDetail> {
   const group = await getGroupDetail(input.groupId);
   if (group.members.length >= env.maxGroupSize) {
@@ -662,6 +709,32 @@ export async function addMember(input: {
     formedAt: group.formedAt,
   });
 
+  appendAuditEntry({
+    action: 'group.member_added',
+    actorId: input.actorUserId ?? 'system',
+    targetEntityId: input.groupId,
+    targetEntityType: 'group',
+    reason:
+      input.reason?.trim() ||
+      `Assigned borrower ${borrower.id} (${borrower.fullName}) to group ${group.displayName || group.name}`,
+  });
+
+  const collectorName =
+    group.collector?.id && group.collector.id !== 'unassigned' ? group.collector.fullName : undefined;
+  const collectorUserId =
+    group.collector?.id && group.collector.id !== 'unassigned' ? group.collector.id : undefined;
+
+  void notifyGroupAssigned({
+    borrowerId: borrower.id,
+    borrowerName: borrower.fullName,
+    borrowerPhone: borrower.phone,
+    borrowerEmail: borrower.profile?.email,
+    groupName: group.displayName || group.name,
+    collectorName,
+    collectorUserId,
+    actorUserId: input.actorUserId,
+  });
+
   return getGroupDetail(input.groupId);
 }
 
@@ -669,10 +742,28 @@ export async function transferMember(input: {
   groupId: string;
   borrowerId: string;
   targetGroupId: string;
+  reason?: string;
+  actorUserId?: string;
 }): Promise<GroupDetail> {
+  if (input.groupId === input.targetGroupId) {
+    throw new Error('VALIDATION:Select a different target group for the transfer.');
+  }
+
   const validation = await validateMembershipRemoval(input);
   if (!validation.allowed && !validation.requiresApproval) {
     throw new Error(`VALIDATION:${validation.message}`);
+  }
+  if (!validation.allowed && validation.requiresApproval) {
+    throw new Error(
+      `VALIDATION:${validation.message}`,
+    );
+  }
+
+  const sourceGroup = await getGroupDetail(input.groupId);
+  const targetGroup = await getGroupDetail(input.targetGroupId);
+  const borrower = await getBorrower(input.borrowerId);
+  if (!borrower) {
+    throw new Error('NOT_FOUND');
   }
 
   await removeMember({ groupId: input.groupId, borrowerId: input.borrowerId });
@@ -686,7 +777,67 @@ export async function transferMember(input: {
     });
   }
 
-  return getGroupDetail(input.groupId);
+  const { assignBorrowerToGroup } = await import('../../db/persistence.js');
+  await assignBorrowerToGroup(input.borrowerId, {
+    id: targetGroup.id,
+    systemId: targetGroup.groupSystemId,
+    name: targetGroup.name,
+    displayName: targetGroup.displayName || targetGroup.name,
+    community: targetGroup.community,
+    memberIds: targetGroup.members.map((member) => member.borrowerId),
+    formedAt: targetGroup.formedAt,
+  });
+
+  appendAuditEntry({
+    action: 'group.member_transferred',
+    actorId: input.actorUserId ?? 'system',
+    targetEntityId: input.borrowerId,
+    targetEntityType: 'borrower',
+    reason:
+      input.reason?.trim() ||
+      `Transferred ${borrower.fullName} from ${sourceGroup.displayName || sourceGroup.name} to ${targetGroup.displayName || targetGroup.name}`,
+  });
+
+  const oldCollectorId =
+    sourceGroup.collector?.id && sourceGroup.collector.id !== 'unassigned'
+      ? sourceGroup.collector.id
+      : null;
+  const newCollectorId =
+    targetGroup.collector?.id && targetGroup.collector.id !== 'unassigned'
+      ? targetGroup.collector.id
+      : null;
+  if (oldCollectorId) {
+    void createInAppNotification({
+      userId: oldCollectorId,
+      event: 'COLLECTOR_ASSIGNED',
+      title: 'Borrower transferred out',
+      body: `${borrower.fullName} moved from ${sourceGroup.displayName || sourceGroup.name} to ${targetGroup.displayName || targetGroup.name}.`,
+      href: '/collector/my-borrowers',
+      borrowerId: borrower.id,
+    });
+  }
+  if (newCollectorId && newCollectorId !== oldCollectorId) {
+    void createInAppNotification({
+      userId: newCollectorId,
+      event: 'COLLECTOR_ASSIGNED',
+      title: 'Borrower transferred in',
+      body: `${borrower.fullName} joined ${targetGroup.displayName || targetGroup.name}.`,
+      href: '/collector/my-borrowers',
+      borrowerId: borrower.id,
+    });
+  }
+  if (input.actorUserId) {
+    void createInAppNotification({
+      userId: input.actorUserId,
+      event: 'GROUP_CREATED',
+      title: 'Group reassignment complete',
+      body: `${borrower.fullName} is now in ${targetGroup.displayName || targetGroup.name}.`,
+      href: `/groups/${targetGroup.id}`,
+      borrowerId: borrower.id,
+    });
+  }
+
+  return getGroupDetail(input.targetGroupId);
 }
 
 export async function replaceLeader(input: {

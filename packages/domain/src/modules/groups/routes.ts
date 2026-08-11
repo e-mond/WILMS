@@ -96,7 +96,14 @@ groupsRouter.post(
   requirePermission(PERMISSION.MANAGE_GROUPS),
   asyncHandler(async (req, res) => {
     try {
-      sendData(res, await groupService.reassignCollector({ groupId: req.params.id!, ...req.body }));
+      sendData(
+        res,
+        await groupService.reassignCollector({
+          groupId: req.params.id!,
+          ...req.body,
+          actorUserId: req.body.actorUserId ?? req.session!.userId,
+        }),
+      );
     } catch (error) {
       mapError(error);
     }
@@ -135,7 +142,14 @@ groupsRouter.post(
   requirePermission(PERMISSION.MANAGE_GROUPS, PERMISSION.APPROVE_BORROWERS),
   asyncHandler(async (req, res) => {
     try {
-      sendData(res, await groupService.addMember({ groupId: req.params.id!, ...req.body }));
+      sendData(
+        res,
+        await groupService.addMember({
+          groupId: req.params.id!,
+          ...req.body,
+          actorUserId: req.body.actorUserId ?? req.session!.userId,
+        }),
+      );
     } catch (error) {
       mapError(error);
     }
@@ -147,7 +161,14 @@ groupsRouter.post(
   requirePermission(PERMISSION.MANAGE_GROUPS),
   asyncHandler(async (req, res) => {
     try {
-      sendData(res, await groupService.transferMember({ groupId: req.params.id!, ...req.body }));
+      sendData(
+        res,
+        await groupService.transferMember({
+          groupId: req.params.id!,
+          ...req.body,
+          actorUserId: req.body.actorUserId ?? req.session!.userId,
+        }),
+      );
     } catch (error) {
       mapError(error);
     }
