@@ -13,8 +13,6 @@ import { groupRepository } from '../../repositories/index.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import { notifyGroupCreated, notifyCollectorAssigned, notifyGroupAssigned } from '../../infrastructure/notifications/event-dispatch.js';
 import { createInAppNotification } from '../../infrastructure/notifications/in-app-notify.js';
-import { decimalToPesewas } from '../../domain/money.js';
-import { collectors } from '../../db/schema/users.js';
 
 type GroupRiskLevel = 'LOW_RISK' | 'AT_RISK' | 'FLAGGED' | 'SUSPENDED';
 type GroupStatus = 'ACTIVE' | 'AT_RISK' | 'FLAGGED' | 'SUSPENDED' | 'DISSOLVED';
