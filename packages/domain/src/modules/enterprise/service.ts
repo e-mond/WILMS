@@ -18,7 +18,8 @@ import * as loanRepo from '../../repositories/loan.repository.js';
 import * as scheduleRepo from '../../repositories/loan-schedule.repository.js';
 import * as userRepo from '../../repositories/user.repository.js';
 import { listHolidays } from '../organization-holidays/service.js';
-import { adjustDueDateForHolidays, normalizeHolidayDates } from '../../domain/loan/holiday-shift.js';
+import { normalizeHolidayDates } from '../../domain/loan/holiday-shift.js';
+import { recalculatePendingDueDatesForPaymentDay } from '../../domain/loan/schedule.js';
 import { PAYMENT_DAY_OPTIONS } from '../../domain/loan/payment-day.js';
 import { getGroupDetail, removeMember, validateMembershipRemoval } from '../groups/service.js';
 import { decimalToPesewas } from '../../domain/money.js';
@@ -499,22 +500,25 @@ export async function approveScheduleChange(input: {
 
   const holidays = normalizeHolidayDates((await listHolidays()).map((entry) => entry.holidayDate));
   const weeks = await scheduleRepo.listScheduleWeeks(loan.id);
-  for (const week of weeks) {
-    if (week.status !== 'PENDING') {
-      continue;
-    }
-    if (week.dueDate < String(record.effectiveFrom)) {
-      continue;
-    }
-    const shifted = adjustDueDateForHolidays(week.dueDate, holidays);
-    if (shifted !== week.dueDate && isDatabaseEnabled()) {
-      // schedule repository update if available; otherwise leave due date semantics to payment-day change
-      void shifted;
-    }
-  }
+  const recalculated = recalculatePendingDueDatesForPaymentDay({
+    weeks,
+    toPaymentDay: String(record.toPaymentDay),
+    effectiveFrom: String(record.effectiveFrom),
+    holidayDates: holidays,
+  });
 
   if (isDatabaseEnabled()) {
     const db = getDb();
+    for (const week of recalculated) {
+      await scheduleRepo.updateScheduleWeekDueDate(
+        {
+          loanId: loan.id,
+          weekNumber: week.weekNumber,
+          dueDate: week.dueDate,
+        },
+        db,
+      );
+    }
     await db
       .update(loans)
       .set({ paymentDay: String(record.toPaymentDay), updatedAt: new Date() })
@@ -541,7 +545,7 @@ export async function approveScheduleChange(input: {
       borrowerPhone: borrower.phone,
       borrowerEmail: borrower.profile?.email,
       loanId: loan.id,
-      dueDate: String(record.effectiveFrom),
+      dueDate: recalculated[0]?.dueDate ?? String(record.effectiveFrom),
       note: `Payment day moved to ${String(record.toPaymentDay)}.`,
     });
   }
@@ -554,7 +558,12 @@ export async function approveScheduleChange(input: {
     reason: String(record.reason ?? ''),
   });
 
-  return record;
+  return {
+    ...record,
+    status: 'APPROVED',
+    recalculatedWeeks: recalculated.length,
+    nextDueDate: recalculated[0]?.dueDate ?? null,
+  };
 }
 
 export async function reviewScheduleChange(input: {

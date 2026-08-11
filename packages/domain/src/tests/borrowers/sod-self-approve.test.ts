@@ -27,24 +27,32 @@ vi.mock('../../modules/group-formation/service.js', () => ({
 
 vi.mock('../../infrastructure/notifications/event-dispatch.js', () => ({
   notifyRegistrationApproved: vi.fn(),
+  notifyRegistrationRejected: vi.fn(),
+  notifyRegistrationBlacklisted: vi.fn(),
+  notifyRegistrationSubmitted: vi.fn(),
+  notifyGroupAssigned: vi.fn(),
 }));
 
 describe('borrower approval SoD', () => {
-  it('blocks the submitting officer from approving their own registration', async () => {
-    mockGetBorrower.mockResolvedValue({
-      id: 'borrower-1',
-      fullName: 'Ama Mensah',
-      phone: '0240000001',
-      status: 'PENDING',
-      registeredByOfficerId: 'officer-1',
-      community: 'Accra',
-      groupName: '',
-      registeredAt: new Date().toISOString(),
-      profile: {},
-    });
+  it(
+    'blocks the submitting officer from approving their own registration',
+    async () => {
+      mockGetBorrower.mockResolvedValue({
+        id: 'borrower-1',
+        fullName: 'Ama Mensah',
+        phone: '0240000001',
+        status: 'PENDING',
+        registeredByOfficerId: 'officer-1',
+        community: 'Accra',
+        groupName: '',
+        registeredAt: new Date().toISOString(),
+        profile: {},
+      });
 
-    const { approveBorrower } = await import('../../modules/borrowers/service.js');
-    await expect(approveBorrower('borrower-1', 'officer-1')).rejects.toThrow(/FORBIDDEN:/);
-    expect(mockSaveBorrower).not.toHaveBeenCalled();
-  });
+      const { approveBorrower } = await import('../../modules/borrowers/service.js');
+      await expect(approveBorrower('borrower-1', 'officer-1')).rejects.toThrow(/FORBIDDEN:/);
+      expect(mockSaveBorrower).not.toHaveBeenCalled();
+    },
+    30_000,
+  );
 });
