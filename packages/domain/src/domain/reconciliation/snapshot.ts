@@ -19,16 +19,20 @@ export function buildReconciliationSnapshot(input: {
   dueLoans: ExpectedDueLoanInput[];
   payments: SystemRecordedPaymentInput[];
   scheduleDues?: ScheduleDueInstallmentInput[];
+  /** Same-day admin fees collected by this collector (included in expected + system recorded). */
+  adminFeePesewas?: number;
   thresholdPercent: number;
   comment: string | null;
   submittedAt: Date;
 }): ReconciliationSnapshot {
-  const expectedDuePesewas = calculateExpectedDuePesewas(
-    input.dueLoans,
-    input.reconciliationDate,
-    input.scheduleDues ?? [],
-  );
-  const systemRecordedPesewas = calculateSystemRecordedPesewas(input.payments);
+  const adminFeePesewas = Math.max(0, input.adminFeePesewas ?? 0);
+  const expectedDuePesewas =
+    calculateExpectedDuePesewas(
+      input.dueLoans,
+      input.reconciliationDate,
+      input.scheduleDues ?? [],
+    ) + adminFeePesewas;
+  const systemRecordedPesewas = calculateSystemRecordedPesewas(input.payments) + adminFeePesewas;
   const primaryVariancePesewas = calculatePrimaryVariancePesewas(
     input.physicalCashPesewas,
     expectedDuePesewas,

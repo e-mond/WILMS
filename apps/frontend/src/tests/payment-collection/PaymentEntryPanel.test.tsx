@@ -6,9 +6,11 @@ import { resetMockBorrowerRegistrations } from '@/services/mock/borrowerService.
 import { resetMockLoans } from '@/services/mock/loanService.mock';
 import { resetMockTransactions } from '@/services/mock/transactionService.mock';
 import { USER_ROLE } from '@/constants/roles';
+import { SCHEDULE_WEEK_STATUS } from '@/types/loan-schedule';
 import { useAuthStore } from '@/state/authStore';
 import { useOfflineQueueStore } from '@/state/offlineQueueStore';
 import { TestQueryProvider } from '@/tests/utils/test-query-client';
+import type { PaymentEntryContext } from '@/types/payment-entry';
 
 const mockGetPaymentEntryContext = vi.hoisted(() => vi.fn());
 const mockRecordPayment = vi.hoisted(() => vi.fn());
@@ -44,6 +46,48 @@ vi.mock('@/hooks/useOfflineStatus', () => ({
 
 import { PaymentEntryPanel } from '@/features/payment-collection/components/PaymentEntryPanel';
 
+function payableContext(overrides: Partial<PaymentEntryContext> = {}): PaymentEntryContext {
+  return {
+    borrowerId: 'borrower-001',
+    borrowerName: 'Ama Mensah',
+    phone: '+233241234567',
+    community: 'Madina',
+    loanId: 'loan-001',
+    paymentDay: 'Friday',
+    weeklyPaymentPesewas: 5000,
+    referenceDate: '2026-05-29',
+    isPaymentDay: true,
+    requiredAmountPesewas: 5000,
+    oldestObligation: {
+      weekNumber: 5,
+      dueDate: '2026-05-29',
+      amountPesewas: 5000,
+      status: SCHEDULE_WEEK_STATUS.PENDING,
+    },
+    obligationWeeks: [
+      {
+        weekNumber: 5,
+        dueDate: '2026-05-29',
+        amountPesewas: 5000,
+        status: SCHEDULE_WEEK_STATUS.PENDING,
+      },
+    ],
+    payableWeeks: [
+      {
+        weekNumber: 5,
+        dueDate: '2026-05-29',
+        amountPesewas: 5000,
+        status: SCHEDULE_WEEK_STATUS.PENDING,
+      },
+    ],
+    totalOutstandingObligationsPesewas: 5000,
+    maxPayableWeeks: 1,
+    canAcceptPayment: true,
+    recordedMissed: false,
+    ...overrides,
+  };
+}
+
 describe('PaymentEntryPanel', () => {
   beforeEach(() => {
     resetMockBorrowerRegistrations();
@@ -66,9 +110,7 @@ describe('PaymentEntryPanel', () => {
     mockCaptureGps.mockReset();
     mockPush.mockReset();
     mockIsOffline.mockReturnValue(false);
-    mockGetPaymentEntryContext.mockImplementation((borrowerId: string, date?: string) =>
-      paymentServiceMock.getPaymentEntryContext(borrowerId, date ?? '2026-05-29'),
-    );
+    mockGetPaymentEntryContext.mockResolvedValue(payableContext());
     mockCaptureGps.mockResolvedValue({
       latitude: 5.6037,
       longitude: -0.187,
@@ -85,8 +127,52 @@ describe('PaymentEntryPanel', () => {
     );
 
     expect(await screen.findByRole('heading', { name: 'Ama Mensah' })).toBeInTheDocument();
-    expect(screen.getByText(/Week 4/)).toBeInTheDocument();
+    expect(screen.getByText(/Week 5/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Pay current week/i })).toBeEnabled();
+  });
+
+  it('disables payment buttons when the oldest unpaid week is marked missed', async () => {
+    mockGetPaymentEntryContext.mockResolvedValue(
+      payableContext({
+        oldestObligation: {
+          weekNumber: 4,
+          dueDate: '2026-05-22',
+          amountPesewas: 5000,
+          status: SCHEDULE_WEEK_STATUS.MISSED,
+        },
+        obligationWeeks: [
+          {
+            weekNumber: 4,
+            dueDate: '2026-05-22',
+            amountPesewas: 5000,
+            status: SCHEDULE_WEEK_STATUS.MISSED,
+          },
+        ],
+        payableWeeks: [
+          {
+            weekNumber: 4,
+            dueDate: '2026-05-22',
+            amountPesewas: 5000,
+            status: SCHEDULE_WEEK_STATUS.MISSED,
+          },
+        ],
+        canAcceptPayment: false,
+        recordedMissed: true,
+        blockReason:
+          'This borrower was marked missed. Payment buttons are disabled until the missed week is cleared by operations.',
+      }),
+    );
+
+    render(
+      <TestQueryProvider>
+        <PaymentEntryPanel borrowerId="borrower-001" />
+      </TestQueryProvider>,
+    );
+
+    expect(await screen.findByRole('heading', { name: 'Ama Mensah' })).toBeInTheDocument();
+    expect(screen.getByText(/marked missed/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Pay current week/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Mark this week as missed/i })).toBeDisabled();
   });
 
   it('queues payment for sync when offline', async () => {

@@ -13,7 +13,7 @@ const createGroupSchema = z.object({
   name: z.string().min(1),
   community: z.string().min(1),
   displayName: z.string().optional(),
-  collectorUserId: z.string().uuid().optional(),
+  collectorUserId: z.string().uuid({ message: 'Every group must be assigned a collector.' }),
   memberBorrowerIds: z.array(z.string().uuid()).optional(),
 });
 
