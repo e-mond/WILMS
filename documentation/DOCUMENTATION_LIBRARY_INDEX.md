@@ -63,6 +63,15 @@ See also: `technical/`, `operations/`, `user-guides/`, `developer/`, `roadmap/`,
 | Sub-district architecture | `location/SUB_DISTRICT_ARCHITECTURE.md` |
 | Electoral area model | `location/ELECTORAL_AREA_MODEL.md` |
 | Community guide | `location/COMMUNITY_AND_SUBURB_GUIDE.md` |
+| Community location guide (v1.8.0 completion) | `location/COMMUNITY_LOCATION_GUIDE.md` |
+| Community coverage audit | `location/COMMUNITY_COVERAGE_AUDIT.md` |
+| Community import report | `location/COMMUNITY_IMPORT_REPORT.md` |
+| Community import process | `location/COMMUNITY_IMPORT_PROCESS.md` |
+| Community search architecture | `location/COMMUNITY_SEARCH_ARCHITECTURE.md` |
+| Community data quality | `location/COMMUNITY_DATA_QUALITY.md` |
+| Community data quality report | `location/COMMUNITY_DATA_QUALITY_REPORT.md` |
+| Community test report | `location/COMMUNITY_TEST_REPORT.md` |
+| Final community completion report | `location/FINAL_COMMUNITY_COMPLETION_REPORT.md` |
 | Import pipeline | `location/LOCATION_IMPORT_PIPELINE.md` |
 | API reference | `location/LOCATION_API_REFERENCE.md` |
 | Offline strategy | `location/OFFLINE_LOCATION_STRATEGY.md` |

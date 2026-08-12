@@ -23,7 +23,9 @@ describe('Ghana administrative hierarchy v2', () => {
     expect(names.has('adiembra')).toBe(true);
     expect(names.has('ngyiresia')).toBe(true);
     expect(names.has('bakado')).toBe(true);
-    expect(names.has('european town')).toBe(false);
+    expect(names.has('european town')).toBe(true);
+    expect(names.has('essaman')).toBe(true);
+    expect(names.has('old sekondi')).toBe(false);
   });
 
   it('normalises MMDA categories and hyphen/space variants', () => {

@@ -1,5 +1,18 @@
 # Ghana Locations Seed Manifest
 
+## OSM / HOTOSM national places
+
+| Dataset | Source | Retrieved |
+|---------|--------|-----------|
+| HOTOSM populated places (named) | HDX `hotosm_gha_populated_places` snapshot 2026-08-07 | 2026-08-12 |
+| Compact import | `data/ghana-locations/hotosm-communities.json` | Built via `scripts/location-sync/build-hotosm-communities.ts` |
+
+Raw GeoJSON under `data/ghana-locations/raw/` is gitignored. Rebuild with:
+
+```bash
+npm run build:hotosm-communities -w @wilms/domain
+```
+
 ## Sources
 
 | Dataset | Source | Retrieved |
@@ -7,6 +20,7 @@
 | Regions (16) | Ghana Statistical Service administrative regions | 2026-07-04 |
 | Districts (48 sample MMDAs) | Ghana MMDA directory (representative subset per region) | 2026-07-04 |
 | Cities/communities (144) | Official district seats + OpenStreetMap place names (flagged) | 2026-07-04 |
+| National MMDAs (261) | IMCCOD register transcription | 2026-08-12 |
 
 ## Files
 

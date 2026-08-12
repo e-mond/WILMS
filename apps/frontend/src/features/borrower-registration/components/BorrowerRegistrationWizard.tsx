@@ -27,6 +27,7 @@ import {
 } from '@/constants/borrower-registration';
 import { RegistrationConflictAlerts } from '@/features/borrower-registration/components/RegistrationConflictAlerts';
 import { RegistrationReviewPanel } from '@/features/borrower-registration/components/RegistrationReviewPanel';
+import { LocationAutocomplete } from '@/features/locations/components/LocationAutocomplete';
 import {
   notifyMutationError,
   notifyMutationSuccess,
@@ -964,27 +965,37 @@ export function BorrowerRegistrationWizard() {
               name="city"
               control={control}
               render={({ field }) => (
-                <Select
-                  id="city"
+                <LocationAutocomplete
+                  hideLabel
+                  inputId="city"
+                  label="Community / suburb"
                   hasError={Boolean(errors.city)}
-                  value={communities.find((entry) => entry.name === field.value)?.id ?? ''}
+                  value={field.value}
                   disabled={!selectedDistrictId || (electoralAreas.length > 0 && !selectedElectoralAreaId)}
-                  onChange={(event) => {
-                    const community = communities.find((entry) => entry.id === event.target.value);
-                    field.onChange(community?.name ?? '');
+                  placeholder={
+                    !selectedDistrictId
+                      ? 'Select a district first'
+                      : electoralAreas.length > 0 && !selectedElectoralAreaId
+                        ? 'Select an electoral area first'
+                        : 'Search community, suburb, or neighbourhood'
+                  }
+                  entityTypes={['community']}
+                  districtId={selectedDistrictId || undefined}
+                  localOptions={communities.map((community) => ({
+                    id: community.id,
+                    name: community.name,
+                    aliases: community.aliases,
+                    districtId: community.districtId,
+                  }))}
+                  onChange={(next) => {
+                    field.onChange(next);
                     setCommunitySuggestionMessage(null);
                   }}
-                  onBlur={field.onBlur}
-                >
-                  <option value="">
-                    {selectedDistrictId ? 'Select community / suburb' : 'Select a district first'}
-                  </option>
-                  {communities.map((community) => (
-                    <option key={community.id} value={community.id}>
-                      {community.name}
-                    </option>
-                  ))}
-                </Select>
+                  onSelect={(hit) => {
+                    field.onChange(hit.name);
+                    setCommunitySuggestionMessage(null);
+                  }}
+                />
               )}
             />
           </FormField>
