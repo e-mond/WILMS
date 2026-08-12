@@ -32,6 +32,8 @@ export * from './electoral-areas';
 export * from './communities';
 export * from './pending-community-suggestions';
 export * from './location-sync-log';
+export * from './location-aliases';
+export * from './location-data-quality-runs';
 export * from './message-deliveries';
 export * from './communications';
 export * from './communication-platform';

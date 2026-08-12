@@ -285,7 +285,7 @@ WILMS uses **custom HMAC-signed session cookies** — not Auth.js, not JWT beare
 | RiskFlag | Borrower or loan risk indicator |
 | Region / District / Sub-district unit / Electoral area / Community | Ghana administrative hierarchy v2 (canonical master) |
 
-Borrower registration selects **Region → MMDA → Sub-metro/Area Council (skipped if empty) → Electoral area (skipped if empty) → Community / suburb → Street / landmark**. Community names that are not in the master are submitted as pending suggestions for Super Admin approval and are not inserted automatically. See `documentation/location/`.
+Borrower registration selects **Region → MMDA → Sub-metro/Area Council (skipped if empty) → Electoral area (skipped if empty) → Community / suburb → Street / landmark**. Community selection uses searchable autocomplete (prefix, alias, case-insensitive, typo-tolerant) with offline cascade cache. Community names that are not in the master are submitted as pending suggestions for Super Admin approval and are not inserted automatically. See `documentation/location/COMMUNITY_LOCATION_GUIDE.md` and related community completion documents.
 
 ### Entity relationships (summary)
 

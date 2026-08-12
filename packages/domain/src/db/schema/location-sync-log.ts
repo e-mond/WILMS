@@ -14,6 +14,7 @@ export const locationSyncLog = pgTable(
     subDistrictUnitsImported: integer('sub_district_units_imported').notNull().default(0),
     electoralAreasImported: integer('electoral_areas_imported').notNull().default(0),
     communitiesImported: integer('communities_imported').notNull().default(0),
+    aliasesImported: integer('aliases_imported').notNull().default(0),
     status: locationSyncStatusEnum('status').notNull().default('PENDING'),
     notes: text('notes'),
   },
