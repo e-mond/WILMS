@@ -35,20 +35,17 @@ const locationServiceMock: ILocationService = {
     return getGhanaCities(districtId);
   },
 
-  async getSubDistrictUnits(_districtId: string): Promise<LocationSubDistrictUnit[]> {
+  async getSubDistrictUnits(): Promise<LocationSubDistrictUnit[]> {
     await simulateDelay();
     return [];
   },
 
-  async getElectoralAreas(_input: {
-    districtId?: string;
-    subDistrictUnitId?: string;
-  }): Promise<LocationElectoralArea[]> {
+  async getElectoralAreas(): Promise<LocationElectoralArea[]> {
     await simulateDelay();
     return [];
   },
 
-  async getCommunitiesByElectoralArea(_electoralAreaId: string): Promise<LocationCity[]> {
+  async getCommunitiesByElectoralArea(): Promise<LocationCity[]> {
     await simulateDelay();
     return [];
   },
