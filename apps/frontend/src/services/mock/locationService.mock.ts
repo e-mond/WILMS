@@ -6,7 +6,15 @@ import {
   getGhanaRegions,
 } from '@/services/mock/factories/ghana-locations.factory';
 import { simulateDelay } from '@/services/mock/delay';
-import type { CurrentLocationResult, LocationCity, LocationDistrict, LocationRegion } from '@/types/location';
+import type {
+  CommunitySuggestionInput,
+  CurrentLocationResult,
+  LocationCity,
+  LocationDistrict,
+  LocationRegion,
+  LocationSearchResponse,
+  LocationSyncStatusResponse,
+} from '@/types/location';
 import type { ILocationService } from '@/types/services';
 
 const locationServiceMock: ILocationService = {
@@ -20,9 +28,47 @@ const locationServiceMock: ILocationService = {
     return getGhanaDistricts(regionId);
   },
 
-  async getCities(districtId: string): Promise<LocationCity[]> {
+  async getCommunities(districtId: string): Promise<LocationCity[]> {
     await simulateDelay();
     return getGhanaCities(districtId);
+  },
+
+  async getCities(districtId: string): Promise<LocationCity[]> {
+    return this.getCommunities(districtId);
+  },
+
+  async search(query: string): Promise<LocationSearchResponse> {
+    await simulateDelay();
+    const normalized = query.trim().toLowerCase();
+    const regions = getGhanaRegions().filter((region) => region.name.toLowerCase().includes(normalized));
+    const districts = getGhanaRegions().flatMap((region) =>
+      getGhanaDistricts(region.id).filter((district) => district.name.toLowerCase().includes(normalized)),
+    );
+    const communities = districts.flatMap((district) =>
+      getGhanaCities(district.id).filter((community) => community.name.toLowerCase().includes(normalized)),
+    );
+    return {
+      meta: { version: 'mock', source: 'mock', lastUpdated: null },
+      data: { regions, districts, communities },
+    };
+  },
+
+  async suggestCommunity(input: CommunitySuggestionInput): Promise<unknown> {
+    await simulateDelay();
+    return {
+      id: `suggestion-${Date.now()}`,
+      districtId: input.districtId ?? null,
+      proposedName: input.proposedName,
+      status: 'PENDING',
+    };
+  },
+
+  async getSyncStatus(): Promise<LocationSyncStatusResponse> {
+    await simulateDelay();
+    return {
+      meta: { version: 'mock', source: 'mock', lastUpdated: null },
+      data: null,
+    };
   },
 
   async getCurrentLocation(): Promise<CurrentLocationResult> {

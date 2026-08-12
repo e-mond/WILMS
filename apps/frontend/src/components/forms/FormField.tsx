@@ -43,7 +43,7 @@ export function FormField({
         <p
           id={countId}
           className={cn(
-            'text-right text-small',
+            'text-right text-caption',
             characterCount.current > characterCount.max ? 'text-danger' : 'text-text-muted',
           )}
           aria-live="polite"

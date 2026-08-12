@@ -646,9 +646,12 @@ Without `DATABASE_URL`, `@wilms/domain` runs on an **in-memory** store suitable 
 # Apply Drizzle SQL migrations to Neon (ops runbook)
 npm run verify:migrations -w @wilms/domain
 
-# Optional reference data
-npm run seed:ghana-locations
+# Optional location master import + relationship backfill
+npm run seed:location-master -w @wilms/domain
+npm run db:backfill:locations -w @wilms/domain
 ```
+
+Ghana administrative location docs: [`documentation/location/`](documentation/location/LOCATION_MASTER_ARCHITECTURE.md).
 
 Demo users (in-memory / seed contexts) are defined in `packages/domain/src/seed/demo-users.ts` (e.g. Super Admin `admin@wilms.demo`).
 
@@ -739,7 +742,7 @@ Full reference: [`docs/environment.md`](docs/environment.md) and [`.env.example`
 | **ORM** | Drizzle |
 | **Location** | `packages/domain/src/db/migrations/` |
 | **Journal** | `packages/domain/src/db/migrations/meta/_journal.json` |
-| **Latest (v1.8.0)** | `0036`–`0040` (holidays/automation + Phase 33 `EXPENSE_CREATE` / `ADMIN_FEE_RECORD` idempotency scopes) |
+| **Latest (v1.8.0)** | `0036`–`0041` (holidays/automation, Phase 33 idempotency scopes, Ghana location master) |
 
 ### Workflow
 
