@@ -6,8 +6,10 @@ import '../../../config/load-env.js';
 import { isDatabaseEnabled } from '../client.js';
 import * as locationMasterRepo from '../../repositories/location-master.repository.js';
 import { buildStableLocationId } from '../../modules/locations/service.js';
+import { loadHotosmCommunityDataset } from '../../../../../scripts/location-sync/adapters/gss.js';
 import { loadValidatedSnapshot } from '../../../../../scripts/location-sync/pipeline.js';
 import { normaliseMatchKey } from '../../../../../scripts/location-sync/normalize.js';
+import { normaliseLocationQuery } from '../../modules/locations/alias-resolution.js';
 
 interface SeedCity {
   district_code: string;
@@ -124,13 +126,44 @@ async function main(): Promise<void> {
     });
   }
 
+  let aliasesImported = 0;
+  async function seedAliases(
+    entityId: string,
+    names: string[],
+    source: string,
+    datasetVersion: string,
+  ): Promise<void> {
+    const unique = new Map<string, string>();
+    for (const name of names) {
+      const normalised = normaliseLocationQuery(name);
+      if (!normalised) {
+        continue;
+      }
+      unique.set(normalised, name);
+    }
+    for (const [normalisedAlias, alias] of unique) {
+      await locationMasterRepo.upsertLocationAlias({
+        id: buildStableLocationId(source, `alias:community:${entityId}:${normalisedAlias}`),
+        entityType: 'community',
+        entityId,
+        alias,
+        normalisedAlias,
+        source,
+        datasetVersion,
+        isActive: true,
+      });
+      aliasesImported += 1;
+    }
+  }
+
   for (const community of snapshot.communities) {
     const districtId = districtIdBySourceId.get(community.districtSourceId);
     if (!districtId) {
       continue;
     }
+    const communityId = buildStableLocationId(snapshot.source, community.sourceId);
     await locationMasterRepo.upsertCommunity({
-      id: buildStableLocationId(snapshot.source, community.sourceId),
+      id: communityId,
       districtId,
       electoralAreaId: community.electoralAreaSourceId
         ? (electoralAreaIdBySourceId.get(community.electoralAreaSourceId) ?? null)
@@ -146,6 +179,44 @@ async function main(): Promise<void> {
       datasetVersion: snapshot.datasetVersion,
       isActive: true,
     });
+    await seedAliases(
+      communityId,
+      [community.name, ...(community.aliases ?? [])],
+      snapshot.source,
+      snapshot.datasetVersion,
+    );
+  }
+
+  const hotosm = loadHotosmCommunityDataset();
+  let hotosmImported = 0;
+  for (const community of hotosm.communities) {
+    const districtId = districtIdBySourceId.get(community.districtSourceId);
+    if (!districtId) {
+      continue;
+    }
+    const communityId = buildStableLocationId('hotosm', community.sourceId);
+    await locationMasterRepo.upsertCommunity({
+      id: communityId,
+      districtId,
+      electoralAreaId: null,
+      code: null,
+      name: community.name,
+      aliases: community.aliases ?? [],
+      latitude: community.latitude ?? null,
+      longitude: community.longitude ?? null,
+      geometryRef: community.geometryRef ?? null,
+      source: 'hotosm',
+      sourceId: community.sourceId,
+      datasetVersion: hotosm.datasetVersion,
+      isActive: true,
+    });
+    await seedAliases(
+      communityId,
+      [community.name, ...(community.aliases ?? [])],
+      'hotosm',
+      hotosm.datasetVersion,
+    );
+    hotosmImported += 1;
   }
 
   const existingDistrictsAfterImport = await locationMasterRepo.listAllDistricts();
@@ -191,17 +262,18 @@ async function main(): Promise<void> {
 
   await locationMasterRepo.logLocationSync({
     id: syncId,
-    datasetSource: snapshot.source,
-    datasetVersion: snapshot.datasetVersion,
+    datasetSource: `${snapshot.source}+hotosm`,
+    datasetVersion: `${snapshot.datasetVersion}+${hotosm.datasetVersion}`,
     checksum: snapshot.checksum,
     regionsImported: snapshot.regions.length,
     districtsImported: snapshot.districts.length,
     subDistrictUnitsImported: snapshot.subDistrictUnits.length,
     electoralAreasImported: snapshot.electoralAreas.length,
-    communitiesImported: snapshot.communities.length + bundledImported,
+    communitiesImported: snapshot.communities.length + bundledImported + hotosmImported,
+    aliasesImported,
     status: 'SUCCESS',
     notes:
-      'Imported 16 regions, 261 MMDAs from IMCCOD, STMA sub-metros/electoral areas, and preserved bundled community names. Sub-district and electoral coverage outside STMA remains empty until a national gazetteer is licensed.',
+      'Imported 16 regions, 261 MMDAs (IMCCOD), STMA hierarchy, IMCCOD capitals, HOTOSM named places matched to MMDAs, and preserved bundled communities. Sub-district/electoral coverage outside STMA remains empty until a national gazetteer is licensed.',
   });
 
   console.log(
@@ -216,7 +288,9 @@ async function main(): Promise<void> {
         subDistrictUnits: snapshot.subDistrictUnits.length,
         electoralAreas: snapshot.electoralAreas.length,
         verifiedCommunities: snapshot.communities.length,
+        hotosmCommunities: hotosmImported,
         bundledCommunitiesPreserved: bundledImported,
+        aliasesImported,
       },
       null,
       2,

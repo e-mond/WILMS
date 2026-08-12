@@ -8,6 +8,7 @@ import { requireAuth } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/require-permission.js';
 import { validateBody } from '../../middleware/validate-body.js';
 import * as collectorService from './service.js';
+import * as territoryService from './territory.js';
 
 const onboardCollectorSchema = z.object({
   displayName: z.string().min(1),
@@ -16,6 +17,8 @@ const onboardCollectorSchema = z.object({
   phone: z.string().optional(),
   assignedRegion: z.string().optional(),
   assignedDistrict: z.string().optional(),
+  assignedRegionId: z.string().uuid().optional(),
+  assignedDistrictId: z.string().uuid().optional(),
   assignedSubDistrictUnitId: z.string().uuid().optional(),
   assignedElectoralAreaId: z.string().uuid().optional(),
   assignedCommunityId: z.string().uuid().optional(),
@@ -66,6 +69,26 @@ collectorsRouter.post(
     } catch (error) {
       mapError(error);
     }
+  }),
+);
+
+collectorsRouter.get(
+  '/collectors/territory/overlaps',
+  requirePermission(PERMISSION.VIEW_ALL_COLLECTORS, PERMISSION.VIEW_REPORTS),
+  asyncHandler(async (_req, res) => {
+    sendData(res, await territoryService.listTerritoryOverlaps());
+  }),
+);
+
+collectorsRouter.get(
+  '/collectors/:id/territory',
+  requirePermission(PERMISSION.VIEW_ALL_COLLECTORS, PERMISSION.VIEW_REPORTS),
+  asyncHandler(async (req, res) => {
+    const summary = await territoryService.getCollectorTerritorySummary(req.params.id!);
+    if (!summary) {
+      throw new AppError('Collector territory not found.', ERROR_CODE.NOT_FOUND, 404);
+    }
+    sendData(res, summary);
   }),
 );
 

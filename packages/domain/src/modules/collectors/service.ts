@@ -375,6 +375,8 @@ export interface OnboardCollectorInput {
   phone?: string;
   assignedRegion?: string;
   assignedDistrict?: string;
+  assignedRegionId?: string;
+  assignedDistrictId?: string;
   assignedSubDistrictUnitId?: string;
   assignedElectoralAreaId?: string;
   assignedCommunityId?: string;
@@ -436,6 +438,8 @@ export async function onboardCollector(
     collectorCode,
     assignedRegion: input.assignedRegion?.trim() ?? null,
     assignedDistrict: input.assignedDistrict?.trim() ?? null,
+    assignedRegionId: input.assignedRegionId?.trim() ?? null,
+    assignedDistrictId: input.assignedDistrictId?.trim() ?? null,
     assignedSubDistrictUnitId: input.assignedSubDistrictUnitId?.trim() ?? null,
     assignedElectoralAreaId: input.assignedElectoralAreaId?.trim() ?? null,
     assignedCommunityId: input.assignedCommunityId?.trim() ?? null,

@@ -21,6 +21,7 @@ test-final.txt
 docs/generated/*-evidence/
 docs/generated/rc1.*-evidence/
 docs/generated/
+data/ghana-locations/raw/
 !.env.example
 !**/.env.example
 !**/.env.*.example

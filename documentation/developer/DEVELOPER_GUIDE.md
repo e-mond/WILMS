@@ -77,9 +77,14 @@ npm run dev       # Terminal 2 — frontend on :3000
 ```bash
 npm run db:apply:location-master -w @wilms/domain
 npm run db:apply:ghana-hierarchy -w @wilms/domain
+npm run db:apply:national-locality -w @wilms/domain
+npm run build:hotosm-communities -w @wilms/domain
 npm run seed:ghana-hierarchy -w @wilms/domain
 npm run db:backfill:locations -w @wilms/domain
+npm run validate:location-quality -w @wilms/domain
 ```
+
+Endpoints: `/locations/autocomplete`, `/collectors/:id/territory`, `/intelligence/geography/drilldown`.
 
 Safe transactional reset (keeps users and RBAC):
 

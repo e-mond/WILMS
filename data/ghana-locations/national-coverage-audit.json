@@ -1,0 +1,93 @@
+{
+  "productVersion": "1.8.0",
+  "auditDate": "2026-08-12",
+  "branch": "feature/v1.8.0-national-locality-completion",
+  "migrations": [
+    "0041_v180_location_master",
+    "0042_v180_ghana_admin_hierarchy"
+  ],
+  "coverage": {
+    "regions": { "target": 16, "imported": 16, "status": "complete" },
+    "mmdas": { "target": 261, "imported": 261, "status": "complete", "source": "imccod.gov.gh/mmdas" },
+    "subDistrictUnits": {
+      "imported": 3,
+      "mmdasWithCoverage": 1,
+      "mmdasWithoutCoverage": 260,
+      "status": "partial",
+      "scope": "STMA only"
+    },
+    "electoralAreas": {
+      "imported": 36,
+      "mmdasWithCoverage": 1,
+      "mmdasWithoutCoverage": 260,
+      "status": "partial",
+      "scope": "STMA only"
+    },
+    "communities": {
+      "stmaElectoralAreaLabels": 36,
+      "stmaNeighbourhoods": 13,
+      "bundledCities": 144,
+      "bundledOfficial": 48,
+      "bundledOpenStreetMap": 96,
+      "imccodCapitalsAvailable": 261,
+      "hotosmNamedFeaturesCandidate": 7770,
+      "hotosmFeatureCountRaw": 31589,
+      "status": "partial"
+    },
+    "aliases": {
+      "storage": "communities.aliases",
+      "coverage": "STMA only",
+      "status": "partial"
+    }
+  },
+  "mmdasByRegion": {
+    "AHA": 6,
+    "ASH": 43,
+    "BON": 12,
+    "BEA": 11,
+    "CEN": 22,
+    "EAS": 33,
+    "GAR": 29,
+    "NEE": 6,
+    "NOR": 16,
+    "OTI": 9,
+    "SAV": 7,
+    "UPE": 15,
+    "UPW": 11,
+    "VOL": 18,
+    "WES": 14,
+    "WNO": 9
+  },
+  "bundledFallback": {
+    "regions": 16,
+    "districts": 48,
+    "cities": 144,
+    "duplicateCityNames": 0,
+    "districtsWithNoCities": 0
+  },
+  "externalMetadata": {
+    "geoBoundariesAdm1": 16,
+    "geoBoundariesAdm2": 260,
+    "geoBoundariesAdm2GapVsImccod": 1,
+    "hotosmSnapshotLabel": "2026-08-07",
+    "hotosmLicense": "ODC-ODbL"
+  },
+  "gapRegister": [
+    "G1-sub-district-units-outside-stma",
+    "G2-electoral-areas-outside-stma",
+    "G3-national-communities-sparse",
+    "G4-alias-engine-incomplete",
+    "G5-fuzzy-autocomplete-incomplete",
+    "G6-collector-territory-ui-intelligence",
+    "G7-executive-geo-drilldown",
+    "G8-gis-polygon-load",
+    "G9-offline-alias-search-index",
+    "G10-export-geographic-filters",
+    "G11-bundled-offline-districts-48",
+    "G12-data-quality-automation"
+  ],
+  "notImportedBecauseUnsourced": [
+    "European Town",
+    "Old Sekondi / Town Centre"
+  ]
+}

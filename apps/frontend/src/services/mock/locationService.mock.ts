@@ -70,6 +70,28 @@ const locationServiceMock: ILocationService = {
     };
   },
 
+  async autocomplete(query: string, limit = 12) {
+    const search = await this.search(query);
+    return {
+      meta: search.meta,
+      data: [
+        ...search.data.regions.map((row) => ({ type: 'region', id: row.id, name: row.name })),
+        ...search.data.districts.map((row) => ({
+          type: 'district',
+          id: row.id,
+          name: row.name,
+          regionId: row.regionId,
+        })),
+        ...search.data.communities.map((row) => ({
+          type: 'community',
+          id: row.id,
+          name: row.name,
+          districtId: row.districtId,
+        })),
+      ].slice(0, limit),
+    };
+  },
+
   async suggestCommunity(input: CommunitySuggestionInput): Promise<unknown> {
     await simulateDelay();
     return {

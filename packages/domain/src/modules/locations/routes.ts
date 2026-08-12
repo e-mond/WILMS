@@ -88,6 +88,21 @@ locationsRouter.get(
   }),
 );
 
+locationsRouter.get(
+  '/locations/autocomplete',
+  asyncHandler(async (req, res) => {
+    res.setHeader('Cache-Control', 'public, max-age=30, stale-while-revalidate=120');
+    const limit = Number(req.query.limit ?? 12);
+    sendData(
+      res,
+      await locationService.autocompleteLocations(
+        String(req.query.q ?? ''),
+        Number.isFinite(limit) ? Math.min(Math.max(limit, 1), 40) : 12,
+      ),
+    );
+  }),
+);
+
 locationsRouter.use(requireAuth);
 locationsRouter.use(
   requirePermission(

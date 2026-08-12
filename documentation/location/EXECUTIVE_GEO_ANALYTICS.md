@@ -21,3 +21,10 @@
 2. Keep text fallbacks during unresolved mapping.
 3. Surface unresolved location counts in operations reviews.
 4. Do not invent constituency geometry until a verified constituency dataset is adopted.
+
+## APIs (v1.8.0 national completion)
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /intelligence/geography/drilldown?level=&parentId=` | Hierarchy aggregates |
+| `GET /intelligence/geography/heatmap?level=community` | Point weights for future heat maps |

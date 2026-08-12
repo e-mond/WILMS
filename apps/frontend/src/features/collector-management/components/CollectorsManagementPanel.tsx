@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Avatar,
   CurrencyAmount,
@@ -35,6 +35,9 @@ import { collectorRateTextClass } from '@/utils/collector-rate-display';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
 import { formatPesewasForCsv } from '@/utils/export-csv';
 import { resolveCollectorDisplayId } from '@/utils/entity-display-id';
+import { LocationAutocomplete } from '@/features/locations/components/LocationAutocomplete';
+import locationService from '@/services/locationService';
+import type { LocationDistrict, LocationRegion } from '@/types/location';
 
 const STATUS_FILTERS = [
   { value: '', label: 'All' },
@@ -80,6 +83,24 @@ export function CollectorsManagementPanel() {
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [zone, setZone] = useState('');
+  const [regions, setRegions] = useState<LocationRegion[]>([]);
+  const [districts, setDistricts] = useState<LocationDistrict[]>([]);
+  const [selectedRegionId, setSelectedRegionId] = useState('');
+  const [selectedDistrictId, setSelectedDistrictId] = useState('');
+  const [selectedCommunityId, setSelectedCommunityId] = useState<string | undefined>();
+  const [communityQuery, setCommunityQuery] = useState('');
+
+  useEffect(() => {
+    void locationService.getRegions().then(setRegions);
+  }, []);
+
+  useEffect(() => {
+    if (!selectedRegionId) {
+      setDistricts([]);
+      return;
+    }
+    void locationService.getDistricts(selectedRegionId).then(setDistricts);
+  }, [selectedRegionId]);
 
   const filteredCollectors = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -350,12 +371,21 @@ export function CollectorsManagementPanel() {
                     displayName: displayName.trim(),
                     email: email.trim(),
                     zone: zone.trim(),
+                    assignedRegion: regions.find((row) => row.id === selectedRegionId)?.name,
+                    assignedDistrict: districts.find((row) => row.id === selectedDistrictId)?.name,
+                    assignedRegionId: selectedRegionId || undefined,
+                    assignedDistrictId: selectedDistrictId || undefined,
+                    assignedCommunityId: selectedCommunityId,
                   })
                   .then(() => {
                     setOnboardModalOpen(false);
                     setDisplayName('');
                     setEmail('');
                     setZone('');
+                    setSelectedRegionId('');
+                    setSelectedDistrictId('');
+                    setSelectedCommunityId(undefined);
+                    setCommunityQuery('');
                   });
               }}
             >
@@ -399,6 +429,61 @@ export function CollectorsManagementPanel() {
               onChange={(event) => setZone(event.target.value)}
             />
           </div>
+          <div>
+            <label htmlFor="collector-region" className="text-small font-semibold text-text-primary">
+              Territory region
+            </label>
+            <select
+              id="collector-region"
+              className="mt-wilms-2 w-full rounded-md border border-border bg-surface px-3 py-2 text-small"
+              value={selectedRegionId}
+              onChange={(event) => {
+                setSelectedRegionId(event.target.value);
+                setSelectedDistrictId('');
+                setSelectedCommunityId(undefined);
+              }}
+            >
+              <option value="">Select region</option>
+              {regions.map((region) => (
+                <option key={region.id} value={region.id}>
+                  {region.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="collector-district" className="text-small font-semibold text-text-primary">
+              Territory MMDA
+            </label>
+            <select
+              id="collector-district"
+              className="mt-wilms-2 w-full rounded-md border border-border bg-surface px-3 py-2 text-small"
+              value={selectedDistrictId}
+              disabled={!selectedRegionId}
+              onChange={(event) => {
+                setSelectedDistrictId(event.target.value);
+                setSelectedCommunityId(undefined);
+              }}
+            >
+              <option value="">Select MMDA</option>
+              {districts.map((district) => (
+                <option key={district.id} value={district.id}>
+                  {district.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <LocationAutocomplete
+            label="Territory community (optional)"
+            value={communityQuery}
+            onChange={setCommunityQuery}
+            onSelect={(hit) => {
+              if (hit.type === 'community') {
+                setSelectedCommunityId(hit.id);
+              }
+            }}
+            disabled={!selectedDistrictId}
+          />
         </div>
       </Modal>
 

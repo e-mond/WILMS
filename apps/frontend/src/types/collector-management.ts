@@ -90,6 +90,8 @@ export interface OnboardCollectorInput {
   phone?: string;
   assignedRegion?: string;
   assignedDistrict?: string;
+  assignedRegionId?: string;
+  assignedDistrictId?: string;
   assignedSubDistrictUnitId?: string;
   assignedElectoralAreaId?: string;
   assignedCommunityId?: string;

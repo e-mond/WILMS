@@ -72,6 +72,17 @@ See also: `technical/`, `operations/`, `user-guides/`, `developer/`, `roadmap/`,
 | Import report | `location/GHANA_IMPORT_REPORT.md` |
 | Test report | `location/GHANA_HIERARCHY_TEST_REPORT.md` |
 | Final report | `location/FINAL_GHANA_HIERARCHY_REPORT.md` |
+| National coverage audit | `location/NATIONAL_COVERAGE_AUDIT.md` |
+| National import report | `location/NATIONAL_IMPORT_REPORT.md` |
+| National location master | `location/NATIONAL_LOCATION_MASTER.md` |
+| Locality architecture | `location/GHANA_LOCALITY_ARCHITECTURE.md` |
+| Alias system | `location/LOCATION_ALIAS_SYSTEM.md` |
+| Territory guide | `location/TERRITORY_MANAGEMENT_GUIDE.md` |
+| GIS readiness | `location/GIS_READINESS.md` |
+| Offline guide | `location/OFFLINE_LOCATION_GUIDE.md` |
+| Data quality | `location/DATA_QUALITY_REPORT.md` |
+| National test report | `location/NATIONAL_LOCALITY_TEST_REPORT.md` |
+| Final certification | `location/FINAL_LOCATION_MASTER_CERTIFICATION.md` |
 
 ---
 

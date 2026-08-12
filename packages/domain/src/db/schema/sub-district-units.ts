@@ -1,4 +1,13 @@
-import { boolean, index, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  doublePrecision,
+  index,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from 'drizzle-orm/pg-core';
 import { districts } from './districts';
 
 export const subDistrictUnits = pgTable(
@@ -11,6 +20,9 @@ export const subDistrictUnits = pgTable(
     code: text('code'),
     name: text('name').notNull(),
     unitType: text('unit_type').notNull(),
+    latitude: doublePrecision('latitude'),
+    longitude: doublePrecision('longitude'),
+    geometryRef: text('geometry_ref'),
     source: text('source').notNull(),
     sourceId: text('source_id').notNull(),
     datasetVersion: text('dataset_version').notNull(),

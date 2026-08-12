@@ -207,10 +207,12 @@ Refresh official geography after a licensed dataset update:
 
 ```bash
 npm run db:apply:ghana-hierarchy -w @wilms/domain
+npm run db:apply:national-locality -w @wilms/domain
 npm run seed:ghana-hierarchy -w @wilms/domain
+npm run validate:location-quality -w @wilms/domain
 ```
 
-Confirm `GET /api/v1/locations/sync/status`. Do not delete historical location rows. Community suggestions are Super Admin review items, never auto-created.
+Confirm `GET /api/v1/locations/sync/status` and `GET /api/v1/locations/autocomplete?q=Fij`. Do not delete historical location rows. Community suggestions are Super Admin review items, never auto-created.
 
 ---
 

@@ -129,7 +129,7 @@ WILMS manages women's interest-free group lending programmes. Requirements trace
 | BR-081 | Executive intelligence dashboard | Complete | v1.7.0+ |
 | BR-082 | Forecasting | Complete | Schedule-based projection |
 | BR-083 | Portfolio breakdown | Complete | Region / MMDA / sub-district / electoral area / community |
-| BR-088 | Ghana administrative location master | Complete | Hierarchy v2; 16 regions; 261 MMDAs; STMA deep coverage; suggestion workflow; offline cache |
+| BR-088 | Ghana administrative location master | Complete | Hierarchy v2 + national localities; 16 regions; 261 MMDAs; HOTOSM named places; alias/fuzzy search; territory intelligence |
 | BR-084 | Compliance pack export | Complete | Executive intelligence |
 | BR-085 | Standalone Export Center | Rejected | Removed v1.7.3; contextual exports |
 | BR-086 | Contextual export from reports/profiles | Complete | Primary export pattern v1.7.3 |

@@ -26,6 +26,21 @@ export function buildDashboardExportDocument(input: DashboardExportInput): Wilms
     executiveSummary: `Operational dashboard snapshot generated ${generatedAt}.`,
     sections: [
       {
+        title: 'Geographic hierarchy',
+        type: 'table',
+        table: {
+          headers: ['Level', 'Notes'],
+          rows: [
+            ['Region', 'Official Ghana region from location master'],
+            ['MMDA', 'Metropolitan / Municipal / District Assembly'],
+            ['Sub-district unit', 'Sub-metro / Area / Zonal / Town / Urban Council where available'],
+            ['Electoral area', 'Published electoral area where available'],
+            ['Community', 'Official or licensed settlement name'],
+            ['Collector territory', 'Assigned region → community UUID chain'],
+          ],
+        },
+      },
+      {
         title: 'Key metrics',
         type: 'metrics',
         metrics: input.summary.kpis.map((kpi) => ({

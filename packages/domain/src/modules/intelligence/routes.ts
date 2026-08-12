@@ -8,6 +8,7 @@ import { requireAuth } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/require-permission.js';
 import { validateBody } from '../../middleware/validate-body.js';
 import * as intelligenceService from './service.js';
+import * as geographyService from './geography.js';
 
 function mapError(error: unknown): never {
   if (error instanceof Error) {
@@ -57,6 +58,39 @@ intelligenceRouter.get(
   requirePermission(PERMISSION.VIEW_REPORTS, PERMISSION.VIEW_FINANCIAL_REPORTS),
   asyncHandler(async (_req, res) => {
     sendData(res, await intelligenceService.buildPortfolioBreakdown());
+  }),
+);
+
+intelligenceRouter.get(
+  '/intelligence/geography/drilldown',
+  requirePermission(PERMISSION.VIEW_REPORTS, PERMISSION.ACCESS_ADMIN_PORTAL),
+  asyncHandler(async (req, res) => {
+    const level = String(req.query.level ?? 'region');
+    const allowed = new Set(['region', 'mmda', 'subDistrictUnit', 'electoralArea', 'community']);
+    if (!allowed.has(level)) {
+      throw new AppError('Invalid geography level.', ERROR_CODE.VALIDATION, 422);
+    }
+    sendData(
+      res,
+      await geographyService.buildGeographicDrilldown({
+        level: level as geographyService.GeographyLevel,
+        parentId: typeof req.query.parentId === 'string' ? req.query.parentId : undefined,
+      }),
+    );
+  }),
+);
+
+intelligenceRouter.get(
+  '/intelligence/geography/heatmap',
+  requirePermission(PERMISSION.VIEW_REPORTS, PERMISSION.ACCESS_ADMIN_PORTAL),
+  asyncHandler(async (req, res) => {
+    const level = String(req.query.level ?? 'community');
+    sendData(
+      res,
+      await geographyService.buildGeographicHeatmap(
+        level === 'community' ? 'community' : 'community',
+      ),
+    );
   }),
 );
 

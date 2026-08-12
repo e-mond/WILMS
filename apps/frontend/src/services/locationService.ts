@@ -6,6 +6,7 @@ import type {
   LocationDistrict,
   LocationElectoralArea,
   LocationRegion,
+  LocationResponseMeta,
   LocationSearchResponse,
   LocationSubDistrictUnit,
   LocationSyncStatusResponse,
@@ -26,6 +27,7 @@ import {
   readCachedLocationCommunities,
   readCachedLocationDistricts,
   readCachedLocationElectoralAreas,
+  readCachedLocationHierarchy,
   readCachedLocationRegions,
   readCachedLocationSubDistrictUnits,
 } from '@/lib/offline/locationOfflineCache';
@@ -170,7 +172,70 @@ const locationService: ILocationService = {
   },
 
   async search(query: string): Promise<LocationSearchResponse> {
-    return apiClient.get<LocationSearchResponse>(`/locations/search?q=${encodeURIComponent(query)}`);
+    try {
+      return await apiClient.get<LocationSearchResponse>(
+        `/locations/search?q=${encodeURIComponent(query)}`,
+      );
+    } catch {
+      const hierarchy = await readCachedLocationHierarchy();
+      if (!hierarchy) {
+        return {
+          meta: { version: 'offline', source: 'offline', lastUpdated: null },
+          data: { regions: [], districts: [], communities: [] },
+        };
+      }
+      const normalized = query.trim().toLowerCase();
+      return {
+        meta: {
+          version: hierarchy.version ?? 'offline',
+          source: 'offline-cache',
+          lastUpdated: null,
+        },
+        data: {
+          regions: hierarchy.regions.filter((row) => row.name.toLowerCase().includes(normalized)),
+          districts: hierarchy.districts.filter((row) => row.name.toLowerCase().includes(normalized)),
+          communities: hierarchy.communities.filter((row) =>
+            row.name.toLowerCase().includes(normalized),
+          ),
+        },
+      };
+    }
+  },
+
+  async autocomplete(query: string, limit = 12) {
+    try {
+      return await apiClient.get<{
+        meta: LocationResponseMeta;
+        data: Array<{
+          type: string;
+          id: string;
+          name: string;
+          score?: number;
+          districtId?: string | null;
+          regionId?: string | null;
+          aliases?: string[];
+        }>;
+      }>(`/locations/autocomplete?q=${encodeURIComponent(query)}&limit=${limit}`);
+    } catch {
+      const search = await this.search(query);
+      const data = [
+        ...search.data.regions.map((row) => ({ type: 'region', id: row.id, name: row.name })),
+        ...search.data.districts.map((row) => ({
+          type: 'district',
+          id: row.id,
+          name: row.name,
+          regionId: row.regionId,
+        })),
+        ...search.data.communities.map((row) => ({
+          type: 'community',
+          id: row.id,
+          name: row.name,
+          districtId: row.districtId,
+          aliases: row.aliases,
+        })),
+      ].slice(0, limit);
+      return { meta: search.meta, data };
+    }
   },
 
   async suggestCommunity(input: CommunitySuggestionInput): Promise<unknown> {
