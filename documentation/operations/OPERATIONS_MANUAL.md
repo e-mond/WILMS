@@ -102,6 +102,21 @@ Neon provides automated point-in-time recovery. Verify backup retention in Neon 
 npm run cleanup:demo-financial-data -w @wilms/domain
 ```
 
+### Location master import
+
+```bash
+npm run seed:location-master -w @wilms/domain
+npm run db:backfill:locations -w @wilms/domain
+```
+
+### Reset transactional data (keep users and RBAC)
+
+```bash
+WILMS_CONFIRM_DB_RESET=YES npm run db:reset:keep-users -w @wilms/domain
+```
+
+Preserves `users`, `roles`, `permissions`, `role_permissions`, `user_roles`, `user_permission_overrides`, and `__drizzle_migrations`. Then re-import locations.
+
 ---
 
 ## 7. Cron and scheduler

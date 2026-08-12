@@ -5,6 +5,8 @@ import { formatBorrowerDisplayId } from '@wilms/shared-utils';
 import { env } from '../../config/env.js';
 import { isDatabaseEnabled, getDb } from '../../db/client.js';
 import { groupMembers, groups } from '../../db/schema/groups.js';
+import { collectors } from '../../db/schema/users.js';
+import { decimalToPesewas } from '../../domain/money.js';
 import { getBorrower, listBorrowers, listGroups, listPayments } from '../../db/persistence.js';
 import type { BorrowerRecord, GroupRecord, PaymentRecord } from '../../db/store.js';
 import * as userRepo from '../../repositories/user.repository.js';
@@ -229,6 +231,7 @@ async function loadGroupRows(): Promise<
       name: record.name,
       displayName: record.displayName,
       community: record.community,
+      communityId: record.communityId ?? null,
       status: 'ACTIVE' as const,
       collectorUserId: null,
       leaderBorrowerId: record.memberIds[0] ?? null,

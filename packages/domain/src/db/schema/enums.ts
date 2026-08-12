@@ -168,6 +168,19 @@ export const approvalDecisionEnum = pgEnum('approval_decision', [
 
 export const groupMemberRoleEnum = pgEnum('group_member_role', ['LEADER', 'MEMBER']);
 
+export const locationSuggestionStatusEnum = pgEnum('location_suggestion_status', [
+  'PENDING',
+  'APPROVED',
+  'REJECTED',
+]);
+
+export const locationSyncStatusEnum = pgEnum('location_sync_status', [
+  'PENDING',
+  'SUCCESS',
+  'FAILED',
+  'PARTIAL',
+]);
+
 export const loanLifecycleStatusEnum = pgEnum('loan_lifecycle_status', [
   'DRAFT',
   'PENDING_APPROVAL',

@@ -21,6 +21,7 @@ function rowToRecord(row: typeof groups.$inferSelect, memberIds: string[]): Grou
     name: row.name,
     displayName: row.displayName,
     community: row.community,
+    communityId: row.communityId ?? undefined,
     memberIds,
     formedAt: row.formedAt.toISOString(),
   };
@@ -34,6 +35,7 @@ export async function saveGroup(record: GroupRecord): Promise<GroupRecord> {
     name: record.name,
     displayName: record.displayName,
     community: record.community,
+    communityId: record.communityId ?? null,
     formedAt: new Date(record.formedAt),
     status: 'ACTIVE',
   });
