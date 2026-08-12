@@ -27,6 +27,8 @@ export * from './photo-capture-sessions';
 export * from './ghana-locations';
 export * from './regions';
 export * from './districts';
+export * from './sub-district-units';
+export * from './electoral-areas';
 export * from './communities';
 export * from './pending-community-suggestions';
 export * from './location-sync-log';

@@ -26,6 +26,8 @@ export interface BorrowerReviewDetail extends BorrowerDetail {
   city: string;
   region: string;
   district: string;
+  subDistrictUnit?: string;
+  electoralArea?: string;
   businessName: string;
   businessAddress: string;
   typeOfWork: string;

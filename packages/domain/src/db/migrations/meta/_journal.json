@@ -295,6 +295,13 @@
       "when": 1785717600000,
       "tag": "0041_v180_location_master",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1785804000000,
+      "tag": "0042_v180_ghana_admin_hierarchy",
+      "breakpoints": true
     }
   ]
 }

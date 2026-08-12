@@ -76,7 +76,8 @@ npm run dev       # Terminal 2 — frontend on :3000
 
 ```bash
 npm run db:apply:location-master -w @wilms/domain
-npm run seed:location-master -w @wilms/domain
+npm run db:apply:ghana-hierarchy -w @wilms/domain
+npm run seed:ghana-hierarchy -w @wilms/domain
 npm run db:backfill:locations -w @wilms/domain
 ```
 

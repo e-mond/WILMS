@@ -521,6 +521,12 @@ export interface ILocationService {
   getRegions(): Promise<LocationRegion[]>;
   getDistricts(regionId: string): Promise<LocationDistrict[]>;
   getCommunities(districtId: string): Promise<LocationCity[]>;
+  getSubDistrictUnits(districtId: string): Promise<import('@/types/location').LocationSubDistrictUnit[]>;
+  getElectoralAreas(input: {
+    districtId?: string;
+    subDistrictUnitId?: string;
+  }): Promise<import('@/types/location').LocationElectoralArea[]>;
+  getCommunitiesByElectoralArea(electoralAreaId: string): Promise<LocationCity[]>;
   getCities(districtId: string): Promise<LocationCity[]>;
   search(query: string): Promise<import('@/types/location').LocationSearchResponse>;
   suggestCommunity(

@@ -17,6 +17,8 @@ export interface BorrowerRegistrationFormValues {
   city: string;
   region: string;
   district: string;
+  subDistrictUnit?: string;
+  electoralArea?: string;
   businessName: string;
   businessAddress: string;
   typeOfWork: string;
@@ -54,6 +56,8 @@ export interface BorrowerRegistrationProfile {
   city: string;
   region: string;
   district: string;
+  subDistrictUnit?: string;
+  electoralArea?: string;
   businessName: string;
   businessAddress: string;
   typeOfWork: string;
@@ -81,6 +85,8 @@ export interface RegisterBorrowerPayload {
   city: string;
   region: string;
   district: string;
+  subDistrictUnit?: string;
+  electoralArea?: string;
   businessName: string;
   businessAddress: string;
   typeOfWork: string;

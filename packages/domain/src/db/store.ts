@@ -13,6 +13,8 @@ export interface BorrowerProfile {
   city: string;
   region: string;
   district: string;
+  subDistrictUnit?: string;
+  electoralArea?: string;
   businessName: string;
   businessAddress: string;
   typeOfWork: string;
@@ -39,6 +41,8 @@ export interface BorrowerRecord {
   community: string;
   regionId?: string;
   districtId?: string;
+  subDistrictUnitId?: string;
+  electoralAreaId?: string;
   communityId?: string;
   registeredAt: string;
   registeredByOfficerId: string;

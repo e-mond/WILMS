@@ -15,6 +15,10 @@ const onboardCollectorSchema = z.object({
   zone: z.string().min(1),
   phone: z.string().optional(),
   assignedRegion: z.string().optional(),
+  assignedDistrict: z.string().optional(),
+  assignedSubDistrictUnitId: z.string().uuid().optional(),
+  assignedElectoralAreaId: z.string().uuid().optional(),
+  assignedCommunityId: z.string().uuid().optional(),
 });
 
 function mapError(error: unknown): never {

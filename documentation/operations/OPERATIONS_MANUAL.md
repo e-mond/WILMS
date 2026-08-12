@@ -201,6 +201,19 @@ Maintenance window displays banner to all users.
 
 ---
 
+## 12a. Ghana location hierarchy
+
+Refresh official geography after a licensed dataset update:
+
+```bash
+npm run db:apply:ghana-hierarchy -w @wilms/domain
+npm run seed:ghana-hierarchy -w @wilms/domain
+```
+
+Confirm `GET /api/v1/locations/sync/status`. Do not delete historical location rows. Community suggestions are Super Admin review items, never auto-created.
+
+---
+
 ## 13. Documentation maintenance
 
 Generate updated PDF/DOCX after documentation changes:

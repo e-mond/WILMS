@@ -15,11 +15,28 @@ export interface LocationDistrict {
 export interface LocationCommunity {
   id: string;
   districtId: string;
+  electoralAreaId?: string | null;
   name: string;
   code?: string | null;
   aliases?: string[];
   latitude?: number | null;
   longitude?: number | null;
+}
+
+export interface LocationSubDistrictUnit {
+  id: string;
+  districtId: string;
+  name: string;
+  code?: string | null;
+  unitType: string;
+}
+
+export interface LocationElectoralArea {
+  id: string;
+  districtId: string;
+  subDistrictUnitId?: string | null;
+  name: string;
+  code?: string | null;
 }
 
 export type LocationCity = LocationCommunity;
@@ -41,11 +58,14 @@ export interface LocationSearchResponse {
     regions: LocationRegion[];
     districts: LocationDistrict[];
     communities: LocationCommunity[];
+    subDistrictUnits?: LocationSubDistrictUnit[];
+    electoralAreas?: LocationElectoralArea[];
   };
 }
 
 export interface CommunitySuggestionInput {
   districtId?: string;
+  electoralAreaId?: string;
   proposedName: string;
 }
 
@@ -56,6 +76,8 @@ export interface LocationSyncStatus {
   importedAt: string;
   regionsImported: number;
   districtsImported: number;
+  subDistrictUnitsImported?: number;
+  electoralAreasImported?: number;
   communitiesImported: number;
   status: 'PENDING' | 'SUCCESS' | 'FAILED' | 'PARTIAL';
   notes?: string | null;

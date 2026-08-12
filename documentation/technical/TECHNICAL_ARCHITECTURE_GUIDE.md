@@ -304,11 +304,11 @@ Vercel Cron invokes `/api/cron/notifications` daily at 06:00 UTC. Token-authenti
 
 ## 14a. Ghana location master
 
-Canonical tables: `regions`, `districts`, `communities`, `pending_community_suggestions`, `location_sync_log`.
+Canonical tables: `regions`, `districts`, `sub_district_units`, `electoral_areas`, `communities`, `pending_community_suggestions`, `location_sync_log`.
 
-Runtime APIs: `GET /api/v1/locations/regions`, `.../districts`, `.../communities`, `.../search`, `POST .../community-suggestions`, `GET .../sync/status`.
+Runtime APIs: `GET /api/v1/locations/regions`, `.../districts`, `.../sub-district-units`, `.../electoral-areas`, `.../communities`, `.../search`, `POST .../community-suggestions`, `GET .../sync/status`.
 
-Import: `npm run seed:location-master -w @wilms/domain`. Backfill: `npm run db:backfill:locations -w @wilms/domain`. Full design: `documentation/location/`.
+Import: `npm run seed:ghana-hierarchy -w @wilms/domain`. Adapters: `scripts/location-sync/`. Full design: `documentation/location/`.
 
 ---
 

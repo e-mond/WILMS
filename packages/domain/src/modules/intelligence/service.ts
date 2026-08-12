@@ -68,7 +68,10 @@ function addDaysIso(isoDate: string, days: number): string {
 }
 
 export async function buildExecutiveDashboard(input?: {
+  region?: string;
   district?: string;
+  subDistrictUnit?: string;
+  electoralArea?: string;
   community?: string;
   asOfDate?: string;
 }) {
@@ -118,7 +121,10 @@ export async function buildExecutiveDashboard(input?: {
     generatedAt: new Date().toISOString(),
     asOfDate: input?.asOfDate ?? new Date().toISOString().slice(0, 10),
     filters: {
+      region: input?.region ?? null,
       district: input?.district ?? null,
+      subDistrictUnit: input?.subDistrictUnit ?? null,
+      electoralArea: input?.electoralArea ?? null,
       community: input?.community ?? null,
     },
     financial: {
@@ -842,6 +848,7 @@ export async function buildPortfolioBreakdown() {
     })),
     byStatus: aging.summary,
     byGroupRisk: groups.riskDistribution,
+    geographyLevels: ['region', 'mmda', 'subDistrictUnit', 'electoralArea', 'community'],
   };
 }
 

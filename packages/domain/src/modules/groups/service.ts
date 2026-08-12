@@ -232,6 +232,8 @@ async function loadGroupRows(): Promise<
       displayName: record.displayName,
       community: record.community,
       communityId: record.communityId ?? null,
+      subDistrictUnitId: null,
+      electoralAreaId: null,
       status: 'ACTIVE' as const,
       collectorUserId: null,
       leaderBorrowerId: record.memberIds[0] ?? null,

@@ -8,12 +8,12 @@
 | View | Source of truth |
 |------|-----------------|
 | Region totals | join via `borrowers.region_id` / pool region mapping |
-| District totals | join via `borrowers.district_id` |
+| MMDA totals | join via `borrowers.district_id` |
+| Sub-district totals | join via `borrowers.sub_district_unit_id` |
+| Electoral area / constituency | join via `borrowers.electoral_area_id` |
 | Community totals | join via `borrowers.community_id` or `groups.community_id` |
-| Collector by district | `collectors.assigned_district_id` |
-| Portfolio by district | loans -> borrowers -> districts |
-| Delinquency by district | risk/default metrics grouped by district |
-| Constituency analytics | future extension; keep district/community as current grain |
+| Collector by territory | collector assigned_* UUID columns |
+| Portfolio / delinquency heat maps | loans → borrowers → location master; polygons deferred to GIS preparation |
 
 ## Implementation guidance
 

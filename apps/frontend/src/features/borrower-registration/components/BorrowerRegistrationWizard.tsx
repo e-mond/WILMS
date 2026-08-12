@@ -262,6 +262,8 @@ export function BorrowerRegistrationWizard() {
   const watchedTypeOfWork = watch('typeOfWork');
   const watchedRegion = watch('region');
   const watchedDistrict = watch('district');
+  const watchedSubDistrictUnit = watch('subDistrictUnit');
+  const watchedElectoralArea = watch('electoralArea');
   const watchedHouseAddress = watch('houseAddress') ?? '';
   const watchedBusinessAddress = watch('businessAddress') ?? '';
   const watchedBusinessName = watch('businessName') ?? '';
@@ -293,10 +295,46 @@ export function BorrowerRegistrationWizard() {
     [districts, watchedDistrict],
   );
 
-  const { data: communities = [] } = useQuery({
-    queryKey: ['locations', 'communities', selectedDistrictId],
-    queryFn: () => locationService.getCommunities(selectedDistrictId),
+  const { data: subDistrictUnits = [], isFetched: subDistrictUnitsFetched } = useQuery({
+    queryKey: ['locations', 'sub-district-units', selectedDistrictId],
+    queryFn: () => locationService.getSubDistrictUnits(selectedDistrictId),
     enabled: Boolean(selectedDistrictId),
+  });
+
+  const selectedSubDistrictUnitId = useMemo(
+    () => subDistrictUnits.find((unit) => unit.name === watchedSubDistrictUnit)?.id ?? '',
+    [subDistrictUnits, watchedSubDistrictUnit],
+  );
+
+  const { data: electoralAreas = [], isFetched: electoralAreasFetched } = useQuery({
+    queryKey: ['locations', 'electoral-areas', selectedDistrictId, selectedSubDistrictUnitId],
+    queryFn: () =>
+      locationService.getElectoralAreas(
+        selectedSubDistrictUnitId
+          ? { subDistrictUnitId: selectedSubDistrictUnitId }
+          : { districtId: selectedDistrictId },
+      ),
+    enabled:
+      Boolean(selectedDistrictId) &&
+      subDistrictUnitsFetched &&
+      (subDistrictUnits.length === 0 || Boolean(selectedSubDistrictUnitId)),
+  });
+
+  const selectedElectoralAreaId = useMemo(
+    () => electoralAreas.find((area) => area.name === watchedElectoralArea)?.id ?? '',
+    [electoralAreas, watchedElectoralArea],
+  );
+
+  const { data: communities = [] } = useQuery({
+    queryKey: ['locations', 'communities', selectedDistrictId, selectedElectoralAreaId],
+    queryFn: () =>
+      selectedElectoralAreaId
+        ? locationService.getCommunitiesByElectoralArea(selectedElectoralAreaId)
+        : locationService.getCommunities(selectedDistrictId),
+    enabled:
+      Boolean(selectedDistrictId) &&
+      electoralAreasFetched &&
+      (electoralAreas.length === 0 || Boolean(selectedElectoralAreaId)),
   });
   const [communitySuggestion, setCommunitySuggestion] = useState('');
   const [communitySuggestionMessage, setCommunitySuggestionMessage] = useState<string | null>(null);
@@ -806,6 +844,8 @@ export function BorrowerRegistrationWizard() {
                     const region = regionOptions.find((entry) => entry.id === event.target.value);
                     field.onChange(region?.name ?? '');
                     setValue('district', '', { shouldDirty: true });
+                    setValue('subDistrictUnit', '', { shouldDirty: true });
+                    setValue('electoralArea', '', { shouldDirty: true });
                     setValue('city', '', { shouldDirty: true });
                   }}
                   onBlur={field.onBlur}
@@ -820,7 +860,7 @@ export function BorrowerRegistrationWizard() {
               )}
             />
           </FormField>
-          <FormField label="District" htmlFor="district" required error={errors.district?.message}>
+          <FormField label="District / MMDA" htmlFor="district" required error={errors.district?.message}>
             <Controller
               name="district"
               control={control}
@@ -833,21 +873,93 @@ export function BorrowerRegistrationWizard() {
                   onChange={(event) => {
                     const district = districts.find((entry) => entry.id === event.target.value);
                     field.onChange(district?.name ?? '');
+                    setValue('subDistrictUnit', '', { shouldDirty: true });
+                    setValue('electoralArea', '', { shouldDirty: true });
                     setValue('city', '', { shouldDirty: true });
                   }}
                   onBlur={field.onBlur}
                 >
-                  <option value="">{selectedRegionId ? 'Select district' : 'Select a region first'}</option>
+                  <option value="">{selectedRegionId ? 'Select district / MMDA' : 'Select a region first'}</option>
                   {districts.map((district) => (
                     <option key={district.id} value={district.id}>
                       {district.name}
+                      {district.category ? ` (${district.category})` : ''}
                     </option>
                   ))}
                 </Select>
               )}
             />
           </FormField>
-          <FormField label="Community" htmlFor="city" required error={errors.city?.message}>
+          {subDistrictUnits.length > 0 ? (
+            <FormField
+              label="Sub-metro / Area Council"
+              htmlFor="subDistrictUnit"
+              required
+              error={errors.subDistrictUnit?.message}
+            >
+              <Controller
+                name="subDistrictUnit"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    id="subDistrictUnit"
+                    hasError={Boolean(errors.subDistrictUnit)}
+                    value={selectedSubDistrictUnitId}
+                    disabled={!selectedDistrictId}
+                    onChange={(event) => {
+                      const unit = subDistrictUnits.find((entry) => entry.id === event.target.value);
+                      field.onChange(unit?.name ?? '');
+                      setValue('electoralArea', '', { shouldDirty: true });
+                      setValue('city', '', { shouldDirty: true });
+                    }}
+                    onBlur={field.onBlur}
+                  >
+                    <option value="">Select sub-district unit</option>
+                    {subDistrictUnits.map((unit) => (
+                      <option key={unit.id} value={unit.id}>
+                        {unit.name}
+                      </option>
+                    ))}
+                  </Select>
+                )}
+              />
+            </FormField>
+          ) : null}
+          {electoralAreas.length > 0 ? (
+            <FormField
+              label="Electoral area"
+              htmlFor="electoralArea"
+              required
+              error={errors.electoralArea?.message}
+            >
+              <Controller
+                name="electoralArea"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    id="electoralArea"
+                    hasError={Boolean(errors.electoralArea)}
+                    value={selectedElectoralAreaId}
+                    disabled={!selectedDistrictId}
+                    onChange={(event) => {
+                      const area = electoralAreas.find((entry) => entry.id === event.target.value);
+                      field.onChange(area?.name ?? '');
+                      setValue('city', '', { shouldDirty: true });
+                    }}
+                    onBlur={field.onBlur}
+                  >
+                    <option value="">Select electoral area</option>
+                    {electoralAreas.map((area) => (
+                      <option key={area.id} value={area.id}>
+                        {area.name}
+                      </option>
+                    ))}
+                  </Select>
+                )}
+              />
+            </FormField>
+          ) : null}
+          <FormField label="Community / suburb" htmlFor="city" required error={errors.city?.message}>
             <Controller
               name="city"
               control={control}
@@ -856,7 +968,7 @@ export function BorrowerRegistrationWizard() {
                   id="city"
                   hasError={Boolean(errors.city)}
                   value={communities.find((entry) => entry.name === field.value)?.id ?? ''}
-                  disabled={!selectedDistrictId}
+                  disabled={!selectedDistrictId || (electoralAreas.length > 0 && !selectedElectoralAreaId)}
                   onChange={(event) => {
                     const community = communities.find((entry) => entry.id === event.target.value);
                     field.onChange(community?.name ?? '');
@@ -865,7 +977,7 @@ export function BorrowerRegistrationWizard() {
                   onBlur={field.onBlur}
                 >
                   <option value="">
-                    {selectedDistrictId ? 'Select community' : 'Select a district first'}
+                    {selectedDistrictId ? 'Select community / suburb' : 'Select a district first'}
                   </option>
                   {communities.map((community) => (
                     <option key={community.id} value={community.id}>
@@ -879,8 +991,8 @@ export function BorrowerRegistrationWizard() {
           {selectedDistrictId ? (
             <div className="space-y-wilms-2 md:col-span-2">
               <p className="text-small text-text-muted">
-                Cannot find the community? Suggest a new one for review instead of creating it
-                directly.
+                Cannot find the community? Suggest a new one for Super Admin review. Communities are
+                never created automatically.
               </p>
               <div className="flex flex-col gap-wilms-2 sm:flex-row">
                 <Input
@@ -898,12 +1010,13 @@ export function BorrowerRegistrationWizard() {
                     void locationService
                       .suggestCommunity({
                         districtId: selectedDistrictId,
+                        electoralAreaId: selectedElectoralAreaId || undefined,
                         proposedName: communitySuggestion.trim(),
                       })
                       .then(() => {
                         setCommunitySuggestion('');
                         setCommunitySuggestionMessage(
-                          'Community suggestion submitted for review.',
+                          'Community suggestion submitted for Super Admin review.',
                         );
                       })
                       .catch((error) => {

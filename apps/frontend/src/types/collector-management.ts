@@ -89,4 +89,8 @@ export interface OnboardCollectorInput {
   zone: string;
   phone?: string;
   assignedRegion?: string;
+  assignedDistrict?: string;
+  assignedSubDistrictUnitId?: string;
+  assignedElectoralAreaId?: string;
+  assignedCommunityId?: string;
 }

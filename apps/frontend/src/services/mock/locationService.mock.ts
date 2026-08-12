@@ -13,6 +13,8 @@ import type {
   LocationDistrict,
   LocationRegion,
   LocationSearchResponse,
+  LocationSubDistrictUnit,
+  LocationElectoralArea,
   LocationSyncStatusResponse,
 } from '@/types/location';
 import type { ILocationService } from '@/types/services';
@@ -31,6 +33,21 @@ const locationServiceMock: ILocationService = {
   async getCommunities(districtId: string): Promise<LocationCity[]> {
     await simulateDelay();
     return getGhanaCities(districtId);
+  },
+
+  async getSubDistrictUnits(): Promise<LocationSubDistrictUnit[]> {
+    await simulateDelay();
+    return [];
+  },
+
+  async getElectoralAreas(): Promise<LocationElectoralArea[]> {
+    await simulateDelay();
+    return [];
+  },
+
+  async getCommunitiesByElectoralArea(): Promise<LocationCity[]> {
+    await simulateDelay();
+    return [];
   },
 
   async getCities(districtId: string): Promise<LocationCity[]> {

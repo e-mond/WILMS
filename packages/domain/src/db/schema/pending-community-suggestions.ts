@@ -1,6 +1,7 @@
 import { index, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { locationSuggestionStatusEnum } from './enums';
 import { districts } from './districts';
+import { electoralAreas } from './electoral-areas';
 import { users } from './users';
 
 export const pendingCommunitySuggestions = pgTable(
@@ -8,6 +9,7 @@ export const pendingCommunitySuggestions = pgTable(
   {
     id: uuid('id').primaryKey(),
     districtId: uuid('district_id').references(() => districts.id),
+    electoralAreaId: uuid('electoral_area_id').references(() => electoralAreas.id),
     proposedName: text('proposed_name').notNull(),
     proposedByUserId: uuid('proposed_by_user_id').references(() => users.id),
     status: locationSuggestionStatusEnum('status').notNull().default('PENDING'),
@@ -17,6 +19,9 @@ export const pendingCommunitySuggestions = pgTable(
   },
   (table) => ({
     districtIdx: index('pending_community_suggestions_district_id_idx').on(table.districtId),
+    electoralAreaIdx: index('pending_community_suggestions_electoral_area_id_idx').on(
+      table.electoralAreaId,
+    ),
     statusIdx: index('pending_community_suggestions_status_idx').on(table.status),
     proposedNameIdx: index('pending_community_suggestions_name_idx').on(table.proposedName),
   }),

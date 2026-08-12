@@ -56,17 +56,22 @@ See also: `technical/`, `operations/`, `user-guides/`, `developer/`, `roadmap/`,
 
 | Document | Path |
 |----------|------|
-| Architecture review | `location/LOCATION_ARCHITECTURE_REVIEW.md` |
-| Master architecture | `location/LOCATION_MASTER_ARCHITECTURE.md` |
-| Ghana hierarchy | `location/GHANA_ADMINISTRATIVE_HIERARCHY.md` |
-| Sync guide | `location/LOCATION_SYNC_GUIDE.md` |
-| Community suggestions | `location/COMMUNITY_SUGGESTION_WORKFLOW.md` |
+| Architecture review (v1) | `location/LOCATION_ARCHITECTURE_REVIEW.md` |
+| Hierarchy architecture review (v2) | `location/GHANA_HIERARCHY_ARCHITECTURE_REVIEW.md` |
+| Administrative research | `location/GHANA_ADMINISTRATIVE_RESEARCH.md` |
+| Administrative model | `location/GHANA_ADMINISTRATIVE_MODEL.md` |
+| Sub-district architecture | `location/SUB_DISTRICT_ARCHITECTURE.md` |
+| Electoral area model | `location/ELECTORAL_AREA_MODEL.md` |
+| Community guide | `location/COMMUNITY_AND_SUBURB_GUIDE.md` |
+| Import pipeline | `location/LOCATION_IMPORT_PIPELINE.md` |
+| API reference | `location/LOCATION_API_REFERENCE.md` |
 | Offline strategy | `location/OFFLINE_LOCATION_STRATEGY.md` |
-| API reference | `location/API_LOCATION_REFERENCE.md` |
+| GIS preparation | `location/GIS_PREPARATION.md` |
+| Territory management | `location/TERRITORY_MANAGEMENT.md` |
 | Migration strategy | `location/MIGRATION_STRATEGY.md` |
-| Executive geo analytics | `location/EXECUTIVE_GEO_ANALYTICS.md` |
-| Test evidence | `location/TEST_EVIDENCE.md` |
-| Final report | `location/FINAL_LOCATION_MASTER_REPORT.md` |
+| Import report | `location/GHANA_IMPORT_REPORT.md` |
+| Test report | `location/GHANA_HIERARCHY_TEST_REPORT.md` |
+| Final report | `location/FINAL_GHANA_HIERARCHY_REPORT.md` |
 
 ---
 
