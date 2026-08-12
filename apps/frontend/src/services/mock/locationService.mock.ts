@@ -70,6 +70,50 @@ const locationServiceMock: ILocationService = {
     };
   },
 
+  async autocomplete(
+    query: string,
+    limit = 12,
+    options?: {
+      types?: Array<'region' | 'district' | 'sub_district_unit' | 'electoral_area' | 'community'>;
+      districtId?: string;
+    },
+  ) {
+    const search = await this.search(query);
+    return {
+      meta: search.meta,
+      data: [
+        ...search.data.regions.map((row) => ({ type: 'region', id: row.id, name: row.name })),
+        ...search.data.districts.map((row) => ({
+          type: 'district',
+          id: row.id,
+          name: row.name,
+          regionId: row.regionId,
+        })),
+        ...search.data.communities.map((row) => ({
+          type: 'community',
+          id: row.id,
+          name: row.name,
+          districtId: row.districtId,
+        })),
+      ]
+        .filter(
+          (row) =>
+            !options?.types?.length ||
+            options.types.includes(row.type as (typeof options.types)[number]),
+        )
+        .filter((row) => {
+          if (!options?.districtId) {
+            return true;
+          }
+          if (row.type !== 'community') {
+            return true;
+          }
+          return 'districtId' in row && row.districtId === options.districtId;
+        })
+        .slice(0, limit),
+    };
+  },
+
   async suggestCommunity(input: CommunitySuggestionInput): Promise<unknown> {
     await simulateDelay();
     return {

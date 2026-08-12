@@ -110,3 +110,41 @@ export async function readCachedLocationHierarchy(): Promise<{
   }>(OFFLINE_CACHE_KEYS.locationHierarchy);
   return snapshot?.value ?? null;
 }
+
+export async function cacheLocationDatasetVersion(version: string): Promise<void> {
+  await writeOfflineSnapshot(OFFLINE_CACHE_KEYS.locationDatasetVersion, { version });
+}
+
+export async function readCachedLocationDatasetVersion(): Promise<string | null> {
+  const snapshot = await readOfflineSnapshot<{ version: string }>(
+    OFFLINE_CACHE_KEYS.locationDatasetVersion,
+  );
+  return snapshot?.value.version ?? null;
+}
+
+export async function cacheLocationSearchIndex(
+  entries: Array<{ type: string; id: string; name: string; aliases?: string[] }>,
+): Promise<void> {
+  await writeOfflineSnapshot(OFFLINE_CACHE_KEYS.locationSearchIndex, entries);
+}
+
+export async function readCachedLocationSearchIndex(): Promise<Array<{
+  type: string;
+  id: string;
+  name: string;
+  aliases?: string[];
+}> | null> {
+  const snapshot = await readOfflineSnapshot<
+    Array<{ type: string; id: string; name: string; aliases?: string[] }>
+  >(OFFLINE_CACHE_KEYS.locationSearchIndex);
+  return snapshot?.value ?? null;
+}
+
+export async function invalidateLocationCacheIfStale(currentVersion: string): Promise<boolean> {
+  const cached = await readCachedLocationDatasetVersion();
+  if (cached && cached !== currentVersion) {
+    return true;
+  }
+  await cacheLocationDatasetVersion(currentVersion);
+  return false;
+}

@@ -1,0 +1,129 @@
+{
+  "productVersion": "1.8.0",
+  "generatedAt": "2026-08-12T16:18:37.366Z",
+  "coverage": {
+    "regions": {
+      "imported": 16,
+      "expected": 16
+    },
+    "mmdas": {
+      "imported": 261,
+      "expected": 261
+    },
+    "subDistrictUnits": {
+      "imported": 3
+    },
+    "electoralAreas": {
+      "imported": 36,
+      "note": "STMA verified set"
+    },
+    "verifiedCommunities": {
+      "imported": 313
+    },
+    "hotosmCommunities": {
+      "imported": 7130,
+      "distinctMmdas": 221
+    },
+    "stmaCommunities": {
+      "imported": 16
+    },
+    "duplicateNamesInSnapshot": 4
+  },
+  "exampleLocalities": {
+    "Sekondi": {
+      "inVerifiedSnapshot": true,
+      "inHotosm": true,
+      "status": "covered"
+    },
+    "Takoradi": {
+      "inVerifiedSnapshot": true,
+      "inHotosm": true,
+      "status": "covered"
+    },
+    "Kweikuma": {
+      "inVerifiedSnapshot": true,
+      "inHotosm": false,
+      "status": "covered"
+    },
+    "Fijai": {
+      "inVerifiedSnapshot": true,
+      "inHotosm": false,
+      "status": "covered"
+    },
+    "Adiembra": {
+      "inVerifiedSnapshot": true,
+      "inHotosm": true,
+      "status": "covered"
+    },
+    "Bakado": {
+      "inVerifiedSnapshot": true,
+      "inHotosm": false,
+      "status": "covered"
+    },
+    "Bakaekyir": {
+      "inVerifiedSnapshot": true,
+      "inHotosm": false,
+      "status": "covered"
+    },
+    "Nkontompo": {
+      "inVerifiedSnapshot": true,
+      "inHotosm": false,
+      "status": "covered"
+    },
+    "Ngyiresia": {
+      "inVerifiedSnapshot": true,
+      "inHotosm": false,
+      "status": "covered"
+    },
+    "Essaman": {
+      "inVerifiedSnapshot": true,
+      "inHotosm": true,
+      "status": "covered"
+    },
+    "European Town": {
+      "inVerifiedSnapshot": true,
+      "inHotosm": false,
+      "status": "covered"
+    },
+    "Old Sekondi": {
+      "inVerifiedSnapshot": false,
+      "inHotosm": false,
+      "status": "gap"
+    },
+    "Railway & Harbour Area": {
+      "inVerifiedSnapshot": false,
+      "inHotosm": false,
+      "status": "gap"
+    },
+    "Zongo": {
+      "inVerifiedSnapshot": true,
+      "inHotosm": false,
+      "status": "covered"
+    },
+    "Estate": {
+      "inVerifiedSnapshot": true,
+      "inHotosm": false,
+      "status": "covered"
+    },
+    "Mempeasem": {
+      "inVerifiedSnapshot": true,
+      "inHotosm": false,
+      "status": "covered"
+    }
+  },
+  "registrationDependencies": [
+    "BorrowerRegistrationWizard cascade",
+    "community suggestion workflow",
+    "offline location cache"
+  ],
+  "borrowerDependencies": [
+    "borrowers.region_id",
+    "borrowers.district_id",
+    "borrowers.community_id",
+    "legacy name fields"
+  ],
+  "groupDependencies": [
+    "groups.community_id",
+    "groups.district_id"
+  ]
+}

@@ -529,6 +529,25 @@ export interface ILocationService {
   getCommunitiesByElectoralArea(electoralAreaId: string): Promise<LocationCity[]>;
   getCities(districtId: string): Promise<LocationCity[]>;
   search(query: string): Promise<import('@/types/location').LocationSearchResponse>;
+  autocomplete(
+    query: string,
+    limit?: number,
+    options?: {
+      types?: Array<'region' | 'district' | 'sub_district_unit' | 'electoral_area' | 'community'>;
+      districtId?: string;
+    },
+  ): Promise<{
+    meta: import('@/types/location').LocationResponseMeta;
+    data: Array<{
+      type: string;
+      id: string;
+      name: string;
+      score?: number;
+      districtId?: string | null;
+      regionId?: string | null;
+      aliases?: string[];
+    }>;
+  }>;
   suggestCommunity(
     input: import('@/types/location').CommunitySuggestionInput,
   ): Promise<unknown>;

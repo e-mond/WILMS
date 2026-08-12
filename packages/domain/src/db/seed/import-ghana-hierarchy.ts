@@ -2,12 +2,14 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
-import '../../../config/load-env.js';
+import '../../config/load-env.js';
 import { isDatabaseEnabled } from '../client.js';
 import * as locationMasterRepo from '../../repositories/location-master.repository.js';
 import { buildStableLocationId } from '../../modules/locations/service.js';
+import { loadHotosmCommunityDataset } from '../../../../../scripts/location-sync/adapters/gss.js';
 import { loadValidatedSnapshot } from '../../../../../scripts/location-sync/pipeline.js';
 import { normaliseMatchKey } from '../../../../../scripts/location-sync/normalize.js';
+import { normaliseLocationQuery } from '../../modules/locations/alias-resolution.js';
 
 interface SeedCity {
   district_code: string;
@@ -31,11 +33,17 @@ async function main(): Promise<void> {
   const bundledCommunities = readJson<SeedCity[]>('cities.json');
   const syncId = randomUUID();
 
+  const existingRegions = await locationMasterRepo.listAllRegions();
   const regionIdByCode = new Map<string, string>();
   for (const region of snapshot.regions) {
-    const id = buildStableLocationId(snapshot.source, region.sourceId);
+    const existing = existingRegions.find(
+      (row) =>
+        row.code.toUpperCase() === region.code.toUpperCase() ||
+        normaliseMatchKey(row.name) === normaliseMatchKey(region.name),
+    );
+    const id = existing?.id ?? buildStableLocationId(snapshot.source, region.sourceId);
     regionIdByCode.set(region.code, id);
-    await locationMasterRepo.upsertRegion({
+    const payload = {
       id,
       name: region.name,
       code: region.code,
@@ -43,7 +51,12 @@ async function main(): Promise<void> {
       sourceId: region.sourceId,
       datasetVersion: snapshot.datasetVersion,
       isActive: true,
-    });
+    };
+    if (existing) {
+      await locationMasterRepo.updateRegionById(payload);
+    } else {
+      await locationMasterRepo.upsertRegion(payload);
+    }
   }
 
   const existingDistricts = await locationMasterRepo.listAllDistricts();
@@ -124,18 +137,124 @@ async function main(): Promise<void> {
     });
   }
 
+  let aliasesImported = 0;
+  const pendingAliases: Array<{
+    id: string;
+    entityType: string;
+    entityId: string;
+    alias: string;
+    normalisedAlias: string;
+    source: string;
+    datasetVersion: string;
+    isActive: boolean;
+  }> = [];
+
+  function queueAliases(
+    entityId: string,
+    names: string[],
+    source: string,
+    datasetVersion: string,
+  ): void {
+    const unique = new Map<string, string>();
+    for (const name of names) {
+      const normalised = normaliseLocationQuery(name);
+      if (!normalised) {
+        continue;
+      }
+      unique.set(normalised, name);
+    }
+    for (const [normalisedAlias, alias] of unique) {
+      pendingAliases.push({
+        id: buildStableLocationId(source, `alias:community:${entityId}:${normalisedAlias}`),
+        entityType: 'community',
+        entityId,
+        alias,
+        normalisedAlias,
+        source,
+        datasetVersion,
+        isActive: true,
+      });
+    }
+  }
+
+  async function flushAliases(): Promise<void> {
+    if (pendingAliases.length === 0) {
+      return;
+    }
+    const rows = pendingAliases.splice(0, pendingAliases.length);
+    await locationMasterRepo.upsertLocationAliasesBatch(rows);
+    aliasesImported += rows.length;
+  }
+
+  const existingCommunities = await locationMasterRepo.listAllCommunities();
+  const communityIdByDistrictName = new Map<string, string>();
+  for (const row of existingCommunities) {
+    communityIdByDistrictName.set(`${row.districtId}:${normaliseMatchKey(row.name)}`, row.id);
+  }
+
+  const pendingCommunities: Array<
+    Omit<Awaited<ReturnType<typeof locationMasterRepo.listAllCommunities>>[number], 'createdAt' | 'updatedAt'>
+  > = [];
+
+  function queueCommunity(input: {
+    preferredId: string;
+    districtId: string;
+    electoralAreaId: string | null;
+    name: string;
+    aliases: string[];
+    latitude: number | null;
+    longitude: number | null;
+    geometryRef: string | null;
+    source: string;
+    sourceId: string;
+    datasetVersion: string;
+  }): 'imported' | 'merged' {
+    const key = `${input.districtId}:${normaliseMatchKey(input.name)}`;
+    const existingId = communityIdByDistrictName.get(key);
+    if (existingId) {
+      queueAliases(existingId, input.aliases, input.source, input.datasetVersion);
+      return 'merged';
+    }
+    const id = input.preferredId;
+    communityIdByDistrictName.set(key, id);
+    pendingCommunities.push({
+      id,
+      districtId: input.districtId,
+      electoralAreaId: input.electoralAreaId,
+      code: null,
+      name: input.name,
+      aliases: input.aliases,
+      latitude: input.latitude,
+      longitude: input.longitude,
+      geometryRef: input.geometryRef,
+      source: input.source,
+      sourceId: input.sourceId,
+      datasetVersion: input.datasetVersion,
+      isActive: true,
+    });
+    queueAliases(id, input.aliases, input.source, input.datasetVersion);
+    return 'imported';
+  }
+
+  async function flushCommunities(): Promise<void> {
+    if (pendingCommunities.length === 0) {
+      return;
+    }
+    const rows = pendingCommunities.splice(0, pendingCommunities.length);
+    await locationMasterRepo.upsertCommunitiesBatch(rows);
+  }
+
   for (const community of snapshot.communities) {
     const districtId = districtIdBySourceId.get(community.districtSourceId);
     if (!districtId) {
       continue;
     }
-    await locationMasterRepo.upsertCommunity({
-      id: buildStableLocationId(snapshot.source, community.sourceId),
+    queueCommunity({
+      preferredId: buildStableLocationId(snapshot.source, community.sourceId),
       districtId,
       electoralAreaId: community.electoralAreaSourceId
         ? (electoralAreaIdBySourceId.get(community.electoralAreaSourceId) ?? null)
         : null,
-      code: null,
       name: community.name,
       aliases: community.aliases ?? [],
       latitude: community.latitude ?? null,
@@ -144,9 +263,45 @@ async function main(): Promise<void> {
       source: snapshot.source,
       sourceId: community.sourceId,
       datasetVersion: snapshot.datasetVersion,
-      isActive: true,
     });
   }
+  await flushCommunities();
+  await flushAliases();
+
+  const hotosm = loadHotosmCommunityDataset();
+  let hotosmImported = 0;
+  let hotosmMerged = 0;
+  for (const [index, community] of hotosm.communities.entries()) {
+    const districtId = districtIdBySourceId.get(community.districtSourceId);
+    if (!districtId) {
+      continue;
+    }
+    const result = queueCommunity({
+      preferredId: buildStableLocationId('hotosm', community.sourceId),
+      districtId,
+      electoralAreaId: null,
+      name: community.name,
+      aliases: community.aliases ?? [],
+      latitude: community.latitude ?? null,
+      longitude: community.longitude ?? null,
+      geometryRef: community.geometryRef ?? null,
+      source: 'hotosm',
+      sourceId: community.sourceId,
+      datasetVersion: hotosm.datasetVersion,
+    });
+    if (result === 'merged') {
+      hotosmMerged += 1;
+    } else {
+      hotosmImported += 1;
+    }
+    if ((index + 1) % 500 === 0) {
+      await flushCommunities();
+      await flushAliases();
+      console.log(JSON.stringify({ progress: 'hotosm', processed: index + 1, hotosmImported, hotosmMerged }));
+    }
+  }
+  await flushCommunities();
+  await flushAliases();
 
   const existingDistrictsAfterImport = await locationMasterRepo.listAllDistricts();
   const districtIdByLegacyCode = new Map<string, string>();
@@ -166,16 +321,19 @@ async function main(): Promise<void> {
   }
 
   let bundledImported = 0;
+  let bundledMerged = 0;
   for (const city of bundledCommunities) {
     const districtId = districtIdByLegacyCode.get(city.district_code);
     if (!districtId) {
       continue;
     }
-    await locationMasterRepo.upsertCommunity({
-      id: buildStableLocationId('bundled', `community:${city.district_code}:${city.name.toLowerCase()}`),
+    const result = queueCommunity({
+      preferredId: buildStableLocationId(
+        'bundled',
+        `community:${city.district_code}:${city.name.toLowerCase()}`,
+      ),
       districtId,
       electoralAreaId: null,
-      code: null,
       name: city.name,
       aliases: [],
       latitude: null,
@@ -184,24 +342,30 @@ async function main(): Promise<void> {
       source: city.source ?? 'bundled',
       sourceId: `community:${city.district_code}:${city.name.toLowerCase()}`,
       datasetVersion: snapshot.datasetVersion,
-      isActive: true,
     });
-    bundledImported += 1;
+    if (result === 'merged') {
+      bundledMerged += 1;
+    } else {
+      bundledImported += 1;
+    }
   }
+  await flushCommunities();
+  await flushAliases();
 
   await locationMasterRepo.logLocationSync({
     id: syncId,
-    datasetSource: snapshot.source,
-    datasetVersion: snapshot.datasetVersion,
+    datasetSource: `${snapshot.source}+hotosm`,
+    datasetVersion: `${snapshot.datasetVersion}+${hotosm.datasetVersion}`,
     checksum: snapshot.checksum,
     regionsImported: snapshot.regions.length,
     districtsImported: snapshot.districts.length,
     subDistrictUnitsImported: snapshot.subDistrictUnits.length,
     electoralAreasImported: snapshot.electoralAreas.length,
-    communitiesImported: snapshot.communities.length + bundledImported,
+    communitiesImported: snapshot.communities.length + bundledImported + hotosmImported,
+    aliasesImported,
     status: 'SUCCESS',
     notes:
-      'Imported 16 regions, 261 MMDAs from IMCCOD, STMA sub-metros/electoral areas, and preserved bundled community names. Sub-district and electoral coverage outside STMA remains empty until a national gazetteer is licensed.',
+      'Community completion import: IMCCOD capitals, STMA verified communities, HOTOSM named places matched to MMDAs, and bundled fallback communities. Duplicate district+name rows merge aliases onto the first verified community.',
   });
 
   console.log(
@@ -216,7 +380,11 @@ async function main(): Promise<void> {
         subDistrictUnits: snapshot.subDistrictUnits.length,
         electoralAreas: snapshot.electoralAreas.length,
         verifiedCommunities: snapshot.communities.length,
+        hotosmCommunities: hotosmImported,
+        hotosmMergedIntoExisting: hotosmMerged,
         bundledCommunitiesPreserved: bundledImported,
+        bundledMergedIntoExisting: bundledMerged,
+        aliasesImported,
       },
       null,
       2,
