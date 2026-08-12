@@ -283,6 +283,9 @@ WILMS uses **custom HMAC-signed session cookies** — not Auth.js, not JWT beare
 | ExportJob | Tracked export generation job (API retained; standalone UI removed v1.7.3) |
 | OpsIncident | Operational incident record |
 | RiskFlag | Borrower or loan risk indicator |
+| Region / District / Community | Ghana administrative location master (canonical hierarchy) |
+
+Borrower registration selects **Region → District → Community**. Community names that are not in the master are submitted as pending suggestions and are not inserted automatically. See `documentation/location/`.
 
 ### Entity relationships (summary)
 

@@ -12,6 +12,7 @@ All notable changes to WILMS are documented in this file.
 **Ops / UX follow-ups:** August 2026 (`fix/v1.8.0-dashboard-ops-followups`, `fix/v1.8.0-kpi-offline-release`) — same release identity; **no new tag / no v1.8.1**
 **Offline-first architecture sprint:** August 2026 (`feature/v1.8.0-offline-first-pwa`, tag `v1.8.0-offline-rc1`) — Phases 0–8 docs + default-off `WILMS_OFFLINE_MODE`; **no new product tag / no v1.8.1**
 **SA UX / registration / communications follow-up:** August 2026 (`fix/v1.8.0-sa-ux-comms-registration`) — same release identity
+**Ghana location master:** August 2026 (`feature/v1.8.0-location-master`) — same release identity; **no new product tag / no v1.8.1**
 
 ### Added
 
@@ -33,6 +34,8 @@ All notable changes to WILMS are documented in this file.
 - Dashboard Recent Alerts aside populated from the signed-in user’s recent inbox (preview of some, not all)
 - Default-off `WILMS_OFFLINE_MODE` / `NEXT_PUBLIC_WILMS_OFFLINE_MODE` for flag-gated shell navigate fallback
 - Super Admin My Account: personal notification preferences, automatic push subscribe when permission already granted, and App Lock PIN setup
+- Ghana administrative location master (`regions` / `districts` / `communities`) with provenance, sync log, community suggestions, and IndexedDB cache
+- Safe DB reset that preserves users and RBAC (`db:reset:keep-users`)
 
 ### Changed (post-release UI update)
 

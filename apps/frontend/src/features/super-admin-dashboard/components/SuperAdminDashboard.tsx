@@ -288,22 +288,22 @@ function OperationalDashboardContent({
               actionLabel="Open borrowers"
             />
           ) : (
-            <ul className="grid gap-wilms-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            <ul className="grid grid-cols-1 gap-wilms-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
               {data.borrowerSegments.map((segment) => (
                 <li
                   key={segment.id}
-                  className="flex items-center gap-wilms-3 rounded-xl border border-border/70 bg-background/60 p-wilms-3"
+                  className="flex min-h-[5.5rem] items-start gap-wilms-3 rounded-xl border border-border/70 bg-background/60 p-wilms-3"
                 >
                   <span
                     className={cn(
-                      'h-2.5 w-2.5 shrink-0 rounded-full',
+                      'mt-1 h-2.5 w-2.5 shrink-0 rounded-full',
                       DASHBOARD_BORROWER_TONE_CLASS[segment.tone].bar,
                     )}
                   />
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0 flex-1 space-y-1">
                     <p
                       className={cn(
-                        'whitespace-normal break-words text-small font-semibold leading-tight',
+                        'text-small font-semibold leading-snug',
                         DASHBOARD_BORROWER_TONE_CLASS[segment.tone].text,
                       )}
                     >

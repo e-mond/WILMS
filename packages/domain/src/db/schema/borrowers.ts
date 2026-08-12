@@ -21,6 +21,9 @@ export const borrowers = pgTable('borrowers', {
   groupId: uuid('group_id'),
   groupName: text('group_name').notNull().default(''),
   community: text('community').notNull(),
+  regionId: uuid('region_id'),
+  districtId: uuid('district_id'),
+  communityId: uuid('community_id'),
   registeredAt: timestamp('registered_at', { withTimezone: true }).notNull(),
   registeredByUserId: uuid('registered_by_user_id')
     .notNull()

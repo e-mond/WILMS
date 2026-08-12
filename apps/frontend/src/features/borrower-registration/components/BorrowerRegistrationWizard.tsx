@@ -293,11 +293,13 @@ export function BorrowerRegistrationWizard() {
     [districts, watchedDistrict],
   );
 
-  const { data: cities = [] } = useQuery({
-    queryKey: ['locations', 'cities', selectedDistrictId],
-    queryFn: () => locationService.getCities(selectedDistrictId),
+  const { data: communities = [] } = useQuery({
+    queryKey: ['locations', 'communities', selectedDistrictId],
+    queryFn: () => locationService.getCommunities(selectedDistrictId),
     enabled: Boolean(selectedDistrictId),
   });
+  const [communitySuggestion, setCommunitySuggestion] = useState('');
+  const [communitySuggestionMessage, setCommunitySuggestionMessage] = useState<string | null>(null);
 
   const handleUseCurrentLocation = async () => {
     setLocationFeedback(null);
@@ -746,10 +748,11 @@ export function BorrowerRegistrationWizard() {
           >
             <Textarea
               id="houseAddress"
-              rows={3}
+              rows={2}
               maxLength={REGISTRATION_ADDRESS_MAX_LENGTH}
               placeholder="e.g. House No. 12, Ring Road Central, Accra"
               hasError={Boolean(errors.houseAddress)}
+              className="min-h-20"
               {...register('houseAddress')}
             />
           </FormField>
@@ -844,7 +847,7 @@ export function BorrowerRegistrationWizard() {
               )}
             />
           </FormField>
-          <FormField label="City" htmlFor="city" required error={errors.city?.message}>
+          <FormField label="Community" htmlFor="city" required error={errors.city?.message}>
             <Controller
               name="city"
               control={control}
@@ -852,26 +855,76 @@ export function BorrowerRegistrationWizard() {
                 <Select
                   id="city"
                   hasError={Boolean(errors.city)}
-                  value={cities.find((entry) => entry.name === field.value)?.id ?? ''}
+                  value={communities.find((entry) => entry.name === field.value)?.id ?? ''}
                   disabled={!selectedDistrictId}
                   onChange={(event) => {
-                    const city = cities.find((entry) => entry.id === event.target.value);
-                    field.onChange(city?.name ?? '');
+                    const community = communities.find((entry) => entry.id === event.target.value);
+                    field.onChange(community?.name ?? '');
+                    setCommunitySuggestionMessage(null);
                   }}
                   onBlur={field.onBlur}
                 >
                   <option value="">
-                    {selectedDistrictId ? 'Select city' : 'Select a district first'}
+                    {selectedDistrictId ? 'Select community' : 'Select a district first'}
                   </option>
-                  {cities.map((city) => (
-                    <option key={city.id} value={city.id}>
-                      {city.name}
+                  {communities.map((community) => (
+                    <option key={community.id} value={community.id}>
+                      {community.name}
                     </option>
                   ))}
                 </Select>
               )}
             />
           </FormField>
+          {selectedDistrictId ? (
+            <div className="space-y-wilms-2 md:col-span-2">
+              <p className="text-small text-text-muted">
+                Cannot find the community? Suggest a new one for review instead of creating it
+                directly.
+              </p>
+              <div className="flex flex-col gap-wilms-2 sm:flex-row">
+                <Input
+                  aria-label="Suggest new community"
+                  placeholder="Suggest new community"
+                  value={communitySuggestion}
+                  onChange={(event) => setCommunitySuggestion(event.target.value)}
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="shrink-0"
+                  disabled={!communitySuggestion.trim()}
+                  onClick={() => {
+                    void locationService
+                      .suggestCommunity({
+                        districtId: selectedDistrictId,
+                        proposedName: communitySuggestion.trim(),
+                      })
+                      .then(() => {
+                        setCommunitySuggestion('');
+                        setCommunitySuggestionMessage(
+                          'Community suggestion submitted for review.',
+                        );
+                      })
+                      .catch((error) => {
+                        setCommunitySuggestionMessage(
+                          error instanceof Error
+                            ? error.message
+                            : 'Unable to submit community suggestion.',
+                        );
+                      });
+                  }}
+                >
+                  Suggest new community
+                </Button>
+              </div>
+              {communitySuggestionMessage ? (
+                <p className="text-small text-text-muted" role="status">
+                  {communitySuggestionMessage}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
         </section>
       ) : null}
 
@@ -943,10 +996,11 @@ export function BorrowerRegistrationWizard() {
           >
             <Textarea
               id="businessAddress"
-              rows={3}
+              rows={2}
               maxLength={REGISTRATION_ADDRESS_MAX_LENGTH}
               placeholder="e.g. Makola Market, Stall 24, Accra"
               hasError={Boolean(errors.businessAddress)}
+              className="min-h-20"
               {...register('businessAddress')}
             />
           </FormField>

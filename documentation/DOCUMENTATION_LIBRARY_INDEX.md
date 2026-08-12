@@ -48,7 +48,25 @@ npm run docs:prepare
 | Procurement Pack | `books/PROCUREMENT_PACK.md` | MD, PDF, DOCX |
 | Implementation Guide | `books/IMPLEMENTATION_GUIDE.md` | MD, PDF, DOCX |
 
-See also: `technical/`, `operations/`, `user-guides/`, `developer/`, `roadmap/`.
+See also: `technical/`, `operations/`, `user-guides/`, `developer/`, `roadmap/`, `location/`.
+
+---
+
+## Ghana location master (v1.8.0)
+
+| Document | Path |
+|----------|------|
+| Architecture review | `location/LOCATION_ARCHITECTURE_REVIEW.md` |
+| Master architecture | `location/LOCATION_MASTER_ARCHITECTURE.md` |
+| Ghana hierarchy | `location/GHANA_ADMINISTRATIVE_HIERARCHY.md` |
+| Sync guide | `location/LOCATION_SYNC_GUIDE.md` |
+| Community suggestions | `location/COMMUNITY_SUGGESTION_WORKFLOW.md` |
+| Offline strategy | `location/OFFLINE_LOCATION_STRATEGY.md` |
+| API reference | `location/API_LOCATION_REFERENCE.md` |
+| Migration strategy | `location/MIGRATION_STRATEGY.md` |
+| Executive geo analytics | `location/EXECUTIVE_GEO_ANALYTICS.md` |
+| Test evidence | `location/TEST_EVIDENCE.md` |
+| Final report | `location/FINAL_LOCATION_MASTER_REPORT.md` |
 
 ---
 

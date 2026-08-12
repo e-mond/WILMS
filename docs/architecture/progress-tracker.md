@@ -34,7 +34,8 @@ Units marked ✅ implement core behaviour and unit tests. **Global DoD is not me
 | **v1.8.0 dashboard / offline follow-ups** | ✅ Merged (#184–#186) — KPI icons, offline docs/flag, shell navigate fallback |
 | **v1.8.0 SA UX / registration / communications** | ✅ Merged (#187–#190) — submit fix, schema types, photo refine |
 | **v1.8.0 Offline Phase 9 pilot cert** | ✅ Merged (#188) — YES WITH CONDITIONS; device matrix BLOCKED |
-| **v1.8.0 Collector payment workflow** | 🔄 `feature/v1.8.0-collector-payment-workflow` — multi-week, missed, grace ladder, assign-group fix |
+| **v1.8.0 Collector payment workflow** | ✅ Merged (#193–#196) |
+| **v1.8.0 Ghana location master** | 🔄 `feature/v1.8.0-location-master` — migration `0041`, import, APIs, offline cache |
 | **v1.7.1 Market Readiness** | ✅ Merged (#165 / #166); pack in `docs/v1.7.1/` |
 
 ---

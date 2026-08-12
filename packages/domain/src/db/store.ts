@@ -37,6 +37,9 @@ export interface BorrowerRecord {
   groupName: string;
   groupId?: string;
   community: string;
+  regionId?: string;
+  districtId?: string;
+  communityId?: string;
   registeredAt: string;
   registeredByOfficerId: string;
   profile: BorrowerProfile;
@@ -59,6 +62,7 @@ export interface GroupRecord {
   name: string;
   displayName: string;
   community: string;
+  communityId?: string;
   memberIds: string[];
   formedAt: string;
 }

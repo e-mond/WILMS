@@ -9,6 +9,7 @@ export const groups = pgTable('groups', {
   name: text('name').notNull(),
   displayName: text('display_name').notNull(),
   community: text('community').notNull(),
+  communityId: uuid('community_id'),
   status: groupStatusEnum('status').notNull().default('ACTIVE'),
   collectorUserId: uuid('collector_user_id').references(() => users.id),
   leaderBorrowerId: uuid('leader_borrower_id').references(() => borrowers.id),

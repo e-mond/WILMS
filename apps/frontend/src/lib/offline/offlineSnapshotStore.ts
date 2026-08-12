@@ -57,4 +57,8 @@ export const OFFLINE_CACHE_KEYS = {
   dashboardSummary: 'dashboard-summary',
   documentationCatalog: 'documentation-catalog',
   notificationsList: 'notifications-list',
+  locationRegions: 'location-regions',
+  locationDistrictsPrefix: 'location-districts:',
+  locationCommunitiesPrefix: 'location-communities:',
+  locationHierarchy: 'location-hierarchy',
 } as const;

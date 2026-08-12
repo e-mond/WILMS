@@ -520,7 +520,13 @@ export interface IGroupFormationService {
 export interface ILocationService {
   getRegions(): Promise<LocationRegion[]>;
   getDistricts(regionId: string): Promise<LocationDistrict[]>;
+  getCommunities(districtId: string): Promise<LocationCity[]>;
   getCities(districtId: string): Promise<LocationCity[]>;
+  search(query: string): Promise<import('@/types/location').LocationSearchResponse>;
+  suggestCommunity(
+    input: import('@/types/location').CommunitySuggestionInput,
+  ): Promise<unknown>;
+  getSyncStatus(): Promise<import('@/types/location').LocationSyncStatusResponse>;
   getCurrentLocation(): Promise<CurrentLocationResult>;
 }
 

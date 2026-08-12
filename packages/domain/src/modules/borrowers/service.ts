@@ -32,6 +32,7 @@ import { processApprovedBorrower } from '../group-formation/service.js';
 import * as loanService from '../loans/service.js';
 import { buildBorrowerRiskSummary } from './borrower-risk.js';
 import { formatBorrowerDisplayId } from './display-id.js';
+import { resolveLocationIdsByNames } from '../locations/service.js';
 
 const AUDIT_ACTION = {
   BORROWER_REGISTERED: 'borrower.registered',
@@ -441,6 +442,14 @@ export async function registerBorrower(payload: Record<string, unknown>, actorId
   }
 
   const id = nextBorrowerId();
+  const community = String(payload.city ?? payload.community ?? '');
+  const region = String(payload.region ?? '');
+  const district = String(payload.district ?? '');
+  const locationIds = await resolveLocationIdsByNames({
+    regionName: region,
+    districtName: district,
+    communityName: community,
+  });
   const record: BorrowerRecord = {
     id,
     fullName: String(payload.fullName ?? ''),
@@ -450,7 +459,10 @@ export async function registerBorrower(payload: Record<string, unknown>, actorId
     status: BORROWER_STATUS.PENDING,
     hasActiveLoan: false,
     groupName: '',
-    community: String(payload.city ?? payload.community ?? ''),
+    community,
+    regionId: locationIds.regionId,
+    districtId: locationIds.districtId,
+    communityId: locationIds.communityId,
     registeredAt: new Date().toISOString(),
     registeredByOfficerId: String(payload.registeredByOfficerId ?? actorId),
     profile: {
@@ -460,9 +472,9 @@ export async function registerBorrower(payload: Record<string, unknown>, actorId
       nationality: String(payload.nationality ?? 'Ghanaian'),
       houseAddress: String(payload.houseAddress ?? ''),
       gpsAddress: String(payload.gpsAddress ?? ''),
-      city: String(payload.city ?? ''),
-      region: String(payload.region ?? ''),
-      district: String(payload.district ?? ''),
+      city: community,
+      region,
+      district,
       businessName: String(payload.businessName ?? ''),
       businessAddress: String(payload.businessAddress ?? ''),
       typeOfWork: String(payload.typeOfWork ?? ''),

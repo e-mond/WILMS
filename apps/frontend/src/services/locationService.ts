@@ -1,4 +1,13 @@
-import type { CurrentLocationResult, LocationCity, LocationDistrict, LocationRegion } from '@/types/location';
+import type {
+  CommunitySuggestionInput,
+  CurrentLocationResult,
+  LocationCity,
+  LocationCollectionResponse,
+  LocationDistrict,
+  LocationRegion,
+  LocationSearchResponse,
+  LocationSyncStatusResponse,
+} from '@/types/location';
 import type { ILocationService } from '@/types/services';
 import { apiClient } from '@/utils/apiClient';
 import {
@@ -6,6 +15,14 @@ import {
   getGhanaDistricts,
   getGhanaRegions,
 } from '@/services/mock/factories/ghana-locations.factory';
+import {
+  cacheLocationCommunities,
+  cacheLocationDistricts,
+  cacheLocationRegions,
+  readCachedLocationCommunities,
+  readCachedLocationDistricts,
+  readCachedLocationRegions,
+} from '@/lib/offline/locationOfflineCache';
 
 function readBrowserGeolocation(): Promise<CurrentLocationResult> {
   return new Promise((resolve, reject) => {
@@ -43,29 +60,67 @@ function readBrowserGeolocation(): Promise<CurrentLocationResult> {
   });
 }
 
+function unwrapCollection<T>(payload: LocationCollectionResponse<T> | T[]): T[] {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+  return payload.data;
+}
+
 const locationService: ILocationService = {
   async getRegions(): Promise<LocationRegion[]> {
     try {
-      return await apiClient.get<LocationRegion[]>('/locations/regions');
+      const payload = await apiClient.get<LocationCollectionResponse<LocationRegion> | LocationRegion[]>(
+        '/locations/regions',
+      );
+      const regions = unwrapCollection(payload);
+      void cacheLocationRegions(regions);
+      return regions;
     } catch {
-      return getGhanaRegions();
+      return (await readCachedLocationRegions()) ?? getGhanaRegions();
     }
   },
 
   async getDistricts(regionId: string): Promise<LocationDistrict[]> {
     try {
-      return await apiClient.get<LocationDistrict[]>(`/locations/regions/${regionId}/districts`);
+      const payload = await apiClient.get<
+        LocationCollectionResponse<LocationDistrict> | LocationDistrict[]
+      >(`/locations/regions/${regionId}/districts`);
+      const districts = unwrapCollection(payload);
+      void cacheLocationDistricts(regionId, districts);
+      return districts;
     } catch {
-      return getGhanaDistricts(regionId);
+      return (await readCachedLocationDistricts(regionId)) ?? getGhanaDistricts(regionId);
+    }
+  },
+
+  async getCommunities(districtId: string): Promise<LocationCity[]> {
+    try {
+      const payload = await apiClient.get<LocationCollectionResponse<LocationCity> | LocationCity[]>(
+        `/locations/districts/${districtId}/communities`,
+      );
+      const communities = unwrapCollection(payload);
+      void cacheLocationCommunities(districtId, communities);
+      return communities;
+    } catch {
+      return (await readCachedLocationCommunities(districtId)) ?? getGhanaCities(districtId);
     }
   },
 
   async getCities(districtId: string): Promise<LocationCity[]> {
-    try {
-      return await apiClient.get<LocationCity[]>(`/locations/districts/${districtId}/cities`);
-    } catch {
-      return getGhanaCities(districtId);
-    }
+    return this.getCommunities(districtId);
+  },
+
+  async search(query: string): Promise<LocationSearchResponse> {
+    return apiClient.get<LocationSearchResponse>(`/locations/search?q=${encodeURIComponent(query)}`);
+  },
+
+  async suggestCommunity(input: CommunitySuggestionInput): Promise<unknown> {
+    return apiClient.post('/locations/community-suggestions', input);
+  },
+
+  async getSyncStatus(): Promise<LocationSyncStatusResponse> {
+    return apiClient.get<LocationSyncStatusResponse>('/locations/sync/status');
   },
 
   async getCurrentLocation(): Promise<CurrentLocationResult> {
