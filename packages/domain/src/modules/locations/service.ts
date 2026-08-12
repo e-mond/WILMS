@@ -356,6 +356,72 @@ export async function searchLocations(query: string) {
   };
 }
 
+export async function autocompleteLocations(
+  query: string,
+  limit = 12,
+  options?: {
+    types?: Array<'region' | 'district' | 'sub_district_unit' | 'electoral_area' | 'community'>;
+    districtId?: string;
+  },
+) {
+  const normalized = query.trim();
+  if (!normalized) {
+    return {
+      meta: fallbackMeta('autocomplete'),
+      data: [] as Array<Record<string, unknown>>,
+    };
+  }
+
+  if (!isDatabaseEnabled()) {
+    const bundled = await searchGhanaLocations(normalized);
+    const { resolveAgainstCandidates } = await import('./alias-resolution.js');
+    const candidates = [
+      ...bundled.regions.map((row) => ({
+        entityType: 'region' as const,
+        entityId: row.id,
+        name: row.name,
+      })),
+      ...bundled.districts.map((row) => ({
+        entityType: 'district' as const,
+        entityId: row.id,
+        name: row.name,
+        regionId: row.regionId,
+      })),
+      ...bundled.cities
+        .filter((row) => !options?.districtId || row.districtId === options.districtId)
+        .map((row) => ({
+          entityType: 'community' as const,
+          entityId: row.id,
+          name: row.name,
+          districtId: row.districtId,
+        })),
+    ].filter((row) => !options?.types?.length || options.types.includes(row.entityType));
+    return {
+      meta: fallbackMeta('bundled'),
+      data: resolveAgainstCandidates(normalized, candidates, { limit }).map((match) => ({
+        type: match.entityType,
+        id: match.entityId,
+        name: match.name,
+        score: match.score,
+        matchKind: match.matchKind,
+        regionId: match.regionId ?? null,
+        districtId: match.districtId ?? null,
+      })),
+    };
+  }
+
+  const rows = await locationMasterRepo.searchLocationsRanked(normalized, limit, options);
+  const sync = await locationMasterRepo.getLatestLocationSync();
+  return {
+    meta: {
+      version: sync?.datasetVersion ?? 'unknown',
+      source: sync?.datasetSource ?? 'database',
+      lastUpdated: sync?.importedAt?.toISOString() ?? null,
+    },
+    data: rows,
+  };
+}
+
 export async function suggestCommunity(input: {
   districtId?: string;
   electoralAreaId?: string;
@@ -397,28 +463,58 @@ export async function resolveLocationIdsByNames(input: {
     return {};
   }
 
-  const regionName = input.regionName?.trim().toLowerCase();
-  const districtName = input.districtName?.trim().toLowerCase();
-  const communityName = input.communityName?.trim().toLowerCase();
+  const { resolveAgainstCandidates } = await import('./alias-resolution.js');
+  const regionName = input.regionName?.trim();
+  const districtName = input.districtName?.trim();
+  const communityName = input.communityName?.trim();
 
   const regionRows = await locationMasterRepo.listRegions();
-  const region = regionRows.find((row) => row.name.toLowerCase() === regionName);
-  if (!region) {
+  const regionMatch = regionName
+    ? resolveAgainstCandidates(
+        regionName,
+        regionRows.map((row) => ({ entityType: 'region' as const, entityId: row.id, name: row.name })),
+        { limit: 1, fuzzyThreshold: 0.9 },
+      )[0]
+    : undefined;
+  if (!regionMatch) {
     return {};
   }
 
-  const districtRows = await locationMasterRepo.listDistrictsByRegionId(region.id);
-  const district = districtRows.find((row) => row.name.toLowerCase() === districtName);
-  if (!district) {
-    return { regionId: region.id };
+  const districtRows = await locationMasterRepo.listDistrictsByRegionId(regionMatch.entityId);
+  const districtMatch = districtName
+    ? resolveAgainstCandidates(
+        districtName,
+        districtRows.map((row) => ({
+          entityType: 'district' as const,
+          entityId: row.id,
+          name: row.name,
+          regionId: row.regionId,
+        })),
+        { limit: 1, fuzzyThreshold: 0.88 },
+      )[0]
+    : undefined;
+  if (!districtMatch) {
+    return { regionId: regionMatch.entityId };
   }
 
-  const communityRows = await locationMasterRepo.listCommunitiesByDistrictId(district.id);
-  const community = communityRows.find((row) => row.name.toLowerCase() === communityName);
+  const communityRows = await locationMasterRepo.listCommunitiesByDistrictId(districtMatch.entityId);
+  const communityMatch = communityName
+    ? resolveAgainstCandidates(
+        communityName,
+        communityRows.map((row) => ({
+          entityType: 'community' as const,
+          entityId: row.id,
+          name: row.name,
+          aliases: row.aliases,
+          districtId: row.districtId,
+        })),
+        { limit: 1, fuzzyThreshold: 0.85 },
+      )[0]
+    : undefined;
 
   return {
-    regionId: region.id,
-    districtId: district.id,
-    communityId: community?.id,
+    regionId: regionMatch.entityId,
+    districtId: districtMatch.entityId,
+    communityId: communityMatch?.entityId,
   };
 }

@@ -65,7 +65,7 @@ export const STMA_ELECTORAL_AREAS: Array<{
   {
     sourceId: 'stma:ea:railway-harbour',
     name: 'Railway & Harbour',
-    aliases: ['Railway & Habour', 'Railway and Harbour Area'],
+    aliases: ['Railway & Habour', 'Railway and Harbour Area', 'Railway & Harbour Area'],
     subMetro: 'sekondi',
   },
   { sourceId: 'stma:ea:nketsiakrom', name: 'Nketsiakrom', subMetro: null },
@@ -122,4 +122,30 @@ export const STMA_COMMUNITIES: Array<{
   { sourceId: 'stma:community:takoradi', name: 'Takoradi', electoralAreaSourceId: 'stma:ea:chapel-hill' },
   { sourceId: 'stma:community:new-takoradi', name: 'New Takoradi', electoralAreaSourceId: 'stma:ea:upper-new-takoradi' },
   { sourceId: 'stma:community:essikado', name: 'Essikado', electoralAreaSourceId: 'stma:ea:essikado-east' },
+  /**
+   * Verified on STMA official publications (2025 Annual Action Plan; STMA news clean-up coverage).
+   * Source: https://www.stma.gov.gh/documents/2025_-AAP_STMA.pdf
+   */
+  {
+    sourceId: 'stma:community:european-town',
+    name: 'European Town',
+    aliases: ['European town'],
+    electoralAreaSourceId: 'stma:ea:ridge-ministries',
+  },
+  /**
+   * Listed on Sekondi Sub-Metro electoral communities page.
+   * Source: https://www.stma.gov.gh/sekondi-sub-metro.php
+   */
+  {
+    sourceId: 'stma:community:essaman',
+    name: 'Essaman',
+    aliases: ['Essamang'],
+    electoralAreaSourceId: 'stma:ea:ekuasi-essaman',
+  },
+  {
+    sourceId: 'stma:community:sekondi',
+    name: 'Sekondi',
+    aliases: ['Sekondi Town'],
+    electoralAreaSourceId: 'stma:ea:ridge-ministries',
+  },
 ];

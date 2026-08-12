@@ -304,9 +304,11 @@ Vercel Cron invokes `/api/cron/notifications` daily at 06:00 UTC. Token-authenti
 
 ## 14a. Ghana location master
 
-Canonical tables: `regions`, `districts`, `sub_district_units`, `electoral_areas`, `communities`, `pending_community_suggestions`, `location_sync_log`.
+Canonical tables: `regions`, `districts`, `sub_district_units`, `electoral_areas`, `communities`, `pending_community_suggestions`, `location_sync_log`, `location_aliases`, `location_data_quality_runs`.
 
-Runtime APIs: `GET /api/v1/locations/regions`, `.../districts`, `.../sub-district-units`, `.../electoral-areas`, `.../communities`, `.../search`, `POST .../community-suggestions`, `GET .../sync/status`.
+Runtime APIs: `GET /api/v1/locations/regions`, `.../districts`, `.../sub-district-units`, `.../electoral-areas`, `.../communities`, `.../search`, `GET .../autocomplete`, `POST .../community-suggestions`, `GET .../sync/status`.
+
+Community autocomplete uses PostgreSQL `pg_trgm` ranking plus alias tables; no external search service. See `documentation/location/COMMUNITY_SEARCH_ARCHITECTURE.md`.
 
 Import: `npm run seed:ghana-hierarchy -w @wilms/domain`. Adapters: `scripts/location-sync/`. Full design: `documentation/location/`.
 

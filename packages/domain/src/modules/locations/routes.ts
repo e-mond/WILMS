@@ -88,6 +88,39 @@ locationsRouter.get(
   }),
 );
 
+locationsRouter.get(
+  '/locations/autocomplete',
+  asyncHandler(async (req, res) => {
+    res.setHeader('Cache-Control', 'public, max-age=30, stale-while-revalidate=120');
+    const limit = Number(req.query.limit ?? 12);
+    const typesRaw = String(req.query.types ?? '')
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean);
+    const allowedTypes = [
+      'region',
+      'district',
+      'sub_district_unit',
+      'electoral_area',
+      'community',
+    ] as const;
+    const types = typesRaw.filter((value): value is (typeof allowedTypes)[number] =>
+      (allowedTypes as readonly string[]).includes(value),
+    );
+    sendData(
+      res,
+      await locationService.autocompleteLocations(
+        String(req.query.q ?? ''),
+        Number.isFinite(limit) ? Math.min(Math.max(limit, 1), 40) : 12,
+        {
+          types: types.length > 0 ? types : undefined,
+          districtId: req.query.districtId ? String(req.query.districtId) : undefined,
+        },
+      ),
+    );
+  }),
+);
+
 locationsRouter.use(requireAuth);
 locationsRouter.use(
   requirePermission(

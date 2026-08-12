@@ -25,7 +25,7 @@ export function normaliseMatchKey(value: string): string {
   return value
     .toLowerCase()
     .replace(/metropolitan assembly|municipal assembly|district assembly/g, '')
-    .replace(/metropolitan|municipal|district/g, '')
+    .replace(/metropolitan|metropolis|metro|municipal|district/g, '')
     .replace(/[^a-z0-9]+/g, ' ')
     .trim();
 }

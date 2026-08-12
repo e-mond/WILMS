@@ -20,6 +20,7 @@ test-final.txt
 .wilms-production-credentials.json
 docs/generated/*-evidence/
 docs/generated/rc1.*-evidence/
+data/ghana-locations/raw/
 docs/generated/
 !.env.example
 !**/.env.example
