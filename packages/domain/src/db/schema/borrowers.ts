@@ -23,6 +23,8 @@ export const borrowers = pgTable('borrowers', {
   community: text('community').notNull(),
   regionId: uuid('region_id'),
   districtId: uuid('district_id'),
+  subDistrictUnitId: uuid('sub_district_unit_id'),
+  electoralAreaId: uuid('electoral_area_id'),
   communityId: uuid('community_id'),
   registeredAt: timestamp('registered_at', { withTimezone: true }).notNull(),
   registeredByUserId: uuid('registered_by_user_id')

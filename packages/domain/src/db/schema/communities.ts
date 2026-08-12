@@ -9,6 +9,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { districts } from './districts';
+import { electoralAreas } from './electoral-areas';
 
 export const communities = pgTable(
   'communities',
@@ -17,11 +18,13 @@ export const communities = pgTable(
     districtId: uuid('district_id')
       .notNull()
       .references(() => districts.id),
+    electoralAreaId: uuid('electoral_area_id').references(() => electoralAreas.id),
     code: text('code'),
     name: text('name').notNull(),
     aliases: text('aliases').array().notNull().default([]),
     latitude: doublePrecision('latitude'),
     longitude: doublePrecision('longitude'),
+    geometryRef: text('geometry_ref'),
     source: text('source').notNull(),
     sourceId: text('source_id').notNull(),
     datasetVersion: text('dataset_version').notNull(),
@@ -33,6 +36,7 @@ export const communities = pgTable(
     districtNameUnique: uniqueIndex('communities_district_name_idx').on(table.districtId, table.name),
     sourceIdUnique: uniqueIndex('communities_source_id_idx').on(table.source, table.sourceId),
     districtIdx: index('communities_district_id_idx').on(table.districtId),
+    electoralAreaIdx: index('communities_electoral_area_id_idx').on(table.electoralAreaId),
     activeIdx: index('communities_is_active_idx').on(table.isActive),
     searchIdx: index('communities_name_idx').on(table.name),
   }),

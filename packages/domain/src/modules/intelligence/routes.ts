@@ -34,6 +34,9 @@ intelligenceRouter.get(
       await intelligenceService.buildExecutiveDashboard({
         district: typeof req.query.district === 'string' ? req.query.district : undefined,
         community: typeof req.query.community === 'string' ? req.query.community : undefined,
+        region: typeof req.query.region === 'string' ? req.query.region : undefined,
+        subDistrictUnit: typeof req.query.subDistrictUnit === 'string' ? req.query.subDistrictUnit : undefined,
+        electoralArea: typeof req.query.electoralArea === 'string' ? req.query.electoralArea : undefined,
         asOfDate: typeof req.query.asOf === 'string' ? req.query.asOf : undefined,
       }),
     );

@@ -130,9 +130,11 @@ const addressLineSchema = (label: string) =>
 export const addressSchema = z.object({
   houseAddress: addressLineSchema('Home address'),
   gpsAddress: ghanaGpsAddressSchema,
-  city: z.string().trim().min(1, 'City is required.'),
+  city: z.string().trim().min(1, 'Community is required.'),
   region: z.string().trim().min(1, 'Region is required.'),
-  district: z.string().trim().min(1, 'District is required.'),
+  district: z.string().trim().min(1, 'District / MMDA is required.'),
+  subDistrictUnit: z.string().trim().optional(),
+  electoralArea: z.string().trim().optional(),
 });
 
 export const businessSchema = z.object({

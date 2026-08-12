@@ -60,5 +60,7 @@ export const OFFLINE_CACHE_KEYS = {
   locationRegions: 'location-regions',
   locationDistrictsPrefix: 'location-districts:',
   locationCommunitiesPrefix: 'location-communities:',
+  locationSubDistrictUnitsPrefix: 'location-sub-district-units:',
+  locationElectoralAreasPrefix: 'location-electoral-areas:',
   locationHierarchy: 'location-hierarchy',
 } as const;
