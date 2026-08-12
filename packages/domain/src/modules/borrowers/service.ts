@@ -475,6 +475,8 @@ export async function registerBorrower(payload: Record<string, unknown>, actorId
       city: community,
       region,
       district,
+      subDistrictUnit: payload.subDistrictUnit ? String(payload.subDistrictUnit) : undefined,
+      electoralArea: payload.electoralArea ? String(payload.electoralArea) : undefined,
       businessName: String(payload.businessName ?? ''),
       businessAddress: String(payload.businessAddress ?? ''),
       typeOfWork: String(payload.typeOfWork ?? ''),

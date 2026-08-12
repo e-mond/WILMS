@@ -30,6 +30,7 @@
     "db:seed:demo": "tsx src/db/seed/run-seed-demo.ts",
     "seed:ghana-locations": "tsx src/db/seed/import-ghana-locations.ts",
     "seed:location-master": "tsx src/db/seed/import-ghana-locations.ts",
+    "seed:ghana-hierarchy": "tsx src/db/seed/import-ghana-hierarchy.ts",
     "db:backfill:locations": "tsx src/db/seed/backfill-location-relationships.ts",
     "db:reset:keep-users": "tsx src/db/seed/reset-keep-users.ts",
     "smoke:notifications": "tsx src/verification/notifications-smoke.ts",
@@ -62,7 +63,8 @@
     "verify:empty-db": "tsx src/verification/empty-database-list-smoke.ts",
     "smoke:staging": "tsx src/verification/production-smoke.ts",
     "verify:migrations": "tsx src/verification/verify-migration-journal.ts",
-    "db:apply:location-master": "tsx src/verification/apply-0041-location-master.ts"
+    "db:apply:location-master": "tsx src/verification/apply-0041-location-master.ts",
+    "db:apply:ghana-hierarchy": "tsx src/verification/apply-0042-ghana-hierarchy.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

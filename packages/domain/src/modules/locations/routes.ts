@@ -11,6 +11,7 @@ import * as locationService from './service.js';
 export const locationsRouter = Router();
 const communitySuggestionSchema = z.object({
   districtId: z.string().uuid().optional(),
+  electoralAreaId: z.string().uuid().optional(),
   proposedName: z.string().trim().min(2).max(120),
 });
 
@@ -44,6 +45,38 @@ locationsRouter.get(
   asyncHandler(async (req, res) => {
     res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
     sendData(res, await locationService.listCommunities(req.params.id!));
+  }),
+);
+
+locationsRouter.get(
+  '/locations/districts/:id/sub-district-units',
+  asyncHandler(async (req, res) => {
+    res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
+    sendData(res, await locationService.listSubDistrictUnits(req.params.id!));
+  }),
+);
+
+locationsRouter.get(
+  '/locations/districts/:id/electoral-areas',
+  asyncHandler(async (req, res) => {
+    res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
+    sendData(res, await locationService.listElectoralAreas({ districtId: req.params.id! }));
+  }),
+);
+
+locationsRouter.get(
+  '/locations/sub-district-units/:id/electoral-areas',
+  asyncHandler(async (req, res) => {
+    res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
+    sendData(res, await locationService.listElectoralAreas({ subDistrictUnitId: req.params.id! }));
+  }),
+);
+
+locationsRouter.get(
+  '/locations/electoral-areas/:id/communities',
+  asyncHandler(async (req, res) => {
+    res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
+    sendData(res, await locationService.listCommunitiesByElectoralArea(req.params.id!));
   }),
 );
 
@@ -83,6 +116,7 @@ locationsRouter.post(
       res,
       await locationService.suggestCommunity({
         districtId: req.body.districtId,
+        electoralAreaId: req.body.electoralAreaId,
         proposedName: req.body.proposedName,
         proposedByUserId: req.session?.userId,
       }),

@@ -42,6 +42,8 @@ export const collectors = pgTable('collectors', {
   assignedDistrict: text('assigned_district'),
   assignedRegionId: uuid('assigned_region_id'),
   assignedDistrictId: uuid('assigned_district_id'),
+  assignedSubDistrictUnitId: uuid('assigned_sub_district_unit_id'),
+  assignedElectoralAreaId: uuid('assigned_electoral_area_id'),
   assignedCommunityId: uuid('assigned_community_id'),
   employmentStatus: text('employment_status'),
   status: text('status').notNull().default('ACTIVE'),

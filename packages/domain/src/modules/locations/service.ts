@@ -31,11 +31,28 @@ export interface DistrictDto {
 export interface CommunityDto {
   id: string;
   districtId: string;
+  electoralAreaId?: string | null;
   code?: string | null;
   name: string;
   aliases?: string[];
   latitude?: number | null;
   longitude?: number | null;
+}
+
+export interface SubDistrictUnitDto {
+  id: string;
+  districtId: string;
+  code?: string | null;
+  name: string;
+  unitType: string;
+}
+
+export interface ElectoralAreaDto {
+  id: string;
+  districtId: string;
+  subDistrictUnitId?: string | null;
+  code?: string | null;
+  name: string;
 }
 
 function stableUuid(seed: string): string {
@@ -171,6 +188,83 @@ export async function listCommunities(districtId: string) {
     data: rows.map((row) => ({
       id: row.id,
       districtId: row.districtId,
+      electoralAreaId: row.electoralAreaId ?? null,
+      name: row.name,
+      code: row.code,
+      aliases: row.aliases,
+      latitude: row.latitude,
+      longitude: row.longitude,
+    })),
+  };
+}
+
+export async function listSubDistrictUnits(districtId: string) {
+  if (!isDatabaseEnabled()) {
+    return { meta: fallbackMeta('bundled'), data: [] as SubDistrictUnitDto[] };
+  }
+
+  const rows = await locationMasterRepo.listSubDistrictUnitsByDistrictId(districtId);
+  const sync = await locationMasterRepo.getLatestLocationSync();
+  return {
+    meta: {
+      version: sync?.datasetVersion ?? 'unknown',
+      source: sync?.datasetSource ?? 'database',
+      lastUpdated: sync?.importedAt?.toISOString() ?? null,
+    },
+    data: rows.map((row) => ({
+      id: row.id,
+      districtId: row.districtId,
+      name: row.name,
+      code: row.code,
+      unitType: row.unitType,
+    })),
+  };
+}
+
+export async function listElectoralAreas(input: { districtId?: string; subDistrictUnitId?: string }) {
+  if (!isDatabaseEnabled()) {
+    return { meta: fallbackMeta('bundled'), data: [] as ElectoralAreaDto[] };
+  }
+
+  const rows = input.subDistrictUnitId
+    ? await locationMasterRepo.listElectoralAreasBySubDistrictUnitId(input.subDistrictUnitId)
+    : input.districtId
+      ? await locationMasterRepo.listElectoralAreasByDistrictId(input.districtId)
+      : [];
+  const sync = await locationMasterRepo.getLatestLocationSync();
+  return {
+    meta: {
+      version: sync?.datasetVersion ?? 'unknown',
+      source: sync?.datasetSource ?? 'database',
+      lastUpdated: sync?.importedAt?.toISOString() ?? null,
+    },
+    data: rows.map((row) => ({
+      id: row.id,
+      districtId: row.districtId,
+      subDistrictUnitId: row.subDistrictUnitId,
+      name: row.name,
+      code: row.code,
+    })),
+  };
+}
+
+export async function listCommunitiesByElectoralArea(electoralAreaId: string) {
+  if (!isDatabaseEnabled()) {
+    return { meta: fallbackMeta('bundled'), data: [] as CommunityDto[] };
+  }
+
+  const rows = await locationMasterRepo.listCommunitiesByElectoralAreaId(electoralAreaId);
+  const sync = await locationMasterRepo.getLatestLocationSync();
+  return {
+    meta: {
+      version: sync?.datasetVersion ?? 'unknown',
+      source: sync?.datasetSource ?? 'database',
+      lastUpdated: sync?.importedAt?.toISOString() ?? null,
+    },
+    data: rows.map((row) => ({
+      id: row.id,
+      districtId: row.districtId,
+      electoralAreaId: row.electoralAreaId ?? electoralAreaId,
       name: row.name,
       code: row.code,
       aliases: row.aliases,
@@ -185,7 +279,7 @@ export async function searchLocations(query: string) {
   if (!normalized) {
     return {
       meta: fallbackMeta('search'),
-      data: { regions: [], districts: [], communities: [] },
+      data: { regions: [], districts: [], communities: [], subDistrictUnits: [], electoralAreas: [] },
     };
   }
 
@@ -211,6 +305,8 @@ export async function searchLocations(query: string) {
           latitude: null,
           longitude: null,
         })),
+        subDistrictUnits: [],
+        electoralAreas: [],
       },
     };
   }
@@ -235,11 +331,26 @@ export async function searchLocations(query: string) {
       communities: rows.communities.map((row) => ({
         id: row.id,
         districtId: row.districtId,
+        electoralAreaId: row.electoralAreaId ?? null,
         name: row.name,
         code: row.code,
         aliases: row.aliases,
         latitude: row.latitude,
         longitude: row.longitude,
+      })),
+      subDistrictUnits: rows.subDistrictUnits.map((row) => ({
+        id: row.id,
+        districtId: row.districtId,
+        name: row.name,
+        code: row.code,
+        unitType: row.unitType,
+      })),
+      electoralAreas: rows.electoralAreas.map((row) => ({
+        id: row.id,
+        districtId: row.districtId,
+        subDistrictUnitId: row.subDistrictUnitId,
+        name: row.name,
+        code: row.code,
       })),
     },
   };
@@ -247,12 +358,14 @@ export async function searchLocations(query: string) {
 
 export async function suggestCommunity(input: {
   districtId?: string;
+  electoralAreaId?: string;
   proposedName: string;
   proposedByUserId?: string;
 }) {
   const row = await locationMasterRepo.createPendingCommunitySuggestion({
     id: randomUUID(),
     districtId: input.districtId ?? null,
+    electoralAreaId: input.electoralAreaId ?? null,
     proposedName: input.proposedName.trim(),
     proposedByUserId: input.proposedByUserId ?? null,
   });
