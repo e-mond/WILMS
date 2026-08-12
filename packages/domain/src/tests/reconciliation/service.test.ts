@@ -15,6 +15,17 @@ const mocks = vi.hoisted(() => ({
 vi.mock('../../db/client.js', () => ({
   isDatabaseEnabled: () => true,
   runInTransaction: mocks.runInTransaction,
+  getDb: () => ({
+    select: () => ({
+      from: () => ({
+        where: async () => [],
+      }),
+    }),
+  }),
+}));
+
+vi.mock('../../db/persistence.js', () => ({
+  listAdminFeesForCollectorOnDate: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock('../../repositories/reconciliation.repository.js', () => ({
