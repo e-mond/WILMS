@@ -23,7 +23,7 @@ describe('paymentService.mock payment entry', () => {
   });
 
   it('returns payment entry context for an active loan', async () => {
-    const context = await paymentServiceMock.getPaymentEntryContext('borrower-001', '2026-05-29');
+    const context = await paymentServiceMock.getPaymentEntryContext('borrower-001', '2026-05-22');
 
     expect(context).toMatchObject({
       borrowerName: 'Ama Mensah',
@@ -41,7 +41,7 @@ describe('paymentService.mock payment entry', () => {
     await paymentServiceMock.recordPayment({
       borrowerId: 'borrower-001',
       amountPesewas: 5000,
-      paymentDate: '2026-05-29',
+      paymentDate: '2026-05-22',
       collectorId: 'user-collector',
       gps: SAMPLE_GPS,
     });
@@ -55,7 +55,7 @@ describe('paymentService.mock payment entry', () => {
       paymentServiceMock.recordPayment({
         borrowerId: 'borrower-001',
         amountPesewas: 2500,
-        paymentDate: '2026-05-29',
+        paymentDate: '2026-05-22',
         collectorId: 'user-collector',
         gps: SAMPLE_GPS,
       }),
