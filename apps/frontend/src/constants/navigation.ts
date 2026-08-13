@@ -68,6 +68,8 @@ export interface ShellNavItem {
   icon?: ShellNavIcon;
   /** Optional category for progressive disclosure in the sidebar. */
   group?: ShellNavGroupId;
+  /** Optional count badge (e.g. active borrowers). */
+  badge?: string | number;
 }
 
 export const SUPER_ADMIN_NAV: ShellNavItem[] = [

@@ -427,3 +427,81 @@ export async function listRecentPaymentsForCollector(
     .limit(Math.min(limit, MAX_LIST_PAGE_SIZE));
   return rows.map(rowToRecord);
 }
+
+/**
+ * Confirmed payment totals per collector per calendar month (YYYY-MM).
+ * `fromDateInclusive` is YYYY-MM-DD; payments on/after that date are included.
+ */
+export async function sumConfirmedPaymentsByCollectorMonth(
+  fromDateInclusive: string,
+  tx: WilmsDb = getDb(),
+): Promise<Map<string, Map<string, number>>> {
+  const rows = await tx.execute(sql`
+    SELECT
+      collector_user_id AS collector_id,
+      to_char((payment_date)::date, 'YYYY-MM') AS month_key,
+      COALESCE(SUM(amount_pesewas), 0)::int AS total
+    FROM payments
+    WHERE status <> 'REVERSED'
+      AND payment_date >= ${fromDateInclusive}
+    GROUP BY collector_user_id, to_char((payment_date)::date, 'YYYY-MM')
+  `);
+
+  const result = new Map<string, Map<string, number>>();
+  for (const row of rows.rows as {
+    collector_id?: string;
+    month_key?: string;
+    total?: number;
+  }[]) {
+    if (!row.collector_id || !row.month_key) {
+      continue;
+    }
+    const byMonth = result.get(row.collector_id) ?? new Map<string, number>();
+    byMonth.set(row.month_key, Number(row.total ?? 0));
+    result.set(row.collector_id, byMonth);
+  }
+  return result;
+}
+
+/**
+ * Distinct payment dates per collector since `fromDateInclusive` (for streak / activity).
+ */
+export async function listConfirmedPaymentDatesByCollector(
+  fromDateInclusive: string,
+  tx: WilmsDb = getDb(),
+): Promise<Map<string, string[]>> {
+  const rows = await tx.execute(sql`
+    SELECT DISTINCT
+      collector_user_id AS collector_id,
+      payment_date
+    FROM payments
+    WHERE status <> 'REVERSED'
+      AND payment_date >= ${fromDateInclusive}
+    ORDER BY payment_date DESC
+  `);
+
+  const result = new Map<string, string[]>();
+  for (const row of rows.rows as { collector_id?: string; payment_date?: string }[]) {
+    if (!row.collector_id || !row.payment_date) {
+      continue;
+    }
+    const dates = result.get(row.collector_id) ?? [];
+    dates.push(row.payment_date);
+    result.set(row.collector_id, dates);
+  }
+  return result;
+}
+
+/** Most recent confirmed payments across all collectors (operational alerts). */
+export async function listRecentConfirmedPayments(
+  limit = 10,
+  tx: WilmsDb = getDb(),
+): Promise<PaymentRecord[]> {
+  const rows = await tx
+    .select()
+    .from(payments)
+    .where(ne(payments.status, 'REVERSED'))
+    .orderBy(sql`${payments.recordedAt} DESC`)
+    .limit(Math.min(limit, MAX_LIST_PAGE_SIZE));
+  return rows.map(rowToRecord);
+}

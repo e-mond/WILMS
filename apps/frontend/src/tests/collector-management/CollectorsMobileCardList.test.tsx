@@ -18,6 +18,7 @@ const SAMPLE_COLLECTOR: CollectorSummary = {
   expensesSubmittedCount: 9,
   status: COLLECTOR_STATUS.ACTIVE,
   streakWeeks: 5,
+  trendDirection: 'up',
   cycleLabel: 'Jun 2026',
   joinedAt: '2022-02-14',
   lastActiveAt: '2026-06-08T09:42:00.000Z',

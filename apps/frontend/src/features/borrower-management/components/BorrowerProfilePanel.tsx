@@ -70,9 +70,14 @@ export function BorrowerProfilePanel({ borrowerId }: BorrowerProfilePanelProps) 
                 id: borrower.id,
                 photoUrl: borrower.photoUrl,
               })}
-              size="lg"
+              size="xl"
             />
             <StatusBadge status={borrower.status} />
+            {borrower.groupRole === 'LEADER' ? (
+              <p className="text-small font-semibold text-executive-gold">Group Leader</p>
+            ) : borrower.groupRole === 'MEMBER' ? (
+              <p className="text-small font-semibold text-text-muted">Group Member</p>
+            ) : null}
             <p className="text-small text-text-muted">{resolveBorrowerDisplayId(borrower)}</p>
           </div>
         </DetailSidebarCard>
@@ -188,14 +193,29 @@ export function BorrowerProfilePanel({ borrowerId }: BorrowerProfilePanelProps) 
               id: borrower.id,
               photoUrl: borrower.photoUrl,
             })}
-            size="lg"
+            size="xl"
           />
           <div>
             <div className="flex flex-wrap items-center gap-wilms-3">
               <h1 className="text-heading-1 font-semibold text-text-primary">{borrower.fullName}</h1>
               <StatusBadge status={borrower.status} />
+              {borrower.groupRole === 'LEADER' ? (
+                <span className="inline-flex items-center rounded-sm border border-executive-gold bg-executive-gold/10 px-wilms-2 py-wilms-1 text-small font-semibold text-executive-gold">
+                  Group Leader
+                </span>
+              ) : borrower.groupRole === 'MEMBER' ? (
+                <span className="inline-flex items-center rounded-sm border border-border px-wilms-2 py-wilms-1 text-small font-semibold text-text-muted">
+                  Group Member
+                </span>
+              ) : null}
             </div>
             <p className="text-small text-text-muted">{resolveBorrowerDisplayId(borrower)}</p>
+            {borrower.groupName ? (
+              <p className="mt-wilms-1 text-small text-text-muted">
+                {borrower.groupName}
+                {borrower.collectorLabel ? ` · Collector: ${borrower.collectorLabel}` : null}
+              </p>
+            ) : null}
           </div>
         </div>
         <BorrowerProfileActions
@@ -242,13 +262,41 @@ export function BorrowerProfilePanel({ borrowerId }: BorrowerProfilePanelProps) 
             { label: 'Registration Date', value: formatDisplayDate(borrower.registeredAt) },
             { label: 'Status', value: <StatusBadge status={borrower.status} /> },
             {
+              label: 'Group Role',
+              value: borrower.groupRole === 'LEADER' ? (
+                <span className="inline-flex items-center gap-wilms-2">
+                  <span className="inline-flex items-center rounded-sm border border-executive-gold bg-executive-gold/10 px-wilms-2 py-px text-small font-semibold text-executive-gold">
+                    Leader
+                  </span>
+                  Group Leader
+                </span>
+              ) : borrower.groupRole === 'MEMBER' ? (
+                'Group Member'
+              ) : (
+                '—'
+              ),
+            },
+            {
               label: 'Group',
               value: borrower.groupId ? (
                 <Link href={`/groups/${borrower.groupId}`} className="font-semibold text-brand-primary hover:underline">
                   {borrower.groupName}
                 </Link>
               ) : (
-                borrower.groupName
+                borrower.groupName || '—'
+              ),
+            },
+            {
+              label: 'Collector',
+              value: borrower.collectorId ? (
+                <Link
+                  href={`/collectors/${borrower.collectorId}`}
+                  className="font-semibold text-brand-primary hover:underline"
+                >
+                  {borrower.collectorLabel ?? 'View collector'}
+                </Link>
+              ) : (
+                borrower.collectorLabel ?? '—'
               ),
             },
             { label: 'Community', value: borrower.community },

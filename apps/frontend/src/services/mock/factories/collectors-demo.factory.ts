@@ -87,14 +87,16 @@ function generateUniqueNames(rng: SeededRng, count: number, exclude: ReadonlySet
 }
 
 function buildMonthlyPerformance(rate: number) {
-  return [
-    { monthLabel: 'Dec', collectionRatePercent: Math.max(rate - 12, 0) },
-    { monthLabel: 'Jan', collectionRatePercent: Math.max(rate - 9, 0) },
-    { monthLabel: 'Feb', collectionRatePercent: Math.max(rate - 7, 0) },
-    { monthLabel: 'Mar', collectionRatePercent: Math.max(rate - 5, 0) },
-    { monthLabel: 'Apr', collectionRatePercent: Math.max(rate - 2, 0) },
-    { monthLabel: 'May', collectionRatePercent: rate },
-  ];
+  const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const now = new Date();
+  const offsets = [12, 9, 7, 5, 2, 0];
+  return Array.from({ length: 6 }, (_, index) => {
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (5 - index), 1));
+    return {
+      monthLabel: labels[d.getUTCMonth()]!,
+      collectionRatePercent: Math.max(rate - offsets[index]!, 0),
+    };
+  });
 }
 
 function buildCollectorAlerts(): CollectorAlert[] {
@@ -173,6 +175,7 @@ function buildReferenceCollectors(rng: SeededRng): CollectorSummary[] {
           : rate >= 70
             ? randomInt(rng, 1, 4)
             : 0,
+      trendDirection: rate >= 90 ? 'up' : rate < 70 ? 'down' : 'neutral',
       cycleLabel: isFeatured ? COLLECTORS_REFERENCE_FEATURED_COLLECTOR.cycleLabel : 'Jun 2026',
       joinedAt: isFeatured
         ? COLLECTORS_REFERENCE_FEATURED_COLLECTOR.joinedAt
