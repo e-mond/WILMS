@@ -136,5 +136,6 @@ export interface LoanPaymentLogEntry {
   weekNumber?: number;
   receiptNumber?: string;
   gpsVerified?: boolean;
+  gpsSummary?: string;
   paymentStatus?: 'CONFIRMED' | 'PENDING_SYNC';
 }

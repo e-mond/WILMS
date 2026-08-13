@@ -43,6 +43,10 @@ describe('LocationAutocomplete', () => {
       expect(screen.getByRole('option')).toBeInTheDocument();
     });
 
+    const listbox = screen.getByRole('listbox');
+    expect(listbox.className).toContain('bg-card');
+    expect(listbox.className).toContain('z-50');
+
     await user.type(input, '{ArrowDown}{Enter}');
     expect(onChange).toHaveBeenCalledWith('Nkontompo');
     expect(onSelect).toHaveBeenCalledWith(

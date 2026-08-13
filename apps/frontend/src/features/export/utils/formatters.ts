@@ -30,11 +30,38 @@ export function formatExportDate(value: string | Date): string {
   });
 }
 
-export function buildExportFilename(resourceName: string, extension: string, date: Date = new Date()): string {
-  const dateKey = date.toISOString().slice(0, 10);
-  const normalizedExtension = extension.replace(/^\./, '');
-  const safeResource = resourceName.replace(/[^\w-]+/g, '-').replace(/^-|-$/g, '') || 'Export';
-  return `${safeResource}_${dateKey}.${normalizedExtension}`;
+export function slugExportToken(value: string): string {
+  return value.replace(/[^\w-]+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '') || 'Document';
+}
+
+/** Branded download stem without extension. */
+export function buildBrandedExportFilenameBase(parts: Array<string | null | undefined>): string {
+  return buildBrandedExportFilename(parts, 'pdf').replace(/\.pdf$/i, '');
+}
+
+/**
+ * Branded download name without a trailing date unless supplied as a part.
+ * Example: WILMS_Borrower_Profile_Gloria_Serwaa_BRW-2026-00417.pdf
+ */
+export function buildBrandedExportFilename(
+  parts: Array<string | null | undefined>,
+  extension: string,
+): string {
+  const tokens = parts
+    .map((part) => part?.trim())
+    .filter((part): part is string => Boolean(part))
+    .map(slugExportToken);
+  const body = tokens.join('_') || 'Export';
+  const branded = body.startsWith('WILMS_') ? body : `WILMS_${body}`;
+  return `${branded}.${extension.replace(/^\./, '')}`;
+}
+
+export function buildExportFilename(resourceName: string, extension: string, date?: Date): string {
+  const branded = buildBrandedExportFilename(
+    date ? [resourceName, date.toISOString().slice(0, 10)] : [resourceName],
+    extension,
+  );
+  return branded;
 }
 
 /** @deprecated Use formatPesewasForExport from the export framework. */

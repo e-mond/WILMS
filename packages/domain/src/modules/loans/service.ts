@@ -30,6 +30,7 @@ import * as borrowerRepo from '../../repositories/borrower.repository.js';
 import * as disbursementRepo from '../../repositories/loan-disbursement.repository.js';
 import * as ledgerRepo from '../../repositories/ledger.repository.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
+import * as paymentRepo from '../../repositories/payment.repository.js';
 import * as scheduleRepo from '../../repositories/loan-schedule.repository.js';
 import * as poolRepo from '../../repositories/loan-pool.repository.js';
 import { groups } from '../../db/schema/groups.js';
@@ -678,7 +679,31 @@ export async function listLoanPaymentLog(loanId: string) {
     });
   }
 
+  const paymentRows = await paymentRepo.listPaymentsByLoanId(loanId);
+  const gpsByPaymentId = new Map(
+    paymentRows.map((row) => {
+      const gps = (row.gps ?? {}) as {
+        latitude?: number;
+        longitude?: number;
+        accuracy?: number;
+        unavailable?: boolean;
+        reason?: string;
+      };
+      const unavailable = Boolean(gps.unavailable);
+      const verified =
+        !unavailable && typeof gps.latitude === 'number' && typeof gps.longitude === 'number';
+      const summary = unavailable
+        ? `Unavailable — ${gps.reason ?? 'reason not recorded'}`
+        : verified
+          ? `${Number(gps.latitude).toFixed(6)}, ${Number(gps.longitude).toFixed(6)}`
+          : 'Not captured';
+      return [row.id, { verified, summary }] as const;
+    }),
+  );
+
   for (const payment of payments) {
+    const paymentId = payment.paymentId ?? payment.id;
+    const gps = gpsByPaymentId.get(paymentId);
     entries.push({
       id: payment.id,
       type: 'REPAYMENT' as const,
@@ -687,7 +712,8 @@ export async function listLoanPaymentLog(loanId: string) {
       collectorId: payment.actorUserId ?? '',
       weekNumber: (payment.metadata as { weekNumber?: number } | null)?.weekNumber,
       paymentStatus: 'CONFIRMED' as const,
-      gpsVerified: true,
+      gpsVerified: gps?.verified ?? false,
+      gpsSummary: gps?.summary ?? 'Not captured',
     });
   }
 

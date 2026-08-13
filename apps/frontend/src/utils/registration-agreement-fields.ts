@@ -1,3 +1,4 @@
+import { buildLocationHierarchyRows, deriveCityTown } from '@/utils/location-hierarchy';
 import type { BorrowerRegistrationFormValues } from '@/types/borrower-registration';
 import type { RegistrationLegalConfig } from '@/types/registration-legal';
 
@@ -52,9 +53,14 @@ export function buildRegistrationAgreementContent(
       { label: 'Date of Birth', value: display(values.dateOfBirth) },
       { label: 'Address', value: display(values.houseAddress) },
       { label: 'GPS Address', value: display(values.gpsAddress) },
-      { label: 'City', value: display(values.city) },
-      { label: 'Region', value: display(values.region) },
-      { label: 'District', value: display(values.district) },
+      ...buildLocationHierarchyRows({
+        region: values.region,
+        district: values.district,
+        subDistrictUnit: values.subDistrictUnit,
+        electoralArea: values.electoralArea,
+        community: values.city,
+        city: deriveCityTown(values.district, values.city),
+      }).map(([label, value]) => ({ label, value })),
       { label: 'Phone', value: display(values.phone) },
       { label: 'Email', value: display(values.email) },
       { label: 'Nationality', value: display(values.nationality) },

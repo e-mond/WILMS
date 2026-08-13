@@ -42,6 +42,14 @@ const AUDIT_ACTION = {
   BORROWER_REGISTRATION_DELETED: 'borrower.registration-deleted',
 } as const;
 
+function deriveCityTown(district: string, community: string): string {
+  const stripped = district.replace(/\s+(Metropolitan|Municipal|District|Assembly)\b.*$/i, '').trim();
+  if (!stripped || stripped.toLowerCase() === community.trim().toLowerCase()) {
+    return community;
+  }
+  return stripped;
+}
+
 function officerName(officerId: string): string {
   return DEMO_USERS.find((user) => user.id === officerId)?.displayName ?? officerId;
 }
@@ -200,6 +208,9 @@ async function toReview(record: BorrowerRecord, officerDisplayName: string, sequ
     city: record.profile.city ?? '',
     region: record.profile.region ?? '',
     district: record.profile.district ?? '',
+    subDistrictUnit: record.profile.subDistrictUnit ?? '',
+    electoralArea: record.profile.electoralArea ?? '',
+    community: record.community,
     businessName: record.profile.businessName ?? '',
     businessAddress: record.profile.businessAddress ?? '',
     typeOfWork: record.profile.typeOfWork ?? '',
@@ -441,6 +452,17 @@ export async function registerBorrower(payload: Record<string, unknown>, actorId
     assertValidBorrowerId(String(payload.guarantorIdType), String(payload.guarantorIdNumber));
   }
 
+  const eligibility = await checkGuarantorEligibility({
+    guarantorPhone: String(payload.guarantorPhone ?? ''),
+    guarantorIdNumber: payload.guarantorIdNumber ? String(payload.guarantorIdNumber) : undefined,
+    guarantorName: String(payload.guarantorName ?? ''),
+    borrowerPhone: String(payload.phone ?? ''),
+    borrowerIdNumber: idNumber,
+  });
+  if (!eligibility.isEligible) {
+    throw new Error(`VALIDATION:${eligibility.message ?? 'Guarantor is not eligible.'}`);
+  }
+
   const id = nextBorrowerId();
   const community = String(payload.city ?? payload.community ?? '');
   const region = String(payload.region ?? '');
@@ -472,7 +494,7 @@ export async function registerBorrower(payload: Record<string, unknown>, actorId
       nationality: String(payload.nationality ?? 'Ghanaian'),
       houseAddress: String(payload.houseAddress ?? ''),
       gpsAddress: String(payload.gpsAddress ?? ''),
-      city: community,
+      city: deriveCityTown(district, community),
       region,
       district,
       subDistrictUnit: payload.subDistrictUnit ? String(payload.subDistrictUnit) : undefined,
@@ -704,6 +726,8 @@ export async function checkGuarantorEligibility(input: {
   guarantorIdNumber?: string;
   guarantorName: string;
   borrowerPhone?: string;
+  borrowerIdNumber?: string;
+  excludeBorrowerId?: string;
   isGroupLeader?: boolean;
   isApprovedCommunityLeader?: boolean;
 }) {

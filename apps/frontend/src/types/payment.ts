@@ -1,9 +1,6 @@
-export interface GpsCoordinates {
-  latitude: number;
-  longitude: number;
-  accuracy?: number;
-  capturedAt: string;
-}
+import type { GpsCoordinates } from '@/types/gps';
+
+export type { GpsCoordinates };
 
 export const PAYMENT_TRANSACTION_STATUS = {
   CONFIRMED: 'CONFIRMED',

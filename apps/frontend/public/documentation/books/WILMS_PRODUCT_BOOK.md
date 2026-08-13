@@ -3054,7 +3054,15 @@ A: lint, test, type-check, verify:version, verify:migrations, smoke:rbac.
 | v1.4 final system audit | docs/certification/v1.4/final-system-audit/ | Financial integrity closure |
 | v1.7.2 RC1 | docs/v1.7.2/ | Release candidate stabilization evidence |
 | v1.7.3 docs suite | docs/v1.7.3/ | Documentation release pack |
+| v1.8.0 market readiness | docs/v1.8.0/market-readiness/ | Guarantor limit, IDs, GPS, update requests, SMS |
 
+## v1.8.0 market-readiness notes
+
+- Guarantors may cover up to three active borrowers; duplicate only applies to the same borrower.
+- Review screens show Region → MMDA → Sub-District → Electoral Area → Community → City/Town.
+- Official IDs: `BRW-YYYY-NNNNN`, `LN-YYYY-NNNNN`, collector `Name (COL-NNN)`.
+- Collectors request borrower data changes; officers and Super Admins approve.
+- SMS remains mandatory for borrower communications unless system-wide SMS is disabled.
 
 ---
 

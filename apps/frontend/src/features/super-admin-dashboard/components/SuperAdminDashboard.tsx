@@ -155,7 +155,7 @@ function OperationalDashboardContent({
         <div className="flex flex-wrap items-center gap-wilms-2">
           <WilmsExportActions
             document={exportDocument}
-            filenameBase="operational-dashboard"
+            filenameBase="WILMS_Operational_Dashboard"
             showIcons
             permissions={[]}
           />
@@ -292,7 +292,7 @@ function OperationalDashboardContent({
               {data.borrowerSegments.map((segment) => (
                 <li
                   key={segment.id}
-                  className="flex min-h-[5.5rem] items-start gap-wilms-3 rounded-xl border border-border/70 bg-background/60 p-wilms-3"
+                  className="flex min-h-[5.5rem] items-start gap-wilms-3 rounded-xl border border-border bg-card p-wilms-3"
                 >
                   <span
                     className={cn(

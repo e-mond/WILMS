@@ -1,8 +1,17 @@
 import type { BorrowerRecord } from '../../db/persistence.js';
 import { BORROWER_STATUS } from '../../db/persistence.js';
 import { scoreGuarantorEligibility } from '../../domain/guarantor/scoring.js';
+import { normalizeGhanaPhone } from '../../infrastructure/sms/normalize-phone.js';
 
 export const MAX_GUARANTOR_GUARANTEES = 3;
+
+/** Statuses that occupy a guarantor slot. Rejected and blacklisted do not. */
+export const ACTIVE_GUARANTEE_STATUSES = new Set<string>([
+  BORROWER_STATUS.PENDING,
+  BORROWER_STATUS.APPROVED,
+  BORROWER_STATUS.AT_RISK,
+  BORROWER_STATUS.DEFAULTED,
+]);
 
 export const GUARANTOR_VALIDATION_STATUS = {
   VALID: 'VALID',
@@ -19,6 +28,8 @@ export interface GuarantorEligibilityInput {
   guarantorIdNumber?: string;
   guarantorName: string;
   borrowerPhone?: string;
+  borrowerIdNumber?: string;
+  excludeBorrowerId?: string;
   isGroupLeader?: boolean;
   isApprovedCommunityLeader?: boolean;
 }
@@ -35,23 +46,51 @@ export interface GuarantorEligibilityResult {
   scoreFactors: string[];
 }
 
+function phonesMatch(left?: string | null, right?: string | null): boolean {
+  if (!left?.trim() || !right?.trim()) {
+    return false;
+  }
+  return normalizeGhanaPhone(left) === normalizeGhanaPhone(right);
+}
+
+function idsMatch(left?: string | null, right?: string | null): boolean {
+  if (!left?.trim() || !right?.trim()) {
+    return false;
+  }
+  return left.trim().toLowerCase() === right.trim().toLowerCase();
+}
+
+function isSameBorrower(
+  record: BorrowerRecord,
+  input: GuarantorEligibilityInput,
+): boolean {
+  if (input.excludeBorrowerId && record.id === input.excludeBorrowerId) {
+    return true;
+  }
+  if (phonesMatch(record.phone, input.borrowerPhone)) {
+    return true;
+  }
+  return idsMatch(record.idNumber, input.borrowerIdNumber);
+}
+
+function isSameGuarantor(record: BorrowerRecord, input: GuarantorEligibilityInput): boolean {
+  return phonesMatch(record.profile?.guarantorPhone, input.guarantorPhone);
+}
+
+function isActiveGuarantee(record: BorrowerRecord): boolean {
+  return ACTIVE_GUARANTEE_STATUSES.has(record.status);
+}
+
 function buildScoringMetrics(
   normalizedPhone: string,
   borrowers: BorrowerRecord[],
   maxGuarantees: number,
   activeGuaranteeCount: number,
 ) {
-  const activeGuaranteeStatuses = new Set<string>([
-    BORROWER_STATUS.APPROVED,
-    BORROWER_STATUS.AT_RISK,
-    BORROWER_STATUS.DEFAULTED,
-  ]);
-
   const borrowerDefaultCount = borrowers.filter(
     (record) =>
       record.status === BORROWER_STATUS.DEFAULTED &&
-      activeGuaranteeStatuses.has(record.status) &&
-      record.profile?.guarantorPhone === normalizedPhone,
+      phonesMatch(record.profile?.guarantorPhone, normalizedPhone),
   ).length;
 
   return scoreGuarantorEligibility({
@@ -88,10 +127,9 @@ export function evaluateGuarantorEligibility(
   borrowers: BorrowerRecord[],
 ): GuarantorEligibilityResult {
   const normalizedPhone = input.guarantorPhone.trim();
-  const normalizedName = input.guarantorName.trim().toLowerCase();
   const borrowerPhone = input.borrowerPhone?.trim();
 
-  if (borrowerPhone && normalizedPhone === borrowerPhone) {
+  if (borrowerPhone && phonesMatch(normalizedPhone, borrowerPhone)) {
     return withScore(
       {
         isEligible: false,
@@ -106,34 +144,19 @@ export function evaluateGuarantorEligibility(
     );
   }
 
-  const activeGuaranteeStatuses = new Set<string>([
-    BORROWER_STATUS.APPROVED,
-    BORROWER_STATUS.AT_RISK,
-    BORROWER_STATUS.DEFAULTED,
-  ]);
+  const linkedActive = borrowers.filter(
+    (record) => isActiveGuarantee(record) && isSameGuarantor(record, input),
+  );
 
-  const activeGuaranteeCount = borrowers.filter(
-    (record) =>
-      activeGuaranteeStatuses.has(record.status) &&
-      record.profile?.guarantorPhone === normalizedPhone,
-  ).length;
+  const duplicateForSameBorrower = linkedActive.some((record) => isSameBorrower(record, input));
 
-  const isDuplicateRegistration = borrowers.some((record) => {
-    if (record.status !== BORROWER_STATUS.APPROVED) {
-      return false;
-    }
-
-    const profile = record.profile;
-    return (
-      profile?.guarantorPhone === normalizedPhone &&
-      profile?.guarantorName?.trim().toLowerCase() === normalizedName
-    );
-  });
+  const otherActiveGuarantees = linkedActive.filter((record) => !isSameBorrower(record, input));
+  const activeGuaranteeCount = otherActiveGuarantees.length;
 
   const isExempt = Boolean(input.isGroupLeader || input.isApprovedCommunityLeader);
   const maxGuarantees = isExempt ? MAX_GUARANTOR_GUARANTEES + 2 : MAX_GUARANTOR_GUARANTEES;
 
-  if (isDuplicateRegistration) {
+  if (duplicateForSameBorrower) {
     return withScore(
       {
         isEligible: false,
@@ -141,7 +164,8 @@ export function evaluateGuarantorEligibility(
         maxGuarantees,
         isDuplicateRegistration: true,
         validationStatus: GUARANTOR_VALIDATION_STATUS.DUPLICATE,
-        message: 'This guarantor profile is already linked to an active registration.',
+        message:
+          'This guarantor is already linked to an active registration for the same borrower.',
       },
       normalizedPhone,
       borrowers,
@@ -156,7 +180,7 @@ export function evaluateGuarantorEligibility(
         maxGuarantees,
         isDuplicateRegistration: false,
         validationStatus: GUARANTOR_VALIDATION_STATUS.EXEMPT,
-        message: 'Group or community leader exemption applied.',
+        message: `Current Guarantees: ${activeGuaranteeCount} of ${maxGuarantees} (leader exemption applied).`,
       },
       normalizedPhone,
       borrowers,

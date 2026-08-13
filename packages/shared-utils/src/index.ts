@@ -2,6 +2,7 @@ export { formatPesewasAsGhs } from './currency';
 export {
   formatBorrowerDisplayId,
   formatCollectorDisplayId,
+  formatCollectorStaffLabel,
   formatEntityDisplayId,
   formatExpenseDisplayId,
   formatGroupDisplayId,

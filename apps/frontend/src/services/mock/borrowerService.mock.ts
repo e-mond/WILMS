@@ -21,6 +21,7 @@ import {
   checkPhoneDuplicate,
   checkSimilarNames,
 } from '@/services/mock/borrower-checks.mock';
+import { checkGuarantorEligibility } from '@/services/mock/guarantor-eligibility';
 import type { BorrowerRegistryEntry } from '@/mocks/borrower-registry';
 import { AUDIT_ACTION, type AuditAction } from '@/constants/audit';
 import type { BorrowerReviewDetail, ReviewedApplicationSummary, ReviewedDecision } from '@/types/approval';
@@ -130,6 +131,8 @@ function registryEntryToReview(entry: BorrowerRegistryEntry): BorrowerReviewDeta
     city: entry.profile.city,
     region: entry.profile.region,
     district: entry.profile.district,
+    subDistrictUnit: entry.profile.subDistrictUnit,
+    electoralArea: entry.profile.electoralArea,
     businessName: entry.profile.businessName,
     businessAddress: entry.profile.businessAddress,
     typeOfWork: entry.profile.typeOfWork,
@@ -210,6 +213,20 @@ function assertRegistrationAllowed(payload: RegisterBorrowerPayload): void {
   if (blacklistResult.isBlacklisted) {
     throw new ApiError(
       `${blacklistResult.existingBorrowerName} is blacklisted and cannot be registered.`,
+      API_ERROR_CODE.VALIDATION,
+      422,
+    );
+  }
+
+  const eligibility = checkGuarantorEligibility({
+    guarantorPhone: payload.guarantorPhone,
+    guarantorName: payload.guarantorName,
+    borrowerPhone: payload.phone,
+    borrowerIdNumber: payload.idNumber,
+  });
+  if (!eligibility.isEligible) {
+    throw new ApiError(
+      eligibility.message ?? 'Guarantor is not eligible.',
       API_ERROR_CODE.VALIDATION,
       422,
     );

@@ -29,6 +29,6 @@ describe('formatBorrowerDisplayId', () => {
         { community: 'Madina', registeredAt: '2026-03-15T10:00:00.000Z', id: 'uuid' },
         12,
       ),
-    ).toBe('BWR-MADI-202603-0012');
+      ).toBe('BRW-2026-00012');
   });
 });

@@ -194,6 +194,14 @@ export async function appendPayment(
   return record;
 }
 
+export async function listPaymentsByLoanId(loanId: string, tx: WilmsDb = getDb()) {
+  const rows = await tx
+    .select()
+    .from(payments)
+    .where(and(eq(payments.loanId, loanId), ne(payments.status, 'REVERSED')));
+  return rows;
+}
+
 export async function findSameDayPayment(
   borrowerId: string,
   collectorId: string,

@@ -7,6 +7,7 @@ import {
   formatPaymentDisplayId,
   formatExpenseDisplayId,
   formatPoolDisplayId,
+  formatCollectorStaffLabel,
   isReadableWilmsId,
 } from '@wilms/shared-utils';
 
@@ -15,9 +16,9 @@ describe('display id formatters', () => {
     expect(
       formatBorrowerDisplayId(
         { community: 'Madina', registeredAt: '2026-05-15T10:00:00.000Z' },
-        3,
+        417,
       ),
-    ).toBe('BWR-MADI-202605-0003');
+    ).toBe('BRW-2026-00417');
   });
 
   it('formats payment ids from recorded date and sequence', () => {
@@ -28,6 +29,9 @@ describe('display id formatters', () => {
     expect(formatCollectorDisplayId({ collectorCode: 'col-011' })).toBe('COL-011');
     expect(formatCollectorDisplayId({ staffId: 'STF-204' })).toBe('STF-204');
     expect(formatCollectorDisplayId({ sequence: 3 })).toBe('COL-003');
+    expect(
+      formatCollectorStaffLabel({ fullName: 'Kwame Mensah', collectorCode: 'COL-012' }),
+    ).toBe('Kwame Mensah (COL-012)');
   });
 
   it('formats loan ids from cycle batch and start date', () => {
@@ -35,9 +39,9 @@ describe('display id formatters', () => {
       formatLoanDisplayId({
         cycleBatch: 'Cycle 1 — January 2026',
         startDate: '2026-05-01',
-        sequence: 2,
+        sequence: 124,
       }),
-    ).toBe('LOAN-CYCLE1JA-202605-0002');
+    ).toBe('LN-2026-00124');
   });
 
   it('formats pool ids from year and sequence', () => {
@@ -63,6 +67,8 @@ describe('display id formatters', () => {
     ).toMatch(/^ENT-BOR-AKOS-/);
 
     expect(isReadableWilmsId('GRP-MAD-202603-001')).toBe(true);
+    expect(isReadableWilmsId('BRW-2026-00417')).toBe(true);
+    expect(isReadableWilmsId('LN-2026-00124')).toBe(true);
     expect(isReadableWilmsId('01930001-0001-7000-8000-000000000001')).toBe(false);
   });
 });

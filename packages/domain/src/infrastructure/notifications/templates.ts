@@ -253,6 +253,26 @@ export function buildPaymentDayChangedSmsBody(input: {
   return `WILMS: Important — Your repayment schedule has changed. Your new weekly payment day is ${input.paymentDay}. Your next payment of GHS ${amountGhs} is due on ${input.nextPaymentDate}.`;
 }
 
+export function buildBorrowerUpdateApprovedSmsBody(input: {
+  borrowerName: string;
+  field: string;
+  afterValue: string;
+}): string {
+  return `WILMS: Dear ${input.borrowerName}, your ${input.field.toLowerCase().replace(/_/g, ' ')} has been updated to ${input.afterValue}. Contact your collector if this is unexpected.`;
+}
+
+export function buildBorrowerUpdateRejectedSmsBody(input: {
+  borrowerName: string;
+  field: string;
+  reviewNote?: string | null;
+}): string {
+  const note = input.reviewNote?.trim();
+  const fieldLabel = input.field.toLowerCase().replace(/_/g, ' ');
+  return note
+    ? `WILMS: Dear ${input.borrowerName}, the requested ${fieldLabel} update was not approved. ${note}`
+    : `WILMS: Dear ${input.borrowerName}, the requested ${fieldLabel} update was not approved. Your collector can submit a corrected request.`;
+}
+
 export function buildCollectionReminderSmsBody(input: {
   borrowerName: string;
   amountPesewas: number;

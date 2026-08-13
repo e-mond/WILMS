@@ -19,6 +19,8 @@ import type { BorrowerLoanHistoryEntry, LoanPaymentLogEntry, LoanProgressSummary
 import type { LoanScheduleWeek } from '@/types/loan-schedule';
 import { useToast } from '@/hooks/useToast';
 import { cn } from '@/utils/cn';
+import { resolveBorrowerDisplayId } from '@/utils/format-borrower-display-id';
+import { buildBrandedExportFilenameBase } from '@/features/export/utils/formatters';
 
 export interface BorrowerProfileActionsProps {
   borrower: BorrowerFullProfile;
@@ -47,7 +49,12 @@ export function BorrowerProfileActions({
 }: BorrowerProfileActionsProps) {
   const toast = useToast();
   const generatedBy = useWilmsExportActor();
-  const filenameBase = `${borrower.id}-profile`;
+  const borrowerDisplayId = resolveBorrowerDisplayId(borrower);
+  const filenameBase = buildBrandedExportFilenameBase([
+    'Borrower_Profile',
+    borrower.fullName,
+    borrowerDisplayId,
+  ]);
 
   const fullDocument = useMemo(
     () =>

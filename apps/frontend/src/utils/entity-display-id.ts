@@ -1,6 +1,7 @@
 import {
   formatBorrowerDisplayId,
   formatCollectorDisplayId,
+  formatCollectorStaffLabel,
   formatEntityDisplayId,
   formatExpenseDisplayId,
   formatGroupDisplayId,
@@ -15,6 +16,7 @@ import {
 export {
   formatBorrowerDisplayId,
   formatCollectorDisplayId,
+  formatCollectorStaffLabel,
   formatEntityDisplayId,
   formatExpenseDisplayId,
   formatGroupDisplayId,
@@ -39,6 +41,20 @@ export function resolveCollectorDisplayId(
   }
 
   return formatCollectorDisplayId({ sequence });
+}
+
+export function resolveCollectorStaffLabel(collector: {
+  id?: string;
+  displayId?: string;
+  collectorCode?: string | null;
+  fullName?: string | null;
+  displayName?: string | null;
+}): string {
+  return formatCollectorStaffLabel({
+    fullName: collector.fullName ?? collector.displayName,
+    collectorCode: collector.collectorCode ?? collector.displayId,
+    staffId: collector.displayId,
+  });
 }
 
 export function resolveLoanDisplayId(loan: {

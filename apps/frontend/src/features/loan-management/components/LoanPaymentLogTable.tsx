@@ -44,8 +44,9 @@ export function LoanPaymentLogTable({ entries, detailed = false }: LoanPaymentLo
               },
               {
                 id: 'gps',
-                header: 'GPS Verification',
-                cell: (row) => (row.gpsVerified ? 'Verified' : 'Not verified'),
+                header: 'GPS',
+                cell: (row) =>
+                  row.gpsSummary ?? (row.gpsVerified ? 'Verified' : 'Not verified'),
               },
               {
                 id: 'status',

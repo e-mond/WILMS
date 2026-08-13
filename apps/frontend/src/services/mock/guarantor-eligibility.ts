@@ -1,3 +1,4 @@
+import { BORROWER_STATUS } from '@/types/borrower';
 import {
   GUARANTOR_VALIDATION_STATUS,
   MAX_GUARANTOR_GUARANTEES,
@@ -6,6 +7,34 @@ import {
 } from '@/types/guarantor-eligibility';
 import type { BorrowerRegistryEntry } from '@/mocks/borrower-registry';
 import { getBorrowerRegistryEntries } from '@/services/mock/borrower-registry.store';
+
+const ACTIVE_STATUSES = new Set<string>([
+  BORROWER_STATUS.PENDING,
+  BORROWER_STATUS.APPROVED,
+  BORROWER_STATUS.AT_RISK,
+  BORROWER_STATUS.DEFAULTED,
+]);
+
+function normalizePhone(phone: string): string {
+  const digits = phone.replace(/\D/g, '');
+  if (!digits) {
+    return '';
+  }
+  if (digits.startsWith('233')) {
+    return digits;
+  }
+  if (digits.startsWith('0')) {
+    return `233${digits.slice(1)}`;
+  }
+  return digits;
+}
+
+function phonesMatch(left?: string | null, right?: string | null): boolean {
+  if (!left?.trim() || !right?.trim()) {
+    return false;
+  }
+  return normalizePhone(left) === normalizePhone(right);
+}
 
 function scoreFromMetrics(activeGuaranteeCount: number, maxGuarantees: number): {
   eligibilityScore: number;
@@ -31,14 +60,23 @@ function scoreFromMetrics(activeGuaranteeCount: number, maxGuarantees: number): 
   return { eligibilityScore, riskRating, scoreFactors: factors };
 }
 
+function isSameBorrower(entry: BorrowerRegistryEntry, input: GuarantorEligibilityInput): boolean {
+  if (phonesMatch(entry.phone, input.borrowerPhone)) {
+    return true;
+  }
+  return Boolean(
+    input.borrowerIdNumber?.trim() &&
+      entry.idNumber.trim().toLowerCase() === input.borrowerIdNumber.trim().toLowerCase(),
+  );
+}
+
 export function checkGuarantorEligibility(
   input: GuarantorEligibilityInput,
 ): GuarantorEligibilityResult {
   const normalizedPhone = input.guarantorPhone.trim();
-  const normalizedName = input.guarantorName.trim().toLowerCase();
   const borrowerPhone = input.borrowerPhone?.trim();
 
-  if (borrowerPhone && normalizedPhone === borrowerPhone) {
+  if (borrowerPhone && phonesMatch(normalizedPhone, borrowerPhone)) {
     return {
       isEligible: false,
       activeGuaranteeCount: 0,
@@ -50,30 +88,26 @@ export function checkGuarantorEligibility(
     };
   }
 
-  const activeGuaranteeCount = getBorrowerRegistryEntries().filter(
-    (entry: BorrowerRegistryEntry) => entry.profile.guarantorPhone === normalizedPhone,
-  ).length;
+  const linkedActive = getBorrowerRegistryEntries().filter(
+    (entry: BorrowerRegistryEntry) =>
+      ACTIVE_STATUSES.has(entry.status) && phonesMatch(entry.profile.guarantorPhone, normalizedPhone),
+  );
 
-  const duplicateRegistration = getBorrowerRegistryEntries().some((entry: BorrowerRegistryEntry) => {
-    const profile = entry.profile;
-    return (
-      profile.guarantorPhone === normalizedPhone &&
-      profile.guarantorName.trim().toLowerCase() === normalizedName
-    );
-  });
+  const duplicateForSameBorrower = linkedActive.some((entry) => isSameBorrower(entry, input));
+  const activeGuaranteeCount = linkedActive.filter((entry) => !isSameBorrower(entry, input)).length;
 
   const isExempt = Boolean(input.isGroupLeader || input.isApprovedCommunityLeader);
   const maxGuarantees = isExempt ? MAX_GUARANTOR_GUARANTEES + 2 : MAX_GUARANTOR_GUARANTEES;
   const score = scoreFromMetrics(activeGuaranteeCount, maxGuarantees);
 
-  if (duplicateRegistration) {
+  if (duplicateForSameBorrower) {
     return {
       isEligible: false,
       activeGuaranteeCount,
       maxGuarantees,
       isDuplicateRegistration: true,
       validationStatus: GUARANTOR_VALIDATION_STATUS.DUPLICATE,
-      message: 'This guarantor profile is already linked to an active registration.',
+      message: 'This guarantor is already linked to an active registration for the same borrower.',
       ...score,
     };
   }
@@ -85,7 +119,7 @@ export function checkGuarantorEligibility(
       maxGuarantees,
       isDuplicateRegistration: false,
       validationStatus: GUARANTOR_VALIDATION_STATUS.EXEMPT,
-      message: 'Group or community leader exemption applied.',
+      message: `Current Guarantees: ${activeGuaranteeCount} of ${maxGuarantees} (leader exemption applied).`,
       ...score,
     };
   }
