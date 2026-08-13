@@ -21,6 +21,9 @@ import {
   buildLoanReminderEmail,
   buildLoanReminderSmsBody,
   buildMissedPaymentSmsBody,
+  buildGracePeriodReminderSmsBody,
+  buildEscalationNoticeSmsBody,
+  buildMultiWeekPaymentSmsBody,
   buildPaymentConfirmationEmail,
   buildPaymentConfirmationSmsBody,
   formatGhsAmount,
@@ -64,6 +67,48 @@ export async function resolveCollectorUserIdForBorrower(
     .limit(1);
 
   return row?.collectorUserId ?? undefined;
+}
+
+async function resolveBorrowerCollectionContext(borrowerId: string): Promise<{
+  groupName?: string;
+  collectorName?: string;
+}> {
+  const borrower = await borrowerRepo.getBorrower(borrowerId);
+  if (!borrower?.groupId || !isDatabaseEnabled()) {
+    return { groupName: borrower?.groupName || undefined };
+  }
+
+  const db = getDb();
+  const [row] = await db
+    .select({
+      groupName: groups.displayName,
+      groupFallbackName: groups.name,
+      collectorUserId: groups.collectorUserId,
+    })
+    .from(groups)
+    .where(and(eq(groups.id, borrower.groupId), isNull(groups.deletedAt)))
+    .limit(1);
+
+  let collectorName: string | undefined;
+  if (row?.collectorUserId) {
+    const [collector] = await db
+      .select({ displayName: users.displayName })
+      .from(users)
+      .where(and(eq(users.id, row.collectorUserId), isNull(users.deletedAt)))
+      .limit(1);
+    collectorName = collector?.displayName || undefined;
+  }
+
+  return {
+    groupName: row?.groupName || row?.groupFallbackName || borrower.groupName || undefined,
+    collectorName,
+  };
+}
+
+function weekdayLabel(isoDate: string): string {
+  const [year, month, day] = isoDate.split('-').map(Number);
+  const date = new Date(Date.UTC(year!, month! - 1, day!));
+  return date.toLocaleDateString('en-GB', { weekday: 'long', timeZone: 'UTC' });
 }
 
 async function dispatchBorrowerSms(input: {
@@ -297,13 +342,15 @@ export async function emitPaymentDueSoonNotification(input: {
 }): Promise<void> {
   const dedupeKey = DEDUPE.paymentDueSoon(input.loanId, input.dueDate);
   const settings = await getSettings();
-  const amountGhs = formatGhsAmount(input.amountPesewas);
+  const context = await resolveBorrowerCollectionContext(input.borrowerId);
 
   const smsBody = buildLoanReminderSmsBody({
     borrowerName: input.borrowerName,
-    loanDisplayId: input.loanDisplayId,
-    amountPesewas: input.amountPesewas,
-    dueDate: input.dueDate,
+    weeklyAmountPesewas: input.amountPesewas,
+    paymentDate: input.dueDate,
+    paymentDay: weekdayLabel(input.dueDate),
+    groupName: context.groupName,
+    collectorName: context.collectorName,
     dueTomorrow: true,
   });
 
@@ -359,12 +406,13 @@ export async function emitPaymentDueTodayNotification(input: {
 }): Promise<void> {
   const dedupeKey = DEDUPE.paymentDueToday(input.loanId, input.dueDate);
   const settings = await getSettings();
+  const context = await resolveBorrowerCollectionContext(input.borrowerId);
 
   const smsBody = buildLoanReminderSmsBody({
     borrowerName: input.borrowerName,
-    loanDisplayId: input.loanDisplayId,
-    amountPesewas: input.amountPesewas,
-    dueDate: input.dueDate,
+    weeklyAmountPesewas: input.amountPesewas,
+    paymentDate: input.dueDate,
+    collectorName: context.collectorName,
     dueTomorrow: false,
   });
 
@@ -382,26 +430,7 @@ export async function emitPaymentDueTodayNotification(input: {
     });
   }
 
-  if (input.borrowerEmail) {
-    const template = buildLoanReminderEmail({
-      borrowerName: input.borrowerName,
-      loanDisplayId: input.loanDisplayId,
-      amountPesewas: input.amountPesewas,
-      dueDate: input.dueDate,
-    });
-    await dispatchBorrowerEmail({
-      dedupeKey,
-      notificationType: 'PAYMENT_DUE_TODAY',
-      event: 'PAYMENT_REMINDER',
-      to: input.borrowerEmail,
-      subject: template.subject.replace('soon', 'today'),
-      text: template.text,
-      html: template.html,
-      borrowerId: input.borrowerId,
-      loanId: input.loanId,
-      correlationId: input.correlationId,
-    });
-  }
+  // Channel matrix: due-today is SMS / in-app / push only (no email).
 
   recordNotificationMetric('payment_due_today');
 }
@@ -425,32 +454,47 @@ export async function emitPaymentOverdueLadderNotification(input: {
   const dedupeKey = `payment-overdue-${input.daysOverdue}d:${input.loanId}:${input.dueDate}`;
   const settings = await getSettings();
   const amountGhs = formatGhsAmount(input.amountPesewas);
+  const context = await resolveBorrowerCollectionContext(input.borrowerId);
+  const graceEndDate = addDays(input.dueDate, graceDays);
 
   let title = `${input.daysOverdue}-day overdue payment`;
-  let body = `WILMS: Hi ${input.borrowerName}, your payment of GHS ${amountGhs} for ${input.loanDisplayId} is ${input.daysOverdue} day(s) overdue (due ${input.dueDate}).`;
+  let smsBody = buildMissedPaymentSmsBody({
+    borrowerName: input.borrowerName,
+    amountPesewas: input.amountPesewas,
+    dueDate: input.dueDate,
+    collectorName: context.collectorName,
+  });
   let collectorBody = `${input.borrowerName} is ${input.daysOverdue} day(s) overdue (GHS ${amountGhs}).`;
+  let sendBorrowerSms = input.daysOverdue !== graceDays + 2;
 
   if (input.daysOverdue === graceDays) {
     title = 'Grace period ending';
-    body = `WILMS: Hi ${input.borrowerName}, your grace period ends tomorrow for GHS ${amountGhs} (${input.loanDisplayId}). Please contact your collector if you have already paid.`;
+    smsBody = buildGracePeriodReminderSmsBody({
+      borrowerName: input.borrowerName,
+      weeklyAmountPesewas: input.amountPesewas,
+      graceEndDate,
+      collectorName: context.collectorName,
+    });
     collectorBody = `Grace ending for ${input.borrowerName} (GHS ${amountGhs}).`;
   } else if (input.daysOverdue === graceDays + 1) {
     title = 'Collector overdue alert';
+    smsBody = buildEscalationNoticeSmsBody({ collectorName: context.collectorName });
     collectorBody = `${input.borrowerName} is past grace (${input.daysOverdue} day(s), GHS ${amountGhs}). Follow up required.`;
   } else if (input.daysOverdue === graceDays + 2) {
     title = 'Super Admin delinquency alert';
+    sendBorrowerSms = false;
   } else if (input.daysOverdue >= 7) {
     title = 'Escalated delinquency';
-    body = `WILMS: Hi ${input.borrowerName}, your payment is now overdue and has been escalated (GHS ${amountGhs}, ${input.loanDisplayId}).`;
+    smsBody = buildEscalationNoticeSmsBody({ collectorName: context.collectorName });
   }
 
-  if (input.borrowerPhone && input.daysOverdue !== graceDays + 1 && input.daysOverdue !== graceDays + 2) {
+  if (input.borrowerPhone && sendBorrowerSms) {
     await dispatchBorrowerSms({
       dedupeKey,
       notificationType: 'PAYMENT_OVERDUE',
       event: 'MISSED_PAYMENT',
       to: input.borrowerPhone,
-      body: body.slice(0, 160),
+      body: smsBody,
       enabled: settings.smsNotificationsEnabled && settings.missedPaymentSmsEnabled,
       borrowerId: input.borrowerId,
       loanId: input.loanId,
@@ -520,6 +564,7 @@ export async function emitPaymentMissedNotification(input: {
   const dedupeKey = DEDUPE.paymentMissed(input.loanId, input.dueDate);
   const settings = await getSettings();
   const amountGhs = formatGhsAmount(input.amountPesewas);
+  const context = await resolveBorrowerCollectionContext(input.borrowerId);
 
   if (input.borrowerPhone) {
     await dispatchBorrowerSms({
@@ -533,6 +578,7 @@ export async function emitPaymentMissedNotification(input: {
         dueDate: input.dueDate,
         remainingBalancePesewas: input.remainingBalancePesewas,
         weeksRemaining: input.weeksRemaining,
+        collectorName: context.collectorName,
       }),
       enabled: settings.smsNotificationsEnabled && settings.missedPaymentSmsEnabled,
       borrowerId: input.borrowerId,
@@ -576,24 +622,37 @@ export async function emitPaymentConfirmedNotification(input: {
   weeksRemaining?: number;
   nextDueDate?: string;
   collectorUserId?: string;
+  weeksPaid?: number;
   correlationId?: string;
 }): Promise<void> {
   const dedupeKey = DEDUPE.paymentConfirmed(input.paymentId);
   const settings = await getSettings();
   const amountGhs = formatGhsAmount(input.amountPesewas);
+  const weeksPaid = input.weeksPaid ?? 1;
 
   if (input.borrowerPhone) {
+    const smsBody =
+      weeksPaid > 1
+        ? buildMultiWeekPaymentSmsBody({
+            borrowerName: input.borrowerName,
+            amountPesewas: input.amountPesewas,
+            weeksPaid,
+            remainingBalancePesewas: input.outstandingBalancePesewas,
+            weeksRemaining: input.weeksRemaining,
+          })
+        : buildPaymentConfirmationSmsBody({
+            borrowerName: input.borrowerName,
+            amountPesewas: input.amountPesewas,
+            paymentDate: input.paymentDate,
+            remainingBalancePesewas: input.outstandingBalancePesewas,
+            weeksRemaining: input.weeksRemaining,
+          });
     await dispatchBorrowerSms({
       dedupeKey,
       notificationType: 'PAYMENT_CONFIRMED',
       event: 'PAYMENT_RECEIVED',
       to: input.borrowerPhone,
-      body: buildPaymentConfirmationSmsBody({
-        amountPesewas: input.amountPesewas,
-        paymentDate: input.paymentDate,
-        remainingBalancePesewas: input.outstandingBalancePesewas,
-        weeksRemaining: input.weeksRemaining,
-      }),
+      body: smsBody,
       enabled: settings.smsNotificationsEnabled,
       borrowerId: input.borrowerId,
       loanId: input.loanId,

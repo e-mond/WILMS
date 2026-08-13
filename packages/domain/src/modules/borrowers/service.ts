@@ -506,6 +506,10 @@ export async function registerBorrower(payload: Record<string, unknown>, actorId
     borrowerPhone: record.phone,
     borrowerEmail: record.profile.email,
     officerUserId: actorId,
+    reference: formatBorrowerDisplayId(
+      { community: record.community, registeredAt: record.registeredAt },
+      1,
+    ),
   });
 
   return toSummary(record);
@@ -538,19 +542,30 @@ export async function approveBorrower(id: string, actorId: string, actorDisplayN
     approvedAt: new Date().toISOString(),
   });
 
-  if (record.phone?.trim()) {
-    void notifyRegistrationApproved({
-      borrowerId: record.id,
-      borrowerName: record.fullName,
-      borrowerPhone: record.phone,
-      borrowerEmail: record.profile.email,
-      groupName: record.groupName || undefined,
-      nextStep:
-        'Next step: you will be assigned to a group and collector, then pay the admin fee before loan creation.',
-    });
+  const refreshed = (await getBorrower(id)) ?? record;
+  let collectorName: string | undefined;
+  if (refreshed.groupId && isDatabaseEnabled()) {
+    try {
+      const { getGroupDetail } = await import('../groups/service.js');
+      const group = await getGroupDetail(refreshed.groupId);
+      collectorName =
+        group.collector?.id && group.collector.id !== 'unassigned'
+          ? group.collector.fullName
+          : undefined;
+    } catch {
+      collectorName = undefined;
+    }
   }
+  void notifyRegistrationApproved({
+    borrowerId: refreshed.id,
+    borrowerName: refreshed.fullName,
+    borrowerPhone: refreshed.phone,
+    borrowerEmail: refreshed.profile.email,
+    groupName: refreshed.groupName || undefined,
+    collectorName,
+  });
 
-  return toSummary(record);
+  return toSummary(refreshed);
 }
 
 export async function rejectBorrower(

@@ -205,9 +205,18 @@ export async function emitScheduleChangedNotification(input: {
   borrowerEmail?: string;
   loanId: string;
   dueDate: string;
+  paymentDay?: string;
+  weeklyAmountPesewas?: number;
   note?: string;
 }): Promise<void> {
-  const body = `WILMS: Hi ${input.borrowerName}, your payment schedule changed. Next due date: ${input.dueDate}.${input.note ? ` ${input.note}` : ''}`;
+  const { buildPaymentDayChangedSmsBody } = await import('./templates.js');
+  const paymentDay = input.paymentDay?.trim() || 'your new payment day';
+  const weeklyAmountPesewas = input.weeklyAmountPesewas ?? 0;
+  const body = buildPaymentDayChangedSmsBody({
+    paymentDay,
+    weeklyAmountPesewas,
+    nextPaymentDate: input.dueDate,
+  });
   const { getSmsProvider } = await import('../sms/index.js');
   const { getSettings } = await import('../../modules/settings/service.js');
   const settings = await getSettings();
@@ -225,7 +234,7 @@ export async function emitScheduleChangedNotification(input: {
     if (acquired) {
       const provider = getSmsProvider();
       if (provider.isConfigured()) {
-        await provider.send({ to: input.borrowerPhone, body: body.slice(0, 160) });
+        await provider.send({ to: input.borrowerPhone, body });
         await markNotificationDeliveryStatus({
           dedupeKey,
           recipient: input.borrowerPhone,

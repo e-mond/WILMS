@@ -25,6 +25,8 @@ import {
   buildLoanDisbursedSmsBody,
   buildLoanDisbursedScheduleSmsBody,
   buildLoanFullyPaidEmail,
+  buildLoanCompletedSmsBody,
+  buildLoanCreatedSmsBody,
   buildLoanRejectedEmail,
   buildLoanRejectedSmsBody,
   buildLoanReminderEmail,
@@ -46,6 +48,7 @@ import {
   buildUserInvitationEmail,
   buildUserRoleChangedEmail,
   buildWelcomeEmail,
+  buildCollectorReassignedSmsBody,
 } from './templates.js';
 import { logMessageDelivery } from './delivery-log.js';
 import { normalizeGhanaPhone } from '../sms/normalize-phone.js';
@@ -578,6 +581,7 @@ export async function notifyRegistrationSubmitted(input: {
   borrowerPhone?: string;
   borrowerEmail?: string;
   officerUserId?: string;
+  reference?: string;
 }): Promise<void> {
   const settings = await getSettings();
 
@@ -585,7 +589,10 @@ export async function notifyRegistrationSubmitted(input: {
     await dispatchSms({
       event: 'REGISTRATION_SUBMITTED',
       to: input.borrowerPhone,
-      body: buildRegistrationSubmittedSmsBody({ borrowerName: input.borrowerName }),
+      body: buildRegistrationSubmittedSmsBody({
+        borrowerName: input.borrowerName,
+        reference: input.reference,
+      }),
       enabled: settings.smsNotificationsEnabled,
       borrowerId: input.borrowerId,
     });
@@ -772,11 +779,13 @@ export async function notifyLoanApproved(input: {
   borrowerPhone?: string;
   borrowerEmail?: string;
   amountPesewas: number;
+  adminFeePesewas?: number;
   loanId: string;
   loanDisplayId: string;
   collectorUserId?: string;
 }): Promise<void> {
   const settings = await getSettings();
+  const adminFeePesewas = input.adminFeePesewas ?? settings.adminFeePesewas;
 
   if (input.borrowerPhone) {
     await dispatchSms({
@@ -785,6 +794,7 @@ export async function notifyLoanApproved(input: {
       body: buildLoanApprovalSmsBody({
         borrowerName: input.borrowerName,
         amountPesewas: input.amountPesewas,
+        adminFeePesewas,
       }),
       enabled: settings.approvalSmsEnabled,
       borrowerId: input.borrowerId,
@@ -797,6 +807,7 @@ export async function notifyLoanApproved(input: {
       borrowerName: input.borrowerName,
       amountPesewas: input.amountPesewas,
       loanDisplayId: input.loanDisplayId,
+      adminFeePesewas,
     });
     await dispatchEmailWhenEnabled({
       event: 'LOAN_APPROVED',
@@ -862,6 +873,39 @@ export async function notifyLoanRejected(input: {
   }
 }
 
+export async function notifyLoanCreated(input: {
+  borrowerId: string;
+  borrowerName: string;
+  borrowerPhone?: string;
+  borrowerEmail?: string;
+  loanId: string;
+  loanDisplayId: string;
+}): Promise<void> {
+  const settings = await getSettings();
+  if (input.borrowerPhone) {
+    await dispatchSms({
+      event: 'LOAN_CREATED',
+      to: input.borrowerPhone,
+      body: buildLoanCreatedSmsBody({ borrowerName: input.borrowerName }),
+      enabled: settings.smsNotificationsEnabled,
+      borrowerId: input.borrowerId,
+      loanId: input.loanId,
+    });
+  }
+  if (input.borrowerEmail) {
+    await dispatchEmailWhenEnabled({
+      event: 'LOAN_CREATED',
+      to: input.borrowerEmail,
+      subject: 'WILMS loan application received',
+      text: `Dear ${input.borrowerName},\n\nYour loan application (${input.loanDisplayId}) has been created and submitted for approval.\n\n— WILMS`,
+      html: `<p>Dear ${input.borrowerName},</p><p>Your loan application (${input.loanDisplayId}) has been created and submitted for approval.</p>`,
+      borrowerId: input.borrowerId,
+      loanId: input.loanId,
+      category: 'loan',
+    });
+  }
+}
+
 export async function notifyLoanDisbursed(input: {
   borrowerId: string;
   borrowerName: string;
@@ -876,15 +920,23 @@ export async function notifyLoanDisbursed(input: {
   paymentDay?: string;
   totalWeeks?: number;
   firstDueDate?: string;
+  groupName?: string;
+  collectorName?: string;
 }): Promise<void> {
   const settings = await getSettings();
   const disbursedDate = input.disbursedDate ?? new Date().toISOString().slice(0, 10);
+  const firstPaymentDate = input.firstDueDate ?? disbursedDate;
 
   if (input.borrowerPhone) {
     await dispatchSms({
       event: 'LOAN_DISBURSED',
       to: input.borrowerPhone,
-      body: buildLoanDisbursedSmsBody(input),
+      body: buildLoanDisbursedSmsBody({
+        borrowerName: input.borrowerName,
+        loanDisplayId: input.loanDisplayId,
+        amountPesewas: input.amountPesewas,
+        firstPaymentDate,
+      }),
       enabled: settings.smsNotificationsEnabled,
       borrowerId: input.borrowerId,
       loanId: input.loanId,
@@ -902,6 +954,8 @@ export async function notifyLoanDisbursed(input: {
         body: buildLoanDisbursedScheduleSmsBody({
           borrowerName: input.borrowerName,
           loanDisplayId: input.loanDisplayId,
+          groupName: input.groupName?.trim() || 'your group',
+          collectorName: input.collectorName?.trim() || 'your collector',
           weeklyAmountPesewas: input.weeklyAmountPesewas,
           paymentDay: input.paymentDay,
           totalWeeks: input.totalWeeks,
@@ -977,8 +1031,26 @@ export async function notifyLoanFullyPaid(input: {
   loanId: string;
   loanDisplayId: string;
   totalPaidPesewas: number;
+  finalPaymentPesewas?: number;
   collectorUserId?: string;
 }): Promise<void> {
+  const settings = await getSettings();
+  const finalPayment = input.finalPaymentPesewas ?? input.totalPaidPesewas;
+
+  if (input.borrowerPhone) {
+    await dispatchSms({
+      event: 'LOAN_COMPLETED',
+      to: input.borrowerPhone,
+      body: buildLoanCompletedSmsBody({
+        borrowerName: input.borrowerName,
+        paymentAmountPesewas: finalPayment,
+      }),
+      enabled: settings.smsNotificationsEnabled,
+      borrowerId: input.borrowerId,
+      loanId: input.loanId,
+    });
+  }
+
   if (input.borrowerEmail) {
     const template = buildLoanFullyPaidEmail({
       borrowerName: input.borrowerName,
@@ -1007,6 +1079,26 @@ export async function notifyLoanFullyPaid(input: {
       loanId: input.loanId,
     });
   }
+}
+
+export async function notifyCollectorReassignedToBorrower(input: {
+  borrowerId: string;
+  borrowerName: string;
+  borrowerPhone?: string;
+  collectorName: string;
+}): Promise<void> {
+  const settings = await getSettings();
+  if (!input.borrowerPhone) return;
+  await dispatchSms({
+    event: 'COLLECTOR_REASSIGNED',
+    to: input.borrowerPhone,
+    body: buildCollectorReassignedSmsBody({
+      borrowerName: input.borrowerName,
+      collectorName: input.collectorName,
+    }),
+    enabled: settings.smsNotificationsEnabled,
+    borrowerId: input.borrowerId,
+  });
 }
 
 export async function notifyLoanDefault(input: {

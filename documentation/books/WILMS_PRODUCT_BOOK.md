@@ -441,20 +441,44 @@ Super Admin can force-logout active sessions for security incidents or personnel
 
 ### Channels
 
-- **In-app** — Notification inbox with read/unread state, role-aware filtering.
-- **Email** — Transactional emails for login alerts, invitations, expense reviews.
-- **SMS** — Field alerts and payment confirmations (provider-configured).
+- **SMS** — Primary borrower channel for the full lending lifecycle (registration through loan completion).
+- **Email** — Used for approvals, receipts, disbursement, missed payment, completion, and schedule changes. Optional or omitted where the channel matrix says so (for example, due-today and grace reminders).
+- **In-app** — Staff inbox (collectors, officers, Super Admin) with read state. Push mirrors in-app for users with a WILMS account.
+- **Push** — Mirrored from in-app via `sendPushToUser`.
+
+Borrowers do not hold portal user accounts; SMS is the borrower-facing channel.
+
+### Borrower lifecycle (authoritative)
+
+1. Registration submitted  
+2. Registration approved (group and collector assigned)  
+3. Loan created  
+4. Loan approved — **admin-fee instruction belongs here**  
+5. Admin fee recorded  
+6. Loan disbursed  
+7. Repayment schedule issued  
+8. Reminder one day before due date  
+9. Due today  
+10. Payment received (or multi-week receipt)  
+11. Missed payment  
+12. Grace-period reminder  
+13. Escalation  
+14. Loan completed  
+
+Collector reassignment, group reassignment, and payment-day changes notify the borrower when they occur.
+
+See `documentation/notifications/` for the SMS library, trigger matrix, and scheduler timing.
 
 ### Guarantees
 
-- Deduplication prevents duplicate notifications for the same event within a window.
+- Deduplication prevents duplicate notifications for the same event, recipient, and channel.
 - Quiet hours respect organisation settings for non-critical notifications.
 - Daily cron dispatch at 06:00 UTC via Vercel Cron (`/api/cron/notifications`).
 - Failed dispatch logged; retry on next cron cycle.
 
 ### Event types
 
-Login alerts, invitation accepted, expense submitted/reviewed, loan approved/rejected, reconciliation variance, overpayment review, ops incident alerts, maintenance window notices.
+Borrower lifecycle events above, plus staff events: login alerts, invitations, expense submitted/reviewed, reconciliation variance, overpayment review, ops incident alerts, maintenance window notices.
 
 ---
 

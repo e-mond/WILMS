@@ -383,14 +383,15 @@ async function postPayment(
   if (borrower) {
     const nextDueDate = await resolveNextDueDate(loan.id);
     const weeksRemaining = await resolveWeeksRemaining(loan.id);
-    for (const payment of result.payments) {
+    if (weeksCount > 1) {
+      const primaryPayment = result.payments[0]!;
       void emitPaymentConfirmedNotification({
-        paymentId: payment.id,
+        paymentId: primaryPayment.id,
         borrowerId: borrower.id,
         borrowerName: borrower.fullName,
         borrowerPhone: borrower.phone,
         borrowerEmail: borrower.profile?.email,
-        amountPesewas: weeklyAmount,
+        amountPesewas: input.amountPesewas,
         paymentDate: input.paymentDate,
         loanDisplayId: loan.displayId ?? loan.id,
         loanId: loan.id,
@@ -398,7 +399,26 @@ async function postPayment(
         weeksRemaining,
         nextDueDate,
         collectorUserId: input.collectorId,
+        weeksPaid: weeksCount,
       });
+    } else {
+      for (const payment of result.payments) {
+        void emitPaymentConfirmedNotification({
+          paymentId: payment.id,
+          borrowerId: borrower.id,
+          borrowerName: borrower.fullName,
+          borrowerPhone: borrower.phone,
+          borrowerEmail: borrower.profile?.email,
+          amountPesewas: weeklyAmount,
+          paymentDate: input.paymentDate,
+          loanDisplayId: loan.displayId ?? loan.id,
+          loanId: loan.id,
+          outstandingBalancePesewas: result.finalBalance,
+          weeksRemaining,
+          nextDueDate,
+          collectorUserId: input.collectorId,
+        });
+      }
     }
 
     if (result.finalBalance === 0) {
@@ -410,6 +430,7 @@ async function postPayment(
         loanId: loan.id,
         loanDisplayId: loan.displayId ?? loan.id,
         totalPaidPesewas: loan.amountPesewas,
+        finalPaymentPesewas: input.amountPesewas,
         collectorUserId: input.collectorId,
       });
     }

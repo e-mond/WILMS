@@ -1,5 +1,6 @@
 'use client';
 
+
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Input } from '@/components/ui/Input';
 import locationService from '@/services/locationService';
@@ -207,7 +208,7 @@ export function LocationAutocomplete({
         <ul
           id={`${listId}-listbox`}
           role="listbox"
-          className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md border border-border bg-surface shadow-lg"
+          className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-sm border border-border bg-card py-1 text-text-primary shadow-lg"
         >
           {hits.map((hit, index) => (
             <li
@@ -217,7 +218,9 @@ export function LocationAutocomplete({
               aria-selected={index === activeIndex}
               className={cn(
                 'cursor-pointer px-3 py-2 text-small',
-                index === activeIndex ? 'bg-primary/10 text-text-primary' : 'text-text-secondary',
+                index === activeIndex
+                  ? 'bg-brand-primary/15 text-text-primary'
+                  : 'text-text-secondary hover:bg-background hover:text-text-primary',
               )}
               onMouseDown={(event) => {
                 event.preventDefault();
@@ -226,7 +229,7 @@ export function LocationAutocomplete({
                 setOpen(false);
               }}
             >
-              <span className="font-semibold">{hit.name}</span>
+              <span className="font-semibold text-text-primary">{hit.name}</span>
               <span className="ml-2 text-text-muted">{hit.type.replaceAll('_', ' ')}</span>
             </li>
           ))}
