@@ -79,9 +79,9 @@ export function calculateStreakWeeks(
   let streak = 0;
   for (const key of weekKeysNewestFirst) {
     const ok =
-      weekHasCollection instanceof Set
-        ? weekHasCollection.has(key)
-        : Boolean(weekHasCollection.get(key));
+      weekHasCollection instanceof Map
+        ? Boolean(weekHasCollection.get(key))
+        : weekHasCollection.has(key);
     if (!ok) {
       break;
     }
