@@ -4,11 +4,40 @@ import { CurrencyAmount, DataTable } from '@/components/data-display';
 import { Badge } from '@/components/ui/Badge';
 import type { LoanPaymentLogEntry } from '@/types/loan';
 import { formatDisplayDate } from '@/utils/format-date';
-import { resolveDisbursementDisplayId, resolveCollectorDisplayId, resolvePaymentDisplayId } from '@/utils/entity-display-id';
+import {
+  resolveDisbursementDisplayId,
+  resolveCollectorStaffLabel,
+  resolvePaymentDisplayId,
+} from '@/utils/entity-display-id';
 
 export interface LoanPaymentLogTableProps {
   entries: LoanPaymentLogEntry[];
   detailed?: boolean;
+}
+
+function renderCollector(row: LoanPaymentLogEntry): string {
+  return resolveCollectorStaffLabel({
+    id: row.collectorId,
+    collectorLabel: row.collectorLabel,
+    fullName: row.collectorName,
+    collectorCode: row.collectorCode,
+  });
+}
+
+function renderGps(row: LoanPaymentLogEntry): string {
+  if (row.gpsSummary) {
+    return row.gpsSummary;
+  }
+  if (row.gpsExceptionReason) {
+    return `Unavailable — ${row.gpsExceptionReason}`;
+  }
+  if (row.gpsLatitude != null && row.gpsLongitude != null) {
+    const accuracy = row.gpsAccuracy != null ? ` ±${Math.round(row.gpsAccuracy)}m` : '';
+    const when = row.gpsCapturedAt ? ` · ${row.gpsCapturedAt}` : '';
+    const source = row.gpsSource ? ` · ${row.gpsSource}` : '';
+    return `${row.gpsLatitude.toFixed(6)}, ${row.gpsLongitude.toFixed(6)}${accuracy}${when}${source}`;
+  }
+  return row.gpsVerified ? 'Verified' : 'Not captured';
 }
 
 export function LoanPaymentLogTable({ entries, detailed = false }: LoanPaymentLogTableProps) {
@@ -36,7 +65,7 @@ export function LoanPaymentLogTable({ entries, detailed = false }: LoanPaymentLo
                 header: 'Week Number',
                 cell: (row) => (row.weekNumber ? `Week ${row.weekNumber}` : '—'),
               },
-              { id: 'collector', header: 'Collector', cell: (row) => resolveCollectorDisplayId({ id: row.collectorId }) },
+              { id: 'collector', header: 'Collector', cell: renderCollector },
               {
                 id: 'receipt',
                 header: 'Receipt Number',
@@ -45,8 +74,7 @@ export function LoanPaymentLogTable({ entries, detailed = false }: LoanPaymentLo
               {
                 id: 'gps',
                 header: 'GPS',
-                cell: (row) =>
-                  row.gpsSummary ?? (row.gpsVerified ? 'Verified' : 'Not verified'),
+                cell: renderGps,
               },
               {
                 id: 'status',
@@ -89,7 +117,7 @@ export function LoanPaymentLogTable({ entries, detailed = false }: LoanPaymentLo
                 header: 'Amount',
                 cell: (row) => <CurrencyAmount value={row.amountPesewas} />,
               },
-              { id: 'collector', header: 'Collector', cell: (row) => resolveCollectorDisplayId({ id: row.collectorId }) },
+              { id: 'collector', header: 'Collector', cell: renderCollector },
             ]
       }
     />

@@ -41,6 +41,8 @@ export interface ReconciliationSnapshot {
 export interface ReconciliationSummary {
   id?: string;
   collectorId: string;
+  /** Official printed collector identity. */
+  collectorLabel?: string;
   date: string;
   expectedPesewas: number;
   /** Live recomputed expected (schedule + payment-day). Prefer for open reviews when snapshot is stale. */
@@ -56,4 +58,14 @@ export interface ReconciliationSummary {
   reviewedById?: string;
   reviewedAt?: string;
   resolutionNotes?: string;
+  /** GPS captures for payments included in this reconciliation day. */
+  collectionGps?: Array<{
+    summary: string;
+    latitude?: number;
+    longitude?: number;
+    accuracy?: number;
+    capturedAt?: string;
+    source?: string;
+    exceptionReason?: string;
+  }>;
 }

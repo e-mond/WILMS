@@ -298,7 +298,7 @@ export function RiskFlagsPanel() {
             {exportDocument ? (
               <WilmsExportActions
                 document={exportDocument}
-                filenameBase="risk-flags"
+                filenameBase="WILMS_Risk_Flags"
                 showIcons
                 className="[&>button:first-child]:gap-wilms-2"
               />

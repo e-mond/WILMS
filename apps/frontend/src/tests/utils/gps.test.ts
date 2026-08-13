@@ -20,6 +20,8 @@ describe('collection GPS helpers', () => {
       capturedAt: '2026-08-13T12:00:00.000Z',
     };
     expect(isGpsException(gps)).toBe(true);
-    expect(formatGpsSummary(gps)).toBe('Unavailable — Indoor market');
+    expect(formatGpsSummary(gps)).toBe(
+      'Unavailable — Indoor market · 2026-08-13T12:00:00.000Z · exception',
+    );
   });
 });

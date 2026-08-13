@@ -49,11 +49,32 @@ export function resolveCollectorStaffLabel(collector: {
   collectorCode?: string | null;
   fullName?: string | null;
   displayName?: string | null;
+  /** Precomputed official label from the API. */
+  collectorLabel?: string | null;
 }): string {
+  if (collector.collectorLabel?.trim()) {
+    return collector.collectorLabel.trim();
+  }
+
+  const codeHint = collector.collectorCode ?? collector.displayId;
+  if (codeHint || collector.fullName || collector.displayName) {
+    return formatCollectorStaffLabel({
+      fullName: collector.fullName ?? collector.displayName,
+      collectorCode: codeHint,
+      staffId: collector.displayId,
+    });
+  }
+
+  if (collector.id && isReadableWilmsId(collector.id)) {
+    return formatCollectorStaffLabel({
+      fullName: 'Collector',
+      collectorCode: collector.id,
+    });
+  }
+
   return formatCollectorStaffLabel({
-    fullName: collector.fullName ?? collector.displayName,
-    collectorCode: collector.collectorCode ?? collector.displayId,
-    staffId: collector.displayId,
+    fullName: 'Collector',
+    sequence: 0,
   });
 }
 

@@ -133,9 +133,19 @@ export interface LoanPaymentLogEntry {
   amountPesewas: number;
   recordedAt: string;
   collectorId: string;
+  /** Official printed label, e.g. Kwame Mensah (COL-012). */
+  collectorLabel?: string;
+  collectorName?: string;
+  collectorCode?: string;
   weekNumber?: number;
   receiptNumber?: string;
   gpsVerified?: boolean;
   gpsSummary?: string;
+  gpsLatitude?: number;
+  gpsLongitude?: number;
+  gpsAccuracy?: number;
+  gpsCapturedAt?: string;
+  gpsExceptionReason?: string;
+  gpsSource?: string;
   paymentStatus?: 'CONFIRMED' | 'PENDING_SYNC';
 }

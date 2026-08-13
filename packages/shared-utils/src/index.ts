@@ -13,3 +13,8 @@ export {
   formatUserDisplayId,
   isReadableWilmsId,
 } from './display-ids';
+export {
+  formatGpsDisplaySummary,
+  isGpsFixDisplay,
+  type GpsDisplayInput,
+} from './gps-display';

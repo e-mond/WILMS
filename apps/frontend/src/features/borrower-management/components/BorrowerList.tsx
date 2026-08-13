@@ -208,7 +208,7 @@ export function BorrowerList() {
         actions={
           <ExportCsvButton
             label="Export"
-            filename="borrowers.csv"
+            filename="WILMS_Borrower_List.csv"
             reportType={WILMS_REPORT_TYPE.BORROWER_LIST}
             reportTitle="Borrower Directory Export"
             headers={['Borrower ID', 'Full Name', 'Phone Number', 'Group', 'Status']}

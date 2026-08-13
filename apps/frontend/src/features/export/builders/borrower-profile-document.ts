@@ -11,7 +11,7 @@ import {
   formatPercentForExport,
 } from '@/features/export/utils/formatters';
 import { resolveBorrowerRisk } from '@/utils/borrower-risk';
-import { resolveLoanDisplayId } from '@/utils/entity-display-id';
+import { resolveLoanDisplayId, resolveCollectorStaffLabel } from '@/utils/entity-display-id';
 import { resolveBorrowerDisplayId } from '@/utils/format-borrower-display-id';
 import { buildLocationHierarchyRows } from '@/utils/location-hierarchy';
 
@@ -33,7 +33,12 @@ function buildPaymentRows(paymentLog: LoanPaymentLogEntry[]): string[][] {
     formatExportDate(entry.recordedAt),
     formatPesewasForExport(entry.amountPesewas).replace('GHS ', ''),
     entry.weekNumber ? String(entry.weekNumber) : '—',
-    entry.collectorId,
+    entry.collectorLabel ??
+      resolveCollectorStaffLabel({
+        id: entry.collectorId,
+        fullName: entry.collectorName,
+        collectorCode: entry.collectorCode,
+      }),
     entry.receiptNumber ?? '—',
     entry.gpsSummary ?? (entry.gpsVerified ? 'Verified' : 'Not captured'),
     entry.paymentStatus ?? 'CONFIRMED',

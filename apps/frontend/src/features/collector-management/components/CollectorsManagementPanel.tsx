@@ -197,7 +197,7 @@ export function CollectorsManagementPanel() {
                   <ExportCsvButton
                     label="Export"
                     showDownloadIcon
-                    filename="collectors.csv"
+                    filename="WILMS_Collector_List.csv"
                     reportType={WILMS_REPORT_TYPE.COLLECTOR_LIST}
                     reportTitle="Collectors Management Export"
                     headers={[

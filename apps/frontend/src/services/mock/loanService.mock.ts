@@ -12,7 +12,10 @@ import { API_ERROR_CODE, ApiError } from '@/types/api';
 import type { CreateLoanInput } from '@/types/loan';
 import type { ILoanService } from '@/types/services';
 import { BORROWER_STATUS } from '@/types/borrower';
-import { formatDisbursementDisplayId, formatPaymentDisplayId } from '@wilms/shared-utils';
+import { formatDisbursementDisplayId, formatPaymentDisplayId, formatCollectorStaffLabel } from '@wilms/shared-utils';
+import { getCollectorDisplayName } from '@/services/mock/collector-display-name';
+import { formatGpsSummary } from '@/types/gps';
+import type { GpsCoordinates } from '@/types/gps';
 import {
   getBorrowerRegistryEntries,
   getBorrowerRegistryEntry,
@@ -329,25 +332,43 @@ const loanServiceMock: ILoanService = {
           transaction.type === TRANSACTION_TYPE.REPAYMENT ||
           transaction.type === TRANSACTION_TYPE.DISBURSEMENT,
       )
-      .map((transaction, index) => ({
-        id: transaction.id,
-        displayId:
-          transaction.type === TRANSACTION_TYPE.DISBURSEMENT
-            ? formatDisbursementDisplayId({
-                disbursedAt: transaction.recordedAt,
-                sequence: index + 1,
-              })
-            : formatPaymentDisplayId({ recordedAt: transaction.recordedAt, sequence: index + 1 }),
-        type: transaction.type as 'DISBURSEMENT' | 'REPAYMENT',
-        amountPesewas: transaction.amountPesewas,
-        recordedAt: transaction.recordedAt,
-        collectorId: transaction.collectorId,
-        weekNumber: transaction.type === TRANSACTION_TYPE.REPAYMENT ? index + 1 : undefined,
-        receiptNumber:
-          transaction.type === TRANSACTION_TYPE.REPAYMENT ? `RCP-${transaction.id.slice(-6)}` : undefined,
-        gpsVerified: true,
-        paymentStatus: 'CONFIRMED' as const,
-      }))
+      .map((transaction, index) => {
+        const collectorName = getCollectorDisplayName(transaction.collectorId);
+        const collectorCode =
+          transaction.collectorId === 'user-collector' ? 'COL-012' : 'COL-001';
+        const collectorLabel = formatCollectorStaffLabel({
+          fullName: collectorName,
+          collectorCode,
+        });
+        const gps = (transaction as { gps?: GpsCoordinates }).gps;
+        return {
+          id: transaction.id,
+          displayId:
+            transaction.type === TRANSACTION_TYPE.DISBURSEMENT
+              ? formatDisbursementDisplayId({
+                  disbursedAt: transaction.recordedAt,
+                  sequence: index + 1,
+                })
+              : formatPaymentDisplayId({ recordedAt: transaction.recordedAt, sequence: index + 1 }),
+          type: transaction.type as 'DISBURSEMENT' | 'REPAYMENT',
+          amountPesewas: transaction.amountPesewas,
+          recordedAt: transaction.recordedAt,
+          collectorId: transaction.collectorId,
+          collectorName,
+          collectorCode,
+          collectorLabel,
+          weekNumber: transaction.type === TRANSACTION_TYPE.REPAYMENT ? index + 1 : undefined,
+          receiptNumber:
+            transaction.type === TRANSACTION_TYPE.REPAYMENT
+              ? `RCP-${transaction.id.slice(-6)}`
+              : undefined,
+          gpsVerified: Boolean(gps && !('unavailable' in gps && gps.unavailable)),
+          gpsSummary: formatGpsSummary(gps) === 'Not captured' && transaction.type === 'REPAYMENT'
+            ? '5.603700, -0.187000 ±12m · device'
+            : formatGpsSummary(gps),
+          paymentStatus: 'CONFIRMED' as const,
+        };
+      })
       .sort((left, right) => right.recordedAt.localeCompare(left.recordedAt));
   },
 

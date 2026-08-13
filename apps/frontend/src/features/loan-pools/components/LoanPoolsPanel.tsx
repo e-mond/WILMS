@@ -228,7 +228,7 @@ export function LoanPoolsPanel() {
             <ExportCsvButton
               label="Export"
               showDownloadIcon
-              filename="loan-pools.csv"
+              filename="WILMS_Loan_Pool_List.csv"
               reportType={WILMS_REPORT_TYPE.LOAN_POOL}
               reportTitle="Loan Pools Export"
               headers={[

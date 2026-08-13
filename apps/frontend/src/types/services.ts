@@ -314,6 +314,7 @@ export interface IOverpaymentReviewService {
 export interface ReconciliationSummary {
   id?: string;
   collectorId: string;
+  collectorLabel?: string;
   date: string;
   expectedPesewas: number;
   liveExpectedPesewas?: number;
@@ -328,6 +329,15 @@ export interface ReconciliationSummary {
   reviewedById?: string;
   reviewedAt?: string;
   resolutionNotes?: string;
+  collectionGps?: Array<{
+    summary: string;
+    latitude?: number;
+    longitude?: number;
+    accuracy?: number;
+    capturedAt?: string;
+    source?: string;
+    exceptionReason?: string;
+  }>;
 }
 
 export interface ReviewReconciliationInput {

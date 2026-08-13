@@ -7,6 +7,7 @@ import * as reconciliationRepo from '../../repositories/reconciliation.repositor
 import { isDatabaseEnabled } from '../../db/client.js';
 import { decimalToPesewas } from '../../domain/money.js';
 import { isLoanDueOnDate, localIsoDate, resolveNextCollectionDueDate } from '../../domain/reconciliation/weekday.js';
+import { formatGpsDisplaySummary } from '@wilms/shared-utils';
 
 export interface CollectorDashboardSummary {
   date: string;
@@ -60,6 +61,7 @@ export interface CollectorDashboard {
     amountPesewas: number;
     recordedAt: string;
     status: 'COLLECTED' | 'PENDING' | 'MISSED';
+    gpsSummary?: string;
   }>;
   stats: {
     paymentsRecorded: number;
@@ -357,6 +359,10 @@ export async function getCollectorDashboard(
       amountPesewas: payment.amountPesewas,
       recordedAt: payment.recordedAt,
       status: 'COLLECTED' as const,
+      gpsSummary: formatGpsDisplaySummary({
+        ...payment.gps,
+        source: payment.gps?.unavailable ? 'exception' : payment.gps ? 'device' : undefined,
+      }),
     };
   });
 
