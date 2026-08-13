@@ -48,6 +48,16 @@ const DOC_MANIFEST = [
   { src: 'books/BOARD_PRESENTATION.md', output: 'BOARD_PRESENTATION', title: 'Board Presentation' },
   { src: 'books/PROCUREMENT_PACK.md', output: 'PROCUREMENT_PACK', title: 'Procurement Pack' },
   { src: 'books/IMPLEMENTATION_GUIDE.md', output: 'IMPLEMENTATION_GUIDE', title: 'Implementation Guide' },
+  {
+    src: 'release/WILMS_v1.8.0_FINAL_PRODUCTION_RELEASE_REPORT.md',
+    output: 'WILMS_v1.8.0_FINAL_PRODUCTION_RELEASE_REPORT',
+    title: 'WILMS v1.8.0 Final Production Release Report',
+  },
+  {
+    src: 'release/MIGRATION_0044_VERIFICATION.md',
+    output: 'MIGRATION_0044_VERIFICATION',
+    title: 'Migration 0044 Verification',
+  },
 ];
 
 /**

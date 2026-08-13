@@ -242,6 +242,8 @@ Outputs in `documentation/pdf/` and `documentation/docx/`.
 
 - Apply migration `0044_v180_borrower_update_requests.sql` before using borrower update requests.
 - Review **Pending borrower update requests** daily (`/officer/borrower-updates` or `/borrower-updates`).
+- Migration `0044` (`borrower_update_requests`) is applied in production — see `documentation/release/MIGRATION_0044_VERIFICATION.md`.
+- Final production release evidence: `documentation/release/WILMS_v1.8.0_FINAL_PRODUCTION_RELEASE_REPORT.md`.
 - If field GPS fails, collectors must record a reason; audit action `collection.gps-exception`.
 - Disable SMS only for a confirmed provider outage (`smsNotificationsEnabled`).
 

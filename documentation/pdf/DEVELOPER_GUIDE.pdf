@@ -37,7 +37,7 @@ BT
 12.6499999999999986 TL
 1. g
 233.17999999999995 728.5041732283464171 Td
-(Developer Guide — v1.7.3) Tj
+(Developer Guide — v1.8.0) Tj
 ET
 BT
 /F2 14 Tf
@@ -220,7 +220,7 @@ endobj
 endobj
 6 0 obj
 <<
-/Length 4436
+/Length 4346
 >>
 stream
 0.5670000000000001 w
@@ -266,13 +266,49 @@ BT
 13.7999999999999989 TL
 0.059 0.431 0.337 rg
 39.6850393700787407 651.9687401574802834 Td
-(5. Adding a domain module) Tj
+(4a. Location master) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 629.291574803149615 Td
+(npm run db:apply:location-master -w @wilms/domain npm run db:apply:ghana-hierarchy -w @wilms/domain npm run) Tj
+T* (seed:ghana-hierarchy -w @wilms/domain npm run db:backfill:locations -w @wilms/domain) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 589.6065354330708033 Td
+(Safe transactional reset \(keeps users and RBAC\):) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 564.0947244094487587 Td
+(WILMS_CONFIRM_DB_RESET=YES npm run db:reset:keep-users -w @wilms/domain) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 538.5829133858267141 Td
+(See documentation/location/.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 513.0711023622046696 Td
+(5. Adding a domain module) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 490.3939370078739444 Td
 (1. Create module directory: packages/domain/src/modules/my-module/ 2. Add routes.ts with Express router 3. Add) Tj
 T* (service.ts with business logic 4. Register router in packages/domain/src/http/app.ts 5. Add frontend service wrapper) Tj
 T* (in apps/frontend/src/services/ 6. Add tests in packages/domain/src/tests/) Tj
@@ -281,14 +317,14 @@ BT
 /F2 11 Tf
 12.6499999999999986 TL
 0.059 0.431 0.337 rg
-39.6850393700787407 575.4333070866141497 Td
+39.6850393700787407 436.5356692913385359 Td
 (Route pattern) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 552.7561417322833677 Td
+39.6850393700787407 413.8585039370078107 Td
 (export const myRouter = Router\(\); myRouter.use\(requireAuth\); myRouter.get\('/my-resource',) Tj
 T* (requirePermission\(PERMISSION.VIEW_REPORTS\),   asyncHandler\(async \(req, res\) => {     sendData\(res, await) Tj
 T* (myService.list\(\)\);   }\), \);) Tj
@@ -297,56 +333,56 @@ BT
 /F2 12 Tf
 13.7999999999999989 TL
 0.059 0.431 0.337 rg
-39.6850393700787407 498.8978740157479592 Td
+39.6850393700787407 360.0002362204724022 Td
 (6. Authentication in development) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 476.2207086614172908 Td
+39.6850393700787407 337.323070866141677 Td
 (Demo users in packages/domain/src/seed/demo-users.ts:) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 450.7088976377952463 Td
+39.6850393700787407 311.8112598425195756 Td
 (| Email | Password | Role |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 425.1970866141731449 Td
+39.6850393700787407 286.2994488188975311 Td
 (|-------|----------|------|) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 399.6852755905511003 Td
+39.6850393700787407 260.7876377952754865 Td
 (| admin@wilms.demo | DemoAdmin1! | Super Admin |) Tj
 ET
 BT
 /F2 12 Tf
 13.7999999999999989 TL
 0.059 0.431 0.337 rg
-39.6850393700787407 374.1734645669290558 Td
+39.6850393700787407 235.2758267716534419 Td
 (7. Database) Tj
 ET
 BT
 /F2 11 Tf
 12.6499999999999986 TL
 0.059 0.431 0.337 rg
-39.6850393700787407 351.4962992125983874 Td
+39.6850393700787407 212.5986614173227736 Td
 (Migrations) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 328.8191338582676053 Td
+39.6850393700787407 189.9214960629919915 Td
 (npm run db:generate -w @wilms/domain  # Generate from schema changes npm run db:migrate -w @wilms/domain  ) Tj
 T* (# Apply migrations npm run verify:migrations -w @wilms/api) Tj
 ET
@@ -354,59 +390,22 @@ BT
 /F2 11 Tf
 12.6499999999999986 TL
 0.059 0.431 0.337 rg
-39.6850393700787407 289.1340944881889072 Td
+39.6850393700787407 150.2364566929132934 Td
 (Schema) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 266.4569291338582389 Td
+39.6850393700787407 127.559291338582625 Td
 (Drizzle schema in packages/domain/src/db/schema/. Money columns as integer pesewas.) Tj
 ET
 BT
 /F2 12 Tf
 13.7999999999999989 TL
 0.059 0.431 0.337 rg
-39.6850393700787407 240.9451181102361943 Td
+39.6850393700787407 102.0474803149605805 Td
 (8. Testing) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 218.2679527559054122 Td
-(npm run test                    # Frontend unit tests \(sharded\) npm run test -w @wilms/domain   # Domain unit tests npm) Tj
-T* (run test:e2e                # Playwright E2E npm run smoke:rbac              # RBAC smoke npm run verify:api-integrity    #) Tj
-T* (Route registration) Tj
-ET
-BT
-/F2 12 Tf
-13.7999999999999989 TL
-0.059 0.431 0.337 rg
-39.6850393700787407 164.4096850393699469 Td
-(9. Linting and type checking) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 141.7325196850392786 Td
-(npm run lint npm run type-check npm run verify:version) Tj
-ET
-BT
-/F2 12 Tf
-13.7999999999999989 TL
-0.059 0.431 0.337 rg
-39.6850393700787407 116.220708661417234 Td
-(10. Frontend conventions) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 93.5435433070865656 Td
-(• App Router pages in apps/frontend/src/app/) Tj
 ET
 BT
 /F1 7 Tf
@@ -427,7 +426,7 @@ endobj
 endobj
 8 0 obj
 <<
-/Length 2765
+/Length 3926
 >>
 stream
 0.5670000000000001 w
@@ -437,125 +436,221 @@ BT
 8.0499999999999989 TL
 0.361 g
 39.6850393700787407 785.1970866141732586 Td
-(• Feature modules in apps/frontend/src/features/) Tj
+(npm run test                    # Frontend unit tests \(sharded\) npm run test -w @wilms/domain   # Domain unit tests npm) Tj
+T* (run test:e2e                # Playwright E2E npm run smoke:rbac              # RBAC smoke npm run verify:api-integrity    #) Tj
+T* (Route registration) Tj
 ET
 BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 759.6852755905511003 Td
-(• Shared UI in apps/frontend/src/components/ui/) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 734.1734645669291695 Td
-(• API client in apps/frontend/src/lib/apiClient.ts) Tj
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 731.3388188976377933 Td
+(9. Linting and type checking) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 708.6616535433070112 Td
-(• Role protection via middleware.ts and RoleGuard) Tj
+(npm run lint npm run type-check npm run verify:version) Tj
 ET
 BT
 /F2 12 Tf
 13.7999999999999989 TL
 0.059 0.431 0.337 rg
 39.6850393700787407 683.1498425196850803 Td
-(11. Financial code rules) Tj
+(10. Frontend conventions) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 660.4726771653542983 Td
-(Do not modify without explicit approval:) Tj
+(• App Router pages in apps/frontend/src/app/) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 634.9608661417322537 Td
-(• Pesewas integer money handling) Tj
+(• Feature modules in apps/frontend/src/features/) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 609.4490551181102092 Td
-(• Pool ledger formulas) Tj
+(• Shared UI in apps/frontend/src/components/ui/) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 583.9372440944881646 Td
-(• Payment immutability rules) Tj
+(• API client in apps/frontend/src/lib/apiClient.ts) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 558.42543307086612 Td
-(• Admin fee enforcement) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 532.9136220472440755 Td
-(• Reconciliation logic) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 507.4018110236219741 Td
-(See docs/FINANCIAL_MODEL.md.) Tj
+(• Role protection via middleware.ts and RoleGuard) Tj
 ET
 BT
 /F2 12 Tf
 13.7999999999999989 TL
 0.059 0.431 0.337 rg
-39.6850393700787407 481.8899999999999295 Td
-(12. Documentation) Tj
+39.6850393700787407 532.9136220472440755 Td
+(11. Financial code rules) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 510.2364566929133503 Td
+(Do not modify without explicit approval:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 484.7246456692913057 Td
+(• Pesewas integer money handling) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 459.2128346456692611 Td
-(Official library: documentation/. Generate PDF/DOCX:) Tj
+(• Pool ledger formulas) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 433.7010236220471597 Td
-(npm run docs:generate) Tj
+(• Payment immutability rules) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 408.1892125984251152 Td
-(Architecture hub: docs/. Update docs/architecture/progress-tracker.md after meaningful changes.) Tj
-ET
-BT
-/F2 12 Tf
-13.7999999999999989 TL
-0.059 0.431 0.337 rg
-39.6850393700787407 382.6774015748030706 Td
-(13. Deployment) Tj
+(• Admin fee enforcement) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 360.0002362204724022 Td
+39.6850393700787407 382.6774015748030706 Td
+(• Reconciliation logic) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 357.1655905511810261 Td
+(See docs/FINANCIAL_MODEL.md.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 331.6537795275589815 Td
+(12. Documentation) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 308.9766141732283131 Td
+(Official library: documentation/. Generate PDF/DOCX:) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 283.4648031496062686 Td
+(npm run docs:generate) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 257.952992125984224 Td
+(Architecture hub: docs/. Update docs/architecture/progress-tracker.md after meaningful changes.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 232.4411811023621794 Td
+(Market-readiness notes \(v1.8.0\):) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 206.9293700787401349 Td
+(• Guarantor eligibility: packages/domain/src/modules/borrowers/guarantor-eligibility.ts) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 181.4175590551179766 Td
+(• Display IDs: packages/shared-utils/src/display-ids.ts) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 155.9057480314959321 Td
+(• Borrower updates: packages/domain/src/modules/borrower-updates/) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 130.3939370078738875 Td
+(• Migration: 0044_v180_borrower_update_requests.sql) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 104.882125984251843 Td
+(13. Deployment) Tj
+ET
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 22.6771653543306684 Td
+(CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.) Tj
+ET
+endstream
+endobj
+9 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 10 0 R
+>>
+endobj
+10 0 obj
+<<
+/Length 677
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 785.1970866141732586 Td
 (Production deploys via Vercel on merge. Environment variables configured in Vercel dashboard. See) Tj
 T* (documentation/operations/OPERATIONS_MANUAL.md.) Tj
 ET
@@ -563,7 +658,7 @@ BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 320.3151968503935905 Td
+39.6850393700787407 745.5120472440944468 Td
 (CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping) Tj
 T* (only.) Tj
 ET
@@ -578,11 +673,11 @@ endstream
 endobj
 1 0 obj
 <</Type /Pages
-/Kids [3 0 R 5 0 R 7 0 R ]
-/Count 3
+/Kids [3 0 R 5 0 R 7 0 R 9 0 R ]
+/Count 4
 >>
 endobj
-9 0 obj
+11 0 obj
 <<
 /Type /Font
 /BaseFont /Helvetica
@@ -592,7 +687,7 @@ endobj
 /LastChar 255
 >>
 endobj
-10 0 obj
+12 0 obj
 <<
 /Type /Font
 /BaseFont /Helvetica-Bold
@@ -602,7 +697,7 @@ endobj
 /LastChar 255
 >>
 endobj
-11 0 obj
+13 0 obj
 <<
 /Type /Font
 /BaseFont /Helvetica-Oblique
@@ -612,7 +707,7 @@ endobj
 /LastChar 255
 >>
 endobj
-12 0 obj
+14 0 obj
 <<
 /Type /Font
 /BaseFont /Helvetica-BoldOblique
@@ -622,7 +717,7 @@ endobj
 /LastChar 255
 >>
 endobj
-13 0 obj
+15 0 obj
 <<
 /Type /Font
 /BaseFont /Courier
@@ -632,7 +727,7 @@ endobj
 /LastChar 255
 >>
 endobj
-14 0 obj
+16 0 obj
 <<
 /Type /Font
 /BaseFont /Courier-Bold
@@ -642,7 +737,7 @@ endobj
 /LastChar 255
 >>
 endobj
-15 0 obj
+17 0 obj
 <<
 /Type /Font
 /BaseFont /Courier-Oblique
@@ -652,7 +747,7 @@ endobj
 /LastChar 255
 >>
 endobj
-16 0 obj
+18 0 obj
 <<
 /Type /Font
 /BaseFont /Courier-BoldOblique
@@ -662,7 +757,7 @@ endobj
 /LastChar 255
 >>
 endobj
-17 0 obj
+19 0 obj
 <<
 /Type /Font
 /BaseFont /Times-Roman
@@ -672,7 +767,7 @@ endobj
 /LastChar 255
 >>
 endobj
-18 0 obj
+20 0 obj
 <<
 /Type /Font
 /BaseFont /Times-Bold
@@ -682,7 +777,7 @@ endobj
 /LastChar 255
 >>
 endobj
-19 0 obj
+21 0 obj
 <<
 /Type /Font
 /BaseFont /Times-Italic
@@ -692,7 +787,7 @@ endobj
 /LastChar 255
 >>
 endobj
-20 0 obj
+22 0 obj
 <<
 /Type /Font
 /BaseFont /Times-BoldItalic
@@ -702,7 +797,7 @@ endobj
 /LastChar 255
 >>
 endobj
-21 0 obj
+23 0 obj
 <<
 /Type /Font
 /BaseFont /ZapfDingbats
@@ -711,7 +806,7 @@ endobj
 /LastChar 255
 >>
 endobj
-22 0 obj
+24 0 obj
 <<
 /Type /Font
 /BaseFont /Symbol
@@ -724,32 +819,32 @@ endobj
 <<
 /ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
 /Font <<
-/F1 9 0 R
-/F2 10 0 R
-/F3 11 0 R
-/F4 12 0 R
-/F5 13 0 R
-/F6 14 0 R
-/F7 15 0 R
-/F8 16 0 R
-/F9 17 0 R
-/F10 18 0 R
-/F11 19 0 R
-/F12 20 0 R
-/F13 21 0 R
-/F14 22 0 R
+/F1 11 0 R
+/F2 12 0 R
+/F3 13 0 R
+/F4 14 0 R
+/F5 15 0 R
+/F6 16 0 R
+/F7 17 0 R
+/F8 18 0 R
+/F9 19 0 R
+/F10 20 0 R
+/F11 21 0 R
+/F12 22 0 R
+/F13 23 0 R
+/F14 24 0 R
 >>
 /XObject <<
 >>
 >>
 endobj
-23 0 obj
+25 0 obj
 <<
 /Producer (jsPDF 4.2.1)
-/CreationDate (D:20260807180738-00'00')
+/CreationDate (D:20260813155505-00'00')
 >>
 endobj
-24 0 obj
+26 0 obj
 <<
 /Type /Catalog
 /Pages 1 0 R
@@ -758,39 +853,41 @@ endobj
 >>
 endobj
 xref
-0 25
+0 27
 0000000000 65535 f 
-0000011318 00000 n 
-0000013151 00000 n 
+0000013256 00000 n 
+0000015096 00000 n 
 0000000015 00000 n 
 0000000152 00000 n 
 0000003739 00000 n 
 0000003876 00000 n 
-0000008364 00000 n 
-0000008501 00000 n 
-0000011387 00000 n 
-0000011512 00000 n 
-0000011643 00000 n 
-0000011777 00000 n 
-0000011915 00000 n 
-0000012039 00000 n 
-0000012168 00000 n 
-0000012300 00000 n 
-0000012436 00000 n 
-0000012564 00000 n 
-0000012691 00000 n 
-0000012820 00000 n 
-0000012953 00000 n 
-0000013055 00000 n 
-0000013403 00000 n 
-0000013489 00000 n 
+0000008274 00000 n 
+0000008411 00000 n 
+0000012389 00000 n 
+0000012527 00000 n 
+0000013331 00000 n 
+0000013457 00000 n 
+0000013588 00000 n 
+0000013722 00000 n 
+0000013860 00000 n 
+0000013984 00000 n 
+0000014113 00000 n 
+0000014245 00000 n 
+0000014381 00000 n 
+0000014509 00000 n 
+0000014636 00000 n 
+0000014765 00000 n 
+0000014898 00000 n 
+0000015000 00000 n 
+0000015349 00000 n 
+0000015435 00000 n 
 trailer
 <<
-/Size 25
-/Root 24 0 R
-/Info 23 0 R
-/ID [ <366DB3AB6B9B9547FB2AE880B02C6EE5> <366DB3AB6B9B9547FB2AE880B02C6EE5> ]
+/Size 27
+/Root 26 0 R
+/Info 25 0 R
+/ID [ <5C762C5B297EB15E223DE7108CEF28E8> <5C762C5B297EB15E223DE7108CEF28E8> ]
 >>
 startxref
-13593
+15539
 %%EOF
