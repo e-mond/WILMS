@@ -535,6 +535,8 @@ Task-oriented view for daily operations:
 
 Collectors management shows live assigned borrower counts, period trend (↑↓→), collection streaks, and a rolling six-month performance chart. The Borrowers sidebar badge uses the same active-borrower count as the Borrowers directory.
 
+Post-release hotfix (PR #204, 13 August 2026): production collector/borrower/dashboard metric stubs replaced with live assignment and payment sources. See `documentation/release/v1.8.0-post-release-dashboard-fix.md`.
+
 ### Executive intelligence (`/executive`)
 
 Board-grade presentation for leadership:
