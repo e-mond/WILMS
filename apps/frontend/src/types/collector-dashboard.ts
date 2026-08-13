@@ -58,6 +58,7 @@ export interface CollectorRecentPayment {
   amountPesewas: number;
   recordedAt: string;
   status: CollectorPaymentStatus;
+  gpsSummary?: string;
 }
 
 export interface CollectorDashboardStats {

@@ -1,4 +1,5 @@
 import type { PaymentRecord } from '../../db/store.js';
+import { formatGpsDisplaySummary } from '@wilms/shared-utils';
 
 export interface FinancialLedgerReportParams {
   fromDate?: string;
@@ -13,6 +14,7 @@ export interface FinancialLedgerReportRow {
   amountPesewas: number;
   collectorId: string;
   recordedAt: string;
+  gpsSummary?: string;
 }
 
 export interface FinancialLedgerReport {
@@ -46,6 +48,10 @@ export function buildFinancialLedgerReport(
       amountPesewas: payment.amountPesewas,
       collectorId: payment.collectorId,
       recordedAt: payment.recordedAt,
+      gpsSummary: formatGpsDisplaySummary({
+        ...payment.gps,
+        source: payment.gps?.unavailable ? 'exception' : payment.gps ? 'device' : undefined,
+      }),
     }));
 
   return {

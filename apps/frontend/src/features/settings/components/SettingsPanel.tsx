@@ -116,7 +116,7 @@ export function SettingsPanel() {
               <div className="flex justify-end">
                 <WilmsExportActions
                   document={exportDocument}
-                  filenameBase="system-settings"
+                  filenameBase="WILMS_System_Settings"
                   showIcons
                   permissions={[]}
                 />

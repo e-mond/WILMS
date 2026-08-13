@@ -40,6 +40,13 @@ export interface DailyCollectionReportRow {
   collectedPesewas: number;
   variancePesewas: number;
   recordedAt?: string;
+  gpsSummary?: string;
+  gpsLatitude?: number;
+  gpsLongitude?: number;
+  gpsAccuracy?: number;
+  gpsCapturedAt?: string;
+  gpsExceptionReason?: string;
+  gpsSource?: string;
 }
 
 export interface DailyCollectionReport {
@@ -108,6 +115,7 @@ export interface FinancialLedgerReportRow {
   amountPesewas: number;
   collectorId: string;
   recordedAt: string;
+  gpsSummary?: string;
 }
 
 export interface FinancialLedgerReport {

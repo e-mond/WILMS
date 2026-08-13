@@ -55,7 +55,7 @@ function GroupRiskReportContent({
         actions={
           <ExportCsvButton
             label="Export"
-            filename="group-risk-report.csv"
+            filename="WILMS_Group_Risk_Report.csv"
             reportType={WILMS_REPORT_TYPE.GROUP_RISK}
             reportTitle="Group Risk Report"
             headers={CSV_HEADERS}

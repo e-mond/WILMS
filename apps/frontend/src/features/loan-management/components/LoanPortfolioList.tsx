@@ -203,7 +203,7 @@ export function LoanPortfolioList() {
           <>
             <ExportCsvButton
               label="Export"
-              filename="loan-portfolio.csv"
+              filename="WILMS_Loan_Portfolio_Report.csv"
               reportType={WILMS_REPORT_TYPE.LOAN_PORTFOLIO}
               reportTitle="Loan Portfolio Export"
               headers={[

@@ -38,6 +38,8 @@ import * as scheduleRepo from '../../repositories/loan-schedule.repository.js';
 import * as reconciliationHistoryRepo from '../../repositories/reconciliation-history.repository.js';
 import * as reconciliationRepo from '../../repositories/reconciliation.repository.js';
 import { listAdminFeesForCollectorOnDate } from '../../db/persistence.js';
+import * as userRepo from '../../repositories/user.repository.js';
+import { formatCollectorStaffLabel, formatGpsDisplaySummary } from '@wilms/shared-utils';
 
 const AUDIT_ACTION = {
   RECONCILIATION_SUBMITTED: 'reconciliation.submitted',
@@ -178,6 +180,54 @@ async function withLiveExpected(summary: ReconciliationSummary): Promise<Reconci
   }
 }
 
+async function withCollectionMetadata(
+  summary: ReconciliationSummary,
+): Promise<ReconciliationSummary> {
+  const withExpected = await withLiveExpected(summary);
+
+  try {
+    const collectors = await userRepo.listCollectors();
+    const match = collectors.find(({ user }) => user.id === summary.collectorId);
+    const collectorLabel = match
+      ? formatCollectorStaffLabel({
+          fullName: match.user.displayName,
+          collectorCode: match.collector?.collectorCode,
+          staffId: match.user.staffId,
+        })
+      : formatCollectorStaffLabel({
+          fullName: (await userRepo.getUserById(summary.collectorId))?.displayName ?? 'Collector',
+          sequence: 0,
+        });
+
+    const payments = await paymentRepo.listPaymentsForDate(summary.date, {
+      collectorId: summary.collectorId,
+    });
+    const collectionGps = payments.map((payment) => {
+      const gps = payment.gps ?? {};
+      return {
+        summary: formatGpsDisplaySummary({
+          ...gps,
+          source: gps.unavailable ? 'exception' : 'device',
+        }),
+        latitude: gps.latitude,
+        longitude: gps.longitude,
+        accuracy: gps.accuracy ?? gps.accuracyMeters,
+        capturedAt: gps.capturedAt,
+        source: gps.unavailable ? 'exception' : 'device',
+        exceptionReason: gps.unavailable ? gps.reason : undefined,
+      };
+    });
+
+    return {
+      ...withExpected,
+      collectorLabel,
+      collectionGps,
+    };
+  } catch {
+    return withExpected;
+  }
+}
+
 export async function getReconciliationSummary(
   collectorId: string,
   reconciliationDate: string,
@@ -190,7 +240,7 @@ export async function getReconciliationSummary(
   );
 
   if (existing) {
-    return withLiveExpected(mapReconciliationRowToSummary(existing));
+    return withCollectionMetadata(mapReconciliationRowToSummary(existing));
   }
 
   const { dueLoans, payments, scheduleDues, adminFeePesewas } = await loadReconciliationInputs(
@@ -210,7 +260,7 @@ export async function getReconciliationSummary(
     submittedAt: new Date(),
   });
 
-  return mapSnapshotToSummary(preview, false);
+  return withCollectionMetadata(mapSnapshotToSummary(preview, false));
 }
 
 export async function getReconciliationById(id: string): Promise<ReconciliationSummary | null> {
@@ -220,7 +270,7 @@ export async function getReconciliationById(id: string): Promise<ReconciliationS
   if (!row) {
     return null;
   }
-  return withLiveExpected(mapReconciliationRowToSummary(row));
+  return withCollectionMetadata(mapReconciliationRowToSummary(row));
 }
 
 export async function listReconciliations(
@@ -233,7 +283,7 @@ export async function listReconciliations(
   );
 
   const summaries = rows.map((row) => mapReconciliationRowToSummary(row));
-  return Promise.all(summaries.map((summary) => withLiveExpected(summary)));
+  return Promise.all(summaries.map((summary) => withCollectionMetadata(summary)));
 }
 
 export async function getReconciliationHistory(reconciliationId: string) {

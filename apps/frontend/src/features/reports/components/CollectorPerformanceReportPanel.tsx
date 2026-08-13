@@ -56,7 +56,7 @@ function CollectorPerformanceReportContent({
         actions={
           <ExportCsvButton
             label="Export"
-            filename="collector-performance.csv"
+            filename="WILMS_Collector_Performance_Report.csv"
             reportType={WILMS_REPORT_TYPE.COLLECTOR_PERFORMANCE}
             reportTitle="Collector Performance Report"
             headers={CSV_HEADERS}

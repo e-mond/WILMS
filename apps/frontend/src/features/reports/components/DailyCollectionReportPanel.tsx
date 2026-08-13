@@ -30,6 +30,7 @@ const CSV_HEADERS = [
   'Expected (GHS)',
   'Collected (GHS)',
   'Variance (GHS)',
+  'GPS',
   'Recorded At',
 ];
 
@@ -79,6 +80,7 @@ export function DailyCollectionReportPanel() {
         formatPesewasForCsv(row.expectedPesewas),
         formatPesewasForCsv(row.collectedPesewas),
         formatPesewasForCsv(row.variancePesewas),
+        row.gpsSummary ?? 'Not captured',
         row.recordedAt ?? '—',
       ]),
     [data?.rows],
@@ -163,7 +165,7 @@ export function DailyCollectionReportPanel() {
         actions={
           <ExportCsvButton
             label="Export"
-            filename={`daily-collection-${data.summary.date}.csv`}
+            filename={`WILMS_Group_Collection_Report_${data.summary.date}.csv`}
             reportType={WILMS_REPORT_TYPE.DAILY_COLLECTION}
             reportTitle={`Daily Collection Report — ${data.summary.date}`}
             headers={CSV_HEADERS}
@@ -253,6 +255,13 @@ export function DailyCollectionReportPanel() {
                     <CurrencyAmount value={Math.abs(row.variancePesewas)} />
                   )}
                 </span>
+              ),
+            },
+            {
+              id: 'gps',
+              header: 'GPS',
+              cell: (row) => (
+                <span className="text-small text-text-muted">{row.gpsSummary ?? 'Not captured'}</span>
               ),
             },
             {

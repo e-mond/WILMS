@@ -167,6 +167,7 @@ function RecentPaymentRow({ payment }: { payment: CollectorRecentPayment }) {
         <p className="truncate font-semibold text-text-primary">{payment.borrowerName}</p>
         <p className="truncate text-small text-text-muted">
           {payment.groupName} · {formatTime(payment.recordedAt)}
+          {payment.gpsSummary ? ` · ${payment.gpsSummary}` : ''}
         </p>
       </div>
       <div className="shrink-0 text-right">

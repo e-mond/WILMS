@@ -40,11 +40,13 @@ export function isGpsFix(gps: GpsCoordinates | undefined | null): gps is GpsFix 
 
 export function formatGpsSummary(gps: GpsCoordinates | undefined | null): string {
   if (isGpsException(gps)) {
-    return `Unavailable — ${gps.reason}`;
+    const when = gps.capturedAt ? ` · ${gps.capturedAt}` : '';
+    return `Unavailable — ${gps.reason}${when} · exception`;
   }
   if (isGpsFix(gps)) {
     const accuracy = gps.accuracy != null ? ` ±${Math.round(gps.accuracy)}m` : '';
-    return `${gps.latitude.toFixed(6)}, ${gps.longitude.toFixed(6)}${accuracy}`;
+    const when = gps.capturedAt ? ` · ${gps.capturedAt}` : '';
+    return `${gps.latitude.toFixed(6)}, ${gps.longitude.toFixed(6)}${accuracy}${when} · device`;
   }
   return 'Not captured';
 }

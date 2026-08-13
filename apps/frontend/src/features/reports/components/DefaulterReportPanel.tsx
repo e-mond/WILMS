@@ -65,7 +65,7 @@ function DefaulterReportContent({ data }: { data: NonNullable<ReturnType<typeof 
         actions={
           <ExportCsvButton
             label="Export"
-            filename="defaulter-report.csv"
+            filename="WILMS_Defaulter_Report.csv"
             reportType={WILMS_REPORT_TYPE.DEFAULTER}
             reportTitle="Defaulter Report"
             headers={CSV_HEADERS}

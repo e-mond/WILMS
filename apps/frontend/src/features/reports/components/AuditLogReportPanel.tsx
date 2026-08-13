@@ -259,7 +259,7 @@ export function AuditLogReportPanel() {
         actions={
           <ExportCsvButton
             label="Export"
-            filename="audit-log.csv"
+            filename="WILMS_Audit_Log.csv"
             reportType={WILMS_REPORT_TYPE.AUDIT_LOG}
             reportTitle="Audit Log Report"
             headers={CSV_HEADERS}

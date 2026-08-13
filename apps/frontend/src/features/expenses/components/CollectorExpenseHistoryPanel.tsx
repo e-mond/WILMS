@@ -73,7 +73,7 @@ export function CollectorExpenseHistoryPanel() {
         </div>
         <ExportCsvButton
           label="Export"
-          filename="collector-expenses.csv"
+          filename="WILMS_Collector_Expenses.csv"
           reportType={WILMS_REPORT_TYPE.GENERIC_REPORT}
           reportTitle="Collector Expense History"
           headers={['Expense ID', 'Category', 'Amount', 'Date', 'Reason', 'Status']}

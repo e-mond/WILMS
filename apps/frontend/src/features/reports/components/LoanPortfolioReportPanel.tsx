@@ -149,7 +149,7 @@ export function LoanPortfolioReportPanel() {
         actions={
           <ExportCsvButton
             label="Export"
-            filename={`loan-portfolio-${data.generatedAt.slice(0, 10)}.csv`}
+            filename={`WILMS_Loan_Portfolio_Report_${data.generatedAt.slice(0, 10)}.csv`}
             reportType={WILMS_REPORT_TYPE.LOAN_PORTFOLIO}
             reportTitle="Loan Portfolio Report"
             headers={CSV_HEADERS}

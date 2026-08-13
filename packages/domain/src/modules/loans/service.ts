@@ -39,6 +39,11 @@ import { decimalToPesewas, pesewasToDecimal } from '../../domain/money.js';
 import { hasAdminFee } from '../../db/persistence.js';
 import * as userRepo from '../../repositories/user.repository.js';
 import { USER_ROLE } from '@wilms/shared-rbac';
+import {
+  formatCollectorStaffLabel,
+  formatGpsDisplaySummary,
+  isGpsFixDisplay,
+} from '@wilms/shared-utils';
 
 async function assertAdminFeeRecorded(borrowerId: string): Promise<void> {
   if (!(await hasAdminFee(borrowerId))) {
@@ -667,6 +672,88 @@ export async function listLoanPaymentLog(loanId: string) {
 
   const entries = [];
 
+  const paymentRows = await paymentRepo.listPaymentsByLoanId(loanId);
+  const actorIds = [
+    ...new Set(
+      [
+        disbursement?.disbursedByUserId,
+        ...payments.map((payment) => payment.actorUserId),
+        ...paymentRows.map((row) => row.collectorUserId),
+      ].filter((id): id is string => Boolean(id)),
+    ),
+  ];
+
+  const collectorLabelByUserId = new Map<string, string>();
+  if (actorIds.length > 0) {
+    const collectorRows = await userRepo.listCollectors();
+    for (const { user, collector } of collectorRows) {
+      collectorLabelByUserId.set(
+        user.id,
+        formatCollectorStaffLabel({
+          fullName: user.displayName,
+          collectorCode: collector?.collectorCode,
+          staffId: user.staffId,
+        }),
+      );
+    }
+    for (const actorId of actorIds) {
+      if (collectorLabelByUserId.has(actorId)) {
+        continue;
+      }
+      const user = await userRepo.getUserById(actorId);
+      collectorLabelByUserId.set(
+        actorId,
+        formatCollectorStaffLabel({
+          fullName: user?.displayName ?? 'Staff',
+          staffId: user?.staffId,
+        }),
+      );
+    }
+  }
+
+  const resolveCollectorLabel = (userId: string | null | undefined) => {
+    if (!userId) {
+      return formatCollectorStaffLabel({ fullName: 'Collector', sequence: 0 });
+    }
+    return (
+      collectorLabelByUserId.get(userId) ??
+      formatCollectorStaffLabel({ fullName: 'Collector', sequence: 0 })
+    );
+  };
+
+  const gpsByPaymentId = new Map(
+    paymentRows.map((row) => {
+      const gps = (row.gps ?? {}) as {
+        latitude?: number;
+        longitude?: number;
+        accuracy?: number;
+        accuracyMeters?: number;
+        capturedAt?: string;
+        unavailable?: boolean;
+        reason?: string;
+        source?: string;
+      };
+      const summary = formatGpsDisplaySummary({
+        ...gps,
+        source: gps.source ?? (gps.unavailable ? 'exception' : 'device'),
+      });
+      const verified = isGpsFixDisplay(gps);
+      return [
+        row.id,
+        {
+          verified,
+          summary,
+          latitude: typeof gps.latitude === 'number' ? gps.latitude : undefined,
+          longitude: typeof gps.longitude === 'number' ? gps.longitude : undefined,
+          accuracy: gps.accuracy ?? gps.accuracyMeters,
+          capturedAt: gps.capturedAt,
+          exceptionReason: gps.unavailable ? gps.reason : undefined,
+          source: gps.source ?? (gps.unavailable ? 'exception' : verified ? 'device' : undefined),
+        },
+      ] as const;
+    }),
+  );
+
   if (disbursement) {
     entries.push({
       id: disbursement.id,
@@ -675,45 +762,32 @@ export async function listLoanPaymentLog(loanId: string) {
       amountPesewas: Math.round(Number(disbursement.disbursedAmount) * 100),
       recordedAt: disbursement.disbursedAt.toISOString(),
       collectorId: disbursement.disbursedByUserId,
+      collectorLabel: resolveCollectorLabel(disbursement.disbursedByUserId),
       paymentStatus: 'CONFIRMED' as const,
     });
   }
 
-  const paymentRows = await paymentRepo.listPaymentsByLoanId(loanId);
-  const gpsByPaymentId = new Map(
-    paymentRows.map((row) => {
-      const gps = (row.gps ?? {}) as {
-        latitude?: number;
-        longitude?: number;
-        accuracy?: number;
-        unavailable?: boolean;
-        reason?: string;
-      };
-      const unavailable = Boolean(gps.unavailable);
-      const verified =
-        !unavailable && typeof gps.latitude === 'number' && typeof gps.longitude === 'number';
-      const summary = unavailable
-        ? `Unavailable — ${gps.reason ?? 'reason not recorded'}`
-        : verified
-          ? `${Number(gps.latitude).toFixed(6)}, ${Number(gps.longitude).toFixed(6)}`
-          : 'Not captured';
-      return [row.id, { verified, summary }] as const;
-    }),
-  );
-
   for (const payment of payments) {
     const paymentId = payment.paymentId ?? payment.id;
     const gps = gpsByPaymentId.get(paymentId);
+    const actorId = payment.actorUserId ?? '';
     entries.push({
       id: payment.id,
       type: 'REPAYMENT' as const,
       amountPesewas: Math.round(Number(payment.amount) * 100),
       recordedAt: payment.recordedAt.toISOString(),
-      collectorId: payment.actorUserId ?? '',
+      collectorId: actorId,
+      collectorLabel: resolveCollectorLabel(actorId),
       weekNumber: (payment.metadata as { weekNumber?: number } | null)?.weekNumber,
       paymentStatus: 'CONFIRMED' as const,
       gpsVerified: gps?.verified ?? false,
       gpsSummary: gps?.summary ?? 'Not captured',
+      gpsLatitude: gps?.latitude,
+      gpsLongitude: gps?.longitude,
+      gpsAccuracy: gps?.accuracy,
+      gpsCapturedAt: gps?.capturedAt,
+      gpsExceptionReason: gps?.exceptionReason,
+      gpsSource: gps?.source,
     });
   }
 
