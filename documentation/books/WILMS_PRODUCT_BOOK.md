@@ -528,10 +528,12 @@ Export job API (`POST/GET /exports/jobs`) retained for programmatic and embedded
 ### Operational dashboard (`/dashboard`)
 
 Task-oriented view for daily operations:
-- Reconciliation aging summary and pending table
+- Reconciliation aging summary and pending table (collector display names, pending / approved-today / rejected-today / total submitted)
 - Recent Activity feed from audit log (time-grouped, role-aware)
 - Collection metrics and financial colour identity
 - Quick links to pending approvals, overdue loans, open reconciliations
+
+Collectors management shows live assigned borrower counts, period trend (↑↓→), collection streaks, and a rolling six-month performance chart. The Borrowers sidebar badge uses the same active-borrower count as the Borrowers directory.
 
 ### Executive intelligence (`/executive`)
 

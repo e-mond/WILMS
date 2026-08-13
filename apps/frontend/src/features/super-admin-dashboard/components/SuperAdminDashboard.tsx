@@ -27,9 +27,11 @@ import {
   WilmsExportActions,
 } from '@/features/export';
 import { useDashboardSummary } from '@/features/super-admin-dashboard/hooks/useDashboardSummary';
+import { useReconciliationList } from '@/features/reconciliation/hooks/useReconciliationReview';
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { DashboardRecentActivity } from '@/features/super-admin-dashboard/components/DashboardRecentActivity';
+import { needsReconciliationReview } from '@/utils/reconciliation-review';
 import { cn } from '@/utils/cn';
 
 const KPI_ICON_NAMES: Record<string, DashboardKpiIconName> = {
@@ -81,6 +83,11 @@ const ATTENTION_ITEMS: Array<{
 
 export function SuperAdminDashboard() {
   const { data, isLoading, isError, error, refetch } = useDashboardSummary();
+  const { data: reconciliations } = useReconciliationList();
+  const pendingReconciliationCount = useMemo(
+    () => (reconciliations ?? []).filter(needsReconciliationReview).length,
+    [reconciliations],
+  );
   const { showLoading, isTimedOut, isForbidden } = useQueryLoadingPolicy({
     isLoading,
     isError,
@@ -108,6 +115,7 @@ export function SuperAdminDashboard() {
         <OperationalDashboardContent
           data={data}
           borrowerTotal={data.borrowerSegments.reduce((sum, segment) => sum + segment.count, 0)}
+          pendingReconciliationCount={pendingReconciliationCount}
         />
       ) : null}
     </QueryStatePanel>
@@ -117,9 +125,11 @@ export function SuperAdminDashboard() {
 function OperationalDashboardContent({
   data,
   borrowerTotal,
+  pendingReconciliationCount,
 }: {
   data: NonNullable<ReturnType<typeof useDashboardSummary>['data']>;
   borrowerTotal: number;
+  pendingReconciliationCount: number;
 }) {
   const generatedBy = useWilmsExportActor();
   const exportDocument = useMemo(
@@ -134,7 +144,8 @@ function OperationalDashboardContent({
 
   const attentionWithCounts = ATTENTION_ITEMS.map((item) => ({
     ...item,
-    count: item.resolveCount(data),
+    count:
+      item.id === 'reconciliation' ? pendingReconciliationCount : item.resolveCount(data),
   })).sort((a, b) => b.count - a.count);
 
   return (

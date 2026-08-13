@@ -46,6 +46,11 @@ export interface BorrowerFullProfile extends BorrowerDetail {
   district?: string;
   guarantorName?: string;
   guarantorPhone?: string;
+  /** Whether this borrower is the group leader or a member. */
+  groupRole?: 'LEADER' | 'MEMBER' | null;
+  collectorId?: string | null;
+  /** Display label e.g. Kwame Mensah (COL-012). */
+  collectorLabel?: string | null;
   risk: BorrowerRiskSummary;
 }
 

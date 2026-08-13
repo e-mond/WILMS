@@ -9,6 +9,7 @@ import { ExecutiveKpiGrid } from '@/components/layout/executive';
 import { useReconciliationList } from '@/features/reconciliation/hooks/useReconciliationReview';
 import { needsReconciliationReview } from '@/utils/reconciliation-review';
 import { cn } from '@/utils/cn';
+import { RECONCILIATION_STATUS_LABELS } from '@/constants/reconciliation-status';
 
 const PENDING_AGING_ICON = <Clock3 className="h-4 w-4" aria-hidden="true" />;
 
@@ -23,6 +24,11 @@ function ageDays(iso: string | undefined, now: Date): number {
   return Math.max(0, Math.round((today.getTime() - submitted.getTime()) / 86_400_000));
 }
 
+function isSameDay(iso: string | undefined, now: Date): boolean {
+  if (!iso) return false;
+  return ageDays(iso, now) === 0;
+}
+
 export function DashboardReconciliationSummary({ compact = false }: { compact?: boolean }) {
   const { data, isLoading, isError, refetch } = useReconciliationList();
   const now = useMemo(() => new Date(), []);
@@ -31,29 +37,32 @@ export function DashboardReconciliationSummary({ compact = false }: { compact?: 
     const submitted = (data ?? []).filter((row) => row.submitted);
     const pending = submitted.filter(needsReconciliationReview);
 
-    const pendingToday = pending.filter((row) => ageDays(row.submittedAt, now) === 0).length;
-    const pendingOver1 = pending.filter((row) => ageDays(row.submittedAt, now) > 1).length;
-    const pendingOver3 = pending.filter((row) => ageDays(row.submittedAt, now) > 3).length;
+    const approvedToday = submitted.filter(
+      (row) => row.status === 'APPROVED' && isSameDay(row.reviewedAt ?? row.submittedAt, now),
+    ).length;
+    const rejectedToday = submitted.filter(
+      (row) => row.status === 'REJECTED' && isSameDay(row.reviewedAt ?? row.submittedAt, now),
+    ).length;
 
     const latestPending = [...pending]
       .sort((a, b) => String(b.submittedAt ?? '').localeCompare(String(a.submittedAt ?? '')))
       .slice(0, 5)
       .map((row) => ({
         id: row.id ?? `${row.collectorId}-${row.date}`,
-        collectorId: row.collectorId,
+        collectorLabel: row.collectorLabel ?? row.collectorId,
         date: row.date,
         amountPesewas: row.physicalCashPesewas ?? row.actualPesewas,
         age: ageDays(row.submittedAt, now),
+        status: row.status ?? 'PENDING_REVIEW',
         submittedAt: row.submittedAt,
       }));
 
     return {
-      pendingToday,
-      pendingOver1,
-      pendingOver3,
+      pendingTotal: pending.length,
+      approvedToday,
+      rejectedToday,
       submittedCount: submitted.length,
       latestPending,
-      pendingTotal: pending.length,
     };
   }, [data, now]);
 
@@ -79,28 +88,28 @@ export function DashboardReconciliationSummary({ compact = false }: { compact?: 
 
   const metrics = [
     {
-      label: 'Pending Today',
-      value: summary.pendingToday,
-      trend: summary.pendingToday === 0 ? 'Clear' : 'Needs review',
-      tone: summary.pendingToday > 0 ? 'warn' : 'ok',
+      label: 'Pending',
+      value: summary.pendingTotal,
+      trend: summary.pendingTotal === 0 ? 'Clear' : 'Needs review',
+      tone: summary.pendingTotal > 0 ? 'warn' : 'ok',
       icon: PENDING_AGING_ICON,
     },
     {
-      label: 'Pending >1 Day',
-      value: summary.pendingOver1,
-      trend: summary.pendingOver1 > 0 ? 'Aging' : 'Stable',
-      tone: summary.pendingOver1 > 0 ? 'warn' : 'ok',
+      label: 'Approved today',
+      value: summary.approvedToday,
+      trend: summary.approvedToday > 0 ? 'Reviewed' : 'None yet',
+      tone: 'ok',
       icon: PENDING_AGING_ICON,
     },
     {
-      label: 'Pending >3 Days',
-      value: summary.pendingOver3,
-      trend: summary.pendingOver3 > 0 ? 'Escalate' : 'Stable',
-      tone: summary.pendingOver3 > 0 ? 'danger' : 'ok',
+      label: 'Rejected today',
+      value: summary.rejectedToday,
+      trend: summary.rejectedToday > 0 ? 'Actioned' : 'None yet',
+      tone: summary.rejectedToday > 0 ? 'danger' : 'ok',
       icon: PENDING_AGING_ICON,
     },
     {
-      label: 'Total Submitted',
+      label: 'Total submitted',
       value: summary.submittedCount,
       trend: `${summary.pendingTotal} open`,
       tone: 'info' as const,
@@ -169,20 +178,21 @@ export function DashboardReconciliationSummary({ compact = false }: { compact?: 
               <th className="whitespace-nowrap px-wilms-3 py-wilms-2 font-semibold">Date</th>
               <th className="whitespace-nowrap px-wilms-3 py-wilms-2 font-semibold">Amount</th>
               <th className="whitespace-nowrap px-wilms-3 py-wilms-2 font-semibold">Age</th>
+              <th className="whitespace-nowrap px-wilms-3 py-wilms-2 font-semibold">Status</th>
             </tr>
           </thead>
           <tbody>
             {summary.latestPending.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-wilms-3 py-wilms-4 text-text-muted">
-                  No pending reconciliations
+                <td colSpan={5} className="px-wilms-3 py-wilms-4 text-text-muted">
+                  No pending reconciliations — all submitted cash reconciliations are clear.
                 </td>
               </tr>
             ) : (
               summary.latestPending.map((row) => (
                 <tr key={row.id} className="border-b border-border last:border-0">
                   <td className="whitespace-nowrap px-wilms-3 py-wilms-2 font-medium text-text-primary">
-                    {row.collectorId}
+                    {row.collectorLabel}
                   </td>
                   <td className="whitespace-nowrap px-wilms-3 py-wilms-2 text-text-muted">
                     {row.date}
@@ -192,6 +202,11 @@ export function DashboardReconciliationSummary({ compact = false }: { compact?: 
                   </td>
                   <td className="whitespace-nowrap px-wilms-3 py-wilms-2 text-text-muted">
                     {row.age === 0 ? 'Today' : `${row.age}d`}
+                  </td>
+                  <td className="whitespace-nowrap px-wilms-3 py-wilms-2 text-text-muted">
+                    {RECONCILIATION_STATUS_LABELS[
+                      row.status as keyof typeof RECONCILIATION_STATUS_LABELS
+                    ] ?? row.status}
                   </td>
                 </tr>
               ))

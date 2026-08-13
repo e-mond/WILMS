@@ -167,6 +167,14 @@ export function CollectorsAsidePanel({ data, selected, onMessage }: CollectorsAs
           }))}
           className="mt-wilms-3"
         />
+        <div className="mt-wilms-3">
+          <Link
+            href="/reports/audit-log"
+            className="text-small font-semibold text-brand-primary hover:underline"
+          >
+            View all activity
+          </Link>
+        </div>
       </DetailSidebarCard>
     </>
   );

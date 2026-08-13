@@ -70,6 +70,7 @@ describe('collector-performance report', () => {
         expensesSubmittedCount: 0,
         status: 'ACTIVE',
         streakWeeks: 0,
+        trendDirection: 'neutral',
         cycleLabel: 'Current',
         joinedAt: '2026-01-01T00:00:00.000Z',
         lastActiveAt: '2026-06-01T00:00:00.000Z',

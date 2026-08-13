@@ -99,14 +99,23 @@ export function BorrowerList() {
       );
     }
 
+    const exportRows = (data ?? []).map((borrower) => [
+      resolveBorrowerDisplayId(borrower),
+      borrower.fullName,
+      borrower.phone,
+      borrower.groupName,
+      borrower.status,
+    ]);
+
     return (
       <BorrowersAsidePanel
         totalBorrowers={summary.totalBorrowers}
         approvedCount={summary.approvedBorrowers}
         atRiskCount={atRiskCount}
+        exportRows={exportRows}
       />
     );
-  }, [atRiskCount, isApplicationsView, summary]);
+  }, [atRiskCount, data, isApplicationsView, summary]);
 
   useShellAsideContent(asideContent);
 
