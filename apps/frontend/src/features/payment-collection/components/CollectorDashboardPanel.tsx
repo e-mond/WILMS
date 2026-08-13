@@ -79,7 +79,7 @@ function MetricTile({
     return (
       <Link
         href={href}
-        className="flex min-h-[72px] flex-col justify-center rounded-xl border border-border/70 bg-background/60 px-wilms-3 py-wilms-2 transition-colors hover:border-brand-primary/40 hover:bg-brand-primary-light/20"
+        className="flex min-h-[72px] flex-col justify-center rounded-xl border border-border bg-card px-wilms-3 py-wilms-2 transition-colors hover:border-brand-primary hover:bg-brand-primary-light"
       >
         {content}
       </Link>
@@ -87,7 +87,7 @@ function MetricTile({
   }
 
   return (
-    <div className="flex min-h-[72px] flex-col justify-center rounded-xl border border-border/70 bg-background/60 px-wilms-3 py-wilms-2">
+    <div className="flex min-h-[72px] flex-col justify-center rounded-xl border border-border bg-card px-wilms-3 py-wilms-2">
       {content}
     </div>
   );
@@ -167,6 +167,7 @@ function RecentPaymentRow({ payment }: { payment: CollectorRecentPayment }) {
         <p className="truncate font-semibold text-text-primary">{payment.borrowerName}</p>
         <p className="truncate text-small text-text-muted">
           {payment.groupName} · {formatTime(payment.recordedAt)}
+          {payment.gpsSummary ? ` · ${payment.gpsSummary}` : ''}
         </p>
       </div>
       <div className="shrink-0 text-right">

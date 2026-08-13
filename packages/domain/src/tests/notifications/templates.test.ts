@@ -19,6 +19,8 @@ import {
   buildPaymentDayChangedSmsBody,
   buildLoanReminderSmsBody,
   buildRegistrationSubmittedSmsBody,
+  buildBorrowerUpdateApprovedSmsBody,
+  buildBorrowerUpdateRejectedSmsBody,
 } from '../../infrastructure/notifications/templates.js';
 
 describe('notification templates', () => {
@@ -210,5 +212,22 @@ describe('notification templates', () => {
 
     expect(email.subject).toBe('WILMS loan approved — LOAN-CYCLE4-202511-0002');
     expect(email.text).toContain('admin fee of GHS 50.00');
+  });
+
+  it('builds borrower update decision SMS', () => {
+    expect(
+      buildBorrowerUpdateApprovedSmsBody({
+        borrowerName: 'Gloria',
+        field: 'PHONE',
+        afterValue: '0244444444',
+      }),
+    ).toContain('has been updated to 0244444444');
+    expect(
+      buildBorrowerUpdateRejectedSmsBody({
+        borrowerName: 'Gloria',
+        field: 'PHONE',
+        reviewNote: 'Could not verify',
+      }),
+    ).toContain('not approved');
   });
 });

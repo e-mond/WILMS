@@ -11,6 +11,7 @@ import { useBorrowerReview } from '@/features/approval-workflow/hooks/useBorrowe
 import { RegistrationAgreementDocument } from '@/features/borrower-registration/components/RegistrationAgreementDocument';
 import {
   REGISTRATION_AGREEMENT_EXPORT_FORMATS,
+  buildBrandedExportFilenameBase,
   WilmsExportActions,
 } from '@/features/export';
 import { useRegistrationAgreementExportDocument } from '@/features/export/hooks/useRegistrationAgreementExportDocument';
@@ -58,7 +59,11 @@ export default function OfficerRegistrationDetailPage() {
                 {exportDocument ? (
                   <WilmsExportActions
                     document={exportDocument}
-                    filenameBase={`registration-${data.fullName.replace(/\s+/g, '-').toLowerCase()}`}
+                    filenameBase={buildBrandedExportFilenameBase([
+                      'Borrower_Registration',
+                      data.fullName,
+                      data.displayId,
+                    ])}
                     showIcons
                     permissions={[]}
                     formats={[...REGISTRATION_AGREEMENT_EXPORT_FORMATS]}

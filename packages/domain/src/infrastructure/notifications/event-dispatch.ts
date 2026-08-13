@@ -49,6 +49,8 @@ import {
   buildUserRoleChangedEmail,
   buildWelcomeEmail,
   buildCollectorReassignedSmsBody,
+  buildBorrowerUpdateApprovedSmsBody,
+  buildBorrowerUpdateRejectedSmsBody,
 } from './templates.js';
 import { logMessageDelivery } from './delivery-log.js';
 import { normalizeGhanaPhone } from '../sms/normalize-phone.js';
@@ -1360,4 +1362,44 @@ export async function notifyCollectorAssigned(input: {
     body: `You have been assigned to group ${input.groupName}.`,
     href: '/groups',
   });
+}
+
+export async function notifyBorrowerUpdateApproved(input: {
+  borrowerId: string;
+  borrowerName: string;
+  borrowerPhone?: string;
+  borrowerEmail?: string;
+  field: string;
+  afterValue: string;
+}): Promise<void> {
+  const settings = await getSettings();
+  if (input.borrowerPhone) {
+    await dispatchSms({
+      event: 'BORROWER_UPDATE_APPROVED',
+      to: input.borrowerPhone,
+      body: buildBorrowerUpdateApprovedSmsBody(input),
+      enabled: settings.smsNotificationsEnabled,
+      borrowerId: input.borrowerId,
+    });
+  }
+}
+
+export async function notifyBorrowerUpdateRejected(input: {
+  borrowerId: string;
+  borrowerName: string;
+  borrowerPhone?: string;
+  borrowerEmail?: string;
+  field: string;
+  reviewNote?: string | null;
+}): Promise<void> {
+  const settings = await getSettings();
+  if (input.borrowerPhone) {
+    await dispatchSms({
+      event: 'BORROWER_UPDATE_REJECTED',
+      to: input.borrowerPhone,
+      body: buildBorrowerUpdateRejectedSmsBody(input),
+      enabled: settings.smsNotificationsEnabled,
+      borrowerId: input.borrowerId,
+    });
+  }
 }

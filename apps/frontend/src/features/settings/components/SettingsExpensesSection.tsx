@@ -88,7 +88,7 @@ export function SettingsExpensesSection() {
         </ExecutiveKpiGrid>
         <ExportCsvButton
           label="Export expenses"
-          filename={`expense-report-${new Date().toISOString().slice(0, 10)}.csv`}
+          filename={`WILMS_Expense_Report_${new Date().toISOString().slice(0, 10)}.csv`}
           reportType={WILMS_REPORT_TYPE.GENERIC_REPORT}
           reportTitle="Expense Report"
           executiveSummary={`Pending ${data.summary.pendingCount}; approved total ${formatPesewasForCsv(data.summary.approvedTotalPesewas)} GHS.`}

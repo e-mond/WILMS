@@ -342,6 +342,13 @@ Import: `npm run seed:ghana-hierarchy -w @wilms/domain`. Adapters: `scripts/loca
 - Ops module: incidents, maintenance windows
 - Structured console logging (no external APM in production)
 
+## 18. v1.8.0 market-readiness architecture
+
+- Display IDs are computed (not stored as the primary key). Documents must never print raw UUIDs.
+- Group collection GPS is stored on `payments.gps` JSONB, including exception payloads.
+- Borrower update requests are a maker-checker workflow with SMS on decision.
+- See `docs/v1.8.0/market-readiness/`.
+
 ---
 
 *CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.*

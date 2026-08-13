@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { PERMISSION } from '@/constants/permissions';
 import { WilmsExportActions } from '@/features/export/components/WilmsExportActions';
-import { REGISTRATION_AGREEMENT_EXPORT_FORMATS } from '@/features/export';
+import { buildBrandedExportFilenameBase, REGISTRATION_AGREEMENT_EXPORT_FORMATS } from '@/features/export';
 import { buildRegistrationAgreementExportDocument } from '@/features/export/builders/registration-agreement-document';
 import { useWilmsExportActor } from '@/features/export/hooks/useWilmsExportActor';
 import { RegistrationAgreementDocument } from '@/features/borrower-registration/components/RegistrationAgreementDocument';
@@ -101,7 +101,7 @@ export function RegistrationReviewPanel({
         </div>
         <WilmsExportActions
           document={exportDocument}
-          filenameBase={`registration-${values.fullName.replace(/\s+/g, '-').toLowerCase()}`}
+          filenameBase={buildBrandedExportFilenameBase(['Borrower_Registration', values.fullName])}
           permissions={[PERMISSION.REGISTER_BORROWERS]}
           formats={[...REGISTRATION_AGREEMENT_EXPORT_FORMATS]}
         />

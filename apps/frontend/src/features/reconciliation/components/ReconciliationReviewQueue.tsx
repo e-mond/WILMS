@@ -82,7 +82,7 @@ function ReconciliationReviewDrawer({
     <Drawer
       isOpen={isOpen}
       onClose={onClose}
-      title={`${formatDisplayDate(row.date)} · ${resolveUserDisplayId(row.collectorId)}`}
+      title={`${formatDisplayDate(row.date)} · ${row.collectorLabel ?? resolveUserDisplayId(row.collectorId)}`}
       side="right"
       width="w-full max-w-md"
     >
@@ -118,6 +118,19 @@ function ReconciliationReviewDrawer({
             </dd>
           </div>
         </dl>
+
+        {row.collectionGps && row.collectionGps.length > 0 ? (
+          <div className="space-y-wilms-2">
+            <p className="text-small font-semibold text-text-primary">Collection GPS</p>
+            <ul className="space-y-wilms-1 text-small text-text-muted">
+              {row.collectionGps.map((entry, index) => (
+                <li key={`${entry.capturedAt ?? 'gps'}-${index}`}>{entry.summary}</li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <p className="text-small text-text-muted">No GPS captures recorded for this day.</p>
+        )}
 
         {row.reviewedAt ? (
           <p className="text-small text-text-muted">
@@ -242,16 +255,17 @@ export function ReconciliationReviewQueue() {
           </label>
           <ExportCsvButton
             label="Export queue"
-            filename={`reconciliation-pending-${new Date().toISOString().slice(0, 10)}.csv`}
+            filename={`WILMS_Reconciliation_Report_${new Date().toISOString().slice(0, 10)}.csv`}
             reportType={WILMS_REPORT_TYPE.GENERIC_REPORT}
             reportTitle="Reconciliation Pending Queue"
-            headers={['Date', 'Collector', 'Expected (GHS)', 'Physical (GHS)', 'Variance (GHS)', 'Status']}
+            headers={['Date', 'Collector', 'Expected (GHS)', 'Physical (GHS)', 'Variance (GHS)', 'GPS Captures', 'Status']}
             rows={pendingReview.map((row) => [
               row.date,
-              resolveUserDisplayId(row.collectorId),
+              row.collectorLabel ?? resolveUserDisplayId(row.collectorId),
               formatPesewasForCsv(row.expectedPesewas),
               formatPesewasForCsv(row.physicalCashPesewas ?? row.actualPesewas),
               formatPesewasForCsv(row.variancePesewas),
+              row.collectionGps?.map((entry) => entry.summary).join(' | ') || 'Not captured',
               String(row.status ?? 'SUBMITTED'),
             ])}
           />
@@ -288,7 +302,7 @@ export function ReconciliationReviewQueue() {
               header: 'Collector',
               priority: 'secondary',
               className: 'whitespace-nowrap',
-              cell: (row) => resolveUserDisplayId(row.collectorId),
+              cell: (row) => row.collectorLabel ?? resolveUserDisplayId(row.collectorId),
             },
             {
               id: 'expected',
@@ -310,6 +324,15 @@ export function ReconciliationReviewQueue() {
               priority: 'secondary',
               className: 'whitespace-nowrap tabular-nums',
               cell: (row) => <VarianceAmount value={row.variancePesewas} />,
+            },
+            {
+              id: 'gps',
+              header: 'GPS',
+              priority: 'meta',
+              cell: (row) =>
+                row.collectionGps?.length
+                  ? `${row.collectionGps.length} capture${row.collectionGps.length === 1 ? '' : 's'}`
+                  : '—',
             },
             {
               id: 'status',

@@ -3,6 +3,32 @@ function normalizeCode(value: string, maxLength: number): string {
   return normalized.slice(0, maxLength) || 'WILMS';
 }
 
+function yearFromIso(value?: string | null): string {
+  const year = (value ?? new Date().toISOString()).slice(0, 4);
+  return /^\d{4}$/.test(year) ? year : new Date().toISOString().slice(0, 4);
+}
+
+function paddedSequence(sequence: number, width: number): string {
+  return String(Math.max(0, Math.trunc(sequence))).padStart(width, '0');
+}
+
+function sequenceFromId(id?: string, modulo = 100_000): number {
+  if (!id?.trim()) {
+    return 0;
+  }
+
+  const digits = id.replace(/\D/g, '');
+  if (digits.length >= 1) {
+    return Number(digits.slice(-5)) % modulo;
+  }
+
+  let hash = 0;
+  for (let index = 0; index < id.length; index += 1) {
+    hash = (hash * 31 + id.charCodeAt(index)) >>> 0;
+  }
+  return hash % modulo;
+}
+
 export function formatCollectorDisplayId(input: {
   collectorCode?: string | null;
   staffId?: string | null;
@@ -19,22 +45,32 @@ export function formatCollectorDisplayId(input: {
   }
 
   if (input.sequence != null) {
-    return `COL-${String(input.sequence).padStart(3, '0')}`;
+    return `COL-${paddedSequence(input.sequence, 3)}`;
   }
 
   return 'COL-000';
+}
+
+/** Official printed collector identity: "Kwame Mensah (COL-012)". */
+export function formatCollectorStaffLabel(input: {
+  fullName?: string | null;
+  collectorCode?: string | null;
+  staffId?: string | null;
+  sequence?: number;
+}): string {
+  const name = input.fullName?.trim() || 'Collector';
+  return `${name} (${formatCollectorDisplayId(input)})`;
 }
 
 export function formatLoanDisplayId(input: {
   cycleBatch: string;
   startDate?: string;
   sequence?: number;
+  id?: string;
 }): string {
-  const batchCode = normalizeCode(input.cycleBatch, 8);
-  const monthKey = (input.startDate ?? new Date().toISOString()).slice(0, 7).replace('-', '');
-  const sequence = input.sequence ?? 1;
-
-  return `LOAN-${batchCode}-${monthKey}-${String(sequence).padStart(4, '0')}`;
+  const year = yearFromIso(input.startDate);
+  const sequence = input.sequence ?? sequenceFromId(input.id);
+  return `LN-${year}-${paddedSequence(sequence, 5)}`;
 }
 
 export function formatPoolDisplayId(input: {
@@ -43,10 +79,10 @@ export function formatPoolDisplayId(input: {
   createdAt?: string;
   sequence?: number;
 }): string {
-  const year = (input.createdAt ?? new Date().toISOString()).slice(0, 4);
+  const year = yearFromIso(input.createdAt);
   const sequence = input.sequence ?? 1;
 
-  return `POOL-${year}-${String(sequence).padStart(3, '0')}`;
+  return `POOL-${year}-${paddedSequence(sequence, 3)}`;
 }
 
 export function formatGroupDisplayId(input: {
@@ -55,14 +91,14 @@ export function formatGroupDisplayId(input: {
   sequence?: number;
 }): string {
   const systemId = input.systemId?.trim();
-  if (systemId && /^(GRP|POOL|EXP|LOAN)-/i.test(systemId)) {
+  if (systemId && /^(GRP|POOL|EXP|LOAN|LN)-/i.test(systemId)) {
     return systemId.toUpperCase();
   }
 
-  const year = (input.createdAt ?? new Date().toISOString()).slice(0, 4);
+  const year = yearFromIso(input.createdAt);
   const sequence = input.sequence ?? 1;
 
-  return `GRP-${year}-${String(sequence).padStart(3, '0')}`;
+  return `GRP-${year}-${paddedSequence(sequence, 3)}`;
 }
 
 export function formatExpenseDisplayId(input: {
@@ -70,10 +106,10 @@ export function formatExpenseDisplayId(input: {
   createdAt?: string;
   sequence?: number;
 }): string {
-  const year = (input.expenseDate ?? input.createdAt ?? new Date().toISOString()).slice(0, 4);
+  const year = yearFromIso(input.expenseDate ?? input.createdAt);
   const sequence = input.sequence ?? 1;
 
-  return `EXP-${year}-${String(sequence).padStart(3, '0')}`;
+  return `EXP-${year}-${paddedSequence(sequence, 3)}`;
 }
 
 export function formatEntityDisplayId(input: {
@@ -82,7 +118,7 @@ export function formatEntityDisplayId(input: {
   entityName?: string;
 }): string {
   const entityId = input.entityId.trim();
-  if (/^(BWR|COL|GRP|LOAN|POOL|ENT)-/i.test(entityId)) {
+  if (/^(BWR|BRW|BOR|COL|GRP|LOAN|LN|POOL|ENT)-/i.test(entityId)) {
     return entityId.toUpperCase();
   }
 
@@ -99,16 +135,9 @@ export function formatBorrowerDisplayId(
   input: { community: string; registeredAt: string; id?: string },
   sequence?: number,
 ): string {
-  if (input.community && input.registeredAt && sequence != null) {
-    const communityCode =
-      input.community.replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() || 'WILMS';
-    const monthKey = input.registeredAt.slice(0, 7).replace('-', '');
-
-    return `BWR-${communityCode}-${monthKey}-${String(sequence).padStart(4, '0')}`;
-  }
-
-  const compactId = (input.id ?? '').replace(/-/g, '').slice(0, 8).toUpperCase() || '00000000';
-  return `BWR-${compactId}`;
+  const year = yearFromIso(input.registeredAt);
+  const seq = sequence ?? sequenceFromId(input.id);
+  return `BRW-${year}-${paddedSequence(seq, 5)}`;
 }
 
 export function formatUserDisplayId(input: { sequence?: number; id?: string; staffId?: string }): string {
@@ -118,7 +147,7 @@ export function formatUserDisplayId(input: { sequence?: number; id?: string; sta
   }
 
   if (input.sequence != null) {
-    return `USR-${String(input.sequence).padStart(6, '0')}`;
+    return `USR-${paddedSequence(input.sequence, 6)}`;
   }
 
   const suffix = input.id?.replace(/[^a-zA-Z0-9]/g, '').slice(-4).toUpperCase() ?? '0000';
@@ -131,18 +160,18 @@ export function formatPaymentDisplayId(input: {
 }): string {
   const dateKey = (input.recordedAt ?? new Date().toISOString()).slice(0, 10).replace(/-/g, '');
   const sequence = input.sequence ?? 1;
-  return `TXN-${dateKey}-${String(sequence).padStart(3, '0')}`;
+  return `TXN-${dateKey}-${paddedSequence(sequence, 3)}`;
 }
 
 export function formatDisbursementDisplayId(input: {
   disbursedAt?: string;
   sequence?: number;
 }): string {
-  const year = (input.disbursedAt ?? new Date().toISOString()).slice(0, 4);
+  const year = yearFromIso(input.disbursedAt);
   const sequence = input.sequence ?? 1;
-  return `DIS-${year}-${String(sequence).padStart(6, '0')}`;
+  return `DIS-${year}-${paddedSequence(sequence, 6)}`;
 }
 
 export function isReadableWilmsId(value: string): boolean {
-  return /^(BWR|BOR|COL|GRP|LOAN|POOL|ENT|USR|TXN|DIS|MEM|EXP)-/i.test(value.trim());
+  return /^(BWR|BRW|BOR|COL|GRP|LOAN|LN|POOL|ENT|USR|TXN|DIS|MEM|EXP)-/i.test(value.trim());
 }

@@ -24,6 +24,7 @@ import { decimalToPesewas } from '../../domain/money.js';
 import { listPortfolioEntries } from '../loans/service.js';
 import { listCollectors } from '../collectors/service.js';
 import { listGroupsResponse } from '../groups/service.js';
+import { formatCollectorStaffLabel } from '@wilms/shared-utils';
 
 async function assertReportSourceNotTruncated(
   label: string,
@@ -219,14 +220,37 @@ reportsRouter.get(
 
     const collectorNameEntries: [string, string][] = [];
     if (isDatabaseEnabled()) {
+      const collectors = await userRepo.listCollectors();
+      for (const { user, collector } of collectors) {
+        collectorNameEntries.push([
+          user.id,
+          formatCollectorStaffLabel({
+            fullName: user.displayName,
+            collectorCode: collector?.collectorCode,
+            staffId: user.staffId,
+          }),
+        ]);
+      }
       const users = await userRepo.listUsers();
       for (const user of users) {
-        collectorNameEntries.push([user.id, user.displayName]);
+        if (collectorNameEntries.some(([id]) => id === user.id)) {
+          continue;
+        }
+        collectorNameEntries.push([
+          user.id,
+          formatCollectorStaffLabel({
+            fullName: user.displayName,
+            staffId: user.staffId,
+          }),
+        ]);
       }
     } else {
       for (const payment of payments) {
         if (!collectorNameEntries.some(([id]) => id === payment.collectorId)) {
-          collectorNameEntries.push([payment.collectorId, 'Collector']);
+          collectorNameEntries.push([
+            payment.collectorId,
+            formatCollectorStaffLabel({ fullName: 'Collector', sequence: 0 }),
+          ]);
         }
       }
     }

@@ -31,9 +31,15 @@ const legacyRecordPaymentSchema = z.object({
   weeksCount: z.number().int().min(1).max(52).optional(),
   gps: z
     .object({
-      latitude: z.number(),
-      longitude: z.number(),
+      latitude: z.number().optional(),
+      longitude: z.number().optional(),
+      accuracy: z.number().optional(),
       accuracyMeters: z.number().optional(),
+      capturedAt: z.string().optional(),
+      collectorId: z.string().optional(),
+      device: z.record(z.unknown()).optional(),
+      unavailable: z.boolean().optional(),
+      reason: z.string().optional(),
     })
     .optional(),
 });

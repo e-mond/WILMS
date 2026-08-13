@@ -195,6 +195,13 @@ npm run docs:generate
 
 Architecture hub: `docs/`. Update `docs/architecture/progress-tracker.md` after meaningful changes.
 
+Market-readiness notes (v1.8.0):
+
+- Guarantor eligibility: `packages/domain/src/modules/borrowers/guarantor-eligibility.ts`
+- Display IDs: `packages/shared-utils/src/display-ids.ts`
+- Borrower updates: `packages/domain/src/modules/borrower-updates/`
+- Migration: `0044_v180_borrower_update_requests.sql`
+
 ---
 
 ## 13. Deployment

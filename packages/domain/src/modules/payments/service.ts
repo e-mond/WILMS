@@ -41,9 +41,15 @@ export const recordPaymentSchema = z.object({
   weeksCount: z.number().int().min(1).max(52).optional(),
   gps: z
     .object({
-      latitude: z.number(),
-      longitude: z.number(),
+      latitude: z.number().optional(),
+      longitude: z.number().optional(),
+      accuracy: z.number().optional(),
       accuracyMeters: z.number().optional(),
+      capturedAt: z.string().optional(),
+      collectorId: z.string().optional(),
+      device: z.record(z.unknown()).optional(),
+      unavailable: z.boolean().optional(),
+      reason: z.string().optional(),
     })
     .optional(),
 });
@@ -200,19 +206,33 @@ export async function recordPayment(
   });
 }
 
+function assertCollectionGps(gps: z.infer<typeof recordPaymentSchema>['gps']) {
+  if (!gps) {
+    throw new Error('VALIDATION:GPS coordinates are required to record a collection.');
+  }
+
+  if (gps.unavailable) {
+    if (!gps.reason?.trim()) {
+      throw new Error('VALIDATION:A reason is required when GPS is unavailable.');
+    }
+    return;
+  }
+
+  if (
+    typeof gps.latitude !== 'number' ||
+    typeof gps.longitude !== 'number' ||
+    !Number.isFinite(gps.latitude) ||
+    !Number.isFinite(gps.longitude)
+  ) {
+    throw new Error('VALIDATION:GPS coordinates are required to record a collection.');
+  }
+}
+
 async function postPayment(
   input: z.infer<typeof recordPaymentSchema>,
   actorId: string,
 ) {
-  if (
-    !input.gps ||
-    typeof input.gps.latitude !== 'number' ||
-    typeof input.gps.longitude !== 'number' ||
-    !Number.isFinite(input.gps.latitude) ||
-    !Number.isFinite(input.gps.longitude)
-  ) {
-    throw new Error('VALIDATION:GPS coordinates are required to record a collection.');
-  }
+  assertCollectionGps(input.gps);
 
   const weeksCount = input.weeksCount ?? 1;
 
@@ -377,6 +397,15 @@ async function postPayment(
       targetEntityType: 'payment',
       reason: weeksCount > 1 ? `Multi-week allocation (${weeksCount} weeks)` : undefined,
     });
+    if (input.gps?.unavailable) {
+      appendAuditEntry({
+        action: 'collection.gps-exception',
+        actorId,
+        targetEntityId: payment.id,
+        targetEntityType: 'payment',
+        reason: input.gps.reason?.trim() || 'GPS unavailable',
+      });
+    }
   }
 
   const borrower = await borrowerRepo.getBorrower(input.borrowerId);
