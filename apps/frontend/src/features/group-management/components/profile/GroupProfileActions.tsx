@@ -12,10 +12,12 @@ import { useToast } from '@/hooks/useToast';
 import { groupService } from '@/services';
 import type { GroupDetail } from '@/types/group-detail';
 import {
+  buildBrandedExportFilenameBase,
   buildGroupProfileExportDocument,
   useWilmsExportActor,
   WilmsExportActions,
 } from '@/features/export';
+import { resolveGroupDisplayId } from '@/utils/entity-display-id';
 
 export interface GroupProfileActionsProps {
   group: GroupDetail;
@@ -92,7 +94,11 @@ export function GroupProfileActions({ group, onUpdated }: GroupProfileActionsPro
       <div className="flex flex-wrap items-center gap-wilms-2 print:hidden">
         <WilmsExportActions
           document={exportDocument}
-          filenameBase={`${group.id}-profile`}
+          filenameBase={buildBrandedExportFilenameBase([
+            'Group_Profile',
+            group.displayName ?? group.name,
+            resolveGroupDisplayId(group),
+          ])}
           permissions={[PERMISSION.EXPORT_REPORTS, PERMISSION.MANAGE_GROUPS]}
         />
         <PermissionGate permission={PERMISSION.MANAGE_GROUPS}>

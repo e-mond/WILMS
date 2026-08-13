@@ -48,6 +48,8 @@ const ADJOA_PROFILE: BorrowerRegistrationProfile = {
   city: 'Accra',
   region: 'Greater Accra',
   district: 'Osu Klottey',
+  subDistrictUnit: 'Osu Sub-Metro',
+  electoralArea: 'Osu Klottey Electoral Area',
   businessName: 'Adjoa Provisions',
   businessAddress: 'Oxford Street Market',
   typeOfWork: 'Trader',

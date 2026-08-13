@@ -41,6 +41,8 @@ export const borrowers = pgTable('borrowers', {
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
 });
 
+/** Guarantor phone is intentionally not unique — a guarantor may cover up to three active borrowers. */
+
 export const borrowerApprovalDecisions = pgTable('borrower_approval_decisions', {
   id: uuid('id').primaryKey(),
   borrowerId: uuid('borrower_id')

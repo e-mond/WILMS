@@ -86,6 +86,8 @@ Production operational platform. Financial integrity controls verified. Statutor
 
 v1.8 Integrations & Payments → v1.9 Enterprise Automation → v2.0 GL & Multi-branch → v3.0 Platform Scale
 
+v1.8.0 market-readiness (this sprint): guarantor capacity of three, geographic review cascade, official document IDs, branded exports, group-collection GPS exceptions, collector update requests, and mandatory borrower SMS.
+
 ---
 
 *CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.*

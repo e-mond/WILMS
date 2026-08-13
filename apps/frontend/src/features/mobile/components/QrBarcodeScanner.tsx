@@ -121,7 +121,7 @@ export function QrBarcodeScanner({ onScan, onClose, title = 'Scan code' }: QrBar
             className="flex-1 rounded-sm border border-border bg-background px-wilms-3 py-wilms-2 text-body"
             value={manualValue}
             onChange={(event) => setManualValue(event.target.value)}
-            placeholder="BWR-2026-000001"
+            placeholder="BRW-2026-000001"
           />
           <Button
             type="button"

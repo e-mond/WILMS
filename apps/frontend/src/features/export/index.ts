@@ -30,6 +30,9 @@ export {
   formatPesewasForExport,
   formatPercentForExport,
   buildExportFilename,
+  buildBrandedExportFilename,
+  buildBrandedExportFilenameBase,
+  slugExportToken,
 } from '@/features/export/utils/formatters';
 export { generateReportId, resetReportIdSequence } from '@/features/export/utils/report-id';
 export { getWilmsEnvironment } from '@/features/export/utils/environment';

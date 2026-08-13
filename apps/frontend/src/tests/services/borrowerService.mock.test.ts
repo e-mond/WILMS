@@ -192,4 +192,28 @@ describe('borrowerService.mock conflict checks', () => {
     );
     expect(registrations.some((registration) => registration.fullName === 'Ama Mensan')).toBe(false);
   });
+
+  it('allows a guarantor with one existing guarantee to guarantee a different borrower', async () => {
+    const result = await borrowerServiceMock.checkGuarantorEligibility({
+      guarantorPhone: '+233244222334',
+      guarantorName: 'Esi Owusu',
+      borrowerPhone: '+233244999001',
+    });
+
+    expect(result.isEligible).toBe(true);
+    expect(result.activeGuaranteeCount).toBe(1);
+    expect(result.validationStatus).toBe('VALID');
+    expect(result.isDuplicateRegistration).toBe(false);
+  });
+
+  it('treats the same borrower as a duplicate guarantee, not a second slot', async () => {
+    const result = await borrowerServiceMock.checkGuarantorEligibility({
+      guarantorPhone: '+233244222334',
+      guarantorName: 'Esi Owusu',
+      borrowerPhone: '+233244222333',
+    });
+
+    expect(result.isEligible).toBe(false);
+    expect(result.validationStatus).toBe('DUPLICATE');
+  });
 });

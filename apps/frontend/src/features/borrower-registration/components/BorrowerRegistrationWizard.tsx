@@ -478,6 +478,7 @@ export function BorrowerRegistrationWizard() {
         guarantorIdNumber: values.guarantorIdNumber,
         guarantorName: values.guarantorName,
         borrowerPhone: values.phone,
+        borrowerIdNumber: values.idNumber,
       });
       setGuarantorEligibility(eligibility);
 
@@ -1256,9 +1257,15 @@ export function BorrowerRegistrationWizard() {
             />
           </FormField>
           {guarantorEligibility ? (
-            <div className="md:col-span-2 rounded-sm border border-border bg-background px-wilms-3 py-wilms-2 text-small text-text-primary">
-              Current Guarantees: {guarantorEligibility.activeGuaranteeCount} of{' '}
-              {guarantorEligibility.maxGuarantees} · {guarantorEligibility.validationStatus}
+            <div
+              className={
+                guarantorEligibility.isEligible
+                  ? 'md:col-span-2 rounded-sm border border-border bg-card px-wilms-3 py-wilms-2 text-small text-text-primary'
+                  : 'md:col-span-2 rounded-sm border border-danger/40 bg-danger/10 px-wilms-3 py-wilms-2 text-small text-danger'
+              }
+            >
+              {guarantorEligibility.message ??
+                `Current Guarantees: ${guarantorEligibility.activeGuaranteeCount} of ${guarantorEligibility.maxGuarantees}`}
             </div>
           ) : null}
         </section>

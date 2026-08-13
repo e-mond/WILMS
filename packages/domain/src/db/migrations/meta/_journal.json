@@ -309,6 +309,13 @@
       "when": 1785890400000,
       "tag": "0043_v180_community_location_completion",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1785976800000,
+      "tag": "0044_v180_borrower_update_requests",
+      "breakpoints": true
     }
   ]
 }

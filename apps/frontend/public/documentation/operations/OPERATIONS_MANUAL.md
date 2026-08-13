@@ -238,4 +238,13 @@ Outputs in `documentation/pdf/` and `documentation/docx/`.
 
 ---
 
+## 14. v1.8.0 market-readiness operations
+
+- Apply migration `0044_v180_borrower_update_requests.sql` before using borrower update requests.
+- Review **Pending borrower update requests** daily (`/officer/borrower-updates` or `/borrower-updates`).
+- If field GPS fails, collectors must record a reason; audit action `collection.gps-exception`.
+- Disable SMS only for a confirmed provider outage (`smsNotificationsEnabled`).
+
+---
+
 *CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.*
