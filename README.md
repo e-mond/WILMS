@@ -15,8 +15,8 @@
 
 | Field | Value |
 | --- | --- |
-| **Current release** | [`v1.8.0`](VERSION.md) |
-| **Maturity** | Production operational platform (market packaging) |
+| **Current release** | [`v1.8.0`](VERSION.md) (`v1.8.0-final`) |
+| **Maturity** | Production operational platform (final production certified) |
 | **Primary deployment** | [wilms.vercel.app](https://wilms.vercel.app) |
 | **Runtime** | Node.js **22.x** |
 | **Data store** | Neon PostgreSQL (Drizzle ORM) |

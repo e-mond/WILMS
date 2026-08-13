@@ -10,7 +10,7 @@
 endobj
 4 0 obj
 <<
-/Length 4269
+/Length 4297
 >>
 stream
 0.5670000000000001 w
@@ -37,7 +37,7 @@ BT
 12.6499999999999986 TL
 1. g
 202.4899999999999523 728.5041732283464171 Td
-(Business Requirements Book — v1.7.3) Tj
+(Business Requirements Book — v1.8.0) Tj
 ET
 BT
 /F2 14 Tf
@@ -199,7 +199,7 @@ BT
 11.5 TL
 0.157 g
 39.6850393700787407 99.2128346456692043 Td
-(| BR-014 | Pool hard-stop on insufficient capital | Complete | Cannot over-disburse |) Tj
+(| BR-014 | Pool hard-stop on insufficient capital | Complete | Create + disburse validation \(v1.8.0 Phase 11\) |) Tj
 ET
 BT
 /F1 7 Tf
@@ -220,7 +220,7 @@ endobj
 endobj
 6 0 obj
 <<
-/Length 4566
+/Length 4483
 >>
 stream
 0.5670000000000001 w
@@ -244,189 +244,183 @@ BT
 11.5 TL
 0.157 g
 39.6850393700787407 734.1734645669291695 Td
+(| BR-017 | Super Admin may approve/disburse loans they created | Complete | Maker-checker exception for Super) Tj
+T* (Admin only \(v1.8.0\) |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 694.4884251968503577 Td
 (| BR-017 | Interest calculation | Rejected | Interest-free product by design |) Tj
 ET
 BT
 /F2 12 Tf
 13.7999999999999989 TL
 0.059 0.431 0.337 rg
-39.6850393700787407 708.6616535433070112 Td
+39.6850393700787407 668.9766141732283131 Td
 (4. Collections and payments) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 685.9844881889763428 Td
+39.6850393700787407 646.2994488188976447 Td
 (| ID | Requirement | Status | Notes |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 660.4726771653542983 Td
+39.6850393700787407 620.7876377952754865 Td
 (|----|-------------|--------|-------|) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 634.9608661417322537 Td
+39.6850393700787407 595.2758267716535556 Td
 (| BR-020 | Record full weekly collection amount | Complete | No partial payments |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 609.4490551181102092 Td
+39.6850393700787407 569.7640157480313974 Td
 (| BR-021 | GPS capture on field payment | Complete | Collector field shell |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 583.9372440944881646 Td
+39.6850393700787407 544.2522047244094665 Td
 (| BR-022 | Same-day edit window for collectors | Complete | Immutable after day-end |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 558.42543307086612 Td
+39.6850393700787407 518.7403937007873083 Td
 (| BR-023 | Payment reversal with audit | Complete | Controlled reversal paths |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 532.9136220472440755 Td
+39.6850393700787407 493.2285826771653205 Td
 (| BR-024 | Admin fee collection | Complete | Separate from loan repayment |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 507.4018110236219741 Td
+39.6850393700787407 467.716771653543276 Td
 (| BR-025 | Offline payment queue | Complete | Collector offline store |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 481.8899999999999295 Td
+39.6850393700787407 442.2049606299212314 Td
 (| BR-026 | Mobile money integration | Deferred | v1.8 integrations |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 456.378188976377885 Td
+39.6850393700787407 416.69314960629913 Td
 (| BR-027 | Bank transfer recording | Planned | v1.8 with statement import |) Tj
 ET
 BT
 /F2 12 Tf
 13.7999999999999989 TL
 0.059 0.431 0.337 rg
-39.6850393700787407 430.8663779527558404 Td
+39.6850393700787407 391.1813385826770855 Td
 (5. Reconciliation) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 408.1892125984251152 Td
+39.6850393700787407 368.5041732283464171 Td
 (| ID | Requirement | Status | Notes |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 382.6774015748030706 Td
+39.6850393700787407 342.9923622047243725 Td
 (|----|-------------|--------|-------|) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 357.1655905511810261 Td
+39.6850393700787407 317.480551181102328 Td
 (| BR-030 | Daily collector reconciliation | Complete | Submit and review workflow |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 331.6537795275589815 Td
+39.6850393700787407 291.9687401574802834 Td
 (| BR-031 | Overpayment review queue | Complete | Approver/admin resolution |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 306.1419685039369369 Td
+39.6850393700787407 266.4569291338582389 Td
 (| BR-032 | Reconciliation aging on dashboard | Complete | v1.7.2 operational dashboard |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 280.6301574803148924 Td
+39.6850393700787407 240.9451181102361943 Td
 (| BR-033 | Automated bank reconciliation | Deferred | v1.8 bank import |) Tj
 ET
 BT
 /F2 12 Tf
 13.7999999999999989 TL
 0.059 0.431 0.337 rg
-39.6850393700787407 255.1183464566928478 Td
+39.6850393700787407 215.4333070866141497 Td
 (6. Capital pools) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 232.4411811023621794 Td
+39.6850393700787407 192.7561417322833677 Td
 (| ID | Requirement | Status | Notes |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 206.9293700787401349 Td
+39.6850393700787407 167.2443307086613231 Td
 (|----|-------------|--------|-------|) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 181.4175590551179766 Td
+39.6850393700787407 141.7325196850392786 Td
 (| BR-040 | Pool creation and replenishment | Complete | Super admin |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 155.9057480314959321 Td
+39.6850393700787407 116.220708661417234 Td
 (| BR-041 | Pool ledger \(replenishment, disbursement, repayment, adjustment\) | Complete | Integer pesewas |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 130.3939370078738875 Td
+39.6850393700787407 90.7088976377951894 Td
 (| BR-042 | Available balance hard-stop | Complete | Disbursement blocked |) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 104.882125984251843 Td
-(| BR-043 | Multi-pool per organisation | Complete | Multiple pools supported |) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 79.3703149606297984 Td
-(| BR-044 | Inter-pool transfers | Planned | v2.0 multi-branch |) Tj
 ET
 BT
 /F1 7 Tf
@@ -447,213 +441,213 @@ endobj
 endobj
 8 0 obj
 <<
-/Length 4331
+/Length 4509
 >>
 stream
 0.5670000000000001 w
 0 G
 BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 785.1970866141732586 Td
+(| BR-043 | Multi-pool per organisation | Complete | Multiple pools supported |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 759.6852755905511003 Td
+(| BR-044 | Inter-pool transfers | Planned | v2.0 multi-branch |) Tj
+ET
+BT
 /F2 12 Tf
 13.7999999999999989 TL
 0.059 0.431 0.337 rg
-39.6850393700787407 785.1970866141732586 Td
+39.6850393700787407 734.1734645669291695 Td
 (7. Expenses) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 762.5199212598424765 Td
-(| ID | Requirement | Status | Notes |) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 737.0081102362204319 Td
-(|----|-------------|--------|-------|) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
 39.6850393700787407 711.4962992125983874 Td
-(| BR-050 | Field expense recording | Complete | Collector portal |) Tj
+(| ID | Requirement | Status | Notes |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 685.9844881889763428 Td
-(| BR-051 | HQ expense recording | Complete | Admin portal |) Tj
+(|----|-------------|--------|-------|) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 660.4726771653542983 Td
-( |   B R - 0 5 2   |   M a k e r - c h e c k e r   e x p e n s e   a p p r o v a l   |   C o m p l e t e   |   S u b m i t t e r  "`   a p p r o v e r   |) Tj
+(| BR-050 | Field expense recording | Complete | Collector portal |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 634.9608661417322537 Td
-(| BR-053 | Expense affect operating cash only | Complete | Not loan principal |) Tj
+(| BR-051 | HQ expense recording | Complete | Admin portal |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 609.4490551181102092 Td
+( |   B R - 0 5 2   |   M a k e r - c h e c k e r   e x p e n s e   a p p r o v a l   |   C o m p l e t e   |   S u b m i t t e r  "`   a p p r o v e r   |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 583.9372440944881646 Td
+(| BR-053 | Expense affect operating cash only | Complete | Not loan principal |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 558.42543307086612 Td
 (| BR-054 | Expense budget limits | Planned | v1.9 automation |) Tj
 ET
 BT
 /F2 12 Tf
 13.7999999999999989 TL
 0.059 0.431 0.337 rg
-39.6850393700787407 583.9372440944881646 Td
+39.6850393700787407 532.9136220472440755 Td
 (8. Groups and collectors) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 561.2600787401574962 Td
-(| ID | Requirement | Status | Notes |) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 535.748267716535338 Td
-(|----|-------------|--------|-------|) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
 39.6850393700787407 510.2364566929133503 Td
-(| BR-060 | Group formation workflow | Complete | Group formation module |) Tj
+(| ID | Requirement | Status | Notes |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 484.7246456692913057 Td
-(| BR-061 | Assign collector to group | Complete | Admin/approver action |) Tj
+(|----|-------------|--------|-------|) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 459.2128346456692611 Td
-(| BR-062 | Collector dashboard with assigned groups | Complete | Field shell |) Tj
+(| BR-060 | Group formation workflow | Complete | Group formation module |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 433.7010236220471597 Td
+(| BR-061 | Assign collector to group | Complete | Admin/approver action |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 408.1892125984251152 Td
+(| BR-062 | Collector dashboard with assigned groups | Complete | Field shell |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 382.6774015748030706 Td
 (| BR-063 | Collector performance metrics | Partial | Basic metrics; advanced analytics v1.9 |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 357.1655905511810261 Td
+(| BR-064 | Approver assign borrower to group | Complete | Non-silent Assign Group \(v1.8.0 Phase 11\) |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 331.6537795275589815 Td
+(| BR-065 | Operational group/collector reassignment | Complete | /ops/reassignment |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 306.1419685039369369 Td
+(| BR-066 | Payment day change with schedule recalculation | Complete | Enterprise approve + recalc |) Tj
 ET
 BT
 /F2 12 Tf
 13.7999999999999989 TL
 0.059 0.431 0.337 rg
-39.6850393700787407 408.1892125984251152 Td
+39.6850393700787407 280.6301574803148924 Td
 (9. RBAC and security) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 385.5120472440944468 Td
-(| ID | Requirement | Status | Notes |) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 360.0002362204724022 Td
-(|----|-------------|--------|-------|) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 334.4884251968503008 Td
-(| BR-070 | Five production roles | Complete | shared-rbac |) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 308.9766141732283131 Td
-(| BR-071 | Permission overrides | Complete | Admin-granted, audited |) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 283.4648031496062686 Td
-(| BR-072 | Force logout | Complete | Session invalidation |) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
 39.6850393700787407 257.952992125984224 Td
-(| BR-073 | Append-only audit log | Complete | No deletion |) Tj
+(| ID | Requirement | Status | Notes |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 232.4411811023621794 Td
-(| BR-074 | HMAC session authentication | Complete | Not Auth.js |) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 206.9293700787401349 Td
-(| BR-075 | Multi-organisation tenancy | Deferred | v2.0 |) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 181.4175590551179766 Td
-(| BR-076 | SSO / SAML integration | Planned | v2.0 enterprise |) Tj
-ET
-BT
-/F2 12 Tf
-13.7999999999999989 TL
-0.059 0.431 0.337 rg
-39.6850393700787407 155.9057480314959321 Td
-(10. Reporting and intelligence) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 133.2285826771652637 Td
-(| ID | Requirement | Status | Notes |) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 107.7167716535432191 Td
 (|----|-------------|--------|-------|) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 82.2049606299211746 Td
-(| BR-080 | Operational reports suite | Complete | Reports module |) Tj
+39.6850393700787407 206.9293700787401349 Td
+(| BR-070 | Five production roles | Complete | shared-rbac |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 181.4175590551179766 Td
+(| BR-071 | Permission overrides | Complete | Admin-granted, audited |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 155.9057480314959321 Td
+(| BR-072 | Force logout | Complete | Session invalidation |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 130.3939370078738875 Td
+(| BR-073 | Append-only audit log | Complete | No deletion |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 104.882125984251843 Td
+(| BR-074 | HMAC session authentication | Complete | Not Auth.js |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 79.3703149606297984 Td
+(| BR-075 | Multi-organisation tenancy | Deferred | v2.0 |) Tj
 ET
 BT
 /F1 7 Tf
@@ -674,7 +668,7 @@ endobj
 endobj
 10 0 obj
 <<
-/Length 4311
+/Length 4367
 >>
 stream
 0.5670000000000001 w
@@ -684,203 +678,197 @@ BT
 8.0499999999999989 TL
 0.361 g
 39.6850393700787407 785.1970866141732586 Td
+(| BR-076 | SSO / SAML integration | Planned | v2.0 enterprise |) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 759.6852755905511003 Td
+(10. Reporting and intelligence) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 737.0081102362204319 Td
+(| ID | Requirement | Status | Notes |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 711.4962992125983874 Td
+(|----|-------------|--------|-------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 685.9844881889763428 Td
+(| BR-080 | Operational reports suite | Complete | Reports module |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 660.4726771653542983 Td
 (| BR-081 | Executive intelligence dashboard | Complete | v1.7.0+ |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 759.6852755905511003 Td
+39.6850393700787407 634.9608661417322537 Td
 (| BR-082 | Forecasting | Complete | Schedule-based projection |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 734.1734645669291695 Td
-(| BR-083 | Portfolio breakdown | Complete | District/community/group |) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 708.6616535433070112 Td
-(| BR-084 | Compliance pack export | Complete | Executive intelligence |) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 683.1498425196850803 Td
-(| BR-085 | Standalone Export Center | Rejected | Removed v1.7.3; contextual exports |) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 657.6380314960629221 Td
-(| BR-086 | Contextual export from reports/profiles | Complete | Primary export pattern v1.7.3 |) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 632.1262204724408775 Td
-(| BR-087 | Scheduled report delivery | Planned | v1.9 automation |) Tj
-ET
-BT
-/F2 12 Tf
-13.7999999999999989 TL
-0.059 0.431 0.337 rg
-39.6850393700787407 606.614409448818833 Td
-(11. Notifications and communications) Tj
+39.6850393700787407 609.4490551181102092 Td
+(| BR-083 | Portfolio breakdown | Complete | Region / MMDA / sub-district / electoral area / community |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 583.9372440944881646 Td
+(| BR-088 | Ghana administrative location master | Complete | Hierarchy v2; 16 regions; 261 MMDAs; STMA deep) Tj
+T* (coverage; suggestion workflow; offline cache |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 544.2522047244094665 Td
+(| BR-084 | Compliance pack export | Complete | Executive intelligence |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 518.7403937007873083 Td
+(| BR-085 | Standalone Export Center | Rejected | Removed v1.7.3; contextual exports |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 493.2285826771653205 Td
+(| BR-086 | Contextual export from reports/profiles | Complete | Primary export pattern v1.7.3 |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 467.716771653543276 Td
+(| BR-087 | Scheduled report delivery | Planned | v1.9 automation |) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 442.2049606299212314 Td
+(11. Notifications and communications) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 419.5277952755905062 Td
 (| ID | Requirement | Status | Notes |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 558.42543307086612 Td
+39.6850393700787407 394.0159842519684616 Td
 (|----|-------------|--------|-------|) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 532.9136220472440755 Td
+39.6850393700787407 368.5041732283464171 Td
 (| BR-090 | In-app notifications | Complete | Notification inbox |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 507.4018110236219741 Td
+39.6850393700787407 342.9923622047243725 Td
 (| BR-091 | Email notifications | Complete | Transactional email |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 481.8899999999999295 Td
+39.6850393700787407 317.480551181102328 Td
 (| BR-092 | SMS notifications | Complete | Provider-configured |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 456.378188976377885 Td
+39.6850393700787407 291.9687401574802834 Td
 (| BR-093 | Notification deduplication | Complete | Dispatch layer |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 430.8663779527558404 Td
+39.6850393700787407 266.4569291338582389 Td
 (| BR-094 | Quiet hours | Complete | Organisation settings |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 405.3545669291337958 Td
+39.6850393700787407 240.9451181102361943 Td
 (| BR-095 | Communications center | Complete | Templates, broadcasts, threads |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 379.8427559055117513 Td
-(| BR-096 | Borrower SMS reminders | Planned | v2.5 engagement |) Tj
+39.6850393700787407 215.4333070866141497 Td
+(| BR-096 | Borrower lifecycle SMS/email | Complete | Registration through delinquency ladder \(v1.8.0 Phase 11\) |) Tj
 ET
 BT
 /F2 12 Tf
 13.7999999999999989 TL
 0.059 0.431 0.337 rg
-39.6850393700787407 354.3309448818897067 Td
+39.6850393700787407 189.9214960629919915 Td
 (12. Operations) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 331.6537795275589815 Td
+39.6850393700787407 167.2443307086613231 Td
 (| ID | Requirement | Status | Notes |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 306.1419685039369369 Td
+39.6850393700787407 141.7325196850392786 Td
 (|----|-------------|--------|-------|) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 280.6301574803148924 Td
+39.6850393700787407 116.220708661417234 Td
 (| BR-100 | Health endpoint | Complete | /health |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 255.1183464566928478 Td
+39.6850393700787407 90.7088976377951894 Td
 (| BR-101 | Ops incidents | Complete | v1.7.0+ |) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 229.6065354330708033 Td
-(| BR-102 | Maintenance windows | Complete | v1.7.0+ |) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 204.0947244094487587 Td
-(| BR-103 | Vercel Cron notification dispatch | Complete | Daily 06:00 UTC |) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 178.5829133858267141 Td
-(| BR-104 | Redis job queue | Deferred | Current scale sufficient |) Tj
-ET
-BT
-/F2 12 Tf
-13.7999999999999989 TL
-0.059 0.431 0.337 rg
-39.6850393700787407 153.0711023622046696 Td
-(13. UI/UX) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 130.3939370078738875 Td
-(| ID | Requirement | Status | Notes |) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 104.882125984251843 Td
-(|----|-------------|--------|-------|) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 79.3703149606297984 Td
-(| BR-110 | Design system tokens | Complete | Tailwind + CSS vars |) Tj
 ET
 BT
 /F1 7 Tf
@@ -901,7 +889,7 @@ endobj
 endobj
 12 0 obj
 <<
-/Length 4073
+/Length 4266
 >>
 stream
 0.5670000000000001 w
@@ -911,203 +899,203 @@ BT
 8.0499999999999989 TL
 0.361 g
 39.6850393700787407 785.1970866141732586 Td
-(| BR-111 | Office and field shell profiles | Complete | DashboardShell |) Tj
+(| BR-102 | Maintenance windows | Complete | v1.7.0+ |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 759.6852755905511003 Td
-(| BR-112 | Product Tour 2.0 | Complete | v1.7.2 |) Tj
+(| BR-103 | Vercel Cron notification dispatch | Complete | Daily 06:00 UTC |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 734.1734645669291695 Td
-(| BR-113 | Guided onboarding | Partial | Foundation; full flow RC2 |) Tj
+(| BR-104 | Redis job queue | Deferred | Current scale sufficient |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 708.6616535433070112 Td
-(| BR-114 | Full shadcn migration | Partial | High-traffic routes done |) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 683.1498425196850803 Td
-(| BR-115 | WCAG 2.1 AA compliance | Partial | Remediations ongoing |) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 657.6380314960629221 Td
-(| BR-116 | Localized UI | Deferred | v3.0 |) Tj
+(| BR-105 | Operations reassignment console | Complete | Group, collector, payment day |) Tj
 ET
 BT
 /F2 12 Tf
 13.7999999999999989 TL
 0.059 0.431 0.337 rg
-39.6850393700787407 632.1262204724408775 Td
-(14. Platform and deployment) Tj
+39.6850393700787407 683.1498425196850803 Td
+(13. UI/UX) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 660.4726771653542983 Td
+(| ID | Requirement | Status | Notes |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 634.9608661417322537 Td
+(|----|-------------|--------|-------|) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 609.4490551181102092 Td
-(| ID | Requirement | Status | Notes |) Tj
+(| BR-110 | Design system tokens | Complete | Tailwind + CSS vars |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 583.9372440944881646 Td
-(|----|-------------|--------|-------|) Tj
+(| BR-111 | Office and field shell profiles | Complete | DashboardShell |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 558.42543307086612 Td
-(| BR-120 | Vercel + Neon deployment | Complete | Production |) Tj
+(| BR-112 | Product Tour 2.0 | Complete | v1.7.2 |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 532.9136220472440755 Td
-(| BR-121 | Domain extraction monorepo | Complete | v1.5.0 |) Tj
+(| BR-113 | Guided onboarding | Partial | Foundation; full flow RC2 |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 507.4018110236219741 Td
-(| BR-122 | Route Handler in-process API | Complete | Default mode |) Tj
+(| BR-114 | Full shadcn migration | Partial | High-traffic routes done |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 481.8899999999999295 Td
-(| BR-123 | Migration journal | Complete | Drizzle SQL |) Tj
+(| BR-115 | WCAG 2.1 AA compliance | Partial | Remediations ongoing |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 456.378188976377885 Td
-(| BR-124 | PWA with offline support | Complete | Collector focus |) Tj
-ET
-BT
-/F1 10 Tf
-11.5 TL
-0.157 g
-39.6850393700787407 430.8663779527558404 Td
-(| BR-125 | Native mobile app | Deferred | PWA sufficient |) Tj
+(| BR-116 | Localized UI | Deferred | v3.0 |) Tj
 ET
 BT
 /F2 12 Tf
 13.7999999999999989 TL
 0.059 0.431 0.337 rg
-39.6850393700787407 405.3545669291337958 Td
-(15. Documentation \(v1.7.3\)) Tj
+39.6850393700787407 430.8663779527558404 Td
+(14. Platform and deployment) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 382.6774015748030706 Td
+39.6850393700787407 408.1892125984251152 Td
 (| ID | Requirement | Status | Notes |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
-39.6850393700787407 357.1655905511810261 Td
+39.6850393700787407 382.6774015748030706 Td
 (|----|-------------|--------|-------|) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
+39.6850393700787407 357.1655905511810261 Td
+(| BR-120 | Vercel + Neon deployment | Complete | Production |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
 39.6850393700787407 331.6537795275589815 Td
-(| BR-130 | Official documentation library | Complete | v1.7.3 |) Tj
+(| BR-121 | Domain extraction monorepo | Complete | v1.5.0 |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 306.1419685039369369 Td
-(| BR-131 | Role-based user manuals | Complete | Five roles |) Tj
+(| BR-122 | Route Handler in-process API | Complete | Default mode |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 280.6301574803148924 Td
-(| BR-132 | Branded PDF/DOCX generation | Complete | docs:generate script |) Tj
+(| BR-123 | Migration journal | Complete | Drizzle SQL |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 255.1183464566928478 Td
-(| BR-133 | Static docs web portal | Planned | Structure defined; deploy pending |) Tj
+(| BR-124 | PWA with offline support | Complete | Collector focus |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 229.6065354330708033 Td
-(| BR-134 | OpenAPI specification | Planned | v1.8 |) Tj
+(| BR-125 | Native mobile app | Deferred | PWA sufficient |) Tj
 ET
 BT
 /F2 12 Tf
 13.7999999999999989 TL
 0.059 0.431 0.337 rg
 39.6850393700787407 204.0947244094487587 Td
-(16. Summary statistics) Tj
+(15. Documentation \(v1.7.3\)) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 181.4175590551179766 Td
-(| Status | Count |) Tj
+(| ID | Requirement | Status | Notes |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 155.9057480314959321 Td
-(|--------|-------|) Tj
+(|----|-------------|--------|-------|) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 130.3939370078738875 Td
-(| Complete | 62 |) Tj
+(| BR-130 | Official documentation library | Complete | v1.7.3 |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 104.882125984251843 Td
-(| Partial | 6 |) Tj
+(| BR-131 | Role-based user manuals | Complete | Five roles |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 79.3703149606297984 Td
-(| Planned | 8 |) Tj
+(| BR-132 | Branded PDF/DOCX generation | Complete | docs:generate script |) Tj
 ET
 BT
 /F1 7 Tf
@@ -1128,7 +1116,7 @@ endobj
 endobj
 14 0 obj
 <<
-/Length 640
+/Length 2401
 >>
 stream
 0.5670000000000001 w
@@ -1138,20 +1126,111 @@ BT
 8.0499999999999989 TL
 0.361 g
 39.6850393700787407 785.1970866141732586 Td
-(| Deferred | 10 |) Tj
+(| BR-133 | Static docs web portal | Planned | Structure defined; deploy pending |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 759.6852755905511003 Td
-(| Rejected | 2 |) Tj
+(| BR-134 | OpenAPI specification | Planned | v1.8 |) Tj
 ET
 BT
 /F1 10 Tf
 11.5 TL
 0.157 g
 39.6850393700787407 734.1734645669291695 Td
+(| BR-135 | Guarantor may cover three active borrowers | Complete | Duplicate only for same borrower |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 708.6616535433070112 Td
+(| BR-136 | Official readable document IDs | Complete | BRW / LN / COL formats |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 683.1498425196850803 Td
+(| BR-137 | Collector borrower update requests | Complete | Officer / Super Admin approval |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 657.6380314960629221 Td
+(| BR-138 | Group collection GPS with exception audit | Complete | Confirmation + reason required |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 632.1262204724408775 Td
+(| BR-139 | Mandatory borrower SMS | Complete | Outage flag only |) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 606.614409448818833 Td
+(16. Summary statistics) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 583.9372440944881646 Td
+(| Status | Count |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 558.42543307086612 Td
+(|--------|-------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 532.9136220472440755 Td
+(| Complete | 62 |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 507.4018110236219741 Td
+(| Partial | 6 |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 481.8899999999999295 Td
+(| Planned | 8 |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 456.378188976377885 Td
+(| Deferred | 10 |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 430.8663779527558404 Td
+(| Rejected | 2 |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 405.3545669291337958 Td
 (CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping) Tj
 T* (only.) Tj
 ET
@@ -1334,7 +1413,7 @@ endobj
 29 0 obj
 <<
 /Producer (jsPDF 4.2.1)
-/CreationDate (D:20260807180738-00'00')
+/CreationDate (D:20260813155505-00'00')
 >>
 endobj
 30 0 obj
@@ -1348,43 +1427,43 @@ endobj
 xref
 0 31
 0000000000 65535 f 
-0000023346 00000 n 
-0000025200 00000 n 
+0000025480 00000 n 
+0000027334 00000 n 
 0000000015 00000 n 
 0000000152 00000 n 
-0000004473 00000 n 
-0000004610 00000 n 
-0000009228 00000 n 
-0000009365 00000 n 
-0000013748 00000 n 
-0000013886 00000 n 
-0000018250 00000 n 
-0000018389 00000 n 
-0000022515 00000 n 
-0000022654 00000 n 
-0000023435 00000 n 
-0000023561 00000 n 
-0000023692 00000 n 
-0000023826 00000 n 
-0000023964 00000 n 
-0000024088 00000 n 
-0000024217 00000 n 
-0000024349 00000 n 
-0000024485 00000 n 
-0000024613 00000 n 
-0000024740 00000 n 
-0000024869 00000 n 
-0000025002 00000 n 
-0000025104 00000 n 
-0000025453 00000 n 
-0000025539 00000 n 
+0000004501 00000 n 
+0000004638 00000 n 
+0000009173 00000 n 
+0000009310 00000 n 
+0000013871 00000 n 
+0000014009 00000 n 
+0000018429 00000 n 
+0000018568 00000 n 
+0000022887 00000 n 
+0000023026 00000 n 
+0000025569 00000 n 
+0000025695 00000 n 
+0000025826 00000 n 
+0000025960 00000 n 
+0000026098 00000 n 
+0000026222 00000 n 
+0000026351 00000 n 
+0000026483 00000 n 
+0000026619 00000 n 
+0000026747 00000 n 
+0000026874 00000 n 
+0000027003 00000 n 
+0000027136 00000 n 
+0000027238 00000 n 
+0000027587 00000 n 
+0000027673 00000 n 
 trailer
 <<
 /Size 31
 /Root 30 0 R
 /Info 29 0 R
-/ID [ <999543B560F02F435BB86131580D1372> <999543B560F02F435BB86131580D1372> ]
+/ID [ <B28A42F5853D061CD86F412321A747F7> <B28A42F5853D061CD86F412321A747F7> ]
 >>
 startxref
-25643
+27777
 %%EOF

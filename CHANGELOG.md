@@ -5,6 +5,7 @@ All notable changes to WILMS are documented in this file.
 ## [1.8.0] — Enterprise Design, Automation & Platform Readiness
 
 **Date:** August 2026  
+**Final production closure:** 13 August 2026 (`feature/v1.8.0-final-quality-market-readiness`, PR #203, tag `v1.8.0-final`) — same release identity; **no version bump**
 **Branch:** `feature/v1.8-enterprise-design-automation`  
 **Post-release update:** August 2026 (`fix/v1.8.0-ui-modernisation`) — same release identity; **no new tag / no v1.8.1**  
 **Production-readiness closure:** August 2026 (`fix/v1.8.0-production-readiness`) — same release identity; **no new tag / no retag of `v1.8.0`**
@@ -14,6 +15,17 @@ All notable changes to WILMS are documented in this file.
 **SA UX / registration / communications follow-up:** August 2026 (`fix/v1.8.0-sa-ux-comms-registration`) — same release identity
 **Ghana location master:** August 2026 (`feature/v1.8.0-location-master`) — same release identity; **no new product tag / no v1.8.1**
 **Borrower communication correction:** August 2026 (`feature/v1.8.0-borrower-communication-correction`) — same release identity; SMS lifecycle aligned to the real workflow (admin fee after loan approval)
+
+### Final production closure (August 2026)
+
+- Guarantor capacity corrected: up to three active borrowers; duplicate only for the same borrower
+- Registration and Approver review show Region → MMDA → Sub-District → Electoral Area → Community → City/Town
+- Official readable IDs (`BRW-YYYY-NNNNN`, `LN-YYYY-NNNNN`) and branded `WILMS_` export filenames
+- Collector identity printed as `Name (COL-###)` on payment logs, exports, and reconciliation
+- Group-collection GPS capture with exception audit; GPS visible on reconciliation, daily collection, ledger, and collector recent payments
+- Collector borrower-update request workflow (migration `0044_v180_borrower_update_requests`)
+- Mandatory borrower SMS policy retained; update approved/rejected SMS wired
+- Evidence: `docs/v1.8.0/market-readiness/`, `documentation/release/WILMS_v1.8.0_FINAL_PRODUCTION_RELEASE_REPORT.md`
 
 ### Added
 

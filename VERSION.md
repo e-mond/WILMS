@@ -3,7 +3,8 @@
 | Field | Value |
 |-------|-------|
 | **Current release** | `v1.8.0` |
-| **In progress** | Enterprise design, automation & platform readiness |
+| **Final certification tag** | `v1.8.0-final` |
+| **In progress** | Final production certified (market readiness closed) |
 | **Release type** | Platform refinement |
 | **Previous release** | `v1.7.5` (offline, push & modernisation) |
 | **Date** | August 2026 |
@@ -24,5 +25,6 @@
 - Unique financial-grade icon system; iOS-inspired enterprise UI
 - Offline-first completion; automation / workflow / rule engines
 - Expanded push categories; documentation suite updates
+- Final quality / market-readiness: guarantor capacity, readable IDs, branded exports, GPS visibility, borrower update requests, mandatory borrower SMS
 
-See `docs/v1.8.0/` for the release pack.
+See `docs/v1.8.0/` and `documentation/release/WILMS_v1.8.0_FINAL_PRODUCTION_RELEASE_REPORT.md`.
