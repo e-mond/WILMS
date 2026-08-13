@@ -402,6 +402,10 @@ export async function getBorrowerFullProfile(id: string) {
   const detail = toDetail(record);
   let loans: Awaited<ReturnType<typeof loanService.listBorrowerLoans>> = [];
   let progress: Awaited<ReturnType<typeof loanService.getLoanProgress>> | null = null;
+  let groupRole: 'LEADER' | 'MEMBER' | null = null;
+  let groupDisplayName = record.groupName || null;
+  let collectorLabel: string | null = null;
+  let collectorId: string | null = null;
 
   if (isDatabaseEnabled()) {
     loans = await loanService.listBorrowerLoans(id);
@@ -415,10 +419,39 @@ export async function getBorrowerFullProfile(id: string) {
         progress = null;
       }
     }
+
+    if (record.groupId) {
+      try {
+        const { getGroupDetail } = await import('../groups/service.js');
+        const { formatCollectorStaffLabel } = await import('@wilms/shared-utils');
+        const group = await getGroupDetail(record.groupId);
+        groupDisplayName = group.displayName || group.name || groupDisplayName;
+        groupRole = group.leader?.borrowerId === id ? 'LEADER' : 'MEMBER';
+        if (group.collector?.id && group.collector.id !== 'unassigned') {
+          collectorId = group.collector.id;
+          const collectorRow = await userRepo.listCollectors().then((rows) =>
+            rows.find(({ user }) => user.id === group.collector.id),
+          );
+          collectorLabel = formatCollectorStaffLabel({
+            fullName: group.collector.fullName,
+            collectorCode: collectorRow?.collector?.collectorCode,
+            staffId: collectorRow?.user.staffId,
+          });
+        }
+      } catch {
+        groupRole = record.groupId ? 'MEMBER' : null;
+      }
+    }
+  } else if (record.groupId) {
+    groupRole = 'MEMBER';
   }
 
   return {
     ...detail,
+    groupName: groupDisplayName ?? detail.groupName,
+    groupRole,
+    collectorId,
+    collectorLabel,
     loans,
     progress,
     risk: buildBorrowerRiskSummary(record, loans, progress),

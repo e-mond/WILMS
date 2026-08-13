@@ -21,6 +21,8 @@ export interface CollectorSummary {
   expensesSubmittedCount: number;
   status: CollectorStatus;
   streakWeeks: number;
+  /** Period-over-period collection trend: up / down / neutral. */
+  trendDirection?: 'up' | 'down' | 'neutral';
   cycleLabel: string;
   joinedAt: string;
   lastActiveAt: string;

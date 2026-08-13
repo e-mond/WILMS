@@ -10,6 +10,7 @@ import {
   OperationalMobileHeader,
 } from '@/layouts/OperationalMobileNavigation';
 import { useFilteredNavItems } from '@/hooks/useFilteredNavItems';
+import { useNavItemsWithBadges } from '@/hooks/useNavItemsWithBadges';
 import { getAppVersionLabel } from '@/lib/app-version';
 
 export interface OfficeShellProps {
@@ -42,6 +43,7 @@ export function OfficeShell({
   enableMobileNavDrawer,
 }: OfficeShellProps) {
   const filteredNavItems = useFilteredNavItems(navItems);
+  const badgedNavItems = useNavItemsWithBadges(filteredNavItems);
   const isExecutive = sidebarVariant === 'executive';
   const resolvedBrandTitle = brandTitle ?? 'WILMS';
 
@@ -49,7 +51,7 @@ export function OfficeShell({
     <DashboardShell
       shellId={shellId}
       profile={SHELL_PROFILE.OFFICE}
-      navItems={filteredNavItems}
+      navItems={badgedNavItems}
       navAriaLabel={navAriaLabel}
       mobileNavDrawerTitle={mobileNavDrawerTitle}
       sidebarVariant={sidebarVariant}
@@ -66,7 +68,7 @@ export function OfficeShell({
       bottomNavigation={
         operationalMobileNav ? (
           <OperationalBottomNavigation
-            navItems={filteredNavItems}
+            navItems={badgedNavItems}
             ariaLabel={`${navAriaLabel} bottom navigation`}
           />
         ) : undefined

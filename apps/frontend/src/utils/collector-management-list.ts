@@ -8,6 +8,7 @@ import {
   type CollectorSummary,
 } from '@/types/collector-management';
 import { TRANSACTION_TYPE, type FinancialTransaction } from '@/types/transaction';
+import { rollingSixMonthLabels } from '@/utils/collector-trend';
 
 export function buildCollectorSummaries(
   transactions: readonly FinancialTransaction[],
@@ -32,14 +33,12 @@ export function buildCollectorSummaries(
         : Math.round((collectedPesewas / expectedPesewas) * 1000) / 10;
 
     const rate = Math.min(collectionRatePercent, 100);
-    const monthlyPerformance = [
-      { monthLabel: 'Dec', collectionRatePercent: Math.max(rate - 12, 0) },
-      { monthLabel: 'Jan', collectionRatePercent: Math.max(rate - 9, 0) },
-      { monthLabel: 'Feb', collectionRatePercent: Math.max(rate - 7, 0) },
-      { monthLabel: 'Mar', collectionRatePercent: Math.max(rate - 5, 0) },
-      { monthLabel: 'Apr', collectionRatePercent: Math.max(rate - 2, 0) },
-      { monthLabel: 'May', collectionRatePercent: rate },
-    ];
+    const monthLabels = rollingSixMonthLabels();
+    const offsets = [12, 9, 7, 5, 2, 0];
+    const monthlyPerformance = monthLabels.map((monthLabel, monthIndex) => ({
+      monthLabel,
+      collectionRatePercent: Math.max(rate - offsets[monthIndex]!, 0),
+    }));
 
     return {
       id: collector.id,
@@ -55,7 +54,8 @@ export function buildCollectorSummaries(
       expensesSubmittedCount: index === 0 ? 9 : 6,
       status: COLLECTOR_STATUS.ACTIVE,
       streakWeeks: index === 0 ? 5 : 2,
-      cycleLabel: 'Jun 2026',
+      trendDirection: index === 0 ? 'up' : 'neutral',
+      cycleLabel: 'Current cycle',
       joinedAt: '2022-02-01',
       lastActiveAt: new Date().toISOString(),
       rateTrend: monthlyPerformance.map((entry) => entry.collectionRatePercent),

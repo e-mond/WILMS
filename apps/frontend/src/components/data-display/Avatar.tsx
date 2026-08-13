@@ -1,6 +1,6 @@
 import { cn } from '@/utils/cn';
 
-export type AvatarSize = 'sm' | 'md' | 'lg';
+export type AvatarSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 
 export interface AvatarProps {
   label: string;
@@ -13,6 +13,8 @@ const SIZE_CLASS: Record<AvatarSize, string> = {
   sm: 'h-7 w-7 text-small',
   md: 'h-9 w-9 text-small',
   lg: 'h-12 w-12 text-body',
+  xl: 'h-24 w-24 text-heading-3',
+  '2xl': 'h-32 w-32 text-heading-2',
 };
 
 export function Avatar({ label, photoUrl, size = 'md', className }: AvatarProps) {

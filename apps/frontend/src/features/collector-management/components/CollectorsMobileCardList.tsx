@@ -1,11 +1,15 @@
 import {
   Avatar,
   CurrencyAmount,
-  Sparkline,
 } from '@/components/data-display';
 import { CollectorStreakIcon } from '@/components/icons/CollectorStreakIcon';
 import type { CollectorSummary } from '@/types/collector-management';
 import { collectorRateTextClass } from '@/utils/collector-rate-display';
+import {
+  collectorTrendClassName,
+  collectorTrendSymbol,
+  resolveCollectorTrendDirection,
+} from '@/utils/collector-trend';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
 import { resolveCollectorDisplayId } from '@/utils/entity-display-id';
 import { cn } from '@/utils/cn';
@@ -111,7 +115,17 @@ export function CollectorsMobileCardList({
             </dl>
             <div className="mt-wilms-3 flex items-center justify-between gap-wilms-2">
               <span className="text-small text-text-muted">Trend</span>
-              <Sparkline values={collector.rateTrend} />
+              {(() => {
+                const direction = resolveCollectorTrendDirection(collector);
+                return (
+                  <span
+                    className={`font-semibold ${collectorTrendClassName(direction)}`}
+                    aria-label={`Trend ${direction}`}
+                  >
+                    {collectorTrendSymbol(direction)}
+                  </span>
+                );
+              })()}
             </div>
           </button>
         </li>

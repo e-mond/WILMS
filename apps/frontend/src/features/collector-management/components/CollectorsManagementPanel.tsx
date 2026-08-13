@@ -6,7 +6,6 @@ import {
   CurrencyAmount,
   DataTable,
   KpiCard,
-  Sparkline,
 } from '@/components/data-display';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import {
@@ -18,6 +17,11 @@ import {
 import { CollectorsKpiIcon } from '@/components/icons/CollectorsKpiIcon';
 import { CollectorStreakIcon } from '@/components/icons/CollectorStreakIcon';
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
+import {
+  collectorTrendClassName,
+  collectorTrendSymbol,
+  resolveCollectorTrendDirection,
+} from '@/utils/collector-trend';
 import { WILMS_REPORT_TYPE } from '@/features/export';
 import { CollectorsAsidePanel } from '@/features/collector-management/components/CollectorsAsidePanel';
 import { CollectorsMobileCardList } from '@/features/collector-management/components/CollectorsMobileCardList';
@@ -295,7 +299,18 @@ export function CollectorsManagementPanel() {
                   {
                     id: 'trend',
                     header: 'Trend',
-                    cell: (row) => <Sparkline values={row.rateTrend} />,
+                    cell: (row) => {
+                      const direction = resolveCollectorTrendDirection(row);
+                      return (
+                        <span
+                          className={`font-semibold ${collectorTrendClassName(direction)}`}
+                          aria-label={`Trend ${direction}`}
+                          title={`Trend ${direction}`}
+                        >
+                          {collectorTrendSymbol(direction)}
+                        </span>
+                      );
+                    },
                   },
                   {
                     id: 'streak',

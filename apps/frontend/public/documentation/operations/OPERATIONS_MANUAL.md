@@ -249,4 +249,19 @@ Outputs in `documentation/pdf/` and `documentation/docx/`.
 
 ---
 
+## 15. Post-release dashboard & collector data (v1.8.0)
+
+Operational metric sources after the post-release data fix:
+
+| Surface | Source of truth |
+| --- | --- |
+| Collectors Borrowers / Trend / Streak | Domain collector list aggregates (assignments + payments) |
+| Sidebar Borrowers badge | Same `GET /borrowers` list as the Borrowers page (`APPROVED` + `AT_RISK`) |
+| Dashboard reconciliation widget | Same `GET /reconciliations` filter as the review queue |
+| Collector Alerts | Recent payments, pending reconciliations, low collection rates |
+
+Detail: `documentation/operations/DASHBOARD_DATA_CONSISTENCY_AUDIT.md` and `FINAL_POST_RELEASE_FIX_REPORT.md`.
+
+---
+
 *CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.*

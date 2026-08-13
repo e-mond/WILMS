@@ -88,4 +88,40 @@ describe('BorrowerProfilePanel', () => {
     expect(screen.getAllByText('Low Risk').length).toBeGreaterThan(0);
     expect(mockGetLoanSchedule).not.toHaveBeenCalled();
   });
+
+  it('renders group leader badge and collector label', async () => {
+    mockGetBorrowerFullProfile.mockResolvedValue({
+      id: 'borrower-leader',
+      fullName: 'Ama Leader',
+      phone: '+233200000001',
+      status: 'APPROVED',
+      groupName: 'Airport Ridge Group 001',
+      groupId: 'group-001',
+      groupRole: 'LEADER',
+      collectorId: 'col-012',
+      collectorLabel: 'Kwame Mensah (COL-012)',
+      nationalId: 'GHA-001',
+      community: 'Accra',
+      registeredAt: '2025-01-01T00:00:00.000Z',
+      risk: {
+        riskRating: 'Low',
+        missedPaymentCount: 0,
+        defaultStatus: 'None',
+        blacklistStatus: 'Clear',
+        flags: [],
+        notes: [],
+      },
+    });
+    mockListBorrowerLoans.mockResolvedValue([]);
+
+    render(
+      <TestQueryProvider>
+        <BorrowerProfilePanel borrowerId="borrower-leader" />
+      </TestQueryProvider>,
+    );
+
+    expect(await screen.findByRole('heading', { name: 'Ama Leader' })).toBeInTheDocument();
+    expect(screen.getAllByText('Group Leader').length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Kwame Mensah \(COL-012\)/).length).toBeGreaterThan(0);
+  });
 });
