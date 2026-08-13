@@ -546,6 +546,8 @@ export async function approveScheduleChange(input: {
       borrowerEmail: borrower.profile?.email,
       loanId: loan.id,
       dueDate: recalculated[0]?.dueDate ?? String(record.effectiveFrom),
+      paymentDay: String(record.toPaymentDay),
+      weeklyAmountPesewas: Math.round(Number(loan.installmentAmount) * 100),
       note: `Payment day moved to ${String(record.toPaymentDay)}.`,
     });
   }

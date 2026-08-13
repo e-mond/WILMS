@@ -48,7 +48,7 @@ npm run docs:prepare
 | Procurement Pack | `books/PROCUREMENT_PACK.md` | MD, PDF, DOCX |
 | Implementation Guide | `books/IMPLEMENTATION_GUIDE.md` | MD, PDF, DOCX |
 
-See also: `technical/`, `operations/`, `user-guides/`, `developer/`, `roadmap/`, `location/`.
+See also: `technical/`, `operations/`, `user-guides/`, `developer/`, `roadmap/`, `location/`, `notifications/`.
 
 ---
 
@@ -81,6 +81,21 @@ See also: `technical/`, `operations/`, `user-guides/`, `developer/`, `roadmap/`,
 | Import report | `location/GHANA_IMPORT_REPORT.md` |
 | Test report | `location/GHANA_HIERARCHY_TEST_REPORT.md` |
 | Final report | `location/FINAL_GHANA_HIERARCHY_REPORT.md` |
+
+---
+
+## Borrower communication (v1.8.0)
+
+| Document | Path |
+|----------|------|
+| Audit | `notifications/BORROWER_COMMUNICATION_AUDIT.md` |
+| Workflow | `notifications/BORROWER_COMMUNICATION_WORKFLOW.md` |
+| SMS library | `notifications/SMS_TEMPLATE_LIBRARY.md` |
+| Email library | `notifications/EMAIL_TEMPLATE_LIBRARY.md` |
+| Trigger matrix | `notifications/NOTIFICATION_TRIGGER_MATRIX.md` |
+| Scheduler timing | `notifications/SCHEDULER_NOTIFICATION_TIMING.md` |
+| Test report | `notifications/BORROWER_COMMUNICATION_TEST_REPORT.md` |
+| Final correction report | `notifications/FINAL_COMMUNICATION_CORRECTION_REPORT.md` |
 
 ---
 

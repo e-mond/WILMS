@@ -17,7 +17,11 @@ WILMS delivers multi-channel notifications and a Communications Center for progr
 |---------|-----------|
 | In-app | All event types; notification inbox |
 | Email | Login alerts, invitations, expense reviews |
-| SMS | Field alerts, payment confirmations |
+| SMS | Borrower lifecycle (registration through completion), payment reminders, field alerts |
+
+---
+
+## 3. Notification guarantees
 
 ---
 
@@ -41,15 +45,23 @@ Daily batch dispatch at 06:00 UTC via Vercel Cron (`/api/cron/notifications`). F
 
 | Event | Channels | Recipients |
 |-------|----------|------------|
+| Registration submitted / approved | SMS, email (optional/yes), in-app | Borrower (SMS), officer/collector |
+| Loan created / approved | SMS, email, in-app | Borrower (SMS), collector |
+| Admin fee / disbursement / schedule | SMS, email, in-app | Borrower (SMS), collector |
+| Payment reminder / due today | SMS; email optional or none | Borrower |
+| Missed / grace / escalation | SMS; email per matrix | Borrower, collector, Super Admin |
+| Payment received / loan completed | SMS, email, in-app | Borrower (SMS), collector |
 | Login alert | Email | User |
 | Invitation accepted | In-app | Admin |
 | Expense submitted | In-app, Email | Reviewers |
 | Expense approved/rejected | In-app, Email | Submitter |
-| Loan approved/rejected | In-app | Officer, Approver |
 | Reconciliation variance | In-app | Admin, Approver |
 | Overpayment review | In-app | Approver |
 | Ops incident | In-app | Admin |
 | Maintenance window | In-app | All users |
+
+Borrower SMS copy and timing: `documentation/notifications/`.
+
 
 ---
 

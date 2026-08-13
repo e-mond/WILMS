@@ -18,7 +18,8 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
       disabled={disabled}
       aria-invalid={hasError || undefined}
       className={cn(
-        'min-h-24 w-full rounded-sm border bg-card px-wilms-3 py-wilms-2 text-body text-text-primary placeholder:text-text-muted',
+        'min-h-24 w-full rounded-sm border border-border bg-card px-wilms-3 py-wilms-2 text-body text-text-primary placeholder:text-text-muted shadow-sm',
+        'supports-[color-scheme:dark]:[color-scheme:dark]',
         hasError ? 'border-danger' : 'border-border',
         'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary',
         'disabled:cursor-not-allowed disabled:opacity-50',

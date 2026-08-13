@@ -56,10 +56,15 @@ vi.mock('../../infrastructure/notifications/event-dispatch.js', () => ({
   notifyLoanApproved: mocks.notifyLoanApproved,
   notifyLoanRejected: vi.fn(),
   notifyLoanDisbursed: vi.fn(),
+  notifyLoanCreated: vi.fn(),
 }));
 
 vi.mock('../../infrastructure/idempotency/run-with-idempotency.js', () => ({
   runWithIdempotency: async (input: { execute: () => Promise<unknown> }) => input.execute(),
+}));
+
+vi.mock('../../modules/settings/service.js', () => ({
+  getSettings: vi.fn(async () => ({ adminFeePesewas: 5000 })),
 }));
 
 describe('loan approval SoD', () => {

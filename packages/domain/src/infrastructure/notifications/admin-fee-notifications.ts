@@ -83,6 +83,7 @@ export async function notifyAdminFeeRecorded(input: {
         } else {
           try {
             const body = buildAdminFeeConfirmationSmsBody({
+              borrowerName: input.borrowerName,
               amountPesewas: input.amountPesewas,
               loanDisplayId: input.loanDisplayId,
               paymentDate,
@@ -148,13 +149,13 @@ export async function notifyAdminFeeRecorded(input: {
           textLines: [
             `Dear ${input.borrowerName},`,
             '',
-            `We have received your admin fee of GHS ${amountGhs}${loanLine} on ${paymentDate}. Your application can now proceed to approval.`,
+            `We have received your admin fee of GHS ${amountGhs}${loanLine} on ${paymentDate}. Your loan is now being prepared for disbursement.`,
             '',
             '— WILMS',
           ],
           htmlBody: [
             emailParagraph(
-              `We have received your admin fee of GHS ${amountGhs}${loanLine}. Your application can now proceed to approval.`,
+              `We have received your admin fee of GHS ${amountGhs}${loanLine}. Your loan is now being prepared for disbursement.`,
             ),
             emailReceipt([
               { label: 'Amount', value: `GHS ${amountGhs}` },

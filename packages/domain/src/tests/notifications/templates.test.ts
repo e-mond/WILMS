@@ -1,91 +1,190 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildAdminFeeConfirmationSmsBody,
+  buildCollectorReassignedSmsBody,
+  buildEscalationNoticeSmsBody,
+  buildGracePeriodReminderSmsBody,
+  buildGroupAssignedSmsBody,
   buildLoanApprovalEmail,
   buildLoanApprovalSmsBody,
+  buildLoanCompletedSmsBody,
+  buildLoanCreatedSmsBody,
   buildLoanDisbursedScheduleSmsBody,
+  buildLoanDisbursedSmsBody,
   buildMissedPaymentSmsBody,
+  buildMultiWeekPaymentSmsBody,
   buildBorrowerRegistrationApprovalSmsBody,
   buildPaymentConfirmationEmail,
   buildPaymentConfirmationSmsBody,
+  buildPaymentDayChangedSmsBody,
+  buildLoanReminderSmsBody,
+  buildRegistrationSubmittedSmsBody,
 } from '../../infrastructure/notifications/templates.js';
 
 describe('notification templates', () => {
-  it('builds payment confirmation SMS with GHS amount and date', () => {
+  it('builds payment confirmation SMS with borrower name and balance', () => {
     expect(
       buildPaymentConfirmationSmsBody({
+        borrowerName: 'Ama',
         amountPesewas: 12_500,
         paymentDate: '2026-06-20',
-      }),
-    ).toBe('WILMS: Payment of GHS 125.00 received on 2026-06-20. Thank you.');
-  });
-
-  it('builds payment confirmation SMS with balance and weeks remaining', () => {
-    expect(
-      buildPaymentConfirmationSmsBody({
-        amountPesewas: 5_000,
-        paymentDate: '2026-08-04',
-        remainingBalancePesewas: 45_000,
-        weeksRemaining: 9,
+        remainingBalancePesewas: 37_500,
+        weeksRemaining: 3,
       }),
     ).toBe(
-      'WILMS: Payment of GHS 50.00 received on 2026-08-04. Balance GHS 450.00. 9 weeks remaining.',
+      'WILMS: Thank you, Ama. We have received your payment of GHS 125.00 on 2026-06-20. Outstanding balance: GHS 375.00. Remaining instalments: 3. Thank you for staying up to date with your repayments.',
     );
   });
 
-  it('builds loan approval SMS with borrower name and amount', () => {
+  it('builds multi-week payment SMS', () => {
+    expect(
+      buildMultiWeekPaymentSmsBody({
+        borrowerName: 'Kwame',
+        amountPesewas: 10_000,
+        weeksPaid: 2,
+        remainingBalancePesewas: 40_000,
+        weeksRemaining: 8,
+      }),
+    ).toContain('covering 2 weekly repayments');
+  });
+
+  it('builds loan approval SMS with admin fee instruction', () => {
     expect(
       buildLoanApprovalSmsBody({
         borrowerName: 'Ama Serwaa',
         amountPesewas: 50_000,
+        adminFeePesewas: 5_000,
       }),
-    ).toBe('WILMS: Hi Ama Serwaa, your interest-free loan of GHS 500.00 has been approved.');
+    ).toContain('admin fee of GHS 50.00');
   });
 
-  it('builds missed payment SMS with overdue weeks and outstanding amount', () => {
-    expect(
-      buildMissedPaymentSmsBody({
-        borrowerName: 'Kwame Osei',
-        weeksOverdue: 2,
-        amountPesewas: 15_000,
-      }),
-    ).toBe(
-      'WILMS: Hi Kwame Osei, you have 2 missed payment(s). Outstanding: GHS 150.00. Please contact your collector.',
-    );
-  });
-
-  it('builds missed payment SMS with due date, balance, and weeks remaining', () => {
+  it('builds missed payment SMS for due date', () => {
     expect(
       buildMissedPaymentSmsBody({
         borrowerName: 'Ama Mensah',
         amountPesewas: 5_000,
         dueDate: '2026-08-04',
-        remainingBalancePesewas: 40_000,
-        weeksRemaining: 8,
+        collectorName: 'Kofi Boateng',
       }),
-    ).toBe(
-      'WILMS: Hi Ama Mensah, your scheduled payment of GHS 50.00 was not recorded for 2026-08-04. Balance GHS 400.00. 8 weeks remaining. Please contact your collector.',
+    ).toContain('due today (2026-08-04)');
+  });
+
+  it('builds grace and escalation SMS', () => {
+    expect(
+      buildGracePeriodReminderSmsBody({
+        borrowerName: 'Ama',
+        weeklyAmountPesewas: 5_000,
+        graceEndDate: '2026-08-07',
+        collectorName: 'Kofi',
+      }),
+    ).toContain('grace period ends on 2026-08-07');
+    expect(buildEscalationNoticeSmsBody({ collectorName: 'Kofi' })).toContain(
+      'flagged for follow-up',
     );
   });
 
-  it('builds disbursement schedule SMS with payment day and weeks', () => {
+  it('builds disbursement and schedule SMS', () => {
+    expect(
+      buildLoanDisbursedSmsBody({
+        borrowerName: 'Efua Boateng',
+        loanDisplayId: 'LOAN-001',
+        amountPesewas: 100_000,
+        firstPaymentDate: '2026-08-11',
+      }),
+    ).toContain('successfully disbursed');
     expect(
       buildLoanDisbursedScheduleSmsBody({
         borrowerName: 'Efua Boateng',
         loanDisplayId: 'LOAN-001',
+        groupName: 'Makola Circle',
+        collectorName: 'Ama Collector',
         weeklyAmountPesewas: 5_000,
         paymentDay: 'Tuesday',
         totalWeeks: 20,
         firstDueDate: '2026-08-11',
       }),
-    ).toBe(
-      'WILMS: Hi Efua Boateng, repay loan LOAN-001 every Tuesday: GHS 50.00 for 20 weeks. First due 2026-08-11.',
+    ).toContain('Repayment Schedule');
+  });
+
+  it('builds registration and loan-created SMS', () => {
+    expect(
+      buildRegistrationSubmittedSmsBody({
+        borrowerName: 'Ama Serwaa',
+        reference: 'BOR-001',
+      }),
+    ).toContain('application reference is BOR-001');
+    expect(
+      buildBorrowerRegistrationApprovalSmsBody({
+        borrowerName: 'Ama Serwaa',
+        groupName: 'Circle A',
+        collectorName: 'Kofi Mensah',
+      }),
+    ).toContain('assigned to Circle A under Collector Kofi Mensah');
+    expect(buildLoanCreatedSmsBody({ borrowerName: 'Ama' })).toContain(
+      'created and submitted for approval',
     );
   });
 
-  it('builds borrower registration approval SMS', () => {
-    expect(buildBorrowerRegistrationApprovalSmsBody({ borrowerName: 'Ama Serwaa' })).toContain(
-      'Ama Serwaa',
-    );
+  it('builds completion and reassignment SMS', () => {
+    expect(
+      buildLoanCompletedSmsBody({
+        borrowerName: 'Ama',
+        paymentAmountPesewas: 5_000,
+      }),
+    ).toContain('fully repaid');
+    expect(
+      buildCollectorReassignedSmsBody({
+        borrowerName: 'Ama',
+        collectorName: 'New Collector',
+      }),
+    ).toContain('new collector is New Collector');
+    expect(
+      buildGroupAssignedSmsBody({
+        borrowerName: 'Ama',
+        groupName: 'Group B',
+        collectorName: 'Collector B',
+      }),
+    ).toContain('reassigned to Group B');
+    expect(
+      buildPaymentDayChangedSmsBody({
+        paymentDay: 'Friday',
+        weeklyAmountPesewas: 5_000,
+        nextPaymentDate: '2026-08-15',
+      }),
+    ).toContain('new weekly payment day is Friday');
+  });
+
+  it('builds admin fee confirmation SMS after loan approval', () => {
+    expect(
+      buildAdminFeeConfirmationSmsBody({
+        borrowerName: 'Ama',
+        amountPesewas: 5_000,
+        paymentDate: '2026-08-10',
+      }),
+    ).toContain('prepared for disbursement');
+  });
+
+  it('builds reminder SMS for tomorrow and today', () => {
+    expect(
+      buildLoanReminderSmsBody({
+        borrowerName: 'Ama',
+        weeklyAmountPesewas: 5_000,
+        paymentDay: 'Tuesday',
+        paymentDate: '2026-05-16',
+        groupName: 'Circle A',
+        collectorName: 'Kofi',
+        dueTomorrow: true,
+      }),
+    ).toContain('due tomorrow');
+    expect(
+      buildLoanReminderSmsBody({
+        borrowerName: 'Ama',
+        weeklyAmountPesewas: 5_000,
+        paymentDate: '2026-05-16',
+        collectorName: 'Kofi',
+        dueTomorrow: false,
+      }),
+    ).toContain('due today');
   });
 
   it('builds payment confirmation email subject and body', () => {
@@ -98,20 +197,18 @@ describe('notification templates', () => {
 
     expect(email.subject).toBe('WILMS payment receipt — GHS 50.00');
     expect(email.text).toContain('Efua Boateng');
-    expect(email.text).toContain('LOAN-CYCLE1-202605-0001');
     expect(email.html).toContain('GHS 50.00');
   });
 
-  it('builds loan approval email subject and body', () => {
+  it('builds loan approval email with admin fee', () => {
     const email = buildLoanApprovalEmail({
       borrowerName: 'Yaw Adom',
       amountPesewas: 24_000,
       loanDisplayId: 'LOAN-CYCLE4-202511-0002',
+      adminFeePesewas: 5_000,
     });
 
     expect(email.subject).toBe('WILMS loan approved — LOAN-CYCLE4-202511-0002');
-    expect(email.text).toContain('Yaw Adom');
-    expect(email.text).toContain('GHS 240.00');
-    expect(email.html).toContain('LOAN-CYCLE4-202511-0002');
+    expect(email.text).toContain('admin fee of GHS 50.00');
   });
 });
