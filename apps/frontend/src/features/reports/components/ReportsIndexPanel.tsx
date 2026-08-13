@@ -230,7 +230,7 @@ export function ReportsIndexPanel({ categoryFilterMode = 'default' }: ReportsInd
           </FilterDropdownRow>
         }
         actions={
-          <WilmsExportActions document={exportDocument} filenameBase="reports-index" showIcons />
+          <WilmsExportActions document={exportDocument} filenameBase="WILMS_Reports_Index" showIcons />
         }
       />
 

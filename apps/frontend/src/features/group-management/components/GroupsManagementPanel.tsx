@@ -191,7 +191,7 @@ export function GroupsManagementPanel() {
             <ExportCsvButton
               label="Export"
               showDownloadIcon
-              filename="groups.csv"
+              filename="WILMS_Group_List.csv"
               reportType={WILMS_REPORT_TYPE.GROUP_LIST}
               reportTitle="Groups Management Export"
               headers={[

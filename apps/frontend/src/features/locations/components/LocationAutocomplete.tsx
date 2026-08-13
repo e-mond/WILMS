@@ -219,8 +219,8 @@ export function LocationAutocomplete({
               className={cn(
                 'cursor-pointer px-3 py-2 text-small',
                 index === activeIndex
-                  ? 'bg-brand-primary/15 text-text-primary'
-                  : 'text-text-secondary hover:bg-background hover:text-text-primary',
+                  ? 'bg-brand-primary-light text-brand-primary'
+                  : 'bg-card text-text-secondary hover:bg-background hover:text-text-primary',
               )}
               onMouseDown={(event) => {
                 event.preventDefault();

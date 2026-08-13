@@ -42,4 +42,13 @@ describe('borrower communication emitter wiring', () => {
     const ops = read('src/infrastructure/notifications/ops-notifications.ts');
     expect(ops).toContain('buildPaymentDayChangedSmsBody');
   });
+
+  it('sends SMS when a borrower update request is approved or rejected', () => {
+    const service = read('src/modules/borrower-updates/service.ts');
+    expect(service).toContain('notifyBorrowerUpdateApproved');
+    expect(service).toContain('notifyBorrowerUpdateRejected');
+    const dispatch = read('src/infrastructure/notifications/event-dispatch.ts');
+    expect(dispatch).toContain("event: 'BORROWER_UPDATE_APPROVED'");
+    expect(dispatch).toContain("event: 'BORROWER_UPDATE_REJECTED'");
+  });
 });

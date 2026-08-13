@@ -80,6 +80,12 @@ export const SUPER_ADMIN_NAV: ShellNavItem[] = [
     group: 'overview',
   },
   { href: '/borrowers', label: 'Borrowers', icon: 'borrowers', group: 'people' },
+  {
+    href: '/borrower-updates',
+    label: 'Update requests',
+    icon: 'queue',
+    group: 'people',
+  },
   { href: '/loan-pools', label: 'Loan Pools', icon: 'loans', group: 'financial' },
   {
     href: '/borrowers?status=PENDING',
@@ -131,6 +137,12 @@ export const COLLECTOR_NAV: ShellNavItem[] = [
     group: 'financial',
   },
   { href: '/collector/my-borrowers', label: 'Borrowers', icon: 'borrowers', group: 'people' },
+  {
+    href: '/collector/borrower-updates',
+    label: 'Update requests',
+    icon: 'queue',
+    group: 'people',
+  },
   { href: '/collector/expenses', label: 'Expenses', icon: 'expenses', group: 'financial' },
   { href: '/collector/holidays', label: 'Holidays', icon: 'holidays', group: 'operations' },
   {
@@ -154,6 +166,12 @@ export const REGISTRATION_OFFICER_NAV: ShellNavItem[] = [
     href: '/officer/my-registrations',
     label: 'My Registrations',
     icon: 'borrowers',
+    group: 'operations',
+  },
+  {
+    href: '/officer/borrower-updates',
+    label: 'Update requests',
+    icon: 'queue',
     group: 'operations',
   },
   { href: '/officer/settings', label: 'Settings', icon: 'settings', group: 'administration' },

@@ -248,7 +248,7 @@ export function MyRegistrationsList() {
         actions={
           <WilmsExportActions
             document={exportDocument}
-            filenameBase="my-registrations"
+            filenameBase="WILMS_My_Registrations"
             showIcons
             permissions={[PERMISSION.EXPORT_REPORTS, PERMISSION.REGISTER_BORROWERS]}
           />

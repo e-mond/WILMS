@@ -87,7 +87,7 @@ function AgingAnalysisReportContent({ data }: { data: AgingAnalysisReport }) {
         actions={
           <ExportCsvButton
             label="Export"
-            filename="aging-analysis-report.csv"
+            filename="WILMS_Aging_Analysis_Report.csv"
             reportType={WILMS_REPORT_TYPE.GENERIC_REPORT}
             reportTitle="Aging Analysis Report"
             headers={CSV_HEADERS}

@@ -200,6 +200,11 @@ WILMS manages women's interest-free group lending programmes. Requirements trace
 | BR-132 | Branded PDF/DOCX generation | Complete | docs:generate script |
 | BR-133 | Static docs web portal | Planned | Structure defined; deploy pending |
 | BR-134 | OpenAPI specification | Planned | v1.8 |
+| BR-135 | Guarantor may cover three active borrowers | Complete | Duplicate only for same borrower |
+| BR-136 | Official readable document IDs | Complete | BRW / LN / COL formats |
+| BR-137 | Collector borrower update requests | Complete | Officer / Super Admin approval |
+| BR-138 | Group collection GPS with exception audit | Complete | Confirmation + reason required |
+| BR-139 | Mandatory borrower SMS | Complete | Outage flag only |
 
 ---
 

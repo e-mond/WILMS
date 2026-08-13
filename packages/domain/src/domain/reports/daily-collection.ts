@@ -1,5 +1,6 @@
 import type { PaymentRecord } from '../../db/store.js';
 import { getWeekdayNameFromIsoDate, isLoanDueOnDate } from '../reconciliation/weekday.js';
+import { formatGpsDisplaySummary } from '@wilms/shared-utils';
 
 export interface DailyCollectionLoanContext {
   id: string;
@@ -39,6 +40,13 @@ export interface DailyCollectionReportRow {
   collectedPesewas: number;
   variancePesewas: number;
   recordedAt?: string;
+  gpsSummary?: string;
+  gpsLatitude?: number;
+  gpsLongitude?: number;
+  gpsAccuracy?: number;
+  gpsCapturedAt?: string;
+  gpsExceptionReason?: string;
+  gpsSource?: string;
 }
 
 export interface DailyCollectionReport {
@@ -128,6 +136,16 @@ export function buildDailyCollectionReport(input: {
       collectedPesewas: payment.amountPesewas,
       variancePesewas: payment.amountPesewas - expectedPesewas,
       recordedAt: payment.recordedAt,
+      gpsSummary: formatGpsDisplaySummary({
+        ...payment.gps,
+        source: payment.gps?.unavailable ? 'exception' : payment.gps ? 'device' : undefined,
+      }),
+      gpsLatitude: payment.gps?.latitude,
+      gpsLongitude: payment.gps?.longitude,
+      gpsAccuracy: payment.gps?.accuracy ?? payment.gps?.accuracyMeters,
+      gpsCapturedAt: payment.gps?.capturedAt,
+      gpsExceptionReason: payment.gps?.unavailable ? payment.gps.reason : undefined,
+      gpsSource: payment.gps?.unavailable ? 'exception' : payment.gps ? 'device' : undefined,
     };
   });
 

@@ -15,6 +15,7 @@ export interface BorrowerProfile {
   district: string;
   subDistrictUnit?: string;
   electoralArea?: string;
+  alternativePhone?: string;
   businessName: string;
   businessAddress: string;
   typeOfWork: string;
@@ -57,7 +58,17 @@ export interface PaymentRecord {
   amountPesewas: number;
   paymentDate: string;
   recordedAt: string;
-  gps?: { latitude: number; longitude: number; accuracyMeters?: number };
+  gps?: {
+    latitude?: number;
+    longitude?: number;
+    accuracy?: number;
+    accuracyMeters?: number;
+    capturedAt?: string;
+    collectorId?: string;
+    device?: Record<string, unknown>;
+    unavailable?: boolean;
+    reason?: string;
+  };
 }
 
 export interface GroupRecord {

@@ -104,6 +104,14 @@ describe.sequential('PendingApplicationReview', () => {
     expect(await screen.findByRole('heading', { name: 'Adjoa Owusu' })).toBeInTheDocument();
     expect(screen.getByText('Pending')).toBeInTheDocument();
     expect(screen.getByText('Adjoa Provisions')).toBeInTheDocument();
+    expect(screen.getByText('MMDA / District')).toBeInTheDocument();
+    expect(screen.getByText('Osu Klottey')).toBeInTheDocument();
+    expect(screen.getByText('Community / Suburb')).toBeInTheDocument();
+    expect(screen.getByText('Osu')).toBeInTheDocument();
+    expect(screen.getByText('City / Town')).toBeInTheDocument();
+    expect(screen.getByText('Accra')).toBeInTheDocument();
+    expect(screen.getByText('Osu Sub-Metro')).toBeInTheDocument();
+    expect(screen.getByText('Osu Klottey Electoral Area')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Approve' })).toBeInTheDocument();
   });
 

@@ -24,3 +24,5 @@ Branch: `feature/v1.8-enterprise-design-automation`
 | [FINAL_RELEASE_READINESS_v1.8.0.md](./FINAL_RELEASE_READINESS_v1.8.0.md) | DoD |
 | [UPDATED_PRODUCT_BOOK.md](./UPDATED_PRODUCT_BOOK.md) | Product updates |
 | [UPDATED_TECHNICAL_GUIDE.md](./UPDATED_TECHNICAL_GUIDE.md) | Technical updates |
+| [market-readiness/](./market-readiness/) | **Final quality & market-readiness pack** |
+| [market-readiness/FINAL_V180_MARKET_READINESS_REPORT.md](./market-readiness/FINAL_V180_MARKET_READINESS_REPORT.md) | Sprint evidence, gates, and merge recommendation |

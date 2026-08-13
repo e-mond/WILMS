@@ -83,7 +83,7 @@ function WriteOffsReportContent({ data }: { data: WriteOffReport }) {
         actions={
           <ExportCsvButton
             label="Export"
-            filename="write-offs-report.csv"
+            filename="WILMS_Write_Offs_Report.csv"
             reportType={WILMS_REPORT_TYPE.GENERIC_REPORT}
             reportTitle="Write-offs Report"
             headers={CSV_HEADERS}

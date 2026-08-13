@@ -14,7 +14,7 @@ import { formatPesewasForCsv } from '@/utils/export-csv';
 import { resolveBorrowerDisplayId } from '@/utils/format-borrower-display-id';
 import { resolveLoanDisplayId, resolveUserDisplayId } from '@/utils/entity-display-id';
 
-const CSV_HEADERS = ['Type', 'Borrower', 'Loan', 'Amount (GHS)', 'Collector', 'Recorded At'];
+const CSV_HEADERS = ['Type', 'Borrower', 'Loan', 'Amount (GHS)', 'Collector', 'GPS', 'Recorded At'];
 
 export function FinancialLedgerReportPanel() {
   const [fromDate, setFromDate] = useState('');
@@ -33,6 +33,7 @@ export function FinancialLedgerReportPanel() {
         row.loanId ? resolveLoanDisplayId({ id: row.loanId }) : '—',
         formatPesewasForCsv(row.amountPesewas),
         resolveUserDisplayId(row.collectorId),
+        row.gpsSummary ?? 'Not captured',
         row.recordedAt,
       ]),
     [data?.rows],
@@ -83,7 +84,7 @@ export function FinancialLedgerReportPanel() {
         actions={
           <ExportCsvButton
             label="Export"
-            filename="financial-ledger.csv"
+            filename="WILMS_Financial_Ledger_Report.csv"
             reportType={WILMS_REPORT_TYPE.FINANCIAL_LEDGER}
             reportTitle="Financial Ledger Report"
             headers={CSV_HEADERS}
@@ -128,6 +129,12 @@ export function FinancialLedgerReportPanel() {
             header: 'Collector',
             className: 'whitespace-nowrap font-mono text-small',
             cell: (row) => resolveUserDisplayId(row.collectorId),
+          },
+          {
+            id: 'gps',
+            header: 'GPS',
+            className: 'text-small text-text-muted',
+            cell: (row) => row.gpsSummary ?? 'Not captured',
           },
           {
             id: 'recordedAt',

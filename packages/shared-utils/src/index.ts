@@ -2,6 +2,7 @@ export { formatPesewasAsGhs } from './currency';
 export {
   formatBorrowerDisplayId,
   formatCollectorDisplayId,
+  formatCollectorStaffLabel,
   formatEntityDisplayId,
   formatExpenseDisplayId,
   formatGroupDisplayId,
@@ -12,3 +13,8 @@ export {
   formatUserDisplayId,
   isReadableWilmsId,
 } from './display-ids';
+export {
+  formatGpsDisplaySummary,
+  isGpsFixDisplay,
+  type GpsDisplayInput,
+} from './gps-display';

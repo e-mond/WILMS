@@ -33,6 +33,7 @@ import { useApprovalActions } from '@/features/approval-workflow/hooks/useApprov
 import { useBorrowerReview } from '@/features/approval-workflow/hooks/useBorrowerReview';
 
 import {
+  buildBrandedExportFilenameBase,
   REGISTRATION_AGREEMENT_EXPORT_FORMATS,
   useWilmsExportActor,
   WilmsExportActions,
@@ -329,7 +330,11 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
 
           <WilmsExportActions
             document={exportDocument}
-            filenameBase={`registration-${data?.fullName.replace(/\s+/g, '-').toLowerCase() ?? borrowerId}`}
+            filenameBase={buildBrandedExportFilenameBase([
+              'Borrower_Registration',
+              data?.fullName,
+              data?.displayId,
+            ])}
             showIcons
             permissions={[]}
             formats={[...REGISTRATION_AGREEMENT_EXPORT_FORMATS]}

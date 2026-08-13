@@ -6,6 +6,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Avatar, CurrencyAmount, DataTable } from '@/components/data-display';
 import { Alert } from '@/components/feedback/Alert';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
+import { Textarea } from '@/components/ui/Textarea';
 import { useCollectorDashboard } from '@/features/payment-collection/hooks/useCollectorDashboard';
 import {
   applySelectAllChoice,
@@ -19,7 +21,8 @@ import {
 import { invalidateAfterPayment } from '@/features/payment-collection/utils/invalidate-after-payment';
 import { useAuth } from '@/hooks/useAuth';
 import { paymentService } from '@/services';
-import { captureGps, GpsCaptureError } from '@/utils/captureGps';
+import { buildGpsException, captureGps, GpsCaptureError } from '@/utils/captureGps';
+import type { GpsCoordinates } from '@/types/gps';
 import { resolvePersonPhotoUrl } from '@/utils/person-photo';
 import { resolveGroupDisplayId } from '@/utils/entity-display-id';
 import { cn } from '@/utils/cn';
@@ -38,6 +41,8 @@ export function GroupCollectionSheet({ groupId }: GroupCollectionSheetProps) {
   const [submitting, setSubmitting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [gpsExceptionOpen, setGpsExceptionOpen] = useState(false);
+  const [gpsExceptionReason, setGpsExceptionReason] = useState('');
 
   const group = data?.todayGroups.find((entry) => entry.groupId === groupId);
   const paymentDate = data?.summary.date ?? new Date().toISOString().slice(0, 10);
@@ -65,14 +70,9 @@ export function GroupCollectionSheet({ groupId }: GroupCollectionSheetProps) {
     (member) => !isSheetRowLocked(member) && member.choice !== 'UNSET',
   ).length;
 
-  const handleSubmitSelected = async () => {
+  const submitWithGps = async (gps: GpsCoordinates) => {
     if (!user?.id) {
       setActionError('Collector session is required.');
-      return;
-    }
-
-    if (selectedCount === 0) {
-      setActionError('Mark at least one member as Paid or Missed before recording.');
       return;
     }
 
@@ -81,12 +81,11 @@ export function GroupCollectionSheet({ groupId }: GroupCollectionSheetProps) {
     setSuccessMessage(null);
 
     try {
-      const gps = await captureGps();
       const result = await submitGroupCollectionBatch(sheetMembers, {
         collectorId: user.id,
         paymentDate,
         paymentMode: paymentType,
-        gps,
+        gps: { ...gps, collectorId: user.id },
         recordPayment: (input) => paymentService.recordPayment(input),
         markMissedPayment: (input) => paymentService.markMissedPayment(input),
       });
@@ -111,12 +110,37 @@ export function GroupCollectionSheet({ groupId }: GroupCollectionSheetProps) {
         );
       }
     } catch (error) {
+      setActionError(error instanceof Error ? error.message : 'Unable to submit collection sheet.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleSubmitSelected = async () => {
+    if (!user?.id) {
+      setActionError('Collector session is required.');
+      return;
+    }
+
+    if (selectedCount === 0) {
+      setActionError('Mark at least one member as Paid or Missed before recording.');
+      return;
+    }
+
+    setSubmitting(true);
+    setActionError(null);
+    setSuccessMessage(null);
+
+    try {
+      const gps = await captureGps();
+      await submitWithGps({ ...gps, collectorId: user.id });
+    } catch (error) {
       if (error instanceof GpsCaptureError) {
+        setGpsExceptionOpen(true);
         setActionError(error.message);
       } else {
         setActionError(error instanceof Error ? error.message : 'Unable to submit collection sheet.');
       }
-    } finally {
       setSubmitting(false);
     }
   };
@@ -288,9 +312,51 @@ export function GroupCollectionSheet({ groupId }: GroupCollectionSheetProps) {
           {submitting ? 'Recording…' : 'Record selected'}
         </Button>
         <p className="text-small text-text-muted">
-          {selectedCount} selected · GPS captured once per batch
+          {selectedCount} selected · GPS is captured once per batch
         </p>
       </div>
+
+      <Modal
+        isOpen={gpsExceptionOpen}
+        onClose={() => setGpsExceptionOpen(false)}
+        title="GPS unavailable"
+        footer={
+          <>
+            <Button type="button" variant="secondary" onClick={() => setGpsExceptionOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              disabled={!gpsExceptionReason.trim() || submitting}
+              onClick={() => {
+                if (!user?.id || !gpsExceptionReason.trim()) {
+                  return;
+                }
+                setGpsExceptionOpen(false);
+                void submitWithGps(buildGpsException(gpsExceptionReason, user.id));
+              }}
+            >
+              Record without GPS
+            </Button>
+          </>
+        }
+      >
+        <p className="text-body text-text-primary">
+          Location could not be captured. Confirm the exception and record a reason. This is audited.
+        </p>
+        <label className="mt-wilms-3 block text-small font-semibold text-text-primary" htmlFor="gps-exception-reason">
+          Reason
+        </label>
+        <Textarea
+          id="gps-exception-reason"
+          className="mt-wilms-2"
+          value={gpsExceptionReason}
+          onChange={(event) => setGpsExceptionReason(event.target.value)}
+          maxLength={200}
+          placeholder="Indoor market, device GPS disabled, poor signal…"
+        />
+      </Modal>
     </div>
   );
 }

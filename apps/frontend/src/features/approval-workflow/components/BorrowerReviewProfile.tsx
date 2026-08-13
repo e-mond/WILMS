@@ -1,8 +1,9 @@
 import { Avatar, StatusBadge } from '@/components/data-display';
 import type { BorrowerReviewDetail } from '@/types/approval';
 import { formatDisplayDate } from '@/utils/format-date';
-import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
 import { resolveUserDisplayId } from '@/utils/entity-display-id';
+import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
+import { buildLocationHierarchyRows } from '@/utils/location-hierarchy';
 
 export interface BorrowerReviewProfileProps {
   borrower: BorrowerReviewDetail;
@@ -196,14 +197,18 @@ export function BorrowerReviewProfile({
       </section>
 
       <ReviewSection
-        title="Address"
+        title="Location"
         items={[
           ['House address', formatField(borrower.houseAddress)],
           ['GPS address', formatField(borrower.gpsAddress)],
-          ['City', formatField(borrower.city)],
-          ['Region', formatField(borrower.region)],
-          ['District', formatField(borrower.district)],
-          ['Community', formatField(borrower.community)],
+          ...buildLocationHierarchyRows({
+            region: borrower.region,
+            district: borrower.district,
+            subDistrictUnit: borrower.subDistrictUnit,
+            electoralArea: borrower.electoralArea,
+            community: borrower.community,
+            city: borrower.city,
+          }),
         ]}
       />
 
