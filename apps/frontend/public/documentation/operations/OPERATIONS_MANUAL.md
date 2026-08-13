@@ -262,6 +262,8 @@ Operational metric sources after the post-release data fix:
 
 Detail: `documentation/operations/DASHBOARD_DATA_CONSISTENCY_AUDIT.md` and `FINAL_POST_RELEASE_FIX_REPORT.md`.
 
+Release evidence: `documentation/release/v1.8.0-post-release-dashboard-fix.md` (PR #204, merge `c93cc75`, production SHA verified on https://wilms.vercel.app).
+
 ---
 
 *CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.*

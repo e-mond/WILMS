@@ -15,6 +15,16 @@ All notable changes to WILMS are documented in this file.
 **SA UX / registration / communications follow-up:** August 2026 (`fix/v1.8.0-sa-ux-comms-registration`) — same release identity
 **Ghana location master:** August 2026 (`feature/v1.8.0-location-master`) — same release identity; **no new product tag / no v1.8.1**
 **Borrower communication correction:** August 2026 (`feature/v1.8.0-borrower-communication-correction`) — same release identity; SMS lifecycle aligned to the real workflow (admin fee after loan approval)
+**Post-release dashboard & collector data hotfix:** 13 August 2026 (`fix/v1.8.0-post-release-dashboard-and-collector-data`, PR #204, merge `c93cc75`) — same release identity; **no version bump / no migration**
+
+### Post-release dashboard & collector data hotfix (13 August 2026)
+
+- Collectors table: live assigned borrower counts, ↑↓→ trend, payment-week streak, rolling six-month performance, operational alerts
+- Sidebar Borrowers badge shares the Borrowers page list source (`APPROVED` + `AT_RISK`)
+- Borrowers Quick Actions: Add / Import / Assign Group / Reassign / Export / Pending (permission-aware)
+- Borrower profile: Group Leader / Member badge, collector `Name (COL-###)`, larger profile photo (~96px)
+- Dashboard reconciliation widget: pending queue + Approved/Rejected today + Total submitted; collector labels; list-query N+1 removed
+- Evidence: `documentation/release/v1.8.0-post-release-dashboard-fix.md`, operations fix notes under `documentation/operations/`
 
 ### Final production closure (August 2026)
 
