@@ -283,6 +283,9 @@ WILMS uses **custom HMAC-signed session cookies** — not Auth.js, not JWT beare
 | ExportJob | Tracked export generation job (API retained; standalone UI removed v1.7.3) |
 | OpsIncident | Operational incident record |
 | RiskFlag | Borrower or loan risk indicator |
+| Region / District / Sub-district unit / Electoral area / Community | Ghana administrative hierarchy v2 (canonical master) |
+
+Borrower registration selects **Region → MMDA → Sub-metro/Area Council (skipped if empty) → Electoral area (skipped if empty) → Community / suburb → Street / landmark**. Community selection uses searchable autocomplete (prefix, alias, case-insensitive, typo-tolerant) with offline cascade cache. Community names that are not in the master are submitted as pending suggestions for Super Admin approval and are not inserted automatically. See `documentation/location/COMMUNITY_LOCATION_GUIDE.md` and related community completion documents.
 
 ### Entity relationships (summary)
 
@@ -353,14 +356,16 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    A[Loan application submitted] --> B[Approver review]
-    B -->|Approve| C[Admin fee collection]
-    C --> D{Pool sufficient?}
-    D -->|Yes| E[Disbursement]
-    D -->|No| F[Hard stop — insufficient capital]
-    B -->|Reject| G[Application rejected]
-    E --> H[Active loan with schedule]
+    A[Create loan] --> B{Pool capital sufficient?}
+    B -->|No| C[Reject create — show shortfall]
+    B -->|Yes| D[Pending approval]
+    D --> E[Approver / Super Admin approve]
+    E --> F[Admin fee already required]
+    F --> G[Disburse — pool hard-stop retained]
+    G --> H[Schedule generated + notifications]
 ```
+
+Super Admin may approve loans they created (final authority). Other roles remain under maker-checker separation of duties.
 
 ### Weekly collection workflow
 
@@ -436,20 +441,44 @@ Super Admin can force-logout active sessions for security incidents or personnel
 
 ### Channels
 
-- **In-app** — Notification inbox with read/unread state, role-aware filtering.
-- **Email** — Transactional emails for login alerts, invitations, expense reviews.
-- **SMS** — Field alerts and payment confirmations (provider-configured).
+- **SMS** — Primary borrower channel for the full lending lifecycle (registration through loan completion).
+- **Email** — Used for approvals, receipts, disbursement, missed payment, completion, and schedule changes. Optional or omitted where the channel matrix says so (for example, due-today and grace reminders).
+- **In-app** — Staff inbox (collectors, officers, Super Admin) with read state. Push mirrors in-app for users with a WILMS account.
+- **Push** — Mirrored from in-app via `sendPushToUser`.
+
+Borrowers do not hold portal user accounts; SMS is the borrower-facing channel.
+
+### Borrower lifecycle (authoritative)
+
+1. Registration submitted  
+2. Registration approved (group and collector assigned)  
+3. Loan created  
+4. Loan approved — **admin-fee instruction belongs here**  
+5. Admin fee recorded  
+6. Loan disbursed  
+7. Repayment schedule issued  
+8. Reminder one day before due date  
+9. Due today  
+10. Payment received (or multi-week receipt)  
+11. Missed payment  
+12. Grace-period reminder  
+13. Escalation  
+14. Loan completed  
+
+Collector reassignment, group reassignment, and payment-day changes notify the borrower when they occur.
+
+See `documentation/notifications/` for the SMS library, trigger matrix, and scheduler timing.
 
 ### Guarantees
 
-- Deduplication prevents duplicate notifications for the same event within a window.
+- Deduplication prevents duplicate notifications for the same event, recipient, and channel.
 - Quiet hours respect organisation settings for non-critical notifications.
 - Daily cron dispatch at 06:00 UTC via Vercel Cron (`/api/cron/notifications`).
 - Failed dispatch logged; retry on next cron cycle.
 
 ### Event types
 
-Login alerts, invitation accepted, expense submitted/reviewed, loan approved/rejected, reconciliation variance, overpayment review, ops incident alerts, maintenance window notices.
+Borrower lifecycle events above, plus staff events: login alerts, invitations, expense submitted/reviewed, reconciliation variance, overpayment review, ops incident alerts, maintenance window notices.
 
 ---
 
@@ -669,8 +698,19 @@ Frontend unit tests with shard execution. Domain tests via `npm run test -w @wil
 | v1.7.0 | 2026 | Enterprise finance, executive intelligence, export jobs, ops incidents |
 | v1.7.1 | 2026 | Market readiness, dashboard separation, modal hardening |
 | v1.7.2 | 2026 | RC stabilization — financial dashboard, executive polish, Export Center actions, Product Tour 2.0 |
+| v1.8.0 | 2026 | Collector payment workflow; Phase 11 registration/loan/comms/ops hardening (same version identity) |
 
 ---
+
+## v1.8.0 Phase 11 operational hardening (summary)
+
+- Registration Approver Assign Group: reliable assignment, toast feedback, audit, notifications.
+- Super Admin may self-approve loans they created; pool capital validated at loan creation.
+- Borrower communication lifecycle extended (registration submitted, group assigned, schedule event separation).
+- Super Admin Operations reassignment tools at `/ops/reassignment` (group, collector, payment day).
+- Payment-day approval recalculates future PENDING schedule weeks.
+
+See `documentation/phase11/` for full reports.
 
 ## v1.7.3 documentation release notes
 

@@ -102,6 +102,21 @@ Neon provides automated point-in-time recovery. Verify backup retention in Neon 
 npm run cleanup:demo-financial-data -w @wilms/domain
 ```
 
+### Location master import
+
+```bash
+npm run seed:location-master -w @wilms/domain
+npm run db:backfill:locations -w @wilms/domain
+```
+
+### Reset transactional data (keep users and RBAC)
+
+```bash
+WILMS_CONFIRM_DB_RESET=YES npm run db:reset:keep-users -w @wilms/domain
+```
+
+Preserves `users`, `roles`, `permissions`, `role_permissions`, `user_roles`, `user_permission_overrides`, and `__drizzle_migrations`. Then re-import locations.
+
 ---
 
 ## 7. Cron and scheduler
@@ -111,6 +126,18 @@ npm run cleanup:demo-financial-data -w @wilms/domain
 | Notification dispatch | 06:00 UTC daily | `/api/cron/notifications` |
 
 Configured in `vercel.json`. Verify cron execution in Vercel dashboard logs.
+
+On each run the payment scheduler sends, once per qualifying week (deduped):
+
+| Borrower message | Timing |
+|------------------|--------|
+| Payment reminder | One day before due date (`paymentReminderDaysBefore`, default 1) |
+| Due today | Morning of payment day (06:00 UTC cron) |
+| Missed payment | After the due date when the week is marked missed |
+| Grace reminder | On the last grace day (`latePaymentGraceDays`) |
+| Escalation | The day after grace expires |
+
+Admin-fee instruction is sent at **loan approval**, not at registration. Disbursement is blocked until the admin fee is recorded. Full copy and channel matrix: `documentation/notifications/`.
 
 ---
 
@@ -183,6 +210,19 @@ Maintenance window displays banner to all users.
 - Bundle budget: `npm run bundle:budget-check`
 - Performance budget: `npm run perf:budget-check`
 - API rate limit: 300 req/min global; monitor 429 responses
+
+---
+
+## 12a. Ghana location hierarchy
+
+Refresh official geography after a licensed dataset update:
+
+```bash
+npm run db:apply:ghana-hierarchy -w @wilms/domain
+npm run seed:ghana-hierarchy -w @wilms/domain
+```
+
+Confirm `GET /api/v1/locations/sync/status`. Do not delete historical location rows. Community suggestions are Super Admin review items, never auto-created.
 
 ---
 

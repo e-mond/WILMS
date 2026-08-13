@@ -72,6 +72,25 @@ npm run dev       # Terminal 2 — frontend on :3000
 
 ---
 
+## 4a. Location master
+
+```bash
+npm run db:apply:location-master -w @wilms/domain
+npm run db:apply:ghana-hierarchy -w @wilms/domain
+npm run seed:ghana-hierarchy -w @wilms/domain
+npm run db:backfill:locations -w @wilms/domain
+```
+
+Safe transactional reset (keeps users and RBAC):
+
+```bash
+WILMS_CONFIRM_DB_RESET=YES npm run db:reset:keep-users -w @wilms/domain
+```
+
+See `documentation/location/`.
+
+---
+
 ## 5. Adding a domain module
 
 1. Create module directory: `packages/domain/src/modules/my-module/`

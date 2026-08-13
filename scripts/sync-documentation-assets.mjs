@@ -44,6 +44,7 @@ for (const folder of [
   'docx',
   'branding',
   'web',
+  'notifications',
 ]) {
   const from = path.join(srcRoot, folder);
   if (fs.existsSync(from)) {
