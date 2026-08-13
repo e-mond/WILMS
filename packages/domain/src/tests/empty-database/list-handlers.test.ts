@@ -76,6 +76,10 @@ vi.mock('../../repositories/payment.repository.js', () => ({
   sumConfirmedPaymentsSincePesewas: vi.fn(async () => 0),
   sumConfirmedPaymentsByCollector: vi.fn(async () => new Map()),
   listCollectorIdsWithPaymentOnDate: vi.fn(async () => new Set()),
+  sumConfirmedPaymentsByCollectorMonth: vi.fn(async () => new Map()),
+  listConfirmedPaymentDatesByCollector: vi.fn(async () => new Map()),
+  listRecentConfirmedPayments: vi.fn(async () => []),
+  listRecentPaymentsForCollector: vi.fn(async () => []),
 }));
 
 vi.mock('../../repositories/loan-pool.repository.js', () => ({
@@ -92,6 +96,9 @@ function mockEmptySelectChain() {
   dbMocks.groupBy.mockResolvedValue([]);
   const whereResult = {
     groupBy: dbMocks.groupBy,
+    orderBy: vi.fn(() => ({
+      limit: vi.fn(() => Promise.resolve([])),
+    })),
     limit: vi.fn(() => Promise.resolve([])),
     then(onFulfilled: (value: unknown[]) => unknown, onRejected?: (reason: unknown) => unknown) {
       return Promise.resolve([]).then(onFulfilled, onRejected);
@@ -101,6 +108,9 @@ function mockEmptySelectChain() {
   dbMocks.from.mockReturnValue({
     where: dbMocks.where,
     groupBy: dbMocks.groupBy,
+    orderBy: vi.fn(() => ({
+      limit: vi.fn(() => Promise.resolve([])),
+    })),
   });
   dbMocks.select.mockReturnValue({ from: dbMocks.from });
 }

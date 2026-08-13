@@ -282,8 +282,29 @@ export async function listReconciliations(
     filter?.collectorId ? { collectorUserId: filter.collectorId } : undefined,
   );
 
-  const summaries = rows.map((row) => mapReconciliationRowToSummary(row));
-  return Promise.all(summaries.map((summary) => withCollectionMetadata(summary)));
+  const collectors = await userRepo.listCollectors();
+  const labelByCollectorId = new Map(
+    collectors.map(({ user, collector }) => [
+      user.id,
+      formatCollectorStaffLabel({
+        fullName: user.displayName,
+        collectorCode: collector?.collectorCode,
+        staffId: user.staffId,
+      }),
+    ]),
+  );
+
+  // List path stays lightweight: attach collector labels only.
+  // Live expected + GPS are resolved on single-item get / review drawer.
+  return rows.map((row) => {
+    const summary = mapReconciliationRowToSummary(row);
+    return {
+      ...summary,
+      collectorLabel:
+        labelByCollectorId.get(summary.collectorId) ??
+        formatCollectorStaffLabel({ fullName: 'Collector', sequence: 0 }),
+    };
+  });
 }
 
 export async function getReconciliationHistory(reconciliationId: string) {

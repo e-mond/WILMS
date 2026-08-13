@@ -3,16 +3,27 @@ import { USER_ROLE } from '@wilms/shared-rbac';
 import { uuidv7 } from 'uuidv7';
 import { isDatabaseEnabled, getDb } from '../../db/client.js';
 import { financialReconciliations } from '../../db/schema/financial-reconciliations.js';
-import { groups } from '../../db/schema/groups.js';
+import { groupMembers, groups } from '../../db/schema/groups.js';
 import { collectors, users } from '../../db/schema/users.js';
 import { listPayments } from '../../db/persistence.js';
 import * as paymentRepo from '../../repositories/payment.repository.js';
+import * as loanRepo from '../../repositories/loan.repository.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
 import { hashPassword } from '../../lib/password.js';
 import { generateInvitePassword } from '../../lib/invite-password.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import * as userRepo from '../../repositories/user.repository.js';
 import { formatCollectorDisplayId } from '@wilms/shared-utils';
+import {
+  calculateStreakWeeks,
+  collectionRatePercent,
+  expectedForMonthPesewas,
+  isoWeekKey,
+  recentIsoWeekKeys,
+  resolveTrendDirection,
+  rollingMonthKeys,
+  type CollectorTrendDirection,
+} from './metrics.js';
 
 export interface CollectorMonthlyPerformance {
   monthLabel: string;
@@ -35,6 +46,7 @@ export interface CollectorSummary {
   expensesSubmittedCount: number;
   status: 'ACTIVE' | 'AWAY';
   streakWeeks: number;
+  trendDirection: CollectorTrendDirection;
   cycleLabel: string;
   joinedAt: string;
   lastActiveAt: string;
@@ -67,6 +79,7 @@ export interface CollectorListResponse {
 export interface CollectorDetail extends CollectorSummary {
   assignedGroups: Array<{
     id: string;
+    groupSystemId?: string;
     name: string;
     memberCount: number;
     repaymentTrend: string;
@@ -76,12 +89,6 @@ export interface CollectorDetail extends CollectorSummary {
   flagsRaised: Array<{ id: string; message: string; tone: 'default' | 'danger' | 'muted' }>;
   activityHistory: Array<{ id: string; message: string; tone: 'default' | 'danger' | 'muted' }>;
 }
-
-const EMPTY_MONTHLY: CollectorMonthlyPerformance[] = [
-  { monthLabel: 'Jan', collectionRatePercent: 0 },
-  { monthLabel: 'Feb', collectionRatePercent: 0 },
-  { monthLabel: 'Mar', collectionRatePercent: 0 },
-];
 
 function buildCollectorSummary(input: {
   id: string;
@@ -96,13 +103,12 @@ function buildCollectorSummary(input: {
   joinedAt: string;
   lastActiveAt: string;
   status?: 'ACTIVE' | 'AWAY';
+  streakWeeks: number;
+  trendDirection: CollectorTrendDirection;
+  rateTrend: number[];
+  monthlyPerformance: CollectorMonthlyPerformance[];
 }): CollectorSummary {
-  const collectionRatePercent =
-    input.expectedPesewas === 0
-      ? input.collectedPesewas > 0
-        ? 100
-        : 0
-      : Math.round((input.collectedPesewas / input.expectedPesewas) * 100);
+  const rate = collectionRatePercent(input.collectedPesewas, input.expectedPesewas);
 
   return {
     id: input.id,
@@ -114,17 +120,18 @@ function buildCollectorSummary(input: {
     borrowerCount: input.borrowerCount,
     expectedPesewas: input.expectedPesewas,
     collectedPesewas: input.collectedPesewas,
-    collectionRatePercent,
-    recoveryRatePercent: collectionRatePercent,
+    collectionRatePercent: rate,
+    recoveryRatePercent: rate,
     reconciliationCount: input.reconciliationCount,
     expensesSubmittedCount: 0,
     status: input.status ?? 'ACTIVE',
-    streakWeeks: 0,
+    streakWeeks: input.streakWeeks,
+    trendDirection: input.trendDirection,
     cycleLabel: 'Current cycle',
     joinedAt: input.joinedAt,
     lastActiveAt: input.lastActiveAt,
-    rateTrend: [collectionRatePercent],
-    monthlyPerformance: EMPTY_MONTHLY,
+    rateTrend: input.rateTrend,
+    monthlyPerformance: input.monthlyPerformance,
   };
 }
 
@@ -138,7 +145,7 @@ async function loadGroupStatsByCollector(): Promise<
   }
 
   const db = getDb();
-  const rows = await db
+  const groupRows = await db
     .select({
       collectorUserId: groups.collectorUserId,
       groupCount: sql<number>`count(*)::int`,
@@ -147,7 +154,7 @@ async function loadGroupStatsByCollector(): Promise<
     .where(isNull(groups.deletedAt))
     .groupBy(groups.collectorUserId);
 
-  for (const row of rows) {
+  for (const row of groupRows) {
     if (!row.collectorUserId) {
       continue;
     }
@@ -157,7 +164,55 @@ async function loadGroupStatsByCollector(): Promise<
     });
   }
 
+  const memberRows = await db.execute(sql`
+    SELECT
+      g.collector_user_id AS collector_id,
+      COUNT(DISTINCT gm.borrower_id)::int AS borrower_count
+    FROM groups g
+    INNER JOIN group_members gm
+      ON gm.group_id = g.id AND gm.removed_at IS NULL
+    INNER JOIN borrowers b
+      ON b.id = gm.borrower_id AND b.deleted_at IS NULL
+    WHERE g.deleted_at IS NULL
+      AND g.collector_user_id IS NOT NULL
+      AND b.status IN ('APPROVED', 'AT_RISK', 'DEFAULTED')
+    GROUP BY g.collector_user_id
+  `);
+
+  for (const row of memberRows.rows as { collector_id?: string; borrower_count?: number }[]) {
+    if (!row.collector_id) {
+      continue;
+    }
+    const existing = stats.get(row.collector_id) ?? { groupCount: 0, borrowerCount: 0 };
+    stats.set(row.collector_id, {
+      groupCount: existing.groupCount,
+      borrowerCount: Number(row.borrower_count ?? 0),
+    });
+  }
+
   return stats;
+}
+
+async function loadMemberCountsByGroup(): Promise<Map<string, number>> {
+  const counts = new Map<string, number>();
+  if (!isDatabaseEnabled()) {
+    return counts;
+  }
+
+  const db = getDb();
+  const rows = await db
+    .select({
+      groupId: groupMembers.groupId,
+      memberCount: sql<number>`count(*)::int`,
+    })
+    .from(groupMembers)
+    .where(isNull(groupMembers.removedAt))
+    .groupBy(groupMembers.groupId);
+
+  for (const row of rows) {
+    counts.set(row.groupId, row.memberCount);
+  }
+  return counts;
 }
 
 async function loadReconciliationCounts(): Promise<Map<string, number>> {
@@ -183,17 +238,109 @@ async function loadReconciliationCounts(): Promise<Map<string, number>> {
   return counts;
 }
 
+async function loadPendingReconciliationAlerts(): Promise<
+  Array<{ collectorUserId: string; date: string; submittedAt: Date }>
+> {
+  if (!isDatabaseEnabled()) {
+    return [];
+  }
+
+  const db = getDb();
+  const rows = await db
+    .select({
+      collectorUserId: financialReconciliations.collectorUserId,
+      date: financialReconciliations.reconciliationDate,
+      submittedAt: financialReconciliations.submittedAt,
+      status: financialReconciliations.status,
+      varianceFlagged: financialReconciliations.varianceFlagged,
+    })
+    .from(financialReconciliations)
+    .orderBy(sql`${financialReconciliations.submittedAt} DESC`)
+    .limit(20);
+
+  return rows
+    .filter(
+      (row) =>
+        row.status === 'PENDING_REVIEW' ||
+        row.status === 'UNDER_INVESTIGATION' ||
+        row.status === 'REOPENED' ||
+        row.varianceFlagged,
+    )
+    .slice(0, 8)
+    .map((row) => ({
+      collectorUserId: row.collectorUserId,
+      date: row.date,
+      submittedAt: row.submittedAt,
+    }));
+}
+
+function buildMonthlySeries(input: {
+  now: Date;
+  weeklyExpectedPesewas: number;
+  monthlyCollected: Map<string, number> | undefined;
+}): { monthlyPerformance: CollectorMonthlyPerformance[]; rateTrend: number[]; trendDirection: CollectorTrendDirection } {
+  const months = rollingMonthKeys(input.now, 6);
+  const monthlyPerformance = months.map((month) => {
+    const monthStart = `${month.key}-01`;
+    const collected = input.monthlyCollected?.get(month.key) ?? 0;
+    const expected = expectedForMonthPesewas(input.weeklyExpectedPesewas, monthStart);
+    return {
+      monthLabel: month.label,
+      collectionRatePercent: collectionRatePercent(collected, expected),
+    };
+  });
+  const rateTrend = monthlyPerformance.map((entry) => entry.collectionRatePercent);
+  const current = rateTrend[rateTrend.length - 1] ?? 0;
+  const previous = rateTrend[rateTrend.length - 2] ?? current;
+  return {
+    monthlyPerformance,
+    rateTrend,
+    trendDirection: resolveTrendDirection(current, previous),
+  };
+}
+
+function buildStreakWeeks(paymentDates: string[] | undefined, now: Date): number {
+  if (!paymentDates?.length) {
+    return 0;
+  }
+  const weekSet = new Set(paymentDates.map((date) => isoWeekKey(date)));
+  return calculateStreakWeeks(recentIsoWeekKeys(now, 16), weekSet);
+}
+
 export async function listCollectors(): Promise<CollectorListResponse> {
-  const today = new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const today = now.toISOString().slice(0, 10);
   const useDb = isDatabaseEnabled();
-  const [payments, paymentsByCollector, activeTodayCollectors, groupStats, reconciliationCounts] =
-    await Promise.all([
-      useDb ? Promise.resolve([] as Awaited<ReturnType<typeof listPayments>>) : listPayments(),
-      useDb ? paymentRepo.sumConfirmedPaymentsByCollector() : Promise.resolve(new Map<string, number>()),
-      useDb ? paymentRepo.listCollectorIdsWithPaymentOnDate(today) : Promise.resolve(new Set<string>()),
-      loadGroupStatsByCollector(),
-      loadReconciliationCounts(),
-    ]);
+  const sixMonthsAgo = rollingMonthKeys(now, 6)[0]!.key + '-01';
+  const twelveWeeksAgo = new Date(now.getTime() - 16 * 7 * 86400000).toISOString().slice(0, 10);
+
+  const [
+    payments,
+    paymentsByCollector,
+    activeTodayCollectors,
+    groupStats,
+    reconciliationCounts,
+    expectedByCollector,
+    monthlyByCollector,
+    paymentDatesByCollector,
+    pendingRecons,
+    recentPayments,
+  ] = await Promise.all([
+    useDb ? Promise.resolve([] as Awaited<ReturnType<typeof listPayments>>) : listPayments(),
+    useDb ? paymentRepo.sumConfirmedPaymentsByCollector() : Promise.resolve(new Map<string, number>()),
+    useDb ? paymentRepo.listCollectorIdsWithPaymentOnDate(today) : Promise.resolve(new Set<string>()),
+    loadGroupStatsByCollector(),
+    loadReconciliationCounts(),
+    useDb ? loanRepo.sumExpectedWeeklyByCollector() : Promise.resolve(new Map<string, number>()),
+    useDb
+      ? paymentRepo.sumConfirmedPaymentsByCollectorMonth(sixMonthsAgo)
+      : Promise.resolve(new Map<string, Map<string, number>>()),
+    useDb
+      ? paymentRepo.listConfirmedPaymentDatesByCollector(twelveWeeksAgo)
+      : Promise.resolve(new Map<string, string[]>()),
+    loadPendingReconciliationAlerts(),
+    useDb ? paymentRepo.listRecentConfirmedPayments(8) : Promise.resolve([]),
+  ]);
 
   let collectorEntries: Array<{
     id: string;
@@ -232,19 +379,30 @@ export async function listCollectors(): Promise<CollectorListResponse> {
     }));
   }
 
+  const nameById = new Map(collectorEntries.map((entry) => [entry.id, entry.displayName]));
+
   const collectors = collectorEntries.map((entry) => {
     const collectedPesewas = useDb
       ? (paymentsByCollector.get(entry.id) ?? 0)
       : payments
           .filter((payment) => payment.collectorId === entry.id)
           .reduce((sum, payment) => sum + payment.amountPesewas, 0);
-    const expectedPesewas = collectedPesewas;
+    const expectedPesewas = useDb
+      ? (expectedByCollector.get(entry.id) ?? 0)
+      : collectedPesewas;
     const groupInfo = groupStats.get(entry.id) ?? { groupCount: 0, borrowerCount: 0 };
     const activeToday = useDb
       ? activeTodayCollectors.has(entry.id)
       : payments
           .filter((payment) => payment.collectorId === entry.id)
           .some((payment) => payment.paymentDate === today);
+
+    const series = buildMonthlySeries({
+      now,
+      weeklyExpectedPesewas: expectedPesewas,
+      monthlyCollected: monthlyByCollector.get(entry.id),
+    });
+    const streakWeeks = buildStreakWeeks(paymentDatesByCollector.get(entry.id), now);
 
     return {
       summary: buildCollectorSummary({
@@ -260,6 +418,10 @@ export async function listCollectors(): Promise<CollectorListResponse> {
         joinedAt: entry.joinedAt,
         lastActiveAt: entry.lastActiveAt,
         status: entry.status,
+        streakWeeks,
+        trendDirection: series.trendDirection,
+        rateTrend: series.rateTrend,
+        monthlyPerformance: series.monthlyPerformance,
       }),
       activeToday,
     };
@@ -281,8 +443,43 @@ export async function listCollectors(): Promise<CollectorListResponse> {
   const needsAttention = summaries.filter((collector) => collector.collectionRatePercent < 70).length;
   const onTrack = summaries.length - topPerformers - needsAttention;
 
+  const alerts: CollectorListResponse['alerts'] = [];
+
+  for (const payment of recentPayments.slice(0, 5)) {
+    const name = nameById.get(payment.collectorId) ?? 'Collector';
+    alerts.push({
+      id: `pay-${payment.id}`,
+      severity: 'success',
+      message: `${name} recorded a payment on ${payment.paymentDate}`,
+      createdAt: payment.recordedAt,
+    });
+  }
+
+  for (const recon of pendingRecons.slice(0, 4)) {
+    const name = nameById.get(recon.collectorUserId) ?? 'Collector';
+    alerts.push({
+      id: `recon-${recon.collectorUserId}-${recon.date}`,
+      severity: 'warning',
+      message: `${name} submitted reconciliation for ${recon.date} awaiting review`,
+      createdAt: recon.submittedAt.toISOString(),
+    });
+  }
+
+  for (const collector of summaries) {
+    if (collector.borrowerCount > 0 && collector.collectionRatePercent < 70) {
+      alerts.push({
+        id: `rate-${collector.id}`,
+        severity: 'danger',
+        message: `${collector.displayName} collection rate is ${collector.collectionRatePercent}% — needs attention`,
+        createdAt: now.toISOString(),
+      });
+    }
+  }
+
+  alerts.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+
   return {
-    generatedAt: new Date().toISOString(),
+    generatedAt: now.toISOString(),
     summary: {
       totalCollectors: summaries.length,
       avgCollectionRatePercent,
@@ -295,7 +492,7 @@ export async function listCollectors(): Promise<CollectorListResponse> {
       needsAttention,
     },
     collectors: summaries,
-    alerts: [],
+    alerts: alerts.slice(0, 10),
   };
 }
 
@@ -308,6 +505,7 @@ export async function getCollector(id: string): Promise<CollectorDetail> {
   }
 
   let assignedGroups: CollectorDetail['assignedGroups'] = [];
+  const memberCounts = await loadMemberCountsByGroup();
 
   if (isDatabaseEnabled()) {
     const db = getDb();
@@ -320,7 +518,7 @@ export async function getCollector(id: string): Promise<CollectorDetail> {
       id: group.id,
       groupSystemId: group.systemId,
       name: group.displayName,
-      memberCount: 0,
+      memberCount: memberCounts.get(group.id) ?? 0,
       repaymentTrend: 'Stable',
       riskLevel: group.status === 'AT_RISK' ? 'High' : 'Low',
     }));
