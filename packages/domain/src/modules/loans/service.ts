@@ -20,7 +20,12 @@ import { generateLoanScheduleWeeks } from '../../domain/loan/schedule.js';
 import { isValidPaymentDay } from '../../domain/loan/payment-day.js';
 import { runWithIdempotency } from '../../infrastructure/idempotency/run-with-idempotency.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
-import { notifyLoanDisbursed, notifyLoanApproved, notifyLoanRejected } from '../../infrastructure/notifications/event-dispatch.js';
+import {
+  notifyLoanCreated,
+  notifyLoanDisbursed,
+  notifyLoanApproved,
+  notifyLoanRejected,
+} from '../../infrastructure/notifications/event-dispatch.js';
 import * as borrowerRepo from '../../repositories/borrower.repository.js';
 import * as disbursementRepo from '../../repositories/loan-disbursement.repository.js';
 import * as ledgerRepo from '../../repositories/ledger.repository.js';
@@ -36,7 +41,7 @@ import { USER_ROLE } from '@wilms/shared-rbac';
 
 async function assertAdminFeeRecorded(borrowerId: string): Promise<void> {
   if (!(await hasAdminFee(borrowerId))) {
-    throw new Error('VALIDATION:Admin fee must be recorded before this loan operation.');
+    throw new Error('VALIDATION:Admin fee must be recorded before loan disbursement.');
   }
 }
 
@@ -196,8 +201,6 @@ export async function createLoan(
         throw new Error('VALIDATION:This borrower already has an active or pending loan.');
       }
 
-      await assertAdminFeeRecorded(input.borrowerId);
-
       if (!isValidPaymentDay(input.paymentDay)) {
         throw new Error('VALIDATION:Payment day must be a valid weekday (Sunday through Saturday).');
       }
@@ -282,7 +285,17 @@ export async function createLoan(
           targetEntityType: 'loan',
         });
 
-        return mapLoanRowToDetail(loan);
+        const dto = mapLoanRowToDetail(loan);
+        void notifyLoanCreated({
+          borrowerId: borrower.id,
+          borrowerName: borrower.fullName,
+          borrowerPhone: borrower.phone,
+          borrowerEmail: borrower.profile?.email,
+          loanId: loan.id,
+          loanDisplayId: dto.displayId ?? loan.id,
+        });
+
+        return dto;
       } catch (error) {
         mapServiceError(error);
       }
@@ -318,8 +331,6 @@ export async function approveLoan(loanId: string, actorId: string): Promise<Loan
       );
     }
   }
-
-  await assertAdminFeeRecorded(loan.borrowerId);
 
   const updated = await runInTransaction(async (tx) => {
     const approved = await loanRepo.updateLoanLifecycle(
@@ -357,14 +368,18 @@ export async function approveLoan(loanId: string, actorId: string): Promise<Loan
   const dto = mapLoanRowToDetail(updated);
   const borrower = await borrowerRepo.getBorrower(loan.borrowerId);
   if (borrower) {
+    const settings = await getSettings();
+    const collectorUserId = await resolveCollectorUserIdForBorrower(loan.borrowerId);
     void notifyLoanApproved({
       borrowerId: borrower.id,
       borrowerName: borrower.fullName,
       borrowerPhone: borrower.phone,
       borrowerEmail: borrower.profile?.email,
       amountPesewas: Math.round(Number(loan.principalAmount) * 100),
+      adminFeePesewas: settings.adminFeePesewas,
       loanId,
       loanDisplayId: dto.displayId ?? loanId,
+      collectorUserId,
     });
   }
 
@@ -558,6 +573,21 @@ export async function disburseLoan(
         const collectorUserId = await resolveCollectorUserIdForBorrower(loan.borrowerId);
         const weeks = await scheduleRepo.listScheduleWeeks(loanId);
         const firstDue = weeks[0];
+        let groupName = borrower.groupName || undefined;
+        let collectorName: string | undefined;
+        if (borrower.groupId && isDatabaseEnabled()) {
+          try {
+            const { getGroupDetail } = await import('../groups/service.js');
+            const group = await getGroupDetail(borrower.groupId);
+            groupName = group.displayName || group.name || groupName;
+            collectorName =
+              group.collector?.id && group.collector.id !== 'unassigned'
+                ? group.collector.fullName
+                : undefined;
+          } catch {
+            // Best-effort enrichment for SMS copy.
+          }
+        }
         void notifyLoanDisbursed({
           borrowerId: borrower.id,
           borrowerName: borrower.fullName,
@@ -571,6 +601,8 @@ export async function disburseLoan(
           paymentDay: dto.paymentDay,
           totalWeeks: weeks.length || dto.durationWeeks,
           firstDueDate: firstDue?.dueDate,
+          groupName,
+          collectorName,
         });
       }
 

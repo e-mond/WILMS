@@ -67,6 +67,13 @@ vi.mock('../../infrastructure/idempotency/run-with-idempotency.js', () => ({
   runWithIdempotency: async (input: { execute: () => Promise<unknown> }) => input.execute(),
 }));
 
+vi.mock('../../infrastructure/notifications/event-dispatch.js', () => ({
+  notifyLoanCreated: vi.fn(),
+  notifyLoanApproved: vi.fn(),
+  notifyLoanRejected: vi.fn(),
+  notifyLoanDisbursed: vi.fn(),
+}));
+
 describe('createLoan pool capital validation', () => {
   beforeEach(() => {
     vi.clearAllMocks();

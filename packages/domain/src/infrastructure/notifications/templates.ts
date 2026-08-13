@@ -14,8 +14,17 @@ import {
 } from './email-layout.js';
 
 export interface PaymentConfirmationSmsInput {
+  borrowerName?: string;
   amountPesewas: number;
   paymentDate: string;
+  remainingBalancePesewas?: number;
+  weeksRemaining?: number;
+}
+
+export interface MultiWeekPaymentSmsInput {
+  borrowerName: string;
+  amountPesewas: number;
+  weeksPaid: number;
   remainingBalancePesewas?: number;
   weeksRemaining?: number;
 }
@@ -23,6 +32,7 @@ export interface PaymentConfirmationSmsInput {
 export interface LoanApprovalSmsInput {
   borrowerName: string;
   amountPesewas: number;
+  adminFeePesewas: number;
 }
 
 export interface MissedPaymentSmsInput {
@@ -34,15 +44,31 @@ export interface MissedPaymentSmsInput {
   weeksOverdue?: number;
   remainingBalancePesewas?: number;
   weeksRemaining?: number;
+  collectorName?: string;
 }
 
 export interface LoanDisbursedScheduleSmsInput {
-  borrowerName: string;
-  loanDisplayId: string;
+  borrowerName?: string;
+  loanDisplayId?: string;
+  groupName: string;
+  collectorName: string;
   weeklyAmountPesewas: number;
   paymentDay: string;
   totalWeeks: number;
   firstDueDate: string;
+}
+
+export interface PaymentReminderSmsInput {
+  borrowerName: string;
+  weeklyAmountPesewas?: number;
+  amountPesewas?: number;
+  paymentDay?: string;
+  paymentDate?: string;
+  dueDate?: string;
+  loanDisplayId?: string;
+  groupName?: string;
+  collectorName?: string;
+  dueTomorrow?: boolean;
 }
 
 export interface PaymentConfirmationEmailInput {
@@ -57,6 +83,7 @@ export interface LoanApprovalEmailInput {
   borrowerName: string;
   amountPesewas: number;
   loanDisplayId: string;
+  adminFeePesewas?: number;
 }
 
 export function formatGhsAmount(amountPesewas: number): string {
@@ -67,46 +94,60 @@ export function formatGhsAmount(amountPesewas: number): string {
 
 export function buildPaymentConfirmationSmsBody(input: PaymentConfirmationSmsInput): string {
   const amountGhs = formatGhsAmount(input.amountPesewas);
-  const parts = [`WILMS: Payment of GHS ${amountGhs} received on ${input.paymentDate}.`];
-  if (typeof input.remainingBalancePesewas === 'number') {
-    parts.push(`Balance GHS ${formatGhsAmount(input.remainingBalancePesewas)}.`);
-  }
-  if (typeof input.weeksRemaining === 'number') {
-    parts.push(`${input.weeksRemaining} week${input.weeksRemaining === 1 ? '' : 's'} remaining.`);
-  }
-  if (parts.length === 1) {
-    parts.push('Thank you.');
-  }
-  return parts.join(' ');
+  const name = input.borrowerName?.trim() || 'borrower';
+  const balance =
+    typeof input.remainingBalancePesewas === 'number'
+      ? formatGhsAmount(input.remainingBalancePesewas)
+      : '0.00';
+  const weeks = typeof input.weeksRemaining === 'number' ? String(input.weeksRemaining) : '0';
+  return `WILMS: Thank you, ${name}. We have received your payment of GHS ${amountGhs} on ${input.paymentDate}. Outstanding balance: GHS ${balance}. Remaining instalments: ${weeks}. Thank you for staying up to date with your repayments.`;
+}
+
+export function buildMultiWeekPaymentSmsBody(input: MultiWeekPaymentSmsInput): string {
+  const amountGhs = formatGhsAmount(input.amountPesewas);
+  const balance =
+    typeof input.remainingBalancePesewas === 'number'
+      ? formatGhsAmount(input.remainingBalancePesewas)
+      : '0.00';
+  const weeks = typeof input.weeksRemaining === 'number' ? String(input.weeksRemaining) : '0';
+  return `WILMS: Thank you, ${input.borrowerName}. We have received GHS ${amountGhs}, covering ${input.weeksPaid} weekly repayments. Outstanding balance: GHS ${balance}. Remaining instalments: ${weeks}.`;
 }
 
 export function buildLoanApprovalSmsBody(input: LoanApprovalSmsInput): string {
   const amountGhs = formatGhsAmount(input.amountPesewas);
-  return `WILMS: Hi ${input.borrowerName}, your interest-free loan of GHS ${amountGhs} has been approved.`;
+  const feeGhs = formatGhsAmount(input.adminFeePesewas);
+  return `WILMS: Congratulations ${input.borrowerName}! Your interest-free loan of GHS ${amountGhs} has been approved. To proceed to disbursement, please pay the required admin fee of GHS ${feeGhs}. We will notify you immediately after your payment is confirmed.`;
 }
 
 export function buildMissedPaymentSmsBody(input: MissedPaymentSmsInput): string {
   const amountGhs = formatGhsAmount(input.amountPesewas);
+  const collector = input.collectorName?.trim() || 'your collector';
   if (input.dueDate) {
-    const parts = [
-      `WILMS: Hi ${input.borrowerName}, your scheduled payment of GHS ${amountGhs} was not recorded for ${input.dueDate}.`,
-    ];
-    if (typeof input.remainingBalancePesewas === 'number') {
-      parts.push(`Balance GHS ${formatGhsAmount(input.remainingBalancePesewas)}.`);
-    }
-    if (typeof input.weeksRemaining === 'number') {
-      parts.push(`${input.weeksRemaining} week${input.weeksRemaining === 1 ? '' : 's'} remaining.`);
-    }
-    parts.push('Please contact your collector.');
-    return parts.join(' ');
+    return `WILMS: Dear ${input.borrowerName}, we did not receive your repayment of GHS ${amountGhs} due today (${input.dueDate}). Please make payment within the grace period to avoid escalation. If you have already paid, please contact your collector, ${collector}.`;
   }
   const weeks = input.weeksOverdue ?? 1;
-  return `WILMS: Hi ${input.borrowerName}, you have ${weeks} missed payment(s). Outstanding: GHS ${amountGhs}. Please contact your collector.`;
+  return `WILMS: Dear ${input.borrowerName}, we did not receive your repayment of GHS ${amountGhs} (${weeks} missed instalment(s)). Please make payment within the grace period to avoid escalation. If you have already paid, please contact your collector, ${collector}.`;
+}
+
+export function buildGracePeriodReminderSmsBody(input: {
+  borrowerName: string;
+  weeklyAmountPesewas: number;
+  graceEndDate: string;
+  collectorName?: string;
+}): string {
+  const amountGhs = formatGhsAmount(input.weeklyAmountPesewas);
+  const collector = input.collectorName?.trim() || 'your collector';
+  return `WILMS: Reminder — Your repayment of GHS ${amountGhs} remains outstanding. Your grace period ends on ${input.graceEndDate}. Please make payment immediately or contact your collector, ${collector}, if you need assistance.`;
+}
+
+export function buildEscalationNoticeSmsBody(input: { collectorName?: string }): string {
+  const collector = input.collectorName?.trim() || 'your collector';
+  return `WILMS: Your repayment remains unpaid after the grace period. Your account has been flagged for follow-up by your group and collector. Please contact ${collector} immediately to avoid further action.`;
 }
 
 export function buildLoanDisbursedScheduleSmsBody(input: LoanDisbursedScheduleSmsInput): string {
   const weeklyGhs = formatGhsAmount(input.weeklyAmountPesewas);
-  return `WILMS: Hi ${input.borrowerName}, repay loan ${input.loanDisplayId} every ${input.paymentDay}: GHS ${weeklyGhs} for ${input.totalWeeks} weeks. First due ${input.firstDueDate}.`;
+  return `WILMS: Repayment Schedule — Group: ${input.groupName} | Collector: ${input.collectorName} | Weekly payment: GHS ${weeklyGhs} | Payment day: ${input.paymentDay} | First payment: ${input.firstDueDate} | Total weeks: ${input.totalWeeks}. Please make each payment on or before the due date.`;
 }
 
 export function buildBorrowerRegistrationApprovalSmsBody(input: {
@@ -115,22 +156,22 @@ export function buildBorrowerRegistrationApprovalSmsBody(input: {
   collectorName?: string;
   nextStep?: string;
 }): string {
-  const parts = [`WILMS: Hi ${input.borrowerName}, your registration has been approved.`];
-  if (input.groupName) {
-    parts.push(`Group: ${input.groupName}.`);
+  if (input.groupName?.trim() && input.collectorName?.trim()) {
+    return `WILMS: Congratulations ${input.borrowerName}! Your registration has been approved. You have been assigned to ${input.groupName} under Collector ${input.collectorName}. The next step is the creation and approval of your interest-free loan.`;
   }
-  if (input.collectorName) {
-    parts.push(`Collector: ${input.collectorName}.`);
-  }
-  parts.push(
-    input.nextStep?.trim() ||
-      'Next step: pay the admin fee so your loan application can proceed.',
-  );
-  return parts.join(' ');
+  return `WILMS: Congratulations ${input.borrowerName}! Your registration has been approved. The next step is the creation and approval of your interest-free loan.`;
 }
 
-export function buildRegistrationSubmittedSmsBody(input: { borrowerName: string }): string {
-  return `WILMS: Hi ${input.borrowerName}, we received your registration. An approver will review it shortly.`;
+export function buildRegistrationSubmittedSmsBody(input: {
+  borrowerName: string;
+  reference?: string;
+}): string {
+  const reference = input.reference?.trim() || 'pending';
+  return `WILMS: Dear ${input.borrowerName}, we have received your loan registration application. Your application reference is ${reference}. An Approver will review it shortly. We will notify you once a decision has been made.`;
+}
+
+export function buildLoanCreatedSmsBody(input: { borrowerName: string }): string {
+  return `WILMS: Dear ${input.borrowerName}, your loan application has been created and submitted for approval. We will notify you once the loan has been approved.`;
 }
 
 export function buildGroupAssignedSmsBody(input: {
@@ -138,22 +179,26 @@ export function buildGroupAssignedSmsBody(input: {
   groupName: string;
   collectorName?: string;
 }): string {
-  const collector = input.collectorName?.trim()
-    ? ` Your collector is ${input.collectorName}.`
-    : '';
-  return `WILMS: Hi ${input.borrowerName}, you have been assigned to group ${input.groupName}.${collector}`;
+  const collector = input.collectorName?.trim() || 'your collector';
+  return `WILMS: Dear ${input.borrowerName}, you have been reassigned to ${input.groupName} under Collector ${collector}. Your future repayments should be made through your new group and collector.`;
+}
+
+export function buildCollectorReassignedSmsBody(input: {
+  borrowerName: string;
+  collectorName: string;
+}): string {
+  return `WILMS: Dear ${input.borrowerName}, your collector has been updated. Your new collector is ${input.collectorName}. Your group and repayment schedule remain unchanged unless separately notified.`;
 }
 
 export function buildAdminFeeConfirmationSmsBody(input: {
+  borrowerName?: string;
   amountPesewas: number;
   loanDisplayId?: string;
   paymentDate: string;
 }): string {
   const amountGhs = formatGhsAmount(input.amountPesewas);
-  if (input.loanDisplayId) {
-    return `WILMS: We have received your admin fee of GHS ${amountGhs} for Loan ${input.loanDisplayId}. Your application can now proceed to approval.`;
-  }
-  return `WILMS: We have received your admin fee of GHS ${amountGhs} on ${input.paymentDate}. Your application can now proceed to approval.`;
+  const name = input.borrowerName?.trim() || 'borrower';
+  return `WILMS: Dear ${name}, we have received your admin fee payment of GHS ${amountGhs} on ${input.paymentDate}. Your loan is now being prepared for disbursement. We will notify you once the funds have been released.`;
 }
 
 export function buildRegistrationRejectedSmsBody(input: { borrowerName: string }): string {
@@ -168,27 +213,44 @@ export function buildLoanDisbursedSmsBody(input: {
   borrowerName: string;
   loanDisplayId: string;
   amountPesewas: number;
+  firstPaymentDate: string;
 }): string {
   const amountGhs = formatGhsAmount(input.amountPesewas);
-  return `WILMS: Hi ${input.borrowerName}, loan ${input.loanDisplayId} for GHS ${amountGhs} has been disbursed.`;
+  return `WILMS: Dear ${input.borrowerName}, your interest-free loan of GHS ${amountGhs} has been successfully disbursed. Your first repayment is due on ${input.firstPaymentDate}. A detailed repayment schedule has been sent to you.`;
+}
+
+export function buildLoanCompletedSmsBody(input: {
+  borrowerName: string;
+  paymentAmountPesewas: number;
+}): string {
+  const amountGhs = formatGhsAmount(input.paymentAmountPesewas);
+  return `WILMS: Congratulations ${input.borrowerName}! We have received your final repayment of GHS ${amountGhs}. Your loan has been fully repaid and your account is now closed. Thank you for honouring your repayment commitments.`;
 }
 
 export function buildBlacklistSmsBody(input: { borrowerName: string }): string {
   return `WILMS: Hi ${input.borrowerName}, your application has been flagged for review. Contact your registration officer.`;
 }
 
-export function buildLoanReminderSmsBody(input: {
-  borrowerName: string;
-  loanDisplayId: string;
-  amountPesewas: number;
-  dueDate: string;
-  dueTomorrow?: boolean;
-}): string {
-  const amountGhs = formatGhsAmount(input.amountPesewas);
+export function buildLoanReminderSmsBody(input: PaymentReminderSmsInput): string {
+  const weekly = input.weeklyAmountPesewas ?? input.amountPesewas ?? 0;
+  const amountGhs = formatGhsAmount(weekly);
+  const paymentDate = input.paymentDate || input.dueDate || '';
+  const collector = input.collectorName?.trim() || 'your collector';
   if (input.dueTomorrow) {
-    return `WILMS: Hi ${input.borrowerName}, your next weekly payment of GHS ${amountGhs} is due tomorrow (${input.dueDate}).`;
+    const group = input.groupName?.trim() || 'your group';
+    const day = input.paymentDay || 'your payment day';
+    return `WILMS: Reminder — Dear ${input.borrowerName}, your weekly repayment of GHS ${amountGhs} is due tomorrow (${day}, ${paymentDate}). Group: ${group}. Collector: ${collector}. Please ensure payment is made on time.`;
   }
-  return `WILMS: Hi ${input.borrowerName}, payment of GHS ${amountGhs} for loan ${input.loanDisplayId} is due on ${input.dueDate}.`;
+  return `WILMS: Dear ${input.borrowerName}, your repayment of GHS ${amountGhs} is due today (${paymentDate}). Please make payment to your collector, ${collector}, today to keep your account in good standing.`;
+}
+
+export function buildPaymentDayChangedSmsBody(input: {
+  paymentDay: string;
+  weeklyAmountPesewas: number;
+  nextPaymentDate: string;
+}): string {
+  const amountGhs = formatGhsAmount(input.weeklyAmountPesewas);
+  return `WILMS: Important — Your repayment schedule has changed. Your new weekly payment day is ${input.paymentDay}. Your next payment of GHS ${amountGhs} is due on ${input.nextPaymentDate}.`;
 }
 
 export function buildCollectionReminderSmsBody(input: {
@@ -238,6 +300,8 @@ export function buildPaymentConfirmationEmail(input: PaymentConfirmationEmailInp
 
 export function buildLoanApprovalEmail(input: LoanApprovalEmailInput): EmailTemplate {
   const amountGhs = formatGhsAmount(input.amountPesewas);
+  const feeGhs =
+    typeof input.adminFeePesewas === 'number' ? formatGhsAmount(input.adminFeePesewas) : null;
 
   return buildEmailTemplate({
     subject: `WILMS loan approved — ${input.loanDisplayId}`,
@@ -248,7 +312,9 @@ export function buildLoanApprovalEmail(input: LoanApprovalEmailInput): EmailTemp
       `Dear ${input.borrowerName},`,
       '',
       `Your interest-free loan application (${input.loanDisplayId}) for GHS ${amountGhs} has been approved.`,
-      'Your collector will contact you about disbursement and weekly repayments.',
+      feeGhs
+        ? `To proceed to disbursement, please pay the required admin fee of GHS ${feeGhs}. We will notify you immediately after your payment is confirmed.`
+        : 'Your collector will contact you about the next steps for disbursement.',
       '',
       '— WILMS',
     ],
@@ -257,8 +323,13 @@ export function buildLoanApprovalEmail(input: LoanApprovalEmailInput): EmailTemp
       emailCard('Loan Details', [
         { label: 'Loan ID', value: input.loanDisplayId },
         { label: 'Approved Amount', value: `GHS ${amountGhs}` },
+        ...(feeGhs ? [{ label: 'Admin fee due', value: `GHS ${feeGhs}` }] : []),
       ]),
-      emailParagraph('Your collector will contact you about disbursement and weekly repayments.'),
+      emailParagraph(
+        feeGhs
+          ? `To proceed to disbursement, please pay the required admin fee of GHS ${feeGhs}.`
+          : 'Your collector will contact you about the next steps for disbursement.',
+      ),
       emailButton('View Loan', `https://wilms.vercel.app/loans`),
     ].join(''),
   });
