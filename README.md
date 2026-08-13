@@ -529,20 +529,29 @@ Design system tokens and layout primitives live under `apps/frontend/src/compone
 
 | Channel | Use |
 | --- | --- |
-| **In-app** | Staff inbox (payments, expenses, ops, invitations, alerts) |
-| **Email** | Approvals, invitations, digests, confirmations |
-| **SMS** | Borrower-facing confirmations and reminders (provider-configured) |
-| **Push** | Optional Web Push for staff devices |
+| **SMS** | Primary borrower channel for the full lending lifecycle |
+| **Email** | Approvals, receipts, disbursement, missed payment, completion, schedule changes (optional where the matrix says so) |
+| **In-app** | Staff inbox (collectors, officers, Super Admin) |
+| **Push** | Mirrored from in-app for users with a WILMS account |
+
+Borrowers do not hold portal accounts; SMS is the borrower-facing channel.
+
+### Borrower lifecycle (authoritative)
+
+Registration submitted → registration approved (group + collector assigned) → loan created → loan approved (**admin-fee instruction**) → admin fee recorded → disbursed → repayment schedule issued → reminder (1 day before) → due today → payment received / multi-week receipt → missed payment → grace reminder → escalation → loan completed. Collector, group, and payment-day changes notify the borrower when they occur.
+
+Admin fee is instructed **after loan approval** and is required **before disbursement**, not before loan create or approve.
 
 ### Control plane
 
-- **Scheduler:** Vercel Cron hits `/api/cron/notifications`
+- **Scheduler:** Vercel Cron daily **06:00 UTC** → `/api/cron/notifications` (T−1 reminder, due today, missed, grace, escalation)
 - **Quiet hours:** respected via notification preferences / settings
 - **Deduplication:** delivery keys prevent duplicate SMS/email/in-app sends
-- **Escalation ladder:** overdue payment notifications at configured day offsets (e.g. 1 / 3 / 7)
+- **Escalation ladder:** grace-period reminder then escalation after `latePaymentGraceDays`
 - **Operational alerts:** reconciliation variance, scheduler failures, expense review, missed-payment summaries
 
-Implementation: `packages/domain/src/infrastructure/notifications/`.
+Implementation: `packages/domain/src/infrastructure/notifications/`.  
+Copy, channel matrix, and timing: [`documentation/notifications/`](documentation/notifications/).
 
 ---
 
@@ -917,6 +926,7 @@ Report accessibility defects with role, route, and keyboard repro steps.
 | [`docs/analytics/`](docs/analytics/) | Forecasting assumptions |
 | [`docs/audit/`](docs/audit/) | Audit architecture |
 | [`docs/v1.8.0/`](docs/v1.8.0/) | **v1.8.0** release pack + production readiness matrix |
+| [`documentation/notifications/`](documentation/notifications/) | Borrower SMS/email lifecycle, trigger matrix, scheduler timing |
 | [`docs/offline-architecture.md`](docs/offline-architecture.md) | Offline capability matrix (1.8.0 truth) |
 | [`documentation/offline/`](documentation/offline/) | Offline-first Phases 0–8 (flag-gated expansions; default off) |
 | [`docs/v1.7/`](docs/v1.7/) | Prior v1.7.0 release pack |
@@ -931,7 +941,7 @@ Report accessibility defects with role, route, and keyboard repro steps.
 
 | Release | Focus |
 | --- | --- |
-| **v1.8.0 (current)** | Enterprise design, Ghana holidays, automation engine, field-critical offline, CSP-safe fonts, offline-first flag (`WILMS_OFFLINE_MODE` default off), post-release UI closure |
+| **v1.8.0 (current)** | Enterprise design, Ghana holidays, automation engine, field-critical offline, CSP-safe fonts, Ghana location master, corrected borrower SMS lifecycle |
 | **v1.9 — Integrations & Payments** | Deeper payment-provider integrations, settlement tooling, external system connectors |
 | **v2.0 — General Ledger & multi-branch** | Statutory double-entry GL, multi-branch structures, enhanced consolidation |
 

@@ -48,7 +48,54 @@ npm run docs:prepare
 | Procurement Pack | `books/PROCUREMENT_PACK.md` | MD, PDF, DOCX |
 | Implementation Guide | `books/IMPLEMENTATION_GUIDE.md` | MD, PDF, DOCX |
 
-See also: `technical/`, `operations/`, `user-guides/`, `developer/`, `roadmap/`.
+See also: `technical/`, `operations/`, `user-guides/`, `developer/`, `roadmap/`, `location/`, `notifications/`.
+
+---
+
+## Ghana location master (v1.8.0)
+
+| Document | Path |
+|----------|------|
+| Architecture review (v1) | `location/LOCATION_ARCHITECTURE_REVIEW.md` |
+| Hierarchy architecture review (v2) | `location/GHANA_HIERARCHY_ARCHITECTURE_REVIEW.md` |
+| Administrative research | `location/GHANA_ADMINISTRATIVE_RESEARCH.md` |
+| Administrative model | `location/GHANA_ADMINISTRATIVE_MODEL.md` |
+| Sub-district architecture | `location/SUB_DISTRICT_ARCHITECTURE.md` |
+| Electoral area model | `location/ELECTORAL_AREA_MODEL.md` |
+| Community guide | `location/COMMUNITY_AND_SUBURB_GUIDE.md` |
+| Community location guide (v1.8.0 completion) | `location/COMMUNITY_LOCATION_GUIDE.md` |
+| Community coverage audit | `location/COMMUNITY_COVERAGE_AUDIT.md` |
+| Community import report | `location/COMMUNITY_IMPORT_REPORT.md` |
+| Community import process | `location/COMMUNITY_IMPORT_PROCESS.md` |
+| Community search architecture | `location/COMMUNITY_SEARCH_ARCHITECTURE.md` |
+| Community data quality | `location/COMMUNITY_DATA_QUALITY.md` |
+| Community data quality report | `location/COMMUNITY_DATA_QUALITY_REPORT.md` |
+| Community test report | `location/COMMUNITY_TEST_REPORT.md` |
+| Final community completion report | `location/FINAL_COMMUNITY_COMPLETION_REPORT.md` |
+| Import pipeline | `location/LOCATION_IMPORT_PIPELINE.md` |
+| API reference | `location/LOCATION_API_REFERENCE.md` |
+| Offline strategy | `location/OFFLINE_LOCATION_STRATEGY.md` |
+| GIS preparation | `location/GIS_PREPARATION.md` |
+| Territory management | `location/TERRITORY_MANAGEMENT.md` |
+| Migration strategy | `location/MIGRATION_STRATEGY.md` |
+| Import report | `location/GHANA_IMPORT_REPORT.md` |
+| Test report | `location/GHANA_HIERARCHY_TEST_REPORT.md` |
+| Final report | `location/FINAL_GHANA_HIERARCHY_REPORT.md` |
+
+---
+
+## Borrower communication (v1.8.0)
+
+| Document | Path |
+|----------|------|
+| Audit | `notifications/BORROWER_COMMUNICATION_AUDIT.md` |
+| Workflow | `notifications/BORROWER_COMMUNICATION_WORKFLOW.md` |
+| SMS library | `notifications/SMS_TEMPLATE_LIBRARY.md` |
+| Email library | `notifications/EMAIL_TEMPLATE_LIBRARY.md` |
+| Trigger matrix | `notifications/NOTIFICATION_TRIGGER_MATRIX.md` |
+| Scheduler timing | `notifications/SCHEDULER_NOTIFICATION_TIMING.md` |
+| Test report | `notifications/BORROWER_COMMUNICATION_TEST_REPORT.md` |
+| Final correction report | `notifications/FINAL_COMMUNICATION_CORRECTION_REPORT.md` |
 
 ---
 
