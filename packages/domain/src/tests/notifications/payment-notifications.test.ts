@@ -71,9 +71,11 @@ describe('payment notification templates', () => {
   it('builds due-soon reminder with tomorrow wording', () => {
     const body = buildLoanReminderSmsBody({
       borrowerName: 'Ama',
-      loanDisplayId: 'LOAN-ABC',
-      amountPesewas: 5000,
-      dueDate: '2026-05-16',
+      weeklyAmountPesewas: 5000,
+      paymentDate: '2026-05-16',
+      paymentDay: 'Saturday',
+      groupName: 'Circle A',
+      collectorName: 'Kofi',
       dueTomorrow: true,
     });
     expect(body).toContain('due tomorrow');
@@ -85,9 +87,10 @@ describe('payment notification templates', () => {
       borrowerName: 'Ama',
       amountPesewas: 5000,
       dueDate: '2026-05-10',
+      collectorName: 'Kofi',
     });
-    expect(body).toContain('was not recorded');
-    expect(body).toContain('2026-05-10');
+    expect(body).toContain('due today (2026-05-10)');
+    expect(body).toContain('grace period');
     expect(body).not.toContain('threat');
   });
 });

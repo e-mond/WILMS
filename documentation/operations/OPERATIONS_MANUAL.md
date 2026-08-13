@@ -127,6 +127,18 @@ Preserves `users`, `roles`, `permissions`, `role_permissions`, `user_roles`, `us
 
 Configured in `vercel.json`. Verify cron execution in Vercel dashboard logs.
 
+On each run the payment scheduler sends, once per qualifying week (deduped):
+
+| Borrower message | Timing |
+|------------------|--------|
+| Payment reminder | One day before due date (`paymentReminderDaysBefore`, default 1) |
+| Due today | Morning of payment day (06:00 UTC cron) |
+| Missed payment | After the due date when the week is marked missed |
+| Grace reminder | On the last grace day (`latePaymentGraceDays`) |
+| Escalation | The day after grace expires |
+
+Admin-fee instruction is sent at **loan approval**, not at registration. Disbursement is blocked until the admin fee is recorded. Full copy and channel matrix: `documentation/notifications/`.
+
 ---
 
 ## 8. User management operations

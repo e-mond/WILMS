@@ -13,7 +13,7 @@ import * as userRepo from '../../repositories/user.repository.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import { groupRepository } from '../../repositories/index.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
-import { notifyGroupCreated, notifyCollectorAssigned, notifyGroupAssigned } from '../../infrastructure/notifications/event-dispatch.js';
+import { notifyGroupCreated, notifyCollectorAssigned, notifyGroupAssigned, notifyCollectorReassignedToBorrower } from '../../infrastructure/notifications/event-dispatch.js';
 import { createInAppNotification } from '../../infrastructure/notifications/in-app-notify.js';
 
 type GroupRiskLevel = 'LOW_RISK' | 'AT_RISK' | 'FLAGGED' | 'SUSPENDED';
@@ -723,6 +723,15 @@ export async function reassignCollector(input: {
     memberCount: group.members.length,
   });
 
+  for (const member of group.members) {
+    void notifyCollectorReassignedToBorrower({
+      borrowerId: member.borrowerId,
+      borrowerName: member.fullName,
+      borrowerPhone: member.phone,
+      collectorName: newCollector.displayName,
+    });
+  }
+
   if (previousCollectorId && previousCollectorId !== input.collectorId) {
     const previous = await userRepo.getUserById(previousCollectorId);
     if (previous) {
@@ -1011,6 +1020,21 @@ export async function transferMember(input: {
       borrowerId: borrower.id,
     });
   }
+
+  const collectorName =
+    targetGroup.collector?.id && targetGroup.collector.id !== 'unassigned'
+      ? targetGroup.collector.fullName
+      : undefined;
+  void notifyGroupAssigned({
+    borrowerId: borrower.id,
+    borrowerName: borrower.fullName,
+    borrowerPhone: borrower.phone,
+    borrowerEmail: borrower.profile?.email,
+    groupName: targetGroup.displayName || targetGroup.name,
+    collectorName,
+    collectorUserId: newCollectorId ?? undefined,
+    actorUserId: input.actorUserId,
+  });
 
   return getGroupDetail(input.targetGroupId);
 }

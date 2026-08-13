@@ -87,7 +87,7 @@ describe('notifyAdminFeeRecorded', () => {
     expect(first.smsSent).toBe(true);
     expect(smsSend).toHaveBeenCalledTimes(1);
     expect(smsSend.mock.calls[0][0].body).toContain('GHS 50.00');
-    expect(smsSend.mock.calls[0][0].body).toContain('LN-2026-0042');
+    expect(smsSend.mock.calls[0][0].body).toContain('prepared for disbursement');
     expect(appendAudit).toHaveBeenCalled();
 
     tryAcquire.mockResolvedValueOnce(false);
