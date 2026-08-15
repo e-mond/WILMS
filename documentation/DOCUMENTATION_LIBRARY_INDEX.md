@@ -104,6 +104,7 @@ See also: `technical/`, `operations/`, `user-guides/`, `developer/`, `roadmap/`,
 - `docs/v1.7.4/DOCUMENTATION_CENTRE_REPORT.md`
 - `documentation/FINAL_DOCUMENTATION_REPORT.md`
 - `documentation/release/WILMS_v1.8.1_PRODUCTION_MAINTENANCE_REPORT.md`
+- `documentation/location/GHANAPOST_GPS_INTEGRATION_PLAN.md` (planning only; not implemented)
 - `documentation/release/WILMS_v1.8.0_FINAL_PRODUCTION_RELEASE_REPORT.md`
 - `documentation/release/MIGRATION_0044_VERIFICATION.md`
 - `docs/v1.8.0/market-readiness/FINAL_V180_MARKET_READINESS_REPORT.md`
