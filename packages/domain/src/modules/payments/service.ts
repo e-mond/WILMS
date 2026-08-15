@@ -17,7 +17,7 @@ import { pesewasToDecimal } from '../../domain/money.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import { runWithIdempotency } from '../../infrastructure/idempotency/run-with-idempotency.js';
 import * as borrowerRepo from '../../repositories/borrower.repository.js';
-import { notifyLoanFullyPaid } from '../../infrastructure/notifications/event-dispatch.js';
+import { notifyLoanFullyPaid, notifyGuarantorLoanFullyRepaid } from '../../infrastructure/notifications/event-dispatch.js';
 import {
   emitPaymentConfirmedNotification,
   emitPaymentMissedNotification,
@@ -461,6 +461,12 @@ async function postPayment(
         totalPaidPesewas: loan.amountPesewas,
         finalPaymentPesewas: input.amountPesewas,
         collectorUserId: input.collectorId,
+      });
+      void notifyGuarantorLoanFullyRepaid({
+        guarantorName: borrower.profile?.guarantorName ?? 'Guarantor',
+        guarantorPhone: borrower.profile?.guarantorPhone,
+        borrowerId: borrower.id,
+        borrowerName: borrower.fullName,
       });
     }
   }

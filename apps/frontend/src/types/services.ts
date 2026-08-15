@@ -189,6 +189,7 @@ export interface IBorrowerService {
   approveBorrower(id: string): Promise<BorrowerSummary>;
   rejectBorrower(id: string, input: RejectBorrowerInput): Promise<BorrowerSummary>;
   blacklistBorrower(id: string, input: BlacklistBorrowerInput): Promise<BorrowerSummary>;
+  escalateBorrower(id: string, input: { reason: string }): Promise<BorrowerSummary>;
   relocateBorrower(
     id: string,
     input: import('@/types/enterprise').RelocateBorrowerInput,

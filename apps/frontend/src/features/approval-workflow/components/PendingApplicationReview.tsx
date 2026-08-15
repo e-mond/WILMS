@@ -48,6 +48,7 @@ import type { ApprovalDecisionAction } from '@/types/approval';
 
 import { ApiError, API_ERROR_CODE } from '@/types/api';
 import { useAuth } from '@/hooks/useAuth';
+import { useSettings } from '@/features/settings/hooks/useSettings';
 import {
   notifyMutationError,
   notifyMutationSuccess,
@@ -69,10 +70,11 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
   const queryClient = useQueryClient();
   const generatedBy = useWilmsExportActor();
   const { user } = useAuth();
+  const { data: settings } = useSettings();
 
   const { data, isLoading, isError, error, refetch } = useBorrowerReview(borrowerId);
 
-  const { approveMutation, rejectMutation, blacklistMutation, isSubmitting } =
+  const { approveMutation, rejectMutation, blacklistMutation, escalateMutation, isSubmitting } =
 
     useApprovalActions(borrowerId);
 
@@ -180,7 +182,9 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
     },
     onError: (error) => {
       const message =
-        "We couldn't assign the borrower to the selected group. Please try again.";
+        error instanceof ApiError
+          ? error.message
+          : "We couldn't assign the borrower to the selected group. Please try again.";
       setActionError(message);
       notifyMutationError('Group assignment failed', error, message);
       console.error('[approver] assign group failed', error);
@@ -190,9 +194,12 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
   const groups = useMemo(() => groupsQuery.data?.groups ?? [], [groupsQuery.data]);
 
   const collectors = useMemo(
-    () => (collectorsQuery.data?.collectors ?? []).slice(0, 8),
+    () => collectorsQuery.data?.collectors ?? [],
     [collectorsQuery.data],
   );
+
+  const selectedGroup = groups.find((group) => group.id === selectedGroupId);
+  const selectedGroupIsFull = Boolean(selectedGroup?.isFull);
 
 
 
@@ -241,13 +248,21 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
 
         await blacklistMutation.mutateAsync({ reason });
 
+      } else if (activeAction === 'escalate' && reason) {
+
+        await escalateMutation.mutateAsync({ reason });
+
       }
 
 
 
       setActiveAction(null);
 
-      await redirectAfterDecision();
+      if (activeAction !== 'escalate') {
+        await redirectAfterDecision();
+      } else {
+        await refetch();
+      }
 
     } catch (error) {
 
@@ -402,15 +417,23 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
 
                 <option value="">Select group</option>
 
-                {groups.map((group) => (
+                {groups.map((group) => {
 
-                  <option key={group.id} value={group.id}>
+                  const max = group.maxGroupSize ?? settings?.maxGroupSize ?? 10;
+                  const full = group.isFull ?? group.memberCount >= max;
+                  const label = `${group.displayName || group.name} · ${group.memberCount}/${max}${full ? ' (full)' : ''}`;
 
-                    {group.name} · {group.community}
+                  return (
+
+                  <option key={group.id} value={group.id} disabled={full}>
+
+                    {label}
 
                   </option>
 
-                ))}
+                  );
+
+                })}
 
               </Select>
 
@@ -418,16 +441,21 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
                 Choose a group, then click Assign Group. The borrower is linked by borrower ID.
               </p>
 
-              {groups.length === 0 ? (
-                <div className="space-y-wilms-2">
+              {selectedGroupIsFull ? (
+                <Alert title="Group is full" variant="warning">
+                  {selectedGroup?.displayName || selectedGroup?.name} has {selectedGroup?.memberCount} of {selectedGroup?.maxGroupSize ?? settings?.maxGroupSize} members. Create a new group below or choose another group.
+                </Alert>
+              ) : null}
+
+              <div className="space-y-wilms-2">
                   <Input
                     aria-label="New group name"
-                    placeholder="Enter a group name"
+                    placeholder={data?.community ? `${data.community} Group` : 'Enter a group name'}
                     value={newGroupName}
                     onChange={(event) => setNewGroupName(event.target.value)}
                   />
                   <p className="text-caption text-text-secondary">
-                    Select a collector below, then create the group. Every group needs a collector.
+                    Community is pre-filled from the application ({data?.community ?? 'unknown'}). Select a collector, then create the group.
                   </p>
                   <PermissionGate permissions={[PERMISSION.APPROVE_BORROWERS, PERMISSION.MANAGE_GROUPS]}>
                     <Button
@@ -440,19 +468,22 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
                       }
                       onClick={() => {
                         setActionError(null);
+                        if (!newGroupName.trim()) {
+                          setNewGroupName(`${data?.community ?? 'Community'} Group`);
+                        }
                         createGroupMutation.mutate();
                       }}
                     >
-                      {createGroupMutation.isPending ? 'Creating…' : 'Create group & add borrower'}
+                      {createGroupMutation.isPending ? 'Creating…' : 'Create New Group'}
                     </Button>
                   </PermissionGate>
                 </div>
-              ) : (
+
                 <PermissionGate permissions={[PERMISSION.MANAGE_GROUPS, PERMISSION.APPROVE_BORROWERS]}>
                   <Button
                     type="button"
                     variant="secondary"
-                    disabled={assignGroupMutation.isPending || !user?.id}
+                    disabled={assignGroupMutation.isPending || !user?.id || selectedGroupIsFull}
                     onClick={() => {
                       setActionError(null);
                       if (!selectedGroupId) {
@@ -465,7 +496,6 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
                     {assignGroupMutation.isPending ? 'Assigning…' : 'Assign Group'}
                   </Button>
                 </PermissionGate>
-              )}
 
             </label>
 
@@ -590,11 +620,11 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
 
               disabled={isSubmitting}
 
-              onClick={() => setWorkflowMessage(`Risk escalation opened for ${data.fullName}.`)}
+              onClick={() => setActiveAction('escalate')}
 
             >
 
-              Escalate Risk
+              Escalate Review
 
             </Button>
             </PermissionGate>

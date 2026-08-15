@@ -18,7 +18,7 @@ const require = createRequire(path.join(root, 'apps/frontend/package.json'));
 const { Document, Packer, Paragraph, HeadingLevel, TextRun, AlignmentType } = require('docx');
 const { jsPDF } = require('jspdf');
 
-const VERSION = '1.8.0';
+const VERSION = '1.8.1';
 const BRAND = { r: 15, g: 110, b: 86 };
 const BRAND_HEX = '0F6E56';
 const CONFIDENTIAL =
@@ -48,6 +48,11 @@ const DOC_MANIFEST = [
   { src: 'books/BOARD_PRESENTATION.md', output: 'BOARD_PRESENTATION', title: 'Board Presentation' },
   { src: 'books/PROCUREMENT_PACK.md', output: 'PROCUREMENT_PACK', title: 'Procurement Pack' },
   { src: 'books/IMPLEMENTATION_GUIDE.md', output: 'IMPLEMENTATION_GUIDE', title: 'Implementation Guide' },
+  {
+    src: 'release/WILMS_v1.8.1_PRODUCTION_MAINTENANCE_REPORT.md',
+    output: 'WILMS_v1.8.1_PRODUCTION_MAINTENANCE_REPORT',
+    title: 'WILMS v1.8.1 Production Maintenance Report',
+  },
   {
     src: 'release/WILMS_v1.8.0_FINAL_PRODUCTION_RELEASE_REPORT.md',
     output: 'WILMS_v1.8.0_FINAL_PRODUCTION_RELEASE_REPORT',

@@ -25,6 +25,7 @@ import {
   notifyLoanDisbursed,
   notifyLoanApproved,
   notifyLoanRejected,
+  notifyGuarantorLoanApproved,
 } from '../../infrastructure/notifications/event-dispatch.js';
 import * as borrowerRepo from '../../repositories/borrower.repository.js';
 import * as disbursementRepo from '../../repositories/loan-disbursement.repository.js';
@@ -195,6 +196,13 @@ export async function createLoan(
     responseStatus: 201,
     execute: async () => {
       assertDivisibleLoanAmount(input.amountPesewas, input.durationWeeks);
+
+      const settings = await getSettings();
+      if (input.amountPesewas > settings.maxLoanAmountPesewas) {
+        throw new Error(
+          `VALIDATION:Loan amount exceeds the configured maximum of GH₵${(settings.maxLoanAmountPesewas / 100).toFixed(2)}.`,
+        );
+      }
 
       const borrower = await borrowerRepo.getBorrower(input.borrowerId);
       if (!borrower) {
@@ -386,6 +394,12 @@ export async function approveLoan(loanId: string, actorId: string): Promise<Loan
       loanId,
       loanDisplayId: dto.displayId ?? loanId,
       collectorUserId,
+    });
+    void notifyGuarantorLoanApproved({
+      guarantorName: borrower.profile?.guarantorName ?? 'Guarantor',
+      guarantorPhone: borrower.profile?.guarantorPhone,
+      borrowerId: borrower.id,
+      borrowerName: borrower.fullName,
     });
   }
 

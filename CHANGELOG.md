@@ -2,6 +2,41 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.8.1] — Production Maintenance (settings, notifications, records)
+
+**Date:** 15 August 2026  
+**Branch:** `hotfix/v1.8.0-settings-notifications-borrower-records`  
+**Release type:** Production-safe maintenance. **No GhanaPost GPS integration.** No new product modules. No schema migration.
+
+### Fixed
+
+- Settings enforcement: group min/max and max loan amount read from saved system settings
+- Group capacity validation on assign, transfer, add member, and create
+- Community Formation Queue respects configured group limits
+- Registration review location hierarchy (Region → MMDA → Sub-District → Electoral Area → Community → City)
+- Approver review location hierarchy (same cascade)
+- Borrower Record Centre (search, file, payment history, guarantors, exports, audit)
+- Collector profile live contact, activity, and portrait
+- Readable borrower/loan/collector identifiers (retained and surfaced)
+- Loan workflow stepper (registration submitted through closed)
+- Notification timing: pending group assignment does not SMS the borrower
+- Borrower rejection / blacklist / escalation SMS, staff in-app, and audit
+- Guarantor notifications (loan approved, fully repaid, more than two missed payments)
+- Export improvements (readable IDs, collector names, branded filenames)
+- GPS placeholder groundwork (reverse geocode + digital-address fallback **without** GhanaPost)
+
+### Validation
+
+- `npm run type-check`
+- `npm run lint`
+- Frontend tests
+- Domain tests
+- `npm run build`
+
+Evidence: `documentation/hotfix/FINAL_HOTFIX_REPORT.md`, `documentation/release/WILMS_v1.8.1_PRODUCTION_MAINTENANCE_REPORT.md`.
+
+---
+
 ## [1.8.0] — Enterprise Design, Automation & Platform Readiness
 
 **Date:** August 2026  

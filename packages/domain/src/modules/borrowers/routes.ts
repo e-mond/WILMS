@@ -454,3 +454,24 @@ borrowersRouter.patch(
     }
   }),
 );
+
+borrowersRouter.patch(
+  '/borrowers/:id/escalate',
+  requirePermission(PERMISSION.APPROVE_BORROWERS),
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(
+        res,
+        await borrowerService.escalateBorrower(
+          req.params.id!,
+          String(req.body?.reason ?? ''),
+          req.session!.userId,
+          req.session!.displayName,
+        ),
+      );
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+

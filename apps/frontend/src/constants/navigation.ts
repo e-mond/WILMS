@@ -82,6 +82,7 @@ export const SUPER_ADMIN_NAV: ShellNavItem[] = [
     group: 'overview',
   },
   { href: '/borrowers', label: 'Borrowers', icon: 'borrowers', group: 'people' },
+  { href: '/records', label: 'Borrower Records', icon: 'audit', group: 'people' },
   {
     href: '/borrower-updates',
     label: 'Update requests',
@@ -176,6 +177,12 @@ export const REGISTRATION_OFFICER_NAV: ShellNavItem[] = [
     icon: 'queue',
     group: 'operations',
   },
+  {
+    href: '/officer/records',
+    label: 'Borrower Records',
+    icon: 'audit',
+    group: 'operations',
+  },
   { href: '/officer/settings', label: 'Settings', icon: 'settings', group: 'administration' },
 ];
 
@@ -200,11 +207,13 @@ export const APPROVER_NAV: ShellNavItem[] = [
     group: 'operations',
   },
   { href: '/approver/reviewed', label: 'Reviewed', icon: 'reviewed', group: 'operations' },
+  { href: '/approver/records', label: 'Borrower Records', icon: 'audit', group: 'operations' },
   { href: '/approver/settings', label: 'Settings', icon: 'settings', group: 'administration' },
 ];
 
 export const AUDITOR_NAV: ShellNavItem[] = [
   { href: '/auditor/reports', label: 'Reports', exact: true, icon: 'reports', group: 'reports' },
+  { href: '/auditor/records', label: 'Borrower Records', icon: 'borrowers', group: 'reports' },
   { href: '/auditor/audit-log', label: 'Audit Log', icon: 'audit', group: 'reports' },
   { href: '/auditor/settings', label: 'Settings', icon: 'settings', group: 'administration' },
 ];

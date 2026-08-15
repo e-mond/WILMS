@@ -57,6 +57,7 @@ vi.mock('../../infrastructure/notifications/event-dispatch.js', () => ({
   notifyLoanRejected: vi.fn(),
   notifyLoanDisbursed: vi.fn(),
   notifyLoanCreated: vi.fn(),
+  notifyGuarantorLoanApproved: vi.fn(),
 }));
 
 vi.mock('../../infrastructure/idempotency/run-with-idempotency.js', () => ({

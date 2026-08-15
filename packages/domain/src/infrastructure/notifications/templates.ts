@@ -202,7 +202,7 @@ export function buildAdminFeeConfirmationSmsBody(input: {
 }
 
 export function buildRegistrationRejectedSmsBody(input: { borrowerName: string }): string {
-  return `WILMS: Hi ${input.borrowerName}, your registration could not be approved. Contact your registration officer for details.`;
+  return `WILMS: Dear ${input.borrowerName}, your loan registration application was not approved. Please contact your registration officer if you would like further guidance.`;
 }
 
 export function buildLoanRejectedSmsBody(input: { borrowerName: string }): string {
@@ -228,7 +228,32 @@ export function buildLoanCompletedSmsBody(input: {
 }
 
 export function buildBlacklistSmsBody(input: { borrowerName: string }): string {
-  return `WILMS: Hi ${input.borrowerName}, your application has been flagged for review. Contact your registration officer.`;
+  return `WILMS: Dear ${input.borrowerName}, your registration application cannot proceed at this time. Please contact the WILMS office for assistance.`;
+}
+
+export function buildRegistrationEscalatedSmsBody(input: { borrowerName: string }): string {
+  return `WILMS: Dear ${input.borrowerName}, your registration application requires additional review. We will notify you once a decision has been made.`;
+}
+
+export function buildGuarantorLoanApprovedSmsBody(input: {
+  guarantorName: string;
+  borrowerName: string;
+}): string {
+  return `WILMS: Dear ${input.guarantorName}, the loan application of ${input.borrowerName}, whom you guaranteed, has been approved. As guarantor, you may be contacted if repayment obligations are not met.`;
+}
+
+export function buildGuarantorLoanFullyRepaidSmsBody(input: {
+  guarantorName: string;
+  borrowerName: string;
+}): string {
+  return `WILMS: Dear ${input.guarantorName}, ${input.borrowerName} has successfully completed repayment of the loan you guaranteed. Your guarantee obligation has now ended.`;
+}
+
+export function buildGuarantorMissedPaymentsSmsBody(input: {
+  guarantorName: string;
+  borrowerName: string;
+}): string {
+  return `WILMS: Dear ${input.guarantorName}, ${input.borrowerName} has missed multiple scheduled repayments. Please encourage the borrower to contact their collector and regularise the account.`;
 }
 
 export function buildLoanReminderSmsBody(input: PaymentReminderSmsInput): string {

@@ -141,6 +141,15 @@ locationsRouter.get(
   }),
 );
 
+locationsRouter.get(
+  '/locations/reverse-geocode',
+  asyncHandler(async (req, res) => {
+    const latitude = Number(req.query.lat ?? req.query.latitude);
+    const longitude = Number(req.query.lng ?? req.query.longitude);
+    sendData(res, await locationService.reverseGeocode(latitude, longitude));
+  }),
+);
+
 locationsRouter.post(
   '/locations/community-suggestions',
   validateBody(communitySuggestionSchema),

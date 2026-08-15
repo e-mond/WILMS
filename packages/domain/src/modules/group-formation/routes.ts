@@ -31,7 +31,7 @@ groupFormationRouter.get(
   '/groups/formation/config',
   requirePermission(...formationReadPermissions),
   asyncHandler(async (_req, res) => {
-    sendData(res, getFormationConfig());
+    sendData(res, await getFormationConfig());
   }),
 );
 

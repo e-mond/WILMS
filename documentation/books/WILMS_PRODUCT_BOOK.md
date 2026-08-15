@@ -8,12 +8,14 @@
 |-------|-------|
 | **Title** | WILMS Product Book — Women's Interest-Free Loan Management System |
 | **Edition** | Official Documentation Library |
-| **Platform version documented** | Through v1.7.2 (last feature release) |
-| **Documentation release** | v1.7.3 |
+| **Platform version documented** | Through v1.8.1 (production maintenance) |
+| **Documentation release** | v1.8.1 |
 | **Date** | August 2026 |
 | **Classification** | Confidential |
 | **Primary deployment** | Vercel + Neon PostgreSQL |
 | **Auth model** | Custom HMAC-signed session cookies |
+
+v1.8.1 production maintenance (15 August 2026): saved group-size settings are enforced; borrower group SMS waits until registration approval; Ghana Digital Address reverse geocode placeholder (no GhanaPost); Borrower Record Centre; guarantor SMS for loan approval, completion, and repeated missed payments. See `documentation/hotfix/FINAL_HOTFIX_REPORT.md`.
 
 ---
 
@@ -703,6 +705,7 @@ Frontend unit tests with shard execution. Domain tests via `npm run test -w @wil
 | v1.7.1 | 2026 | Market readiness, dashboard separation, modal hardening |
 | v1.7.2 | 2026 | RC stabilization — financial dashboard, executive polish, Export Center actions, Product Tour 2.0 |
 | v1.8.0 | 2026 | Collector payment workflow; Phase 11 registration/loan/comms/ops hardening (same version identity) |
+| v1.8.1 | 15 August 2026 | Production maintenance: settings enforcement, notification timing, records, guarantor SMS |
 
 ---
 

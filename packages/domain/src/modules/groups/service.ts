@@ -2,7 +2,10 @@ import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
 import { BORROWER_STATUS } from '@wilms/shared-contracts';
 import { formatBorrowerDisplayId } from '@wilms/shared-utils';
-import { env } from '../../config/env.js';
+import {
+  formatGroupAtCapacityMessage,
+  getGroupSizeLimits,
+} from '../settings/group-limits.js';
 import { isDatabaseEnabled, getDb } from '../../db/client.js';
 import { groupMembers, groups } from '../../db/schema/groups.js';
 import { collectors } from '../../db/schema/users.js';
@@ -30,6 +33,8 @@ export interface GroupSummaryItem {
   officerName: string;
   formedAt: string;
   memberCount: number;
+  maxGroupSize?: number;
+  isFull?: boolean;
   activeMemberCount: number;
   disbursedPesewas: number;
   collectedPesewas: number;
@@ -429,6 +434,8 @@ async function buildGroupSummary(
     officerName,
     formedAt: row.formedAt.toISOString(),
     memberCount: memberIds.length,
+    maxGroupSize: 0,
+    isFull: false,
     activeMemberCount: financials.activeMembers,
     disbursedPesewas: financials.disbursedPesewas,
     collectedPesewas: financials.collectedPesewas,
@@ -440,6 +447,7 @@ async function buildGroupSummary(
 export async function listGroupsResponse(): Promise<GroupListResponse> {
   const rows = await loadGroupRows();
   const officerName = await resolveOfficerName();
+  const limits = await getGroupSizeLimits();
 
   let groupSummaries: GroupSummaryItem[];
 
@@ -462,6 +470,12 @@ export async function listGroupsResponse(): Promise<GroupListResponse> {
       rows.map((row) => buildGroupSummary(row, borrowers, payments, officerName)),
     );
   }
+
+  groupSummaries = groupSummaries.map((group) => ({
+    ...group,
+    maxGroupSize: limits.maxGroupSize,
+    isFull: group.memberCount >= limits.maxGroupSize,
+  }));
 
   const riskDistribution = {
     lowRisk: groupSummaries.filter((group) => group.riskLevel === 'LOW_RISK').length,
@@ -768,10 +782,11 @@ export async function validateMembershipRemoval(input: {
   }
 
   const nextCount = group.members.length - 1;
-  if (nextCount < env.minGroupSize) {
+  const { minGroupSize } = await getGroupSizeLimits();
+  if (nextCount < minGroupSize) {
     return {
       allowed: false,
-      message: `Groups must retain at least ${env.minGroupSize} members.`,
+      message: `Groups must retain at least ${minGroupSize} members.`,
       requiresApproval: false,
     };
   }
@@ -814,8 +829,10 @@ export async function addMember(input: {
   actorUserId?: string;
 }): Promise<GroupDetail> {
   const group = await getGroupDetail(input.groupId);
-  if (group.members.length >= env.maxGroupSize) {
-    throw new Error(`VALIDATION:Groups cannot exceed ${env.maxGroupSize} members.`);
+  const { maxGroupSize } = await getGroupSizeLimits();
+  const groupLabel = group.displayName || group.name;
+  if (group.members.length >= maxGroupSize) {
+    throw new Error(`VALIDATION:${formatGroupAtCapacityMessage({ groupName: groupLabel, maxGroupSize })}`);
   }
 
   let borrower =
@@ -917,6 +934,7 @@ export async function addMember(input: {
     collectorName,
     collectorUserId,
     actorUserId: input.actorUserId,
+    notifyBorrower: borrower.status === BORROWER_STATUS.APPROVED || borrower.status === BORROWER_STATUS.AT_RISK,
   });
 
   return getGroupDetail(input.groupId);
@@ -945,6 +963,13 @@ export async function transferMember(input: {
 
   const sourceGroup = await getGroupDetail(input.groupId);
   const targetGroup = await getGroupDetail(input.targetGroupId);
+  const { maxGroupSize } = await getGroupSizeLimits();
+  const targetLabel = targetGroup.displayName || targetGroup.name;
+  if (targetGroup.members.length >= maxGroupSize) {
+    throw new Error(
+      `VALIDATION:${formatGroupAtCapacityMessage({ groupName: targetLabel, maxGroupSize })}`,
+    );
+  }
   const borrower = await getBorrower(input.borrowerId);
   if (!borrower) {
     throw new Error('NOT_FOUND');
@@ -1034,6 +1059,7 @@ export async function transferMember(input: {
     collectorName,
     collectorUserId: newCollectorId ?? undefined,
     actorUserId: input.actorUserId,
+    notifyBorrower: borrower.status === BORROWER_STATUS.APPROVED || borrower.status === BORROWER_STATUS.AT_RISK,
   });
 
   return getGroupDetail(input.targetGroupId);
@@ -1163,8 +1189,9 @@ export async function createGroup(
   }
 
   const memberIds = input.memberBorrowerIds ?? [];
-  if (memberIds.length > env.maxGroupSize) {
-    throw new Error(`VALIDATION:Groups cannot exceed ${env.maxGroupSize} members.`);
+  const { maxGroupSize } = await getGroupSizeLimits();
+  if (memberIds.length > maxGroupSize) {
+    throw new Error(`VALIDATION:Groups cannot exceed ${maxGroupSize} members.`);
   }
 
   if (!input.collectorUserId?.trim()) {

@@ -1,4 +1,3 @@
-import { env } from '../../config/env.js';
 import { normalizeBorrowerId, validateBorrowerId } from '@wilms/shared-validation';
 import { appendAuditEntry, listAuditEntries } from '../../infrastructure/audit/audit-log.js';
 import { isDatabaseEnabled } from '../../db/client.js';
@@ -16,9 +15,9 @@ import * as userRepo from '../../repositories/user.repository.js';
 import { resolveUploadAccessUrlById } from '../../infrastructure/uploads/index.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
 import {
-  notifyGroupAssigned,
   notifyRegistrationApproved,
   notifyRegistrationBlacklisted,
+  notifyRegistrationEscalated,
   notifyRegistrationRejected,
   notifyRegistrationSubmitted,
 } from '../../infrastructure/notifications/event-dispatch.js';
@@ -39,6 +38,7 @@ const AUDIT_ACTION = {
   BORROWER_APPROVED: 'borrower.approved',
   BORROWER_REJECTED: 'borrower.rejected',
   BORROWER_BLACKLISTED: 'borrower.blacklisted',
+  BORROWER_ESCALATED: 'borrower.escalated',
   BORROWER_REGISTRATION_DELETED: 'borrower.registration-deleted',
 } as const;
 
@@ -649,6 +649,8 @@ export async function rejectBorrower(
     borrowerPhone: record.phone,
     borrowerEmail: record.profile.email,
     reason: record.rejectionReason,
+    officerUserId: record.registeredByOfficerId,
+    actorUserId: actorId,
   });
 
   return toSummary(record);
@@ -679,6 +681,39 @@ export async function blacklistBorrower(
     borrowerName: record.fullName,
     borrowerPhone: record.phone,
     reason: record.rejectionReason,
+    officerUserId: record.registeredByOfficerId,
+    actorUserId: actorId,
+  });
+
+  return toSummary(record);
+}
+
+export async function escalateBorrower(
+  id: string,
+  reason: string,
+  actorId: string,
+  actorDisplayName?: string,
+) {
+  const record = assertPending(await getBorrower(id));
+  const note = reason.trim() || 'Additional review required.';
+  record.rejectionReason = note;
+  await saveBorrower(record);
+
+  appendAuditEntry({
+    action: AUDIT_ACTION.BORROWER_ESCALATED,
+    actorId,
+    actorDisplayName,
+    targetEntityId: id,
+    targetEntityType: 'borrower',
+    reason: note,
+  });
+
+  void notifyRegistrationEscalated({
+    borrowerId: record.id,
+    borrowerName: record.fullName,
+    borrowerPhone: record.phone,
+    officerUserId: record.registeredByOfficerId,
+    actorUserId: actorId,
   });
 
   return toSummary(record);
