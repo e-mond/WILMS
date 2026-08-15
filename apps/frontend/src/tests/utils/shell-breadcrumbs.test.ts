@@ -41,4 +41,23 @@ describe('resolveShellBreadcrumbs', () => {
       { label: 'Collectors' },
     ]);
   });
+
+  it('labels borrowers, applications, records, and update requests', () => {
+    expect(resolveShellBreadcrumbs('/borrowers').map((item) => item.label)).toEqual([
+      'Dashboard',
+      'Borrowers',
+    ]);
+    expect(resolveShellBreadcrumbs('/borrowers', 'status=PENDING').map((item) => item.label)).toEqual([
+      'Dashboard',
+      'Applications',
+    ]);
+    expect(resolveShellBreadcrumbs('/records').map((item) => item.label)).toEqual([
+      'Dashboard',
+      'Borrower Records',
+    ]);
+    expect(resolveShellBreadcrumbs('/borrower-updates').map((item) => item.label)).toEqual([
+      'Dashboard',
+      'Update Requests',
+    ]);
+  });
 });

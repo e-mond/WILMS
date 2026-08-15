@@ -26,6 +26,10 @@ const NESTED_BREADCRUMB_PARENTS: Array<{
     parent: { label: 'Borrowers', href: '/borrowers' },
   },
   {
+    test: (pathname) => pathname.startsWith('/records/'),
+    parent: { label: 'Borrower Records', href: '/records' },
+  },
+  {
     test: (pathname) => pathname.startsWith('/loans/'),
     parent: { label: 'Loans', href: '/loans' },
   },
@@ -43,7 +47,7 @@ const NESTED_BREADCRUMB_PARENTS: Array<{
   },
 ];
 
-export function resolveShellBreadcrumbs(pathname: string): ShellBreadcrumbItem[] {
+export function resolveShellBreadcrumbs(pathname: string, search = ''): ShellBreadcrumbItem[] {
   if (pathname === '/dashboard') {
     return [
       { label: 'Home', href: '/dashboard' },
@@ -69,12 +73,12 @@ export function resolveShellBreadcrumbs(pathname: string): ShellBreadcrumbItem[]
     return [
       { label: 'Dashboard', href: '/dashboard' },
       nestedParent.parent,
-      { label: resolveShellPageTitle(pathname) },
+      { label: resolveShellPageTitle(pathname, search) },
     ];
   }
 
   return [
     { label: 'Dashboard', href: '/dashboard' },
-    { label: resolveShellPageTitle(pathname) },
+    { label: resolveShellPageTitle(pathname, search) },
   ];
 }
