@@ -7,6 +7,10 @@ const EXACT_TITLES: Record<string, string> = {
   '/approver/records': 'Borrower Records',
   '/officer/records': 'Borrower Records',
   '/auditor/records': 'Borrower Records',
+  '/borrowers': 'Borrowers',
+  '/borrower-updates': 'Update Requests',
+  '/officer/borrower-updates': 'Update Requests',
+  '/collector/borrower-updates': 'Update Requests',
   '/loan-pools': 'Loan Pools',
   '/loans': 'Loans',
   '/loans/new': 'Create Loan',
@@ -44,6 +48,10 @@ const PREFIX_TITLES: Array<{ test: (pathname: string) => boolean; title: string 
     title: 'Loan Detail',
   },
   { test: (pathname) => pathname.startsWith('/borrowers/'), title: 'Borrower Profile' },
+  { test: (pathname) => pathname.startsWith('/records/'), title: 'Borrower File' },
+  { test: (pathname) => pathname.startsWith('/approver/records/'), title: 'Borrower File' },
+  { test: (pathname) => pathname.startsWith('/officer/records/'), title: 'Borrower File' },
+  { test: (pathname) => pathname.startsWith('/auditor/records/'), title: 'Borrower File' },
   { test: (pathname) => pathname.startsWith('/loans/'), title: 'Loan Detail' },
   { test: (pathname) => pathname.startsWith('/collectors/'), title: 'Collector Profile' },
   { test: (pathname) => pathname.startsWith('/groups/'), title: 'Group Profile' },
@@ -56,7 +64,14 @@ const PREFIX_TITLES: Array<{ test: (pathname: string) => boolean; title: string 
   },
 ];
 
-export function resolveShellPageTitle(pathname: string): string {
+export function resolveShellPageTitle(pathname: string, search = ''): string {
+  const query = search.startsWith('?') ? search.slice(1) : search;
+  const params = new URLSearchParams(query);
+
+  if (pathname === '/borrowers' && params.get('status') === 'PENDING') {
+    return 'Applications';
+  }
+
   if (EXACT_TITLES[pathname]) {
     return EXACT_TITLES[pathname];
   }
