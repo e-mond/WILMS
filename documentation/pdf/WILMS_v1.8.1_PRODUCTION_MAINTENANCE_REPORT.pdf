@@ -1,0 +1,935 @@
+%PDF-1.3
+%ºß¬à
+3 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+/Length 3593
+>>
+stream
+0.5670000000000001 w
+0 G
+0.06 0.43 0.34 rg
+0. 841.8899999999999864 595.2799999999999727 -141.7322834645669332 re
+f
+BT
+/F2 26 Tf
+29.8999999999999986 TL
+1. g
+254.4799999999999613 779.5277952755905062 Td
+(WILMS) Tj
+ET
+BT
+/F1 11 Tf
+12.6499999999999986 TL
+1. g
+175.3749999999999147 751.1813385826771992 Td
+(Women's Interest-Free Loan Management System) Tj
+ET
+BT
+/F1 11 Tf
+12.6499999999999986 TL
+1. g
+161.4599999999998658 728.5041732283464171 Td
+(WILMS v1.8.1 Production Maintenance Report — v1.8.1) Tj
+ET
+BT
+/F2 14 Tf
+16.0999999999999979 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 666.1419685039369369 Td
+(WILMS v1.8.1 — Production Maintenance Report) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 640.6301574803148924 Td
+(Release identity: v1.8.1 Release type: Production-safe maintenance Date: 15 August 2026 GhanaPost GPS: not) Tj
+T* (included) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 600.9451181102361943 Td
+(Merge details) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 578.2679527559055259 Td
+(| Field | Value |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 552.7561417322833677 Td
+(|-------|-------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 527.2443307086614368 Td
+(| PR | https://github.com/e-mond/WILMS/pull/206 |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 501.7325196850393354 Td
+(| Merge commit | 08d9c6d2981156dd4a136c408d856d1a8be3a82d |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 476.2207086614172908 Td
+(| Feature branch | hotfix/v1.8.0-settings-notifications-borrower-records |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 450.7088976377952463 Td
+(| Tag | v1.8.1 |) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 425.1970866141731449 Td
+(Deployment details) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 402.5199212598424765 Td
+(| Field | Value |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 377.0081102362204319 Td
+(|-------|-------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 351.4962992125983874 Td
+(| Production URL | https://wilms.vercel.app |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 325.9844881889763428 Td
+(| GitHub deployment ID | 5921969327 |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 300.4726771653542983 Td
+(| Vercel log URL | https://wilms-cmb05uqn9-emonds-projects.vercel.app |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 274.9608661417322537 Td
+(| Production SHA | 08d9c6d2981156dd4a136c408d856d1a8be3a82d |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 249.4490551181102092 Td
+(| Health version | 1.8.1 |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 223.9372440944881646 Td
+(| Health status | ok |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 198.4254330708660063 Td
+(| Database | configured, connected |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 172.9136220472439618 Td
+(| Mail | Gmail configured |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 147.4018110236219172 Td
+(| SMS | smsnotifygh configured |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 121.8899999999998727 Td
+(| Scheduler | HTTP-triggered |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 96.3781889763778281 Td
+(| Push | optional \(VAPID not required for this maintenance slice\) |) Tj
+ET
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 22.6771653543306684 Td
+(CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 6 0 R
+>>
+endobj
+6 0 obj
+<<
+/Length 3836
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 785.1970866141732586 Td
+(| Login label | WILMS v1.8.1 |) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 759.6852755905511003 Td
+(CI results \(PR #206\)) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 737.0081102362204319 Td
+(| Check | Result |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 711.4962992125983874 Td
+(|-------|--------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 685.9844881889763428 Td
+(| validate | pass \(6m58s after blacklist route fix\) |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 660.4726771653542983 Td
+(| security | pass |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 634.9608661417322537 Td
+(| GitGuardian | pass |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 609.4490551181102092 Td
+(| Vercel preview | pass |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 583.9372440944881646 Td
+(First validate run failed on static API integrity \(PATCH /borrowers/:id/blacklist missing\). Route was added in da1950d) Tj
+T* (and checks went green.) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 544.2522047244094665 Td
+(Local gates) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 521.5750393700786844 Td
+(| Gate | Result |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 496.0632283464566399 Td
+(|------|--------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 470.5514173228345953 Td
+(| type-check | pass |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 445.0396062992125508 Td
+(| lint | pass |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 419.5277952755905062 Td
+(| frontend tests | pass |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 394.0159842519684616 Td
+(| domain tests | pass \(two 15s timeouts under load retried in isolation and passed\) |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 368.5041732283464171 Td
+(| build | pass |) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 342.9923622047243725 Td
+(Smoke-test evidence) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 320.3151968503935905 Td
+(Unauthenticated production) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 297.6380314960629221 Td
+(| Check | Result |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 272.1262204724408775 Td
+(|-------|--------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 246.614409448818833 Td
+(| GET /api/wilms/health | ok, version 1.8.1, SHA 08d9c6d… |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 221.1025984251967884 Td
+(| Login page | 200, label WILMS v1.8.1 |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 195.5907874015747439 Td
+(| /records | 307 to auth \(expected\) |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 170.0789763779526993 Td
+(| Demo login without CSRF | rejected \(expected\) |) Tj
+ET
+BT
+/F2 11 Tf
+12.6499999999999986 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 144.5671653543306547 Td
+(Authenticated workflow smoke \(operator required\)) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 121.8899999999998727 Td
+(The following items are implemented and covered by unit/integration tests, but live SMS / assignment / records UI on) Tj
+T* (production requires programme-operator credentials. Demo users are blocked in production.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 82.2049606299211746 Td
+(| Workflow | Engineering evidence | Live operator smoke |) Tj
+ET
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 22.6771653543306684 Td
+(CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.) Tj
+ET
+endstream
+endobj
+7 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 8 0 R
+>>
+endobj
+8 0 obj
+<<
+/Length 4161
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 785.1970866141732586 Td
+(|----------|----------------------|---------------------|) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 759.6852755905511003 Td
+(| Settings enforcement / group capacity | Domain getGroupSizeLimits; approver UI disables full groups | Pending) Tj
+T* (operator |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 720.0002362204724022 Td
+(| Community Formation Queue | Formation service uses stored min/max | Pending operator |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 694.4884251968503577 Td
+(| Registration / Approver location hierarchy | Review panels already show cascade | Pending operator |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 668.9766141732283131 Td
+(| Notification timing | notifyBorrower only when approved | Pending operator |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 643.4648031496062686 Td
+(| Rejection / blacklist / escalate SMS | Event dispatch + PATCH blacklist route | Pending operator |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 617.952992125984224 Td
+(| Borrower Record Centre | /records routes + domain search | Pending operator |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 592.4411811023621794 Td
+(| Guarantor SMS | Loan approve / close / missed >2 | Pending operator |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 566.9293700787401349 Td
+(| Loan workflow stepper | Public step sequence tests | Pending operator |) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 541.4175590551180903 Td
+(| Exports | Existing branded filename tests | Pending operator |) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 515.9057480314959321 Td
+(Issues fixed) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 493.2285826771653205 Td
+(• Settings enforcement \(group min/max, max loan\)) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 467.716771653543276 Td
+(• Group capacity validation) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 442.2049606299212314 Td
+(• Community Formation Queue) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 416.69314960629913 Td
+(• Location hierarchy on registration and approver review) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 391.1813385826770855 Td
+(• Borrower Record Centre) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 365.6695275590550409 Td
+(• Collector profile live data) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 340.1577165354329964 Td
+(• Readable identifiers) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 314.6459055118109518 Td
+(• Loan workflow stepper) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 289.1340944881889072 Td
+(• Notification timing \(no SMS on pending group assignment\)) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 263.6222834645668627 Td
+(• Borrower rejection / blacklist / escalation notifications) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 238.1104724409448181 Td
+(• Guarantor notifications) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 212.5986614173227736 Td
+(• Export improvements retained) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 187.086850393700729 Td
+(• GPS placeholder reverse geocode without GhanaPost) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 161.5750393700786844 Td
+(• Missing PATCH /borrowers/:id/blacklist route \(CI + production parity\)) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 136.0632283464566399 Td
+(Remaining deferred items) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 113.3860629921258578 Td
+(• Official GhanaPost GPS API \(planning: documentation/location/GHANAPOST_GPS_INTEGRATION_PLAN.md\)) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 87.8742519685038133 Td
+(• Collector expense-submitted count stub) Tj
+ET
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 22.6771653543306684 Td
+(CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.) Tj
+ET
+endstream
+endobj
+9 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 595.2799999999999727 841.8899999999999864]
+/Contents 10 0 R
+>>
+endobj
+10 0 obj
+<<
+/Length 1118
+>>
+stream
+0.5670000000000001 w
+0 G
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 785.1970866141732586 Td
+(• Operator-run authenticated SMS and assignment smoke on production) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 759.6852755905511003 Td
+(• No schema migration in this release) Tj
+ET
+BT
+/F2 12 Tf
+13.7999999999999989 TL
+0.059 0.431 0.337 rg
+39.6850393700787407 734.1734645669291695 Td
+(Production confidence) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 711.4962992125983874 Td
+(90 / 100 for engineering and unauthenticated production identity. Withhold WILMS v1.8.1 Production Certified until) Tj
+T* (the programme owner completes the authenticated SMS / capacity smoke checklist above.) Tj
+ET
+BT
+/F1 10 Tf
+11.5 TL
+0.157 g
+39.6850393700787407 671.8112598425196893 Td
+(Recommendation: declare engineering-complete and production-deployed. Certification after operator smoke.) Tj
+ET
+BT
+/F1 7 Tf
+8.0499999999999989 TL
+0.361 g
+39.6850393700787407 22.6771653543306684 Td
+(CONFIDENTIAL — For authorized WILMS personnel, executive review, procurement, and official record keeping only.) Tj
+ET
+endstream
+endobj
+1 0 obj
+<</Type /Pages
+/Kids [3 0 R 5 0 R 7 0 R 9 0 R ]
+/Count 4
+>>
+endobj
+11 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+12 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+13 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+14 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+15 0 obj
+<<
+/Type /Font
+/BaseFont /Courier
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+16 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+17 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+18 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+19 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Roman
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+20 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+21 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Italic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+22 0 obj
+<<
+/Type /Font
+/BaseFont /Times-BoldItalic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+23 0 obj
+<<
+/Type /Font
+/BaseFont /ZapfDingbats
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+24 0 obj
+<<
+/Type /Font
+/BaseFont /Symbol
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+2 0 obj
+<<
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
+/Font <<
+/F1 11 0 R
+/F2 12 0 R
+/F3 13 0 R
+/F4 14 0 R
+/F5 15 0 R
+/F6 16 0 R
+/F7 17 0 R
+/F8 18 0 R
+/F9 19 0 R
+/F10 20 0 R
+/F11 21 0 R
+/F12 22 0 R
+/F13 23 0 R
+/F14 24 0 R
+>>
+/XObject <<
+>>
+>>
+endobj
+25 0 obj
+<<
+/Producer (jsPDF 4.2.1)
+/CreationDate (D:20260815154731-00'00')
+>>
+endobj
+26 0 obj
+<<
+/Type /Catalog
+/Pages 1 0 R
+/OpenAction [3 0 R /FitH null]
+/PageLayout /OneColumn
+>>
+endobj
+xref
+0 27
+0000000000 65535 f 
+0000013481 00000 n 
+0000015321 00000 n 
+0000000015 00000 n 
+0000000152 00000 n 
+0000003797 00000 n 
+0000003934 00000 n 
+0000007822 00000 n 
+0000007959 00000 n 
+0000012172 00000 n 
+0000012310 00000 n 
+0000013556 00000 n 
+0000013682 00000 n 
+0000013813 00000 n 
+0000013947 00000 n 
+0000014085 00000 n 
+0000014209 00000 n 
+0000014338 00000 n 
+0000014470 00000 n 
+0000014606 00000 n 
+0000014734 00000 n 
+0000014861 00000 n 
+0000014990 00000 n 
+0000015123 00000 n 
+0000015225 00000 n 
+0000015574 00000 n 
+0000015660 00000 n 
+trailer
+<<
+/Size 27
+/Root 26 0 R
+/Info 25 0 R
+/ID [ <BE7E2C914BA8E76084DA13D8712A1AAC> <BE7E2C914BA8E76084DA13D8712A1AAC> ]
+>>
+startxref
+15764
+%%EOF
