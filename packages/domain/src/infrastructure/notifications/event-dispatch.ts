@@ -51,6 +51,10 @@ import {
   buildCollectorReassignedSmsBody,
   buildBorrowerUpdateApprovedSmsBody,
   buildBorrowerUpdateRejectedSmsBody,
+  buildRegistrationEscalatedSmsBody,
+  buildGuarantorLoanApprovedSmsBody,
+  buildGuarantorLoanFullyRepaidSmsBody,
+  buildGuarantorMissedPaymentsSmsBody,
 } from './templates.js';
 import { logMessageDelivery } from './delivery-log.js';
 import { normalizeGhanaPhone } from '../sms/normalize-phone.js';
@@ -679,10 +683,12 @@ export async function notifyGroupAssigned(input: {
   collectorName?: string;
   collectorUserId?: string;
   actorUserId?: string;
+  /** Borrower SMS is only sent after registration approval (or later reassignment). */
+  notifyBorrower?: boolean;
 }): Promise<void> {
   const settings = await getSettings();
 
-  if (input.borrowerPhone) {
+  if (input.notifyBorrower && input.borrowerPhone) {
     await dispatchSms({
       event: 'GROUP_ASSIGNED',
       to: input.borrowerPhone,
@@ -725,6 +731,8 @@ export async function notifyRegistrationRejected(input: {
   borrowerPhone?: string;
   borrowerEmail?: string;
   reason?: string;
+  officerUserId?: string;
+  actorUserId?: string;
 }): Promise<void> {
   const settings = await getSettings();
 
@@ -752,6 +760,28 @@ export async function notifyRegistrationRejected(input: {
       borrowerId: input.borrowerId,
     });
   }
+
+  if (input.officerUserId) {
+    void createInAppNotification({
+      userId: input.officerUserId,
+      event: 'REGISTRATION_REJECTED',
+      title: 'Registration rejected',
+      body: `${input.borrowerName}'s registration was not approved.`,
+      href: '/approver/reviewed',
+      borrowerId: input.borrowerId,
+    });
+  }
+
+  if (input.actorUserId && input.actorUserId !== input.officerUserId) {
+    void createInAppNotification({
+      userId: input.actorUserId,
+      event: 'REGISTRATION_REJECTED',
+      title: 'Registration decision recorded',
+      body: `${input.borrowerName} was rejected.`,
+      href: '/approver/reviewed',
+      borrowerId: input.borrowerId,
+    });
+  }
 }
 
 export async function notifyRegistrationBlacklisted(input: {
@@ -759,6 +789,8 @@ export async function notifyRegistrationBlacklisted(input: {
   borrowerName: string;
   borrowerPhone?: string;
   reason?: string;
+  officerUserId?: string;
+  actorUserId?: string;
 }): Promise<void> {
   const settings = await getSettings();
 
@@ -771,6 +803,127 @@ export async function notifyRegistrationBlacklisted(input: {
       borrowerId: input.borrowerId,
     });
   }
+
+  if (input.officerUserId) {
+    void createInAppNotification({
+      userId: input.officerUserId,
+      event: 'BORROWER_BLACKLISTED',
+      title: 'Registration blacklisted',
+      body: `${input.borrowerName}'s registration was blacklisted.`,
+      href: '/approver/reviewed',
+      borrowerId: input.borrowerId,
+    });
+  }
+
+  if (input.actorUserId && input.actorUserId !== input.officerUserId) {
+    void createInAppNotification({
+      userId: input.actorUserId,
+      event: 'BORROWER_BLACKLISTED',
+      title: 'Registration decision recorded',
+      body: `${input.borrowerName} was blacklisted.`,
+      href: '/approver/reviewed',
+      borrowerId: input.borrowerId,
+    });
+  }
+}
+
+export async function notifyRegistrationEscalated(input: {
+  borrowerId: string;
+  borrowerName: string;
+  borrowerPhone?: string;
+  officerUserId?: string;
+  actorUserId?: string;
+}): Promise<void> {
+  const settings = await getSettings();
+  if (input.borrowerPhone) {
+    await dispatchSms({
+      event: 'SUPERVISOR_ALERT',
+      to: input.borrowerPhone,
+      body: buildRegistrationEscalatedSmsBody({ borrowerName: input.borrowerName }),
+      enabled: settings.smsNotificationsEnabled,
+      borrowerId: input.borrowerId,
+    });
+  }
+  if (input.officerUserId) {
+    void createInAppNotification({
+      userId: input.officerUserId,
+      event: 'SUPERVISOR_ALERT',
+      title: 'Registration escalated',
+      body: `${input.borrowerName} requires additional review.`,
+      href: '/approver/pending',
+      borrowerId: input.borrowerId,
+    });
+  }
+  if (input.actorUserId) {
+    void createInAppNotification({
+      userId: input.actorUserId,
+      event: 'SUPERVISOR_ALERT',
+      title: 'Escalation recorded',
+      body: `${input.borrowerName} has been escalated for additional review.`,
+      href: '/approver/pending',
+      borrowerId: input.borrowerId,
+    });
+  }
+}
+
+export async function notifyGuarantorLoanApproved(input: {
+  guarantorName: string;
+  guarantorPhone?: string;
+  borrowerId: string;
+  borrowerName: string;
+}): Promise<void> {
+  if (!input.guarantorPhone?.trim()) return;
+  const settings = await getSettings();
+  await dispatchSms({
+    event: 'GUARANTOR_ALERT',
+    to: input.guarantorPhone,
+    body: buildGuarantorLoanApprovedSmsBody({
+      guarantorName: input.guarantorName,
+      borrowerName: input.borrowerName,
+    }),
+    enabled: settings.smsNotificationsEnabled,
+    borrowerId: input.borrowerId,
+  });
+}
+
+export async function notifyGuarantorLoanFullyRepaid(input: {
+  guarantorName: string;
+  guarantorPhone?: string;
+  borrowerId: string;
+  borrowerName: string;
+}): Promise<void> {
+  if (!input.guarantorPhone?.trim()) return;
+  const settings = await getSettings();
+  await dispatchSms({
+    event: 'GUARANTOR_ALERT',
+    to: input.guarantorPhone,
+    body: buildGuarantorLoanFullyRepaidSmsBody({
+      guarantorName: input.guarantorName,
+      borrowerName: input.borrowerName,
+    }),
+    enabled: settings.smsNotificationsEnabled,
+    borrowerId: input.borrowerId,
+  });
+}
+
+export async function notifyGuarantorMissedPayments(input: {
+  guarantorName: string;
+  guarantorPhone?: string;
+  borrowerId: string;
+  borrowerName: string;
+}): Promise<void> {
+  if (!input.guarantorPhone?.trim()) return;
+  const settings = await getSettings();
+  await dispatchSms({
+    event: 'GUARANTOR_ALERT',
+    to: input.guarantorPhone,
+    body: buildGuarantorMissedPaymentsSmsBody({
+      guarantorName: input.guarantorName,
+      borrowerName: input.borrowerName,
+    }),
+    enabled: settings.smsNotificationsEnabled,
+    borrowerId: input.borrowerId,
+  });
 }
 
 // ─── Loan notifications ──────────────────────────────────────────────────────

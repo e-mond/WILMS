@@ -35,6 +35,8 @@ export interface CollectorSummary {
   displayId: string;
   displayName: string;
   photoUrl?: string | null;
+  phone?: string | null;
+  email?: string | null;
   zone: string;
   groupCount: number;
   borrowerCount: number;
@@ -107,6 +109,9 @@ function buildCollectorSummary(input: {
   trendDirection: CollectorTrendDirection;
   rateTrend: number[];
   monthlyPerformance: CollectorMonthlyPerformance[];
+  phone?: string | null;
+  email?: string | null;
+  photoUrl?: string | null;
 }): CollectorSummary {
   const rate = collectionRatePercent(input.collectedPesewas, input.expectedPesewas);
 
@@ -114,7 +119,9 @@ function buildCollectorSummary(input: {
     id: input.id,
     displayId: input.displayId,
     displayName: input.displayName,
-    photoUrl: null,
+    photoUrl: input.photoUrl ?? null,
+    phone: input.phone ?? null,
+    email: input.email ?? null,
     zone: input.zone,
     groupCount: input.groupCount,
     borrowerCount: input.borrowerCount,
@@ -350,6 +357,9 @@ export async function listCollectors(): Promise<CollectorListResponse> {
     joinedAt: string;
     lastActiveAt: string;
     status: 'ACTIVE' | 'AWAY';
+    phone?: string | null;
+    email?: string | null;
+    photoUploadId?: string | null;
   }> = [];
 
   if (isDatabaseEnabled()) {
@@ -366,6 +376,9 @@ export async function listCollectors(): Promise<CollectorListResponse> {
       joinedAt: (collector?.joinedAt ?? user.createdAt).toISOString(),
       lastActiveAt: (collector?.lastActiveAt ?? user.lastLoginAt ?? user.updatedAt).toISOString(),
       status: collector?.status === 'AWAY' ? 'AWAY' : 'ACTIVE',
+      phone: user.phone ?? null,
+      email: user.email ?? null,
+      photoUploadId: user.profileImageUploadId ?? null,
     }));
   } else {
     collectorEntries = DEMO_USERS.filter((user) => user.role === 'COLLECTOR').map((user, index) => ({
@@ -422,6 +435,8 @@ export async function listCollectors(): Promise<CollectorListResponse> {
         trendDirection: series.trendDirection,
         rateTrend: series.rateTrend,
         monthlyPerformance: series.monthlyPerformance,
+        phone: entry.phone ?? null,
+        email: entry.email ?? null,
       }),
       activeToday,
     };
@@ -504,6 +519,15 @@ export async function getCollector(id: string): Promise<CollectorDetail> {
     throw new Error('NOT_FOUND');
   }
 
+  let photoUrl = collector.photoUrl ?? null;
+  if (isDatabaseEnabled()) {
+    const user = await userRepo.getUserById(id);
+    if (user?.profileImageUploadId) {
+      const { resolveUploadAccessUrlById } = await import('../../infrastructure/uploads/index.js');
+      photoUrl = (await resolveUploadAccessUrlById(user.profileImageUploadId)) ?? photoUrl;
+    }
+  }
+
   let assignedGroups: CollectorDetail['assignedGroups'] = [];
   const memberCounts = await loadMemberCountsByGroup();
 
@@ -546,6 +570,7 @@ export async function getCollector(id: string): Promise<CollectorDetail> {
 
   return {
     ...collector,
+    photoUrl,
     assignedGroups,
     recentCollections: payments,
     flagsRaised: [],

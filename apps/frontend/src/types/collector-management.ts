@@ -10,6 +10,8 @@ export interface CollectorSummary {
   displayId?: string;
   displayName: string;
   photoUrl?: string | null;
+  phone?: string | null;
+  email?: string | null;
   zone: string;
   groupCount: number;
   borrowerCount: number;

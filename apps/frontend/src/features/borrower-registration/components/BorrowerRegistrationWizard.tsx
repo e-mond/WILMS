@@ -358,6 +358,7 @@ export function BorrowerRegistrationWizard() {
       }
 
       const gpsValue =
+        result.digitalAddress ??
         result.address ??
         `${result.latitude.toFixed(6)}, ${result.longitude.toFixed(6)}`;
 
@@ -366,7 +367,14 @@ export function BorrowerRegistrationWizard() {
         result.accuracyMeters != null
           ? ` Accuracy ±${Math.round(result.accuracyMeters)}m.`
           : '';
-      setLocationFeedback(`Current location applied to GPS address.${accuracyNote}`);
+      const locationNote = result.community
+        ? ` Nearest community: ${result.community}.`
+        : '';
+      setLocationFeedback(
+        result.digitalAddress
+          ? `Ghana Digital Address ${result.digitalAddress} applied.${accuracyNote}${locationNote}`
+          : `Current location applied to GPS address.${accuracyNote}`,
+      );
     } catch (error) {
       const message =
         error instanceof Error

@@ -59,7 +59,8 @@ export function CollectorProfilePanel({ collectorId }: CollectorProfilePanelProp
             id: data.id,
             photoUrl: data.photoUrl,
           })}
-          size="lg"
+          size="xl"
+          className="rounded-sm border border-border object-cover"
         />
         <div className="min-w-0 flex-1">
           <h1 className="text-heading-1 font-semibold text-text-primary">{data.displayName}</h1>
@@ -68,9 +69,15 @@ export function CollectorProfilePanel({ collectorId }: CollectorProfilePanelProp
             {resolveCollectorDisplayId(data)}
           </p>
           <p className="mt-wilms-1 text-small text-text-muted">
-            Community coverage · Joined {formatDisplayDate(data.joinedAt)} · {data.cycleLabel}
+            Zone {data.zone} · Joined {formatDisplayDate(data.joinedAt)} · Last activity{' '}
+            {formatDisplayDate(data.lastActiveAt)}
           </p>
-          <p className="mt-wilms-1 text-small font-semibold text-status-active">Active</p>
+          {data.phone || data.email ? (
+            <p className="mt-wilms-1 text-small text-text-muted">
+              {[data.phone, data.email].filter(Boolean).join(' · ')}
+            </p>
+          ) : null}
+          <p className="mt-wilms-1 text-small font-semibold text-status-active">{data.status}</p>
         </div>
       </div>
 

@@ -9,6 +9,7 @@ const ACTION_MAP = {
   'borrower.approved': 'BORROWER_APPROVED',
   'borrower.rejected': 'BORROWER_REJECTED',
   'borrower.blacklisted': 'BORROWER_BLACKLISTED',
+  'borrower.escalated': 'RISK_FLAG_ESCALATED',
   'borrower.registration-deleted': 'BORROWER_REGISTERED',
   'payment.recorded': 'PAYMENT_RECORDED',
   'payment.edited': 'PAYMENT_EDITED',

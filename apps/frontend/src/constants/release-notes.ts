@@ -6,13 +6,13 @@ export interface ReleaseNotes {
 }
 
 export const CURRENT_RELEASE_NOTES: ReleaseNotes = {
-  version: '1.8.0',
+  version: '1.8.1',
   summary:
-    'Enterprise design refresh, Ghana holidays, full offline readiness, and workflow automation.',
+    'Production maintenance: settings enforcement, notification timing, borrower records, and workflow corrections.',
   highlights: [
-    'Self-hosted fonts with CSP-safe loading and hardened holiday request APIs.',
-    'Automatic Ghana public holidays with a single premium calendar experience.',
-    'iOS-inspired dashboards, unique module icons, and offline-first field operations.',
-    'Automation engine for reminders, follow-ups, escalations, and scheduled executive reports.',
+    'Group capacity and community formation now follow saved system settings.',
+    'Borrowers are not SMS’d on pending group assignment; congratulations wait for approval.',
+    'Borrower Record Centre, guarantor SMS, and the public loan workflow stepper.',
+    'GPS digital-address placeholder only — GhanaPost integration is not included.',
   ],
 };

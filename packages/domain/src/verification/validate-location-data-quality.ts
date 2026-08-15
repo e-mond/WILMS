@@ -172,7 +172,7 @@ async function main() {
   const reportPath = join(root, 'documentation/location/COMMUNITY_DATA_QUALITY_REPORT.md');
   const markdown = `# Community Data Quality Report
 
-**Product version:** 1.8.0  
+**Product version:** 1.8.1  
 **Generated:** ${new Date().toISOString()}  
 **Status:** ${failed ? 'FAILED' : 'PASSED'}  
 **Language:** British English
