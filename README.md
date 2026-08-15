@@ -1,6 +1,6 @@
 # WILMS — Women’s Interest-Free Loan Management System
 
-[![Version](https://img.shields.io/badge/version-v1.8.0-0F766E?style=flat-square)](VERSION.md)
+[![Version](https://img.shields.io/badge/version-v1.8.1-0F766E?style=flat-square)](VERSION.md)
 [![Status](https://img.shields.io/badge/status-production-059669?style=flat-square)](#2-executive-overview)
 [![Node](https://img.shields.io/badge/node-22.x-339933?style=flat-square&logo=node.js&logoColor=white)](package.json)
 [![Next.js](https://img.shields.io/badge/Next.js-14-000000?style=flat-square&logo=next.js&logoColor=white)](apps/frontend/package.json)
@@ -15,7 +15,7 @@
 
 | Field | Value |
 | --- | --- |
-| **Current release** | [`v1.8.0`](VERSION.md) (`v1.8.0-final`) |
+| **Current release** | [`v1.8.1`](VERSION.md) (production maintenance; previous `v1.8.0-final`) |
 | **Maturity** | Production operational platform (final production certified) |
 | **Primary deployment** | [wilms.vercel.app](https://wilms.vercel.app) |
 | **Runtime** | Node.js **22.x** |
@@ -65,7 +65,7 @@
 
 **WILMS — Women’s Interest-Free Loan Management System**
 
-Badges at the top of this document reflect the current production release posture: **v1.8.0**, Node 22, Next.js 14, TypeScript (strict), Neon PostgreSQL, Vercel deployment, and proprietary licensing.
+Badges at the top of this document reflect the current production release posture: **v1.8.1**, Node 22, Next.js 14, TypeScript (strict), Neon PostgreSQL, Vercel deployment, and proprietary licensing.
 
 Related version artefacts:
 
@@ -118,7 +118,7 @@ WILMS provides a controlled digital operating system for those workflows.
 - Executive intelligence, forecasting, and exportable compliance artefacts
 - Role-scoped portals with permission overrides and force-logout
 
-### Maturity and production readiness (v1.8.0)
+### Maturity and production readiness (v1.8.1)
 
 | Dimension | Status |
 | --- | --- |
@@ -941,7 +941,8 @@ Report accessibility defects with role, route, and keyboard repro steps.
 
 | Release | Focus |
 | --- | --- |
-| **v1.8.0 (current)** | Enterprise design, Ghana holidays, automation engine, field-critical offline, CSP-safe fonts, Ghana location master, corrected borrower SMS lifecycle |
+| **v1.8.1 (current)** | Production maintenance: settings enforcement, notification timing, borrower records, guarantor SMS, loan stepper; GhanaPost GPS not included |
+| **v1.8.0** | Enterprise design, Ghana holidays, automation engine, field-critical offline, CSP-safe fonts, Ghana location master, corrected borrower SMS lifecycle |
 | **v1.9 — Integrations & Payments** | Deeper payment-provider integrations, settlement tooling, external system connectors |
 | **v2.0 — General Ledger & multi-branch** | Statutory double-entry GL, multi-branch structures, enhanced consolidation |
 
@@ -988,7 +989,7 @@ Unauthorised copying, distribution, modification, or disclosure is prohibited ex
 
 ## 30. Final project summary
 
-**WILMS v1.8.0** is a production-ready Women’s Interest-Free Loan Management System that digitises the full operational stack of community microfinance — from registration and disbursement through weekly collections, reconciliation, communications, holidays, automation, and executive oversight.
+**WILMS v1.8.1** is a production-ready Women’s Interest-Free Loan Management System that digitises the full operational stack of community microfinance — from registration and disbursement through weekly collections, reconciliation, communications, holidays, automation, and executive oversight.
 
 Built as a TypeScript modular monolith on **Next.js**, **Vercel**, and **Neon**, WILMS combines:
 
@@ -1004,4 +1005,4 @@ It is suitable for NGO programme delivery, government technical evaluation, inst
 
 ---
 
-**WILMS v1.8.0** — Operational excellence for interest-free women’s lending.
+**WILMS v1.8.1** — Operational excellence for interest-free women’s lending.

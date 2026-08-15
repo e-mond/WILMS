@@ -1,6 +1,6 @@
 # WILMS Operations Manual
 
-**Version:** 1.7.3  
+**Version:** 1.8.1  
 **Audience:** DevOps, Super Admins, programme IT leads  
 **Classification:** Confidential
 
@@ -10,7 +10,7 @@
 
 This manual covers day-to-day operational procedures for running WILMS in production and staging environments.
 
-Related v1.8.0 hotfix runbooks: `documentation/operations/GROUP_CAPACITY_WORKFLOW.md`, `documentation/operations/BORROWER_RECORD_CENTRE.md`, `documentation/operations/LOAN_WORKFLOW_STATUS.md`.
+Related v1.8.1 runbooks: `documentation/operations/GROUP_CAPACITY_WORKFLOW.md`, `documentation/operations/BORROWER_RECORD_CENTRE.md`, `documentation/operations/LOAN_WORKFLOW_STATUS.md`.
 
 ---
 

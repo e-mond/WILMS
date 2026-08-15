@@ -1,6 +1,6 @@
 # WILMS Developer Guide
 
-**Version:** 1.7.3  
+**Version:** 1.8.1  
 **Audience:** Engineers contributing to WILMS  
 **Classification:** Confidential
 

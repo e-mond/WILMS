@@ -2,29 +2,31 @@
 
 | Field | Value |
 |-------|-------|
-| **Current release** | `v1.8.0` |
-| **Final certification tag** | `v1.8.0-final` |
-| **In progress** | Final production certified (market readiness closed) |
-| **Release type** | Platform refinement |
-| **Previous release** | `v1.7.5` (offline, push & modernisation) |
-| **Date** | August 2026 |
+| **Current release** | `v1.8.1` |
+| **Release type** | Production maintenance |
+| **Previous release** | `v1.8.0` (`v1.8.0-final`) |
+| **Date** | 15 August 2026 |
 
 ## Package versions
 
 | Package | Version |
 |---------|---------|
-| `wilms` (root) | `1.8.0` |
-| `@wilms/frontend` | `1.8.0` |
-| `@wilms/domain` | `1.8.0` |
-| `@wilms/api` | `1.8.0` |
+| `wilms` (root) | `1.8.1` |
+| `@wilms/frontend` | `1.8.1` |
+| `@wilms/domain` | `1.8.1` |
+| `@wilms/api` | `1.8.1` |
 
-## v1.8.0 notes
+## v1.8.1 notes
 
-- Self-hosted fonts (CSP-safe); holiday API hardening
-- Ghana public holiday provider + premium holiday UX
-- Unique financial-grade icon system; iOS-inspired enterprise UI
-- Offline-first completion; automation / workflow / rule engines
-- Expanded push categories; documentation suite updates
-- Final quality / market-readiness: guarantor capacity, readable IDs, branded exports, GPS visibility, borrower update requests, mandatory borrower SMS
+Production maintenance on the v1.8.0 platform:
 
-See `docs/v1.8.0/` and `documentation/release/WILMS_v1.8.0_FINAL_PRODUCTION_RELEASE_REPORT.md`.
+- Settings-backed group capacity and community formation queue
+- Approver review capacity workflow
+- Notification timing (no borrower SMS on pending group assignment)
+- Borrower Record Centre
+- Guarantor SMS (loan approved, fully repaid, >2 missed periods)
+- Loan workflow stepper
+- Export identifier and filename improvements already in v1.8.0 retained
+- GPS reverse-geocode placeholder (no GhanaPost API)
+
+See `CHANGELOG.md` and `documentation/release/WILMS_v1.8.1_PRODUCTION_MAINTENANCE_REPORT.md`.

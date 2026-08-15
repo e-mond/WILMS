@@ -1,7 +1,7 @@
-# Settings enforcement audit — WILMS v1.8.0
+# Settings enforcement audit — WILMS v1.8.1
 
 **Date:** 15 August 2026  
-**Version:** v1.8.0 (no bump)  
+**Version:** v1.8.1  
 **Scope:** Authoritative use of Super Admin settings in operational workflows  
 
 ## Method
