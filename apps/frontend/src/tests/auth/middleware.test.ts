@@ -82,4 +82,16 @@ describe('resolveMiddlewareAuth', () => {
 
     expect(result).toEqual({ type: 'allow' });
   });
+
+  it('allows super admin to open borrower records', () => {
+    const cookie = encodeSessionPayload({
+      userId: 'admin-1',
+      role: USER_ROLE.SUPER_ADMIN,
+      expiresAt: Date.now() + 60_000,
+    });
+
+    const result = resolveMiddlewareAuth(createRequest('/records', cookie));
+
+    expect(result).toEqual({ type: 'allow' });
+  });
 });

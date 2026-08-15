@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { PageBreadcrumbs } from '@/components/layout/PageBreadcrumbs';
 import { GlobalSearchTrigger } from '@/components/layout/shell/navbar/GlobalSearchPanel';
 import { ShellNavbarActions } from '@/components/layout/shell/navbar/ShellNavbarActions';
@@ -26,7 +26,8 @@ export function AppNavbar({
   showMobileNavTrigger = true,
 }: AppNavbarProps) {
   const pathname = usePathname();
-  const breadcrumbs = resolveShellBreadcrumbs(pathname);
+  const searchParams = useSearchParams();
+  const breadcrumbs = resolveShellBreadcrumbs(pathname, searchParams.toString());
   const openMobileNav = useUiStore((state) => state.openMobileNav);
   const isSidebarCollapsed = useShellLayoutStore((state) => state.isSidebarCollapsed);
   const { user } = useAuth();
