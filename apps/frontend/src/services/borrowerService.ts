@@ -89,6 +89,10 @@ const borrowerService: IBorrowerService = {
     return apiClient.patch<BorrowerSummary>(`/borrowers/${id}/blacklist`, input);
   },
 
+  escalateBorrower(id: string, input: { reason: string }): Promise<BorrowerSummary> {
+    return apiClient.patch<BorrowerSummary>(`/borrowers/${id}/escalate`, input);
+  },
+
   registerBorrower(payload: RegisterBorrowerPayload): Promise<BorrowerSummary> {
     return apiClient.post<BorrowerSummary>('/borrowers', payload);
   },

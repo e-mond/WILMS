@@ -70,11 +70,32 @@ export function useApprovalActions(borrowerId: string) {
     },
   });
 
+  const escalateMutation = useMutation({
+    mutationFn: async (input: { reason: string }) => {
+      const result = await borrowerService.escalateBorrower(borrowerId, input);
+      await invalidateApprovalQueries();
+      return result;
+    },
+    onSuccess: () => {
+      notifyMutationSuccess(
+        'Registration escalated',
+        'The borrower has been notified that additional review is required.',
+      );
+    },
+    onError: (error) => {
+      notifyMutationError('Escalation failed', error, 'Unable to escalate this application.');
+    },
+  });
+
   return {
     approveMutation,
     rejectMutation,
     blacklistMutation,
+    escalateMutation,
     isSubmitting:
-      approveMutation.isPending || rejectMutation.isPending || blacklistMutation.isPending,
+      approveMutation.isPending ||
+      rejectMutation.isPending ||
+      blacklistMutation.isPending ||
+      escalateMutation.isPending,
   };
 }

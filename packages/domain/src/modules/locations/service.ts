@@ -518,3 +518,72 @@ export async function resolveLocationIdsByNames(input: {
     communityId: communityMatch?.entityId,
   };
 }
+
+export interface ReverseGeocodeResult {
+  latitude: number;
+  longitude: number;
+  digitalAddress: string;
+  resolvedFrom: 'community_code' | 'fallback';
+  community?: string;
+  district?: string;
+  region?: string;
+  regionCode?: string | null;
+  communityId?: string;
+  districtId?: string;
+  regionId?: string;
+  distanceMetres?: number;
+}
+
+export async function reverseGeocode(latitude: number, longitude: number): Promise<ReverseGeocodeResult> {
+  const { encodeFallbackDigitalAddress, haversineMetres, isGhanaDigitalAddress } = await import(
+    './digital-address.js'
+  );
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    throw new Error('VALIDATION:Latitude and longitude are required.');
+  }
+  if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+    throw new Error('VALIDATION:Coordinates are outside the valid range.');
+  }
+
+  if (!isDatabaseEnabled()) {
+    const digitalAddress = encodeFallbackDigitalAddress(latitude, longitude, 'GH');
+    return {
+      latitude,
+      longitude,
+      digitalAddress,
+      resolvedFrom: 'fallback',
+    };
+  }
+
+  const nearest = await locationMasterRepo.findNearestCommunity(latitude, longitude);
+  if (!nearest || nearest.latitude == null || nearest.longitude == null) {
+    return {
+      latitude,
+      longitude,
+      digitalAddress: encodeFallbackDigitalAddress(latitude, longitude, 'GH'),
+      resolvedFrom: 'fallback',
+    };
+  }
+
+  const distanceMetres = haversineMetres(latitude, longitude, nearest.latitude, nearest.longitude);
+  const storedCode = nearest.communityCode?.trim().toUpperCase() ?? '';
+  const digitalAddress = isGhanaDigitalAddress(storedCode)
+    ? storedCode
+    : encodeFallbackDigitalAddress(latitude, longitude, nearest.regionCode);
+
+  return {
+    latitude,
+    longitude,
+    digitalAddress,
+    resolvedFrom: isGhanaDigitalAddress(storedCode) ? 'community_code' : 'fallback',
+    community: nearest.communityName,
+    district: nearest.districtName,
+    region: nearest.regionName,
+    regionCode: nearest.regionCode,
+    communityId: nearest.communityId,
+    districtId: nearest.districtId,
+    regionId: nearest.regionId,
+    distanceMetres: Math.round(distanceMetres),
+  };
+}

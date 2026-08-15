@@ -2,7 +2,7 @@ import type { BorrowerDetail } from '@/types/borrower';
 import type { BorrowerIdType } from '@/constants/borrower-registration';
 import type { BorrowerGender } from '@/constants/borrower-registration';
 
-export type ApprovalDecisionAction = 'approve' | 'reject' | 'blacklist';
+export type ApprovalDecisionAction = 'approve' | 'reject' | 'blacklist' | 'escalate';
 
 export interface RejectBorrowerInput {
   reason: string;

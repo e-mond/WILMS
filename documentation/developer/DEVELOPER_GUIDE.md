@@ -13,6 +13,8 @@
 - Neon PostgreSQL account (or local DATABASE_URL)
 - Git
 
+Group capacity and settings enforcement live in `packages/domain/src/modules/settings/group-limits.ts`. Reverse geocode: `GET /locations/reverse-geocode`. Records: `GET /records/search`, `GET /records/borrowers/:id`.
+
 ---
 
 ## 2. Repository setup

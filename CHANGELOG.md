@@ -17,6 +17,19 @@ All notable changes to WILMS are documented in this file.
 **Borrower communication correction:** August 2026 (`feature/v1.8.0-borrower-communication-correction`) — same release identity; SMS lifecycle aligned to the real workflow (admin fee after loan approval)
 **Post-release dashboard & collector data hotfix:** 13 August 2026 (`fix/v1.8.0-post-release-dashboard-and-collector-data`, PR #204, merge `c93cc75`) — same release identity; **no version bump / no migration**
 
+**Post-release settings / notifications / records hotfix:** 15 August 2026 (`hotfix/v1.8.0-settings-notifications-borrower-records`) — same release identity; **no version bump / no migration**
+
+### Settings, notifications, records & GPS hotfix (15 August 2026)
+
+- Group min/max size and community formation queue use saved system settings, not environment defaults
+- Approver review blocks full groups, offers Create New Group, and does not SMS borrowers until registration approval
+- Registration rejected / blacklisted / escalated SMS plus staff in-app notices
+- Use Current GPS resolves a Ghana Digital Address; coordinates retained
+- Borrower Record Centre for Super Admin, Officer, Approver, Auditor
+- Guarantor SMS on loan approved, fully repaid, and more than two missed periods
+- Loan detail stepper follows the public registration → disbursement → closed sequence
+- Evidence: `documentation/hotfix/FINAL_HOTFIX_REPORT.md`
+
 ### Post-release dashboard & collector data hotfix (13 August 2026)
 
 - Collectors table: live assigned borrower counts, ↑↓→ trend, payment-week streak, rolling six-month performance, operational alerts

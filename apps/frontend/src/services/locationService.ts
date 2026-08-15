@@ -279,11 +279,26 @@ const locationService: ILocationService = {
   },
 
   async getCurrentLocation(): Promise<CurrentLocationResult> {
-    if (typeof window !== 'undefined' && navigator.geolocation) {
-      return readBrowserGeolocation();
-    }
+    const coords =
+      typeof window !== 'undefined' && navigator.geolocation
+        ? await readBrowserGeolocation()
+        : await apiClient.get<CurrentLocationResult>('/locations/current');
 
-    return apiClient.get<CurrentLocationResult>('/locations/current');
+    try {
+      const resolved = await apiClient.get<CurrentLocationResult>(
+        `/locations/reverse-geocode?lat=${encodeURIComponent(String(coords.latitude))}&lng=${encodeURIComponent(String(coords.longitude))}`,
+      );
+      const digitalAddress = resolved.digitalAddress ?? resolved.address;
+      return {
+        ...coords,
+        ...resolved,
+        digitalAddress,
+        address: digitalAddress ?? coords.address,
+        accuracyMeters: coords.accuracyMeters,
+      };
+    } catch {
+      return coords;
+    }
   },
 };
 
