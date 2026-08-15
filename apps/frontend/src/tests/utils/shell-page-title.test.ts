@@ -21,4 +21,11 @@ describe('resolveShellPageTitle', () => {
   it('falls back to WILMS for unknown routes', () => {
     expect(resolveShellPageTitle('/unknown')).toBe('WILMS');
   });
+
+  it('resolves borrowers, applications, records, and update requests', () => {
+    expect(resolveShellPageTitle('/borrowers')).toBe('Borrowers');
+    expect(resolveShellPageTitle('/borrowers', 'status=PENDING')).toBe('Applications');
+    expect(resolveShellPageTitle('/records')).toBe('Borrower Records');
+    expect(resolveShellPageTitle('/borrower-updates')).toBe('Update Requests');
+  });
 });
