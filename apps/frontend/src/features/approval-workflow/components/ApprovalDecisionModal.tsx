@@ -26,9 +26,16 @@ const MODAL_COPY: Record<
   blacklist: {
     title: 'Blacklist borrower',
     description:
-      'Provide a reason. The borrower will be permanently barred from future registration.',
+      'The borrower will be notified by SMS. Internal reasoning is not sent to the borrower.',
     confirmLabel: 'Blacklist',
     variant: 'danger',
+  },
+  escalate: {
+    title: 'Escalate for additional review',
+    description:
+      'The application remains pending. The borrower will be notified that additional review is required.',
+    confirmLabel: 'Escalate',
+    variant: 'primary',
   },
 };
 

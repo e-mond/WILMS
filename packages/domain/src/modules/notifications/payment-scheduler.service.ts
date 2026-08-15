@@ -20,6 +20,7 @@ import {
   loanInstallmentPesewas,
   resolveCollectorUserIdForBorrower,
 } from '../../infrastructure/notifications/payment-notifications.js';
+import { notifyGuarantorMissedPayments } from '../../infrastructure/notifications/event-dispatch.js';
 import {
   emitSchedulerFailureAlert,
   processOperationalNotificationJobs,
@@ -188,6 +189,18 @@ export async function processPaymentNotificationJobs(
           if (borrower.groupId) {
             missedGroupIds.add(borrower.groupId);
           }
+        }
+
+        const missedWeekCount = scheduleWeeks.filter(
+          (week) => week.status === 'MISSED' || (week.status === 'PENDING' && week.dueDate < ref),
+        ).length;
+        if (missedWeekCount > 2) {
+          await notifyGuarantorMissedPayments({
+            guarantorName: borrower.profile?.guarantorName ?? 'Guarantor',
+            guarantorPhone: borrower.profile?.guarantorPhone,
+            borrowerId: borrower.id,
+            borrowerName: borrower.fullName,
+          });
         }
 
         for (const week of scheduleWeeks) {

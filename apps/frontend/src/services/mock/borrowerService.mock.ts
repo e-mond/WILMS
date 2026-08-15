@@ -399,6 +399,17 @@ const borrowerServiceMock: IBorrowerService = {
     return registryEntryToSummary(updated);
   },
 
+  async escalateBorrower(id: string, input: { reason: string }) {
+    await simulateDelay();
+    assertPendingBorrower(id);
+    logger.info('Borrower registration escalated', {
+      borrowerId: id,
+      reason: input.reason.trim(),
+    });
+    const updated = getBorrowerRegistryEntry(id);
+    return registryEntryToSummary(updated!);
+  },
+
   async relocateBorrower() {
     throw new ApiError(
       'Borrower relocate is not available in mock mode.',

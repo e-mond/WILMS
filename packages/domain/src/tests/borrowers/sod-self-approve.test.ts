@@ -29,6 +29,7 @@ vi.mock('../../infrastructure/notifications/event-dispatch.js', () => ({
   notifyRegistrationApproved: vi.fn(),
   notifyRegistrationRejected: vi.fn(),
   notifyRegistrationBlacklisted: vi.fn(),
+  notifyRegistrationEscalated: vi.fn(),
   notifyRegistrationSubmitted: vi.fn(),
   notifyGroupAssigned: vi.fn(),
 }));

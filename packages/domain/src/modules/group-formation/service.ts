@@ -1,4 +1,4 @@
-import { env } from '../../config/env.js';
+import { getGroupSizeLimits } from '../settings/group-limits.js';
 import {
   assignBorrowerToGroup,
   getApprovedQueue,
@@ -10,15 +10,12 @@ import { groupRepository } from '../../repositories/index.js';
 import { isDatabaseEnabled } from '../../db/client.js';
 import { randomUUID } from 'node:crypto';
 
-export function getFormationConfig() {
-  return {
-    minGroupSize: env.minGroupSize,
-    maxGroupSize: env.maxGroupSize,
-  };
+export async function getFormationConfig() {
+  return getGroupSizeLimits();
 }
 
 export async function getCommunityFormationStatus(community: string) {
-  const config = getFormationConfig();
+  const config = await getFormationConfig();
   const approvedCount = (await getApprovedQueue(community)).length;
 
   return {
@@ -56,15 +53,16 @@ export async function processApprovedBorrower(input: {
     approvedAt: input.approvedAt,
   });
 
-  if (queue.length < env.minGroupSize) {
+  const { minGroupSize, maxGroupSize } = await getGroupSizeLimits();
+  if (queue.length < minGroupSize) {
     await setApprovedQueue(input.community, queue);
     return {
       created: false,
-      message: `${queue.length} of ${env.minGroupSize} approved members in ${input.community}.`,
+      message: `${queue.length} of ${minGroupSize} approved members in ${input.community}.`,
     };
   }
 
-  const batch = queue.splice(0, env.maxGroupSize);
+  const batch = queue.splice(0, maxGroupSize);
   await setApprovedQueue(input.community, queue);
 
   const groupId = isDatabaseEnabled() ? groupRepository.nextGroupId() : `group-${randomUUID().slice(0, 8)}`;

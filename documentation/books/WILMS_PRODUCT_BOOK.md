@@ -15,6 +15,8 @@
 | **Primary deployment** | Vercel + Neon PostgreSQL |
 | **Auth model** | Custom HMAC-signed session cookies |
 
+v1.8.0 post-release hotfix (15 August 2026): saved group-size settings are enforced; borrower group SMS waits until registration approval; Ghana Digital Address reverse geocode; Borrower Record Centre; guarantor SMS for loan approval, completion, and repeated missed payments. See `documentation/hotfix/FINAL_HOTFIX_REPORT.md`.
+
 ---
 
 ## Table of contents

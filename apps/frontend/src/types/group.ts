@@ -68,6 +68,8 @@ export interface GroupSummary {
   officerName: string;
   formedAt: string;
   memberCount: number;
+  maxGroupSize?: number;
+  isFull?: boolean;
   activeMemberCount: number;
   disbursedPesewas: number;
   collectedPesewas: number;

@@ -436,13 +436,13 @@ borrowersRouter.patch(
 );
 
 borrowersRouter.patch(
-  '/borrowers/:id/blacklist',
+  '/borrowers/:id/escalate',
   requirePermission(PERMISSION.APPROVE_BORROWERS),
   asyncHandler(async (req, res) => {
     try {
       sendData(
         res,
-        await borrowerService.blacklistBorrower(
+        await borrowerService.escalateBorrower(
           req.params.id!,
           String(req.body?.reason ?? ''),
           req.session!.userId,
@@ -454,3 +454,4 @@ borrowersRouter.patch(
     }
   }),
 );
+

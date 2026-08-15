@@ -10,6 +10,8 @@
 
 This manual covers day-to-day operational procedures for running WILMS in production and staging environments.
 
+Related v1.8.0 hotfix runbooks: `documentation/operations/GROUP_CAPACITY_WORKFLOW.md`, `documentation/operations/BORROWER_RECORD_CENTRE.md`, `documentation/operations/LOAN_WORKFLOW_STATUS.md`.
+
 ---
 
 ## 2. Environment overview

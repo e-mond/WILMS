@@ -679,6 +679,39 @@ export async function upsertSubDistrictUnit(input: Omit<SubDistrictUnitRow, 'cre
     });
 }
 
+export async function findNearestCommunity(latitude: number, longitude: number) {
+  const db = getDb();
+  const rows = await db
+    .select({
+      communityId: communities.id,
+      communityName: communities.name,
+      communityCode: communities.code,
+      latitude: communities.latitude,
+      longitude: communities.longitude,
+      districtId: districts.id,
+      districtName: districts.name,
+      regionId: regions.id,
+      regionName: regions.name,
+      regionCode: regions.code,
+    })
+    .from(communities)
+    .innerJoin(districts, eq(communities.districtId, districts.id))
+    .innerJoin(regions, eq(districts.regionId, regions.id))
+    .where(
+      and(
+        eq(communities.isActive, true),
+        sql`${communities.latitude} is not null`,
+        sql`${communities.longitude} is not null`,
+      ),
+    )
+    .orderBy(
+      sql`((${communities.latitude} - ${latitude}) * (${communities.latitude} - ${latitude}) + (${communities.longitude} - ${longitude}) * (${communities.longitude} - ${longitude}))`,
+    )
+    .limit(1);
+
+  return rows[0] ?? null;
+}
+
 export async function upsertElectoralArea(input: Omit<ElectoralAreaRow, 'createdAt' | 'updatedAt'>) {
   const db = getDb();
   await db

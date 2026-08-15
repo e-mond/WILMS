@@ -92,5 +92,10 @@ export interface CurrentLocationResult {
   latitude: number;
   longitude: number;
   address?: string;
+  digitalAddress?: string;
+  community?: string;
+  district?: string;
+  region?: string;
   accuracyMeters?: number;
+  resolvedFrom?: 'community_code' | 'fallback';
 }

@@ -72,6 +72,14 @@ vi.mock('../../infrastructure/notifications/event-dispatch.js', () => ({
   notifyLoanApproved: vi.fn(),
   notifyLoanRejected: vi.fn(),
   notifyLoanDisbursed: vi.fn(),
+  notifyGuarantorLoanApproved: vi.fn(),
+}));
+
+vi.mock('../../modules/settings/service.js', () => ({
+  getSettings: vi.fn(async () => ({
+    maxLoanAmountPesewas: 5_000_000,
+    adminFeePesewas: 5000,
+  })),
 }));
 
 describe('createLoan pool capital validation', () => {

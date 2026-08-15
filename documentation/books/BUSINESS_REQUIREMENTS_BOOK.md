@@ -10,6 +10,8 @@
 
 WILMS manages women's interest-free group lending programmes. Requirements trace from business need through implementation status as of platform release v1.7.2.
 
+v1.8.0: group capacity, notification timing, Ghana Digital Address display, guarantor SMS, and the internal Borrower Record Centre are documented under `documentation/hotfix/` and `documentation/settings/`.
+
 ---
 
 ## 2. Borrower management
