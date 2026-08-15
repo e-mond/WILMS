@@ -2,6 +2,7 @@
 
 | Version | Date | Phase | Summary |
 |---------|------|-------|---------|
+| **1.8.1** | 2026-08-15 | Production maintenance | Settings enforcement, notification timing, borrower records, guarantor SMS, loan stepper |
 | **1.3.7-rc1** | 2026-07-12 | Stability RC | Financial dashboard KPIs, admin fee 403 fix, Remember Me, registration UX |
 | **1.3.6-rc1** | 2026-07-08 | Production stabilisation | Collector settings, health diagnostics, mock guard |
 | **1.2.3** | 2026-07-08 | Platform stabilization | Invitation lifecycle, SMS hardening, failed-message UX, createObjectURL fixes |

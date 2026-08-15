@@ -1,15 +1,15 @@
 # WILMS Technical Architecture Guide
 
-**Version:** 1.7.3  
+**Version:** 1.8.1  
 **Classification:** Confidential
 
 ---
 
 ## 1. Introduction
 
-This guide describes the technical architecture of WILMS (Women's Interest-Free Loan Management System) as deployed through release v1.7.2, with v1.7.3 documentation updates. WILMS is a TypeScript monorepo using Next.js 14, `@wilms/domain`, and Neon PostgreSQL.
+This guide describes the technical architecture of WILMS (Women's Interest-Free Loan Management System) as deployed through release v1.8.1. WILMS is a TypeScript monorepo using Next.js 14, `@wilms/domain`, and Neon PostgreSQL.
 
-v1.8.0 hotfix: operational settings are read from `system_settings` (not process env) for group size and max loan amount. Location reverse geocode uses the Ghana location master.
+v1.8.1 maintenance: operational settings are read from `system_settings` (not process env) for group size and max loan amount. Location reverse geocode uses the Ghana location master. Official GhanaPost GPS is **not** integrated.
 
 ---
 

@@ -2,6 +2,41 @@
 
 All notable changes to WILMS are documented in this file.
 
+## [1.8.1] — Production Maintenance (settings, notifications, records)
+
+**Date:** 15 August 2026  
+**Branch:** `hotfix/v1.8.0-settings-notifications-borrower-records`  
+**Release type:** Production-safe maintenance. **No GhanaPost GPS integration.** No new product modules. No schema migration.
+
+### Fixed
+
+- Settings enforcement: group min/max and max loan amount read from saved system settings
+- Group capacity validation on assign, transfer, add member, and create
+- Community Formation Queue respects configured group limits
+- Registration review location hierarchy (Region → MMDA → Sub-District → Electoral Area → Community → City)
+- Approver review location hierarchy (same cascade)
+- Borrower Record Centre (search, file, payment history, guarantors, exports, audit)
+- Collector profile live contact, activity, and portrait
+- Readable borrower/loan/collector identifiers (retained and surfaced)
+- Loan workflow stepper (registration submitted through closed)
+- Notification timing: pending group assignment does not SMS the borrower
+- Borrower rejection / blacklist / escalation SMS, staff in-app, and audit
+- Guarantor notifications (loan approved, fully repaid, more than two missed payments)
+- Export improvements (readable IDs, collector names, branded filenames)
+- GPS placeholder groundwork (reverse geocode + digital-address fallback **without** GhanaPost)
+
+### Validation
+
+- `npm run type-check`
+- `npm run lint`
+- Frontend tests
+- Domain tests
+- `npm run build`
+
+Evidence: `documentation/hotfix/FINAL_HOTFIX_REPORT.md`, `documentation/release/WILMS_v1.8.1_PRODUCTION_MAINTENANCE_REPORT.md`.
+
+---
+
 ## [1.8.0] — Enterprise Design, Automation & Platform Readiness
 
 **Date:** August 2026  
@@ -16,19 +51,6 @@ All notable changes to WILMS are documented in this file.
 **Ghana location master:** August 2026 (`feature/v1.8.0-location-master`) — same release identity; **no new product tag / no v1.8.1**
 **Borrower communication correction:** August 2026 (`feature/v1.8.0-borrower-communication-correction`) — same release identity; SMS lifecycle aligned to the real workflow (admin fee after loan approval)
 **Post-release dashboard & collector data hotfix:** 13 August 2026 (`fix/v1.8.0-post-release-dashboard-and-collector-data`, PR #204, merge `c93cc75`) — same release identity; **no version bump / no migration**
-
-**Post-release settings / notifications / records hotfix:** 15 August 2026 (`hotfix/v1.8.0-settings-notifications-borrower-records`) — same release identity; **no version bump / no migration**
-
-### Settings, notifications, records & GPS hotfix (15 August 2026)
-
-- Group min/max size and community formation queue use saved system settings, not environment defaults
-- Approver review blocks full groups, offers Create New Group, and does not SMS borrowers until registration approval
-- Registration rejected / blacklisted / escalated SMS plus staff in-app notices
-- Use Current GPS resolves a Ghana Digital Address; coordinates retained
-- Borrower Record Centre for Super Admin, Officer, Approver, Auditor
-- Guarantor SMS on loan approved, fully repaid, and more than two missed periods
-- Loan detail stepper follows the public registration → disbursement → closed sequence
-- Evidence: `documentation/hotfix/FINAL_HOTFIX_REPORT.md`
 
 ### Post-release dashboard & collector data hotfix (13 August 2026)
 

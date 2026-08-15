@@ -1,4 +1,4 @@
-# Settings enforcement report — WILMS v1.8.0 hotfix
+# Settings enforcement report — WILMS v1.8.1
 
 Administrators’ loan-roles settings are now the source of truth for group capacity and maximum loan principal.
 
