@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { ShellNavIcon } from '@/components/icons/ShellNavIcon';
 import type { ShellNavIcon as ShellNavIconName } from '@/constants/navigation';
+import { useUiStore } from '@/state/uiStore';
 import { cn } from '@/utils/cn';
 
 export type ShellNavVariant = 'default' | 'executive';
@@ -123,6 +124,7 @@ export function ShellNavLink({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentSearch = searchParams.toString();
+  const closeMobileNav = useUiStore((state) => state.closeMobileNav);
   const isActive =
     isActiveOverride ??
     isShellNavLinkActive(pathname, currentSearch, href, exact);
@@ -176,6 +178,7 @@ export function ShellNavLink({
       <Link
         prefetch
         href={href}
+        onClick={closeMobileNav}
         data-tour-nav={tourNavPath}
         aria-current={isActive ? 'page' : undefined}
         title={label}
@@ -216,6 +219,7 @@ export function ShellNavLink({
       <Link
         prefetch
         href={href}
+        onClick={closeMobileNav}
         data-tour-nav={tourNavPath}
         aria-current={isActive ? 'page' : undefined}
         className={cn(
@@ -267,6 +271,7 @@ export function ShellNavLink({
     <Link
       prefetch
       href={href}
+      onClick={closeMobileNav}
       data-tour-nav={tourNavPath}
       aria-current={isActive ? 'page' : undefined}
       // In collapsed state the label is visually hidden; put it in aria-label

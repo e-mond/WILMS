@@ -31,7 +31,7 @@ import {
 import { createInAppNotification } from './in-app-notify.js';
 import { dispatchMail } from '../mail/dispatch.js';
 import { getSmsProvider } from '../sms/index.js';
-import { normalizeGhanaPhone } from '../sms/normalize-phone.js';
+import { isValidGhanaMobile, normalizeGhanaPhone } from '../sms/normalize-phone.js';
 import { logMessageDelivery } from './delivery-log.js';
 
 export const DEDUPE = {
@@ -44,11 +44,68 @@ export const DEDUPE = {
   scheduleChanged: (loanId: string, version: string) => `schedule-changed:${loanId}:${version}`,
 } as const;
 
-function addDays(isoDate: string, days: number): string {
-  const [year, month, day] = isoDate.split('-').map(Number);
+const GHANA_TIME_ZONE = 'Africa/Accra';
+
+/** Calendar date YYYY-MM-DD in Ghana time (UTC+0). */
+export function calendarDateInTimeZone(
+  now = new Date(),
+  timeZone = GHANA_TIME_ZONE,
+): string {
+  try {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(now);
+    const year = parts.find((part) => part.type === 'year')?.value;
+    const month = parts.find((part) => part.type === 'month')?.value;
+    const day = parts.find((part) => part.type === 'day')?.value;
+    if (year && month && day) {
+      return `${year}-${month}-${day}`;
+    }
+  } catch {
+    // fall through to UTC
+  }
+  return now.toISOString().slice(0, 10);
+}
+
+/** Normalise schedule / API dates such as `2026-08-18T00:00:00.000Z` to YYYY-MM-DD. */
+export function toIsoDate(value: string | Date): string {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return calendarDateInTimeZone(value);
+  }
+  const match = String(value).trim().match(/^(\d{4}-\d{2}-\d{2})/);
+  return match?.[1] ?? '';
+}
+
+export function addDays(isoDate: string, days: number): string {
+  const normalised = toIsoDate(isoDate);
+  const [year, month, day] = normalised.split('-').map(Number);
   const date = new Date(Date.UTC(year, month - 1, day));
   date.setUTCDate(date.getUTCDate() + days);
   return date.toISOString().slice(0, 10);
+}
+
+/** Invalid, missing, or non-positive lead times fall back to 1 day (T-1). */
+export function reminderLeadDays(value: unknown): number {
+  const parsed = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(parsed) || parsed < 1) {
+    return 1;
+  }
+  return Math.min(14, Math.trunc(parsed));
+}
+
+/** Earliest PENDING week by calendar due date — the next payable instalment. */
+export function selectNextPendingWeek<T extends { status: string; dueDate: string | Date }>(
+  weeks: T[],
+): T | undefined {
+  const pending = weeks
+    .filter((week) => week.status === 'PENDING')
+    .map((week) => ({ week, due: toIsoDate(week.dueDate) }))
+    .filter((entry) => entry.due.length === 10)
+    .sort((a, b) => a.due.localeCompare(b.due));
+  return pending[0]?.week;
 }
 
 export async function resolveCollectorUserIdForBorrower(
@@ -106,7 +163,8 @@ async function resolveBorrowerCollectionContext(borrowerId: string): Promise<{
 }
 
 function weekdayLabel(isoDate: string): string {
-  const [year, month, day] = isoDate.split('-').map(Number);
+  const normalised = toIsoDate(isoDate);
+  const [year, month, day] = normalised.split('-').map(Number);
   const date = new Date(Date.UTC(year!, month! - 1, day!));
   return date.toLocaleDateString('en-GB', { weekday: 'long', timeZone: 'UTC' });
 }
@@ -339,23 +397,25 @@ export async function emitPaymentDueSoonNotification(input: {
   amountPesewas: number;
   dueDate: string;
   correlationId?: string;
-}): Promise<void> {
-  const dedupeKey = DEDUPE.paymentDueSoon(input.loanId, input.dueDate);
+}): Promise<boolean> {
+  const dueDate = toIsoDate(input.dueDate);
+  const dedupeKey = DEDUPE.paymentDueSoon(input.loanId, dueDate);
   const settings = await getSettings();
   const context = await resolveBorrowerCollectionContext(input.borrowerId);
 
   const smsBody = buildLoanReminderSmsBody({
     borrowerName: input.borrowerName,
     weeklyAmountPesewas: input.amountPesewas,
-    paymentDate: input.dueDate,
-    paymentDay: weekdayLabel(input.dueDate),
+    paymentDate: dueDate,
+    paymentDay: weekdayLabel(dueDate),
     groupName: context.groupName,
     collectorName: context.collectorName,
     dueTomorrow: true,
   });
 
-  if (input.borrowerPhone) {
-    await dispatchBorrowerSms({
+  let smsSent = false;
+  if (input.borrowerPhone && isValidGhanaMobile(input.borrowerPhone)) {
+    smsSent = await dispatchBorrowerSms({
       dedupeKey,
       notificationType: 'PAYMENT_DUE_SOON',
       event: 'PAYMENT_REMINDER',
@@ -373,7 +433,7 @@ export async function emitPaymentDueSoonNotification(input: {
       borrowerName: input.borrowerName,
       loanDisplayId: input.loanDisplayId,
       amountPesewas: input.amountPesewas,
-      dueDate: input.dueDate,
+      dueDate,
     });
     await dispatchBorrowerEmail({
       dedupeKey,
@@ -390,6 +450,7 @@ export async function emitPaymentDueSoonNotification(input: {
   }
 
   recordNotificationMetric('payment_due_soon');
+  return smsSent;
 }
 
 /** Notify borrower on the morning of a scheduled payment due date. */
@@ -403,21 +464,23 @@ export async function emitPaymentDueTodayNotification(input: {
   amountPesewas: number;
   dueDate: string;
   correlationId?: string;
-}): Promise<void> {
-  const dedupeKey = DEDUPE.paymentDueToday(input.loanId, input.dueDate);
+}): Promise<boolean> {
+  const dueDate = toIsoDate(input.dueDate);
+  const dedupeKey = DEDUPE.paymentDueToday(input.loanId, dueDate);
   const settings = await getSettings();
   const context = await resolveBorrowerCollectionContext(input.borrowerId);
 
   const smsBody = buildLoanReminderSmsBody({
     borrowerName: input.borrowerName,
     weeklyAmountPesewas: input.amountPesewas,
-    paymentDate: input.dueDate,
+    paymentDate: dueDate,
     collectorName: context.collectorName,
     dueTomorrow: false,
   });
 
-  if (input.borrowerPhone) {
-    await dispatchBorrowerSms({
+  let smsSent = false;
+  if (input.borrowerPhone && isValidGhanaMobile(input.borrowerPhone)) {
+    smsSent = await dispatchBorrowerSms({
       dedupeKey,
       notificationType: 'PAYMENT_DUE_TODAY',
       event: 'PAYMENT_REMINDER',
@@ -433,6 +496,7 @@ export async function emitPaymentDueTodayNotification(input: {
   // Channel matrix: due-today is SMS / in-app / push only (no email).
 
   recordNotificationMetric('payment_due_today');
+  return smsSent;
 }
 
 /** Escalating overdue / grace reminders (schedule-aware ladder). */
@@ -734,9 +798,6 @@ export async function emitAdminMissedPaymentSummary(input: {
   }
 }
 
-export { addDays };
-
-/** Resolve the next pending schedule due date for a loan, if any. */
 export async function resolveNextDueDate(loanId: string): Promise<string | undefined> {
   const weeks = await scheduleRepo.listScheduleWeeks(loanId);
   const next = weeks.find((week) => week.status === 'PENDING' || week.status === 'MISSED');

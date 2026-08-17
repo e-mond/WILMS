@@ -12,13 +12,17 @@ import { decimalToPesewas } from '../../domain/money.js';
 import { logger } from '../../infrastructure/logging/logger.js';
 import {
   addDays,
+  calendarDateInTimeZone,
   emitAdminMissedPaymentSummary,
   emitPaymentDueSoonNotification,
   emitPaymentDueTodayNotification,
   emitPaymentMissedNotification,
   emitPaymentOverdueLadderNotification,
   loanInstallmentPesewas,
+  reminderLeadDays,
   resolveCollectorUserIdForBorrower,
+  selectNextPendingWeek,
+  toIsoDate,
 } from '../../infrastructure/notifications/payment-notifications.js';
 import { notifyGuarantorMissedPayments } from '../../infrastructure/notifications/event-dispatch.js';
 import {
@@ -47,7 +51,7 @@ export interface PaymentSchedulerResult {
 }
 
 function todayIso(): string {
-  return new Date().toISOString().slice(0, 10);
+  return calendarDateInTimeZone();
 }
 
 export async function processPaymentNotificationJobs(
@@ -97,8 +101,8 @@ export async function processPaymentNotificationJobs(
 
   try {
     const settings = await getSettings();
-    const reminderLeadDays = settings.paymentReminderDaysBefore ?? 1;
-    const reminderDueDate = addDays(ref, reminderLeadDays);
+    const leadDays = reminderLeadDays(settings.paymentReminderDaysBefore);
+    const reminderDueDate = addDays(ref, leadDays);
 
     const activeLoans = await loanRepo.listLoans({ externalStatus: 'ACTIVE' });
     result.activeLoansScanned = activeLoans.length;
@@ -128,39 +132,39 @@ export async function processPaymentNotificationJobs(
         const collectorUserId = await resolveCollectorUserIdForBorrower(loanRow.borrowerId);
 
         const scheduleWeeks = await scheduleRepo.listScheduleWeeks(loanRow.id);
+        const nextPending = selectNextPendingWeek(scheduleWeeks);
+        const nextDue = nextPending ? toIsoDate(nextPending.dueDate) : '';
 
-        for (const week of scheduleWeeks) {
-          // Only PENDING obligations qualify for due-soon reminders.
-          if (week.status !== 'PENDING') {
-            continue;
-          }
-          if (week.dueDate === reminderDueDate) {
-            await emitPaymentDueSoonNotification({
-              borrowerId: borrower.id,
-              borrowerName: borrower.fullName,
-              borrowerPhone: borrower.phone,
-              borrowerEmail: borrower.profile?.email,
-              loanId: loanRow.id,
-              loanDisplayId,
-              amountPesewas: weeklyPesewas,
-              dueDate: week.dueDate,
-              correlationId,
-            });
+        if (nextPending && nextDue === reminderDueDate) {
+          const sent = await emitPaymentDueSoonNotification({
+            borrowerId: borrower.id,
+            borrowerName: borrower.fullName,
+            borrowerPhone: borrower.phone,
+            borrowerEmail: borrower.profile?.email,
+            loanId: loanRow.id,
+            loanDisplayId,
+            amountPesewas: weeklyPesewas,
+            dueDate: nextDue,
+            correlationId,
+          });
+          if (sent) {
             result.remindersSent += 1;
           }
+        }
 
-          if (week.dueDate === ref) {
-            await emitPaymentDueTodayNotification({
-              borrowerId: borrower.id,
-              borrowerName: borrower.fullName,
-              borrowerPhone: borrower.phone,
-              borrowerEmail: borrower.profile?.email,
-              loanId: loanRow.id,
-              loanDisplayId,
-              amountPesewas: weeklyPesewas,
-              dueDate: week.dueDate,
-              correlationId,
-            });
+        if (nextPending && nextDue === ref) {
+          const sent = await emitPaymentDueTodayNotification({
+            borrowerId: borrower.id,
+            borrowerName: borrower.fullName,
+            borrowerPhone: borrower.phone,
+            borrowerEmail: borrower.profile?.email,
+            loanId: loanRow.id,
+            loanDisplayId,
+            amountPesewas: weeklyPesewas,
+            dueDate: nextDue,
+            correlationId,
+          });
+          if (sent) {
             result.dueTodaySent += 1;
           }
         }
@@ -192,7 +196,9 @@ export async function processPaymentNotificationJobs(
         }
 
         const missedWeekCount = scheduleWeeks.filter(
-          (week) => week.status === 'MISSED' || (week.status === 'PENDING' && week.dueDate < ref),
+          (week) =>
+            week.status === 'MISSED' ||
+            (week.status === 'PENDING' && toIsoDate(week.dueDate) < ref),
         ).length;
         if (missedWeekCount > 2) {
           await notifyGuarantorMissedPayments({
@@ -204,11 +210,12 @@ export async function processPaymentNotificationJobs(
         }
 
         for (const week of scheduleWeeks) {
-          if (week.status !== 'MISSED' && !(week.status === 'PENDING' && week.dueDate < ref)) {
+          if (week.status !== 'MISSED' && !(week.status === 'PENDING' && toIsoDate(week.dueDate) < ref)) {
             continue;
           }
           const daysPast = Math.floor(
-            (Date.parse(`${ref}T00:00:00Z`) - Date.parse(`${week.dueDate}T00:00:00Z`)) / 86400000,
+            (Date.parse(`${ref}T00:00:00Z`) - Date.parse(`${toIsoDate(week.dueDate)}T00:00:00Z`)) /
+              86400000,
           );
           if (
             daysPast === 1 ||

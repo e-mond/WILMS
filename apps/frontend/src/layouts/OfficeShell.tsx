@@ -46,6 +46,7 @@ export function OfficeShell({
   const badgedNavItems = useNavItemsWithBadges(filteredNavItems);
   const isExecutive = sidebarVariant === 'executive';
   const resolvedBrandTitle = brandTitle ?? 'WILMS';
+  const drawerEnabled = enableMobileNavDrawer ?? !operationalMobileNav;
 
   return (
     <DashboardShell
@@ -59,14 +60,18 @@ export function OfficeShell({
       versionLabel={versionLabel}
       brandTitle={brandTitle}
       showAppAside={showAppAside}
-      enableMobileNavDrawer={enableMobileNavDrawer ?? !operationalMobileNav}
+      enableMobileNavDrawer={drawerEnabled}
       mobileHeader={
         operationalMobileNav ? (
-          <OperationalMobileHeader brandTitle={resolvedBrandTitle} isExecutive={isExecutive} />
+          <OperationalMobileHeader
+            brandTitle={resolvedBrandTitle}
+            isExecutive={isExecutive}
+            showNavTrigger={drawerEnabled}
+          />
         ) : undefined
       }
       bottomNavigation={
-        operationalMobileNav ? (
+        operationalMobileNav && !drawerEnabled ? (
           <OperationalBottomNavigation
             navItems={badgedNavItems}
             ariaLabel={`${navAriaLabel} bottom navigation`}
