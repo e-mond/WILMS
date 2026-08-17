@@ -230,7 +230,7 @@ export function Drawer({
           </div>
         ) : null}
 
-        <div className={cn('flex-1 overflow-y-auto', hideHeader ? 'p-0' : 'p-6')}>{children}</div>
+        <div className={cn('min-h-0 flex-1 overflow-y-auto', hideHeader ? 'p-0' : 'p-6')} data-mobile-nav-scroll="true">{children}</div>
       </div>
     </div>,
     document.body,

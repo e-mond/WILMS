@@ -8,10 +8,21 @@ import { cn } from '@/utils/cn';
 export interface OperationalMobileHeaderProps {
   brandTitle: string;
   isExecutive?: boolean;
+  showNavTrigger?: boolean;
 }
 
-export function OperationalMobileHeader({ brandTitle, isExecutive = true }: OperationalMobileHeaderProps) {
-  return <OfficeShellMobileBar brandTitle={brandTitle} isExecutive={isExecutive} />;
+export function OperationalMobileHeader({
+  brandTitle,
+  isExecutive = true,
+  showNavTrigger = false,
+}: OperationalMobileHeaderProps) {
+  return (
+    <OfficeShellMobileBar
+      brandTitle={brandTitle}
+      isExecutive={isExecutive}
+      showNavTrigger={showNavTrigger}
+    />
+  );
 }
 
 export interface OperationalBottomNavigationProps {

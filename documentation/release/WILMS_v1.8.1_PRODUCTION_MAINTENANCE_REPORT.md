@@ -97,6 +97,29 @@ Implemented and covered by unit tests. Live SMS / assignment / records UI on pro
 - GPS placeholder reverse geocode **without** GhanaPost
 - Missing `PATCH /borrowers/:id/blacklist` route (CI + production parity)
 
+## Follow-up maintenance (T-1 SMS + Super Admin mobile navigation)
+
+**Branch:** `fix/v1.8.1-t1-payment-reminder`  
+**Product version:** remains **1.8.1** (no bump)
+
+### T-1 borrower payment reminder
+
+**Root cause:** T-1 matching used strict string equality on `dueDate`, so timestamp-shaped values such as `2026-08-18T00:00:00.000Z` never matched tomorrow’s calendar date. Invalid lead-time `0` was treated as “due today”. Failed SMS deliveries could not be retried because the unique delivery row remained. Super Admin mobile navigation dumped the full authorised list into a compact bottom pill bar with the drawer disabled, so items were clipped/unreachable.
+
+Production env names: `CRON_SECRET` is present; `WILMS_SCHEDULER_TOKEN` is not. Unauthenticated cron requests return 401. Vercel Cron execution logs were not available in this session and must be confirmed after deploy.
+
+**Fix:** Configure Production `CRON_SECRET` (Vercel-supported bearer). Keep `WILMS_SCHEDULER_TOKEN` for manual runs. Normalise due dates to Africa/Accra calendar dates. Match T-1 against the next PENDING week only. Retry `FAILED` SMS deliveries; keep successful sends idempotent.
+
+**Security:** `x-vercel-cron` is not accepted as authentication (spoofable). Secrets are not logged or committed.
+
+### Super Admin mobile navigation
+
+**Root cause:** Super Admin used operational bottom-pill navigation with the full `SUPER_ADMIN_NAV` list and `enableMobileNavDrawer={false}`. On narrow viewports the pills overflowed/clipped, so authorised destinations were unreachable. This was a layout completeness bug, not RBAC.
+
+**Fix:** Super Admin keeps the operational header and gains the existing scrollable mobile drawer (hamburger + `AppSidebar`), sourced from the same filtered `SUPER_ADMIN_NAV`. Other roles keep their shorter bottom navigation. Permissions are unchanged.
+
+Details: `documentation/notifications/SCHEDULER_NOTIFICATION_TIMING.md`.
+
 ## Remaining deferred items
 
 - Official GhanaPost GPS API (planning: `documentation/location/GHANAPOST_GPS_INTEGRATION_PLAN.md`)

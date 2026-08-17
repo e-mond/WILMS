@@ -1,42 +1,27 @@
 import { NextResponse } from 'next/server';
-import { timingSafeEqual } from 'node:crypto';
+import { inspectCronAuthorization } from '@/lib/cron/authorize-cron';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 
-function tokenOk(provided: string | null, expected: string | undefined): boolean {
-  if (!provided || !expected) return false;
-  const a = Buffer.from(provided);
-  const b = Buffer.from(expected);
-  if (a.length !== b.length) return false;
-  return timingSafeEqual(a, b);
-}
-
-function authorize(request: Request): boolean {
-  const header = request.headers.get('authorization');
-  const bearer = header?.toLowerCase().startsWith('bearer ')
-    ? header.slice(7).trim()
-    : null;
-  const alt = request.headers.get('x-wilms-scheduler-token')?.trim() ?? null;
-  const schedulerToken = process.env.WILMS_SCHEDULER_TOKEN?.trim();
-  const cronSecret = process.env.CRON_SECRET?.trim();
-
-  if (tokenOk(bearer, schedulerToken) || tokenOk(alt, schedulerToken)) {
-    return true;
-  }
-  if (tokenOk(bearer, cronSecret)) {
-    return true;
-  }
-  return false;
-}
-
 /**
  * Vercel Cron entry (GET). Runs payment notification jobs then communications dispatch.
- * Auth: Authorization Bearer WILMS_SCHEDULER_TOKEN or CRON_SECRET.
+ *
+ * Auth: `Authorization: Bearer $CRON_SECRET` (Vercel Cron) or
+ * `WILMS_SCHEDULER_TOKEN` (manual / non-Vercel). The `x-vercel-cron` header is
+ * not accepted as authentication.
  */
 export async function GET(request: Request): Promise<Response> {
-  if (!authorize(request)) {
+  const auth = inspectCronAuthorization(request);
+
+  if (!auth.allowed) {
+    console.warn('[cron/notifications] unauthorized', {
+      reason: auth.reason,
+      cronSecretConfigured: auth.cronSecretConfigured,
+      schedulerTokenConfigured: auth.schedulerTokenConfigured,
+      vercelCronHeader: request.headers.get('x-vercel-cron') === '1',
+    });
     return NextResponse.json(
       { error: { message: 'Unauthorized.', code: 'UNAUTHORIZED' } },
       { status: 401 },

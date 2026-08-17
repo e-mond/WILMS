@@ -64,8 +64,10 @@ See [PERMISSIONS_AND_ROLES.md](PERMISSIONS_AND_ROLES.md).
 
 ## Scheduler / Cron authentication
 
-- `POST …/scheduler/run` routes: `WILMS_SCHEDULER_TOKEN` via `Authorization: Bearer` or `x-wilms-scheduler-token`
-- `GET /api/cron/notifications`: `WILMS_SCHEDULER_TOKEN` or `CRON_SECRET` bearer
+- `POST …/scheduler/run` routes: `WILMS_SCHEDULER_TOKEN` via `Authorization: Bearer` or `x-wilms-scheduler-token`, otherwise session + `MANAGE_COMMUNICATION_SCHEDULER`
+- `GET /api/cron/notifications`: `Authorization: Bearer $CRON_SECRET` (Vercel Cron) or `WILMS_SCHEDULER_TOKEN` (manual). The `x-vercel-cron` header is not authentication.
+
+Production Vercel Cron does not send a bearer unless `CRON_SECRET` is set in the Production environment. Missing `CRON_SECRET` causes a 401 and T-1 borrower SMS does not run.
 
 No browser session is required for these endpoints.
 

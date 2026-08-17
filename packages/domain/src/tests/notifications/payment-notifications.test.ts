@@ -2,6 +2,7 @@ import { describe, expect, it, beforeEach } from 'vitest';
 import {
   resetNotificationDedupeForTests,
   tryAcquireNotificationDelivery,
+  markNotificationDeliveryStatus,
 } from '../../infrastructure/notifications/notification-dedupe.js';
 import { resetNotificationMetricsForTests } from '../../infrastructure/notifications/notification-metrics.js';
 import { DEDUPE } from '../../infrastructure/notifications/payment-notifications.js';
@@ -29,6 +30,31 @@ describe('notification dedupe', () => {
 
     expect(first).toBe(true);
     expect(second).toBe(false);
+  });
+
+  it('allows a retry after a failed SMS attempt', async () => {
+    const dedupeKey = DEDUPE.paymentDueSoon('loan-retry', '2026-08-18');
+    const first = await tryAcquireNotificationDelivery({
+      dedupeKey,
+      recipient: '+233200000009',
+      channel: 'SMS',
+      notificationType: 'PAYMENT_DUE_SOON',
+    });
+    await markNotificationDeliveryStatus({
+      dedupeKey,
+      recipient: '+233200000009',
+      channel: 'SMS',
+      status: 'FAILED',
+      failureReason: 'provider timeout',
+    });
+    const retry = await tryAcquireNotificationDelivery({
+      dedupeKey,
+      recipient: '+233200000009',
+      channel: 'SMS',
+      notificationType: 'PAYMENT_DUE_SOON',
+    });
+    expect(first).toBe(true);
+    expect(retry).toBe(true);
   });
 
   it('allows same dedupe key for different channels', async () => {
@@ -80,6 +106,12 @@ describe('payment notification templates', () => {
     });
     expect(body).toContain('due tomorrow');
     expect(body).toContain('GHS 50.00');
+    expect(body).toContain('Ama');
+    expect(body).toContain('Saturday');
+    expect(body).toContain('2026-05-16');
+    expect(body).toContain('Circle A');
+    expect(body).toContain('Kofi');
+    expect(body).toMatch(/^WILMS:/);
   });
 
   it('builds professional missed-payment message with due date', () => {
