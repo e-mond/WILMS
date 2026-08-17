@@ -36,7 +36,7 @@ UI ops surface: `/ops` in the Super Admin portal when enabled for the role.
 | Token POST (manual/tools) | `/api/wilms/notifications/scheduler/run` | on demand |
 | Token POST | `/api/wilms/communications/scheduler/run` | on demand |
 
-Auth: `WILMS_SCHEDULER_TOKEN` or `CRON_SECRET` (Cron route). Jobs run payment notification processing then communications dispatch. Deduplication and audit behavior live in domain notification/communications services.
+Auth: Vercel Cron requires Production `CRON_SECRET` (`Authorization: Bearer`). Manual runs use `WILMS_SCHEDULER_TOKEN`. The `x-vercel-cron` header is not authentication. Jobs run payment notification processing then communications dispatch. Deduplication and audit behavior live in domain notification/communications services. Ghana timezone is Africa/Accra (UTC+0), so `0 6 * * *` UTC is 06:00 Ghana time.
 
 GitHub Actions workflow `notification-scheduler.yml` is retained for manual `workflow_dispatch` / rollback only; the schedule trigger is disabled.
 

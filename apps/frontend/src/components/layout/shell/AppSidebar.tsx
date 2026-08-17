@@ -95,7 +95,7 @@ export function AppSidebar({
         )}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-auto px-2 py-3">
+      <div className="min-h-0 flex-1 overflow-auto px-2 py-3" data-nav-scroll="true">
         <ShellNavigation
           items={navItems}
           ariaLabel={navAriaLabel}

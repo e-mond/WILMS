@@ -147,7 +147,7 @@ export function DashboardShell({
             sidebarVariant={isExecutive ? 'executive' : 'standard'}
             hideHeader={isExecutive}
           >
-            <div className="flex h-full flex-col" data-mobile-nav-drawer="true">
+            <div className="flex h-full min-h-0 flex-col" data-mobile-nav-drawer="true">
               {mobileSidebarContent}
             </div>
           </Drawer>
@@ -163,7 +163,7 @@ export function DashboardShell({
             />
           ) : null}
 
-          {showMobileDrawer ? <MobileSidebarTrigger /> : null}
+          {showMobileDrawer && !mobileHeader ? <MobileSidebarTrigger /> : null}
           {mobileHeader}
 
           {isOffice && !mobileHeader ? (

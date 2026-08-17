@@ -16,6 +16,7 @@ export function SuperAdminShell({ children }: SuperAdminShellProps) {
       navItems={SUPER_ADMIN_NAV}
       navAriaLabel="Super Admin"
       operationalMobileNav
+      enableMobileNavDrawer
       brandTitle="WILMS Admin"
       mobileNavDrawerTitle="Super Admin navigation"
       sidebarVariant="executive"

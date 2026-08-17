@@ -5,7 +5,7 @@
  * (dedupeKey, recipient, channel) constraint in PostgreSQL, or an in-memory
  * set when DATABASE_URL is not configured.
  */
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
 import { getDb, isDatabaseEnabled } from '../../db/client.js';
 import { notificationDeliveryRecords } from '../../db/schema/notification-deliveries.js';
@@ -73,6 +73,30 @@ export async function tryAcquireNotificationDelivery(input: {
     return true;
   } catch (error) {
     if (isUniqueViolation(error)) {
+      const reclaimed = await db
+        .update(notificationDeliveryRecords)
+        .set({
+          status: 'PENDING',
+          failureReason: null,
+          failedAt: null,
+          retryCount: sql`${notificationDeliveryRecords.retryCount} + 1`,
+          correlationId: input.correlationId ?? null,
+        })
+        .where(
+          and(
+            eq(notificationDeliveryRecords.dedupeKey, input.dedupeKey),
+            eq(notificationDeliveryRecords.recipient, input.recipient),
+            eq(notificationDeliveryRecords.channel, input.channel),
+            eq(notificationDeliveryRecords.status, 'FAILED'),
+          ),
+        )
+        .returning({ id: notificationDeliveryRecords.id });
+
+      if (reclaimed.length > 0) {
+        recordNotificationMetric('created');
+        return true;
+      }
+
       recordNotificationMetric('duplicate_prevented');
       return false;
     }
@@ -89,6 +113,9 @@ export async function markNotificationDeliveryStatus(input: {
   delivered?: boolean;
 }): Promise<void> {
   if (!isDatabaseEnabled()) {
+    if (input.status === 'FAILED') {
+      memoryDedupe.delete(memoryKey(input.dedupeKey, input.recipient, input.channel));
+    }
     if (input.status === 'SENT' || input.status === 'DELIVERED') {
       recordNotificationMetric('sent');
     }

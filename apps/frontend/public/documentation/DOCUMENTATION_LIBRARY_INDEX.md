@@ -2,7 +2,7 @@
 
 **Version:** 1.8.1  
 **Release type:** Documentation Centre (in-app) + official library  
-**Last updated:** August 2026  
+**Last updated:** 17 August 2026  
 **Classification:** Confidential — authorised personnel only
 
 ---
