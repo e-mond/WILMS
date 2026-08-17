@@ -36,8 +36,8 @@ Never commit real secrets. Use Vercel Preview/Production env settings for deploy
 | `DATABASE_URL` | Yes | Neon Postgres URL — use **pooled** endpoint on Vercel | Secret |
 | `WILMS_SESSION_SECRET` | Yes | HMAC key for session tokens | Secret; rotate carefully |
 | `REDIS_URL` or `WILMS_REDIS_URL` | Yes (serverless prod) | Shared rate-limit store | Secret |
-| `WILMS_SCHEDULER_TOKEN` | Yes for Cron/API schedulers | Bearer for scheduler routes | Secret |
-| `CRON_SECRET` | Recommended on Vercel | Bearer accepted by `/api/cron/notifications` | Secret |
+| `WILMS_SCHEDULER_TOKEN` | Yes for manual/API schedulers | Bearer for `POST /notifications/scheduler/run` | Secret |
+| `CRON_SECRET` | **Required on Vercel Production** | Bearer Vercel Cron sends to `GET /api/cron/notifications` | Secret |
 | `WILMS_METRICS_TOKEN` | Optional | Bearer for Prometheus scrape of metrics | Secret |
 | `WILMS_CORS_ORIGIN` | Required for standalone Node process; not required for pure serverless same-origin | CORS allowlist | — |
 | `WILMS_APP_URL` | Optional | Canonical app URL for links | — |

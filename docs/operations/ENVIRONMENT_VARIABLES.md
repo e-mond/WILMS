@@ -14,7 +14,8 @@ This table documents production-relevant environment variables. Never commit sec
 | `REDIS_URL` | Recommended (multi-instance) | API | Yes | BullMQ + distributed rate limits | Valid Redis URL | Falls back to in-process queue |
 | `WILMS_TRUST_PROXY` | Production (behind proxy) | API | No | Express trust proxy | `true`/`false` | Incorrect client IP in logs |
 | `WILMS_METRICS_TOKEN` | Production | API | Yes | Protect `/ops/metrics` | Random string | Metrics endpoint 401 |
-| `WILMS_SCHEDULER_TOKEN` | Recommended (cron) | API | Yes | Authenticate HTTP cron for notification/comms schedulers | ≥ 32 random chars | Cron falls back to session+RBAC only |
+| `WILMS_SCHEDULER_TOKEN` | Recommended (manual scheduler) | API | Yes | Authenticate `POST /notifications/scheduler/run` | ≥ 32 random chars | Manual scheduler requires session+RBAC |
+| `CRON_SECRET` | Required (Vercel Production Cron) | Frontend/API | Yes | Bearer Vercel Cron sends to `GET /api/cron/notifications` | ≥ 32 random chars | Cron returns 401; T-1 SMS does not run |
 | `CLOUDINARY_URL` | If uploads used | API | Yes | File storage | Cloudinary URL format | Upload routes 404 |
 | `SMTP_*` / mail provider | If email enabled | API/FE | Yes | Outbound mail | Provider-specific | Mail queued/fails logged |
 | `SMS_*` | If SMS enabled | API | Yes | Outbound SMS | Provider-specific | SMS fails logged |
