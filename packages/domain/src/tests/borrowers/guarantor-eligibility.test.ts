@@ -201,4 +201,46 @@ describe('guarantor eligibility', () => {
     expect(result.isEligible).toBe(true);
     expect(result.activeGuaranteeCount).toBe(0);
   });
+
+  it('blocks a group leader at five active guarantees', () => {
+    const borrowers = Array.from({ length: 5 }, (_, index) =>
+      linkedBorrower(`b${index}`, `024000000${index + 1}`, BORROWER_STATUS.APPROVED),
+    );
+
+    const result = evaluateGuarantorEligibility(
+      {
+        guarantorPhone: '0240000002',
+        guarantorName: 'Kofi Boateng',
+        borrowerPhone: '0240000199',
+        isGroupLeader: true,
+      },
+      borrowers,
+    );
+
+    expect(result.isEligible).toBe(false);
+    expect(result.activeGuaranteeCount).toBe(5);
+    expect(result.maxGuarantees).toBe(5);
+    expect(result.validationStatus).toBe('AT_LIMIT');
+  });
+
+  it('allows a group leader with four active guarantees', () => {
+    const borrowers = Array.from({ length: 4 }, (_, index) =>
+      linkedBorrower(`b${index}`, `024000000${index + 1}`, BORROWER_STATUS.APPROVED),
+    );
+
+    const result = evaluateGuarantorEligibility(
+      {
+        guarantorPhone: '0240000002',
+        guarantorName: 'Kofi Boateng',
+        borrowerPhone: '0240000199',
+        isGroupLeader: true,
+      },
+      borrowers,
+    );
+
+    expect(result.isEligible).toBe(true);
+    expect(result.activeGuaranteeCount).toBe(4);
+    expect(result.maxGuarantees).toBe(5);
+    expect(result.validationStatus).toBe('EXEMPT');
+  });
 });
