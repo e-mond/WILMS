@@ -300,7 +300,7 @@ export function SecuritySectionView({ settings }: { settings: SystemSettings }) 
     >
       <SettingsSettingRow
         title="Two-Factor Authentication"
-        description="Require 2FA for all Super Admin accounts."
+        description="Require two-factor authentication for all user accounts at login."
         control={
           <Switch
             checked={twoFactorRequired}
@@ -654,12 +654,12 @@ export function SmsSectionView({ settings }: { settings: SystemSettings }) {
         }
       />
       <SettingsSettingRow
-        title="Payment Confirmation SMS"
-        description="Send receipt to borrower on payment."
+        title="SMS notifications (global)"
+        description="Master switch for all outbound SMS, including payment receipts, reminders, and lifecycle alerts."
         control={
           <Switch
             checked={smsNotificationsEnabled}
-            label="Payment confirmation SMS"
+            label="SMS notifications enabled"
             onChange={setSmsNotificationsEnabled}
           />
         }

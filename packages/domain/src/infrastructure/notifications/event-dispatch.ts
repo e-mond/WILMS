@@ -57,6 +57,10 @@ import {
   buildGuarantorMissedPaymentsSmsBody,
 } from './templates.js';
 import { logMessageDelivery } from './delivery-log.js';
+import {
+  markNotificationDeliveryStatus,
+  tryAcquireNotificationDelivery,
+} from './notification-dedupe.js';
 import { normalizeGhanaPhone } from '../sms/normalize-phone.js';
 
 const MAX_RETRIES = 2;
@@ -914,7 +918,17 @@ export async function notifyGuarantorMissedPayments(input: {
 }): Promise<void> {
   if (!input.guarantorPhone?.trim()) return;
   const settings = await getSettings();
-  await dispatchSms({
+  const dedupeKey = `guarantor-missed:${input.borrowerId}`;
+  const acquired = await tryAcquireNotificationDelivery({
+    dedupeKey,
+    recipient: input.guarantorPhone,
+    channel: 'SMS',
+    notificationType: 'GUARANTOR_MISSED_PAYMENTS',
+    borrowerId: input.borrowerId,
+  });
+  if (!acquired) return;
+
+  const result = await dispatchSms({
     event: 'GUARANTOR_ALERT',
     to: input.guarantorPhone,
     body: buildGuarantorMissedPaymentsSmsBody({
@@ -923,6 +937,14 @@ export async function notifyGuarantorMissedPayments(input: {
     }),
     enabled: settings.smsNotificationsEnabled,
     borrowerId: input.borrowerId,
+  });
+
+  await markNotificationDeliveryStatus({
+    dedupeKey,
+    recipient: input.guarantorPhone,
+    channel: 'SMS',
+    status: result.success ? 'SENT' : 'FAILED',
+    failureReason: result.failureReason,
   });
 }
 
