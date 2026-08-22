@@ -25,6 +25,28 @@ export function isUndefinedTableError(error: unknown): boolean {
   );
 }
 
+export function isUndefinedColumnError(error: unknown, column?: string): boolean {
+  if (
+    typeof error !== 'object' ||
+    error === null ||
+    !('code' in error) ||
+    (error as { code?: string }).code !== '42703'
+  ) {
+    return false;
+  }
+
+  if (!column) {
+    return true;
+  }
+
+  const message =
+    typeof error === 'object' && error !== null && 'message' in error
+      ? String((error as { message?: string }).message ?? '')
+      : '';
+
+  return message.includes(column);
+}
+
 export function mapDatabaseError(error: unknown): Error | null {
   if (isUniqueViolation(error)) {
     const detail =

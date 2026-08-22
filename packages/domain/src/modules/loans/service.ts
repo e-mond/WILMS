@@ -756,6 +756,10 @@ export async function listLoanPaymentLog(loanId: string) {
     );
   };
 
+  const weekByPaymentId = new Map(
+    paymentRows.map((row) => [row.id, row.scheduleWeekNumber ?? undefined] as const),
+  );
+
   const gpsByPaymentId = new Map(
     paymentRows.map((row) => {
       const gps = (row.gps ?? {}) as {
@@ -813,7 +817,9 @@ export async function listLoanPaymentLog(loanId: string) {
       recordedAt: payment.recordedAt.toISOString(),
       collectorId: actorId,
       collectorLabel: resolveCollectorLabel(actorId),
-      weekNumber: (payment.metadata as { weekNumber?: number } | null)?.weekNumber,
+      weekNumber:
+        weekByPaymentId.get(paymentId) ??
+        (payment.metadata as { weekNumber?: number } | null)?.weekNumber,
       paymentStatus: 'CONFIRMED' as const,
       gpsVerified: gps?.verified ?? false,
       gpsSummary: gps?.summary ?? 'Not captured',
@@ -870,8 +876,8 @@ export async function listPortfolioEntries() {
 export async function listBorrowerLoans(borrowerId: string) {
   requireDatabase();
   const rows = await loanRepo.listBorrowerLoans(borrowerId);
-  return rows.map((row) => {
-    const detail = mapLoanRowToDetail(row);
+  return rows.map((row, index) => {
+    const detail = mapLoanRowToDetail(row, index + 1);
     return {
       id: detail.id,
       displayId: detail.displayId,
