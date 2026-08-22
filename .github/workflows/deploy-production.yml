@@ -16,7 +16,7 @@ jobs:
   deploy-production:
     if: inputs.confirm == 'deploy'
     runs-on: ubuntu-latest
-    environment: production
+    environment: Production
     steps:
       - uses: actions/checkout@v4
 
@@ -33,9 +33,10 @@ jobs:
           echo "Baseline reachable (migrate step will bring schema current)"
 
       - name: Run database migrations
-        run: npm run db:migrate -w @wilms/domain
+        run: node scripts/run-ci-migrations.mjs
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
 
       - name: Deploy to Vercel production
         uses: amondnet/vercel-action@v25

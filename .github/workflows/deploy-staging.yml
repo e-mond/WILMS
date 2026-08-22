@@ -31,9 +31,10 @@ jobs:
         run: npm ci
 
       - name: Run staging database migrations
-        run: npm run db:migrate -w @wilms/domain
+        run: node scripts/run-ci-migrations.mjs
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
 
       - name: Deploy frontend to Vercel (preview)
         uses: amondnet/vercel-action@v25
