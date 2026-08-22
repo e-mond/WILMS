@@ -18,6 +18,7 @@ import { Select } from '@/components/ui/Select';
 import { Pagination } from '@/components/ui/Pagination';
 import { useGroups } from '@/features/group-management/hooks/useGroups';
 import { useCreateGroup } from '@/features/group-management/hooks/useCreateGroup';
+import { PAYMENT_DAY_OPTIONS } from '@/constants/loan';
 import { useCollectorsManagement } from '@/features/collector-management/hooks/useCollectorsManagement';
 import { usePaginatedRows } from '@/hooks/usePaginatedRows';
 import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
@@ -53,6 +54,7 @@ export function GroupsManagementPanel() {
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupCommunity, setNewGroupCommunity] = useState('');
   const [newGroupCollectorId, setNewGroupCollectorId] = useState('');
+  const [newGroupPaymentDay, setNewGroupPaymentDay] = useState<string>('Tuesday');
 
   useEffect(() => {
     setRiskFilter(riskFromUrl);
@@ -331,7 +333,8 @@ export function GroupsManagementPanel() {
                 createGroup.isPending ||
                 !newGroupName.trim() ||
                 !newGroupCommunity.trim() ||
-                !newGroupCollectorId
+                !newGroupCollectorId ||
+                !newGroupPaymentDay
               }
               onClick={() => {
                 void createGroup
@@ -339,12 +342,14 @@ export function GroupsManagementPanel() {
                     name: newGroupName.trim(),
                     community: newGroupCommunity.trim(),
                     collectorUserId: newGroupCollectorId,
+                    paymentDay: newGroupPaymentDay,
                   })
                   .then(() => {
                     setCreateModalOpen(false);
                     setNewGroupName('');
                     setNewGroupCommunity('');
                     setNewGroupCollectorId('');
+                    setNewGroupPaymentDay('Tuesday');
                   })
                   .catch((error) => {
                     notifyMutationError(
@@ -403,6 +408,27 @@ export function GroupsManagementPanel() {
                 </option>
               ))}
             </Select>
+          </div>
+          <div>
+            <label htmlFor="new-group-payment-day" className="text-small font-semibold text-text-primary">
+              Collection day
+            </label>
+            <Select
+              id="new-group-payment-day"
+              className="mt-wilms-2"
+              value={newGroupPaymentDay}
+              onChange={(event) => setNewGroupPaymentDay(event.target.value)}
+              required
+            >
+              {PAYMENT_DAY_OPTIONS.map((day) => (
+                <option key={day} value={day}>
+                  {day}
+                </option>
+              ))}
+            </Select>
+            <p className="mt-wilms-1 text-caption text-text-muted">
+              All members in this group must repay on the same weekday.
+            </p>
           </div>
         </div>
       </Modal>

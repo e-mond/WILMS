@@ -71,6 +71,13 @@ export interface WilmsExportDocument {
   orientation?: WilmsExportOrientation;
   /** When set, print/PDF use the registration agreement layout instead of generic report HTML. */
   registrationAgreement?: RegistrationAgreementContent;
+  /** Optional passport photos for record centre exports. */
+  recordPhotos?: {
+    borrowerPhotoUrl?: string;
+    guarantorPhotoUrl?: string;
+    borrowerName?: string;
+    guarantorName?: string;
+  };
 }
 
 export interface WilmsExportDownloadOptions {

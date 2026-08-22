@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { asyncHandler } from '../../http/async-handler.js';
+import { AppError, ERROR_CODE } from '../../http/errors.js';
 import { sendData } from '../../http/response.js';
 import { PERMISSION } from '../../infrastructure/permissions/matrix.js';
 import { requireAuth } from '../../middleware/authenticate.js';
@@ -14,7 +15,7 @@ recordsRouter.use(requireAuth);
 const recordsRead = [
   PERMISSION.ACCESS_ADMIN_PORTAL,
   PERMISSION.APPROVE_BORROWERS,
-  PERMISSION.REGISTER_BORROWERS,
+  PERMISSION.ACCESS_REGISTRATION_PORTAL,
   PERMISSION.ACCESS_AUDITOR_PORTAL,
   PERMISSION.VIEW_AUDIT_LOG,
 ] as const;
@@ -33,5 +34,23 @@ recordsRouter.get(
   asyncHandler(async (req, res) => {
     await assertBorrowerReadAccess(req.session!, req.params.id!);
     sendData(res, await recordsService.getBorrowerRecordFile(req.params.id!));
+  }),
+);
+
+recordsRouter.get(
+  '/records/guarantors/:phone',
+  requirePermission(...recordsRead),
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(
+        res,
+        await recordsService.getGuarantorRecordFile(req.params.phone!, req.session!.role),
+      );
+    } catch (error) {
+      if (error instanceof Error && error.message === 'NOT_FOUND') {
+        throw new AppError('Guarantor record not found.', ERROR_CODE.NOT_FOUND, 404);
+      }
+      throw error;
+    }
   }),
 );

@@ -15,6 +15,7 @@ export const groups = pgTable('groups', {
   status: groupStatusEnum('status').notNull().default('ACTIVE'),
   collectorUserId: uuid('collector_user_id').references(() => users.id),
   leaderBorrowerId: uuid('leader_borrower_id').references(() => borrowers.id),
+  paymentDay: text('payment_day'),
   formedAt: timestamp('formed_at', { withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

@@ -9,6 +9,7 @@ import type {
   ReplaceGroupLeaderInput,
   TransferGroupMemberInput,
   UpdateGroupDisplayNameInput,
+  UpdateGroupPaymentDayInput,
 } from '@/types/group-detail';
 import type { IGroupService } from '@/types/services';
 import { apiClient } from '@/utils/apiClient';
@@ -61,6 +62,10 @@ const groupService: IGroupService = {
 
   updateDisplayName(input: UpdateGroupDisplayNameInput): Promise<GroupDetail> {
     return apiClient.post<GroupDetail>(`/groups/${input.groupId}/display-name`, input);
+  },
+
+  updatePaymentDay(input: UpdateGroupPaymentDayInput): Promise<GroupDetail> {
+    return apiClient.post<GroupDetail>(`/groups/${input.groupId}/payment-day`, input);
   },
 
   recordAdjustment(input: RecordGroupAdjustmentInput): Promise<GroupDetail> {

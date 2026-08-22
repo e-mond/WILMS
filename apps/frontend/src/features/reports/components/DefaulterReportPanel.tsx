@@ -1,6 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { CurrencyAmount, DataTable, KpiCard } from '@/components/data-display';
+import { EmptyState } from '@/components/feedback/EmptyState';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { ExecutiveKpiGrid, ManagementToolbar } from '@/components/layout/executive';
 import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
@@ -61,7 +63,15 @@ function DefaulterReportContent({ data }: { data: NonNullable<ReturnType<typeof 
       </ExecutiveKpiGrid>
 
       <ManagementToolbar
-        search={<p className="text-small text-text-muted">Borrowers with consecutive missed payments</p>}
+        search={
+          <p className="text-small text-text-muted">
+            Loans with status DEFAULTED. Active loans with missed weeks appear in the{' '}
+            <Link href="/reports/missed-payments" className="text-brand-primary underline">
+              Missed Payments Report
+            </Link>
+            .
+          </p>
+        }
         actions={
           <ExportCsvButton
             label="Export"
@@ -74,7 +84,18 @@ function DefaulterReportContent({ data }: { data: NonNullable<ReturnType<typeof 
         }
       />
 
-      <DataTable<DefaulterReportRow>
+      {rows.length === 0 ? (
+        <EmptyState
+          title="No defaulted loans"
+          description="This report lists loans with DEFAULTED status. Active loans with missed weeks are listed in the Missed Payments Report."
+          action={
+            <Link href="/reports/missed-payments" className="text-brand-primary underline">
+              Open Missed Payments Report
+            </Link>
+          }
+        />
+      ) : (
+        <DataTable<DefaulterReportRow>
         variant="executive"
         caption="Defaulter report"
         data={rows}
@@ -93,6 +114,7 @@ function DefaulterReportContent({ data }: { data: NonNullable<ReturnType<typeof 
           },
         ]}
       />
+      )}
     </div>
   );
 }

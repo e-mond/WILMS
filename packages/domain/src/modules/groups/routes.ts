@@ -14,6 +14,7 @@ const createGroupSchema = z.object({
   community: z.string().min(1),
   displayName: z.string().optional(),
   collectorUserId: z.string().uuid({ message: 'Every group must be assigned a collector.' }),
+  paymentDay: z.enum(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']),
   memberBorrowerIds: z.array(z.string().uuid()).optional(),
 });
 
@@ -181,6 +182,26 @@ groupsRouter.post(
   asyncHandler(async (req, res) => {
     try {
       sendData(res, await groupService.replaceLeader({ groupId: req.params.id!, ...req.body }));
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+groupsRouter.post(
+  '/groups/:id/payment-day',
+  requirePermission(PERMISSION.MANAGE_GROUPS),
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(
+        res,
+        await groupService.updateGroupPaymentDay({
+          groupId: req.params.id!,
+          paymentDay: req.body.paymentDay,
+          actorUserId: req.body.actorUserId ?? req.session!.userId,
+          reason: req.body.reason,
+        }),
+      );
     } catch (error) {
       mapError(error);
     }

@@ -72,6 +72,25 @@ export interface DefaulterReport {
   rows: DefaulterReportRow[];
 }
 
+export interface MissedPaymentReportRow {
+  id: string;
+  loanId: string;
+  borrowerId: string;
+  borrowerName: string;
+  community: string;
+  groupName: string;
+  missedWeeks: number;
+  outstandingPesewas: number;
+  lastPaymentDate?: string;
+  loanStatus: string;
+}
+
+export interface MissedPaymentReport {
+  generatedAt: string;
+  summary: { totalMissedBorrowers: number; totalOutstandingPesewas: number };
+  rows: MissedPaymentReportRow[];
+}
+
 export interface CollectorPerformanceReportRow {
   collectorId: string;
   collectorName: string;

@@ -9,6 +9,7 @@ import type {
   ReplaceGroupLeaderInput,
   TransferGroupMemberInput,
   UpdateGroupDisplayNameInput,
+  UpdateGroupPaymentDayInput,
 } from '@/types/group-detail';
 import type { CreateGroupInput } from '@/types/group';
 import { MOCK_GROUP_MEMBERS } from '@/mocks/group-members';
@@ -199,6 +200,9 @@ const groupServiceMock: IGroupService = {
     await simulateDelay();
     if (!input.collectorUserId?.trim()) {
       throw new Error('Every group must be assigned a collector.');
+    }
+    if (!input.paymentDay?.trim()) {
+      throw new Error('Every group must be assigned a collection day.');
     }
     const memberIds = input.memberBorrowerIds ?? [];
     const detail = buildGroupDetail({
@@ -470,6 +474,27 @@ const groupServiceMock: IGroupService = {
       targetEntityId: input.groupId,
       actorId: input.actorUserId,
       reason: `Display name updated to ${trimmed}`,
+    });
+
+    invalidateGroup(input.groupId);
+    return this.getGroup(input.groupId);
+  },
+
+  async updatePaymentDay(input: UpdateGroupPaymentDayInput) {
+    if (!input.paymentDay.trim()) {
+      throw new ApiError('Collection day is required.', API_ERROR_CODE.VALIDATION, 422);
+    }
+
+    const group = await this.getGroup(input.groupId);
+    group.paymentDay = input.paymentDay.trim();
+    await simulateDelay();
+
+    await auditServiceMock.createEntry({
+      action: AUDIT_ACTION.GROUP_ADJUSTMENT_RECORDED,
+      targetEntityType: AUDIT_TARGET_ENTITY.GROUP,
+      targetEntityId: input.groupId,
+      actorId: input.actorUserId,
+      reason: input.reason?.trim() || `Collection day set to ${input.paymentDay}`,
     });
 
     invalidateGroup(input.groupId);
