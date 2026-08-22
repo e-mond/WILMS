@@ -18,7 +18,7 @@ concurrency:
 jobs:
   migrate:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.target }}
+    environment: ${{ inputs.target == 'production' && 'Production' || 'Preview' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -29,19 +29,11 @@ jobs:
 
       - run: npm ci
 
-      - name: Verify DATABASE_URL is configured
-        run: |
-          if [ -z "$DATABASE_URL" ]; then
-            echo "::error::DATABASE_URL is not set on the GitHub environment '${{ inputs.target }}'."
-            exit 1
-          fi
-        env:
-          DATABASE_URL: ${{ inputs.target == 'production' && secrets.DATABASE_URL || secrets.STAGING_DATABASE_URL }}
-
       - name: Apply pending migrations
-        run: node scripts/apply-pending-migrations.mjs
+        run: node scripts/run-ci-migrations.mjs
         env:
-          DATABASE_URL: ${{ inputs.target == 'production' && secrets.DATABASE_URL || secrets.STAGING_DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
 
       - name: Summarise
         run: echo "Migrations applied for ${{ inputs.target }}"
