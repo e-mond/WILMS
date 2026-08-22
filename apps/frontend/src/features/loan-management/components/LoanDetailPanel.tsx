@@ -153,7 +153,7 @@ export function LoanDetailPanel({ loanId }: LoanDetailPanelProps) {
                 type="button"
                 variant="secondary"
                 size="sm"
-                disabled={approveLoan.isPending || !feeSatisfied}
+                disabled={approveLoan.isPending}
                 onClick={() =>
                   void approveLoan.mutateAsync().then(() => {
                     void refetchLoan();
