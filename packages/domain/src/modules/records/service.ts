@@ -8,6 +8,7 @@ import {
 } from '../borrowers/guarantor-eligibility.js';
 import * as borrowerService from '../borrowers/service.js';
 import * as loanService from '../loans/service.js';
+import { resolveUploadAccessUrlById } from '../../infrastructure/uploads/index.js';
 import type { BorrowerRecord } from '../../db/persistence.js';
 
 export interface RecordSearchHit {
@@ -70,6 +71,71 @@ function isSameGuarantorPhone(record: BorrowerRecord, normalizedQueryPhone: stri
   const guarantorPhone = record.profile?.guarantorPhone;
   if (!guarantorPhone?.trim()) return false;
   return normalizeGhanaPhone(guarantorPhone) === normalizedQueryPhone;
+}
+
+async function resolveGuarantorPhotoUrl(borrowers: BorrowerRecord[]): Promise<string | null> {
+  for (const borrower of borrowers) {
+    const uploadId = borrower.profile?.guarantorPhotoUploadId;
+    if (!uploadId) {
+      continue;
+    }
+
+    try {
+      const url = await resolveUploadAccessUrlById(uploadId);
+      if (url) {
+        return url;
+      }
+    } catch {
+      // Try the next borrower linked to this guarantor.
+    }
+  }
+
+  for (const borrower of borrowers) {
+    try {
+      const review = await borrowerService.getBorrowerReviewDetail(borrower.id);
+      if (review.guarantorPhotoUrl) {
+        return review.guarantorPhotoUrl;
+      }
+    } catch {
+      // Continue scanning other guarantee links.
+    }
+  }
+
+  return null;
+}
+
+function enrichPaymentLogWeeks<
+  T extends { type: string; recordedAt: string; weekNumber?: number | null },
+>(
+  paymentLog: T[],
+  scheduleWeeks: Array<{ weekNumber: number; dueDate: string; status: string }>,
+): T[] {
+  const paidWeeks = scheduleWeeks
+    .filter((week) => week.status === 'PAID')
+    .sort((left, right) => left.weekNumber - right.weekNumber);
+  let paidWeekCursor = paidWeeks.length - 1;
+
+  return paymentLog.map((entry) => {
+    if (entry.type === 'DISBURSEMENT' || (entry.weekNumber != null && entry.weekNumber > 0)) {
+      return entry;
+    }
+
+    const paymentDate = entry.recordedAt.slice(0, 10);
+    const dueDateMatch = scheduleWeeks.find((week) => week.dueDate === paymentDate);
+    if (dueDateMatch) {
+      return { ...entry, weekNumber: dueDateMatch.weekNumber };
+    }
+
+    while (paidWeekCursor >= 0) {
+      const candidate = paidWeeks[paidWeekCursor];
+      paidWeekCursor -= 1;
+      if (candidate) {
+        return { ...entry, weekNumber: candidate.weekNumber };
+      }
+    }
+
+    return entry;
+  });
 }
 
 function buildGuarantorHits(
@@ -200,15 +266,11 @@ export async function getGuarantorRecordFile(phoneKey: string, role: string): Pr
     (entry) => normalizeGhanaPhone(entry.phone) === normalizedPhone,
   );
 
-  let guarantorPhotoUrl: string | null = null;
-  if (sample) {
-    try {
-      const review = await borrowerService.getBorrowerReviewDetail(sample.id);
-      guarantorPhotoUrl = review.guarantorPhotoUrl ?? null;
-    } catch {
-      guarantorPhotoUrl = null;
-    }
-  }
+  const photoSources = [
+    ...(sample ? [sample] : []),
+    ...guaranteed.filter((entry) => entry.id !== sample?.id),
+  ];
+  const guarantorPhotoUrl = await resolveGuarantorPhotoUrl(photoSources);
 
   return {
     guarantorPhone: normalizedPhone,
@@ -281,6 +343,7 @@ export async function getBorrowerRecordFile(id: string) {
       paymentLog = await loanService.listLoanPaymentLog(activeLoan.id);
       const schedule = await loanService.getLoanSchedule(activeLoan.id);
       scheduleWeeks = schedule.weeks;
+      paymentLog = enrichPaymentLogWeeks(paymentLog, scheduleWeeks);
     } catch {
       paymentLog = [];
       scheduleWeeks = [];

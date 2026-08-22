@@ -63,19 +63,32 @@ export function GuarantorRecordPanel({ phoneKey }: { phoneKey: string }) {
     return <EmptyState title="Guarantor not found" description="No guarantor file is available." />;
   }
 
+  const guarantorPhoto = file.guarantorPhotoUrl
+    ? resolveEntityPhotoUrl({
+        name: file.guarantorName,
+        id: file.guarantorPhone,
+        photoUrl: file.guarantorPhotoUrl,
+      })
+    : null;
+
   return (
     <div className="space-y-wilms-6">
       <div className="flex flex-wrap items-start gap-wilms-4 rounded-sm border border-border bg-card p-wilms-4">
-        <Avatar
-          label={file.guarantorName}
-          photoUrl={resolveEntityPhotoUrl({
-            name: file.guarantorName,
-            id: file.guarantorPhone,
-            photoUrl: file.guarantorPhotoUrl,
-          })}
-          size="2xl"
-          className="rounded-sm border border-border object-cover"
-        />
+        {guarantorPhoto ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={guarantorPhoto}
+            alt={`${file.guarantorName} passport photo`}
+            className="h-32 w-32 shrink-0 rounded-sm border border-border object-cover"
+          />
+        ) : (
+          <Avatar
+            label={file.guarantorName}
+            photoUrl={null}
+            size="2xl"
+            className="rounded-sm border border-border object-cover"
+          />
+        )}
         <div className="min-w-0 flex-1">
           <p className="text-caption uppercase tracking-wide text-text-muted">Guarantor record</p>
           <h1 className="text-heading-1 font-semibold text-text-primary">{file.guarantorName}</h1>
