@@ -33,18 +33,35 @@ async function neonFetch(pathname) {
 }
 
 async function resolveDatabaseUrlFromNeon() {
-  const projectsPayload = await neonFetch('/projects?limit=50');
-  const projects = projectsPayload?.projects ?? [];
-  if (projects.length === 0) {
-    throw new Error('Neon API returned no projects.');
+  let projectId = process.env.NEON_PROJECT_ID?.trim() ?? null;
+
+  if (!projectId) {
+    try {
+      const projectsPayload = await neonFetch('/projects?limit=50');
+      const projects = projectsPayload?.projects ?? [];
+      if (projects.length === 0) {
+        throw new Error('Neon API returned no projects.');
+      }
+
+      const preferred =
+        projects.find((project) => /wilms/i.test(project.name)) ??
+        projects.find((project) => project.name === 'WILMS') ??
+        projects[0];
+      projectId = preferred.id;
+    } catch (error) {
+      const scopedMatch = String(error instanceof Error ? error.message : error).match(
+        /subject_project_id:"([^"]+)"/,
+      );
+      if (scopedMatch?.[1]) {
+        projectId = scopedMatch[1];
+        console.log(`Using Neon project id ${projectId} from scoped API key.`);
+      } else {
+        throw error;
+      }
+    }
   }
 
-  const preferred =
-    projects.find((project) => /wilms/i.test(project.name)) ??
-    projects.find((project) => project.name === 'WILMS') ??
-    projects[0];
-
-  const branchesPayload = await neonFetch(`/projects/${preferred.id}/branches`);
+  const branchesPayload = await neonFetch(`/projects/${projectId}/branches`);
   const branches = branchesPayload?.branches ?? [];
   const branch =
     branches.find((entry) => entry.primary) ??
@@ -52,7 +69,7 @@ async function resolveDatabaseUrlFromNeon() {
     branches[0];
 
   if (!branch) {
-    throw new Error(`No branches found for Neon project ${preferred.name}.`);
+    throw new Error(`No branches found for Neon project ${projectId}.`);
   }
 
   const params = new URLSearchParams({
@@ -62,7 +79,7 @@ async function resolveDatabaseUrlFromNeon() {
   });
 
   const uriPayload = await neonFetch(
-    `/projects/${preferred.id}/connection_uri?${params.toString()}`,
+    `/projects/${projectId}/connection_uri?${params.toString()}`,
   );
 
   const connectionUri = uriPayload?.uri ?? uriPayload?.connection_uri;
@@ -70,9 +87,7 @@ async function resolveDatabaseUrlFromNeon() {
     throw new Error('Neon connection_uri response did not include a URI.');
   }
 
-  console.log(
-    `Resolved DATABASE_URL from Neon project "${preferred.name}" branch "${branch.name}".`,
-  );
+  console.log(`Resolved DATABASE_URL from Neon project ${projectId} branch "${branch.name}".`);
   return connectionUri;
 }
 
