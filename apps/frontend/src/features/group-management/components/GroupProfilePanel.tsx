@@ -22,6 +22,7 @@ import {
   GroupLeaderSection,
 } from '@/features/group-management/components/profile/GroupDetailSections';
 import { GroupDisplayNameSection } from '@/features/group-management/components/profile/GroupDisplayNameSection';
+import { GroupPaymentDaySection } from '@/features/group-management/components/profile/GroupPaymentDaySection';
 import { GroupFormationStatusSection } from '@/features/group-management/components/profile/GroupFormationStatusSection';
 import { GroupMembersSection } from '@/features/group-management/components/profile/GroupMembersSection';
 import { GroupMembershipManagement } from '@/features/group-management/components/profile/GroupMembershipManagement';
@@ -112,6 +113,7 @@ export function GroupProfilePanel({ groupId }: GroupProfilePanelProps) {
       ) : null}
 
       <GroupInformationSection group={data} />
+      <GroupPaymentDaySection group={data} onUpdated={() => void refetch()} />
       <GroupDisplayNameSection group={data} onUpdated={() => void refetch()} />
       <GroupFormationStatusSection group={data} />
       <GroupLeaderSection group={data} />

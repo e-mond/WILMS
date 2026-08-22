@@ -19,6 +19,8 @@ import * as loanRepo from '../../repositories/loan.repository.js';
 import * as scheduleRepo from '../../repositories/loan-schedule.repository.js';
 import * as userRepo from '../../repositories/user.repository.js';
 import * as defaulterRepo from '../../repositories/defaulter.repository.js';
+import * as missedPaymentsRepo from '../../repositories/missed-payments.repository.js';
+import { buildMissedPaymentReport } from '../../domain/reports/missed-payments.js';
 import { mapLoanRowToDetail } from '../../domain/loan/mappers.js';
 import { decimalToPesewas } from '../../domain/money.js';
 import { listPortfolioEntries } from '../loans/service.js';
@@ -73,11 +75,20 @@ const REPORTS = [
     route: '/reports/loan-portfolio',
   },
   {
+    id: 'missed-payments',
+    title: 'Missed Payments Report',
+    generatedAt: new Date().toISOString(),
+    category: 'risk' as ReportCategory,
+    description: 'Active loans with missed schedule weeks (matches dashboard alerts).',
+    recordCount: 0,
+    route: '/reports/missed-payments',
+  },
+  {
     id: 'defaulters',
     title: 'Defaulter Report',
     generatedAt: new Date().toISOString(),
     category: 'risk' as ReportCategory,
-    description: 'Borrowers with consecutive missed payments and arrears.',
+    description: 'Borrowers formally marked DEFAULTED with arrears.',
     recordCount: 0,
     route: '/reports/defaulters',
   },
@@ -349,6 +360,45 @@ reportsRouter.get(
     await assertReportSourceNotTruncated('Defaulter report payments', payments.length, paymentTotal);
     await assertReportSourceNotTruncated('Defaulter report borrowers', borrowers.length, borrowerTotal);
     const report = await buildDefaulterReport({ loanRows, borrowers, payments });
+    sendData(res, report);
+  }),
+);
+
+reportsRouter.get(
+  '/reports/missed-payments',
+  requirePermission(PERMISSION.VIEW_REPORTS),
+  asyncHandler(async (_req, res) => {
+    const sqlResult = await missedPaymentsRepo.queryMissedPaymentAggregates();
+    if (sqlResult) {
+      sendData(res, {
+        generatedAt: new Date().toISOString(),
+        summary: sqlResult.summary,
+        rows: sqlResult.rows.map((row) => ({
+          id: `missed-${row.loanId}`,
+          loanId: row.loanId,
+          borrowerId: row.borrowerId,
+          borrowerName: row.borrowerName,
+          community: row.community,
+          groupName: row.groupName,
+          missedWeeks: row.missedWeeks,
+          outstandingPesewas: row.outstandingPesewas,
+          lastPaymentDate: row.lastPaymentDate ?? undefined,
+          loanStatus: row.loanStatus,
+        })),
+      });
+      return;
+    }
+
+    const [loanRows, borrowers, payments, paymentTotal, borrowerTotal] = await Promise.all([
+      loanRepo.listLoans(),
+      listBorrowers(),
+      listPayments(),
+      countPayments(),
+      countBorrowers(),
+    ]);
+    await assertReportSourceNotTruncated('Missed payment report payments', payments.length, paymentTotal);
+    await assertReportSourceNotTruncated('Missed payment report borrowers', borrowers.length, borrowerTotal);
+    const report = await buildMissedPaymentReport({ loanRows, borrowers, payments });
     sendData(res, report);
   }),
 );

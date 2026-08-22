@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { Avatar } from '@/components/data-display';
+import { Avatar, CurrencyAmount, DataTable, LoanScheduleTable, LoanStatusBadge } from '@/components/data-display';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { QueryErrorState } from '@/components/feedback/QueryErrorState';
 import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
@@ -12,9 +12,21 @@ import { useWilmsExportActor } from '@/features/export/hooks/useWilmsExportActor
 import { apiClient } from '@/utils/apiClient';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
 import type { BorrowerFullProfile } from '@/types/borrower';
+import type { LoanPaymentLogEntry } from '@/types/loan';
+import type { LoanScheduleWeek } from '@/types/loan-schedule';
 
 interface RecordsFilePayload {
-  profile: BorrowerFullProfile;
+  profile: BorrowerFullProfile & {
+    guarantorPhotoUrl?: string | null;
+    idDocumentUrl?: string | null;
+    gender?: string;
+    email?: string;
+    businessName?: string;
+    businessAddress?: string;
+    typeOfWork?: string;
+    subDistrictUnit?: string;
+    electoralArea?: string;
+  };
   audit: Array<{ id: string; action: string; createdAt: string; reason?: string }>;
   notifications: Array<{
     id: string;
@@ -24,6 +36,9 @@ interface RecordsFilePayload {
     success: boolean;
     createdAt: string;
   }>;
+  paymentLog: LoanPaymentLogEntry[];
+  scheduleWeeks: LoanScheduleWeek[];
+  activeLoanId: string | null;
 }
 
 export function RecordsFilePanel({ borrowerId }: { borrowerId: string }) {
@@ -54,13 +69,29 @@ export function RecordsFilePanel({ borrowerId }: { borrowerId: string }) {
   }
 
   const borrower = file.profile;
+  const activeLoan = borrower.loans?.find((loan) => loan.id === file.activeLoanId) ??
+    borrower.loans?.find((loan) => loan.status === 'ACTIVE') ??
+    borrower.loans?.[0];
+
   const exportDocument = buildBorrowerProfileExportDocument({
     borrower,
     generatedBy,
-    loans: [],
-    paymentLog: [],
-    scheduleWeeks: [],
+    loans: borrower.loans ?? [],
+    activeLoan,
+    progress: borrower.progress ?? undefined,
+    paymentLog: file.paymentLog,
+    scheduleWeeks: file.scheduleWeeks,
+    variant: 'full',
   });
+
+  if (borrower.photoUrl || borrower.guarantorPhotoUrl) {
+    exportDocument.recordPhotos = {
+      borrowerPhotoUrl: borrower.photoUrl ?? undefined,
+      guarantorPhotoUrl: borrower.guarantorPhotoUrl ?? undefined,
+      borrowerName: borrower.fullName,
+      guarantorName: borrower.guarantorName,
+    };
+  }
 
   return (
     <div className="space-y-wilms-6">
@@ -99,14 +130,82 @@ export function RecordsFilePanel({ borrowerId }: { borrowerId: string }) {
         <RecordCard title="Personal details">
           <Row label="Ghana Card / ID" value={borrower.nationalId} />
           <Row label="Date of birth" value={borrower.dateOfBirth} />
+          <Row label="Gender" value={borrower.gender} />
+          <Row label="Email" value={borrower.email} />
           <Row label="House address" value={borrower.houseAddress} />
           <Row label="GPS / Digital address" value={borrower.gpsAddress} />
+          <Row label="Region / District" value={[borrower.region, borrower.district].filter(Boolean).join(' · ')} />
+          <Row label="Business" value={borrower.businessName} />
+          <Row label="Type of work" value={borrower.typeOfWork} />
         </RecordCard>
         <RecordCard title="Guarantor">
-          <Row label="Name" value={borrower.guarantorName} />
-          <Row label="Phone" value={borrower.guarantorPhone} />
+          <div className="flex items-start gap-wilms-3">
+            <Avatar
+              label={borrower.guarantorName ?? 'Guarantor'}
+              photoUrl={resolveEntityPhotoUrl({
+                name: borrower.guarantorName ?? 'Guarantor',
+                id: borrower.guarantorPhone ?? borrower.id,
+                photoUrl: borrower.guarantorPhotoUrl,
+              })}
+              size="lg"
+            />
+            <div>
+              <Row label="Name" value={borrower.guarantorName} />
+              <Row label="Phone" value={borrower.guarantorPhone} />
+              {borrower.guarantorPhone ? (
+                <Link
+                  href={`/records/guarantor/${encodeURIComponent(borrower.guarantorPhone)}`}
+                  className="text-small font-semibold text-brand-primary underline"
+                >
+                  Open guarantor file
+                </Link>
+              ) : null}
+            </div>
+          </div>
         </RecordCard>
       </section>
+
+      {borrower.loans && borrower.loans.length > 0 ? (
+        <RecordCard title="Loans">
+          <DataTable
+            variant="executive"
+            caption="Borrower loans"
+            data={borrower.loans}
+            getRowId={(row) => row.id}
+            columns={[
+              { id: 'id', header: 'Loan', cell: (row) => row.id },
+              { id: 'status', header: 'Status', cell: (row) => <LoanStatusBadge status={row.status} /> },
+              { id: 'amount', header: 'Principal', cell: (row) => <CurrencyAmount value={row.amountPesewas} /> },
+              { id: 'outstanding', header: 'Outstanding', cell: (row) => <CurrencyAmount value={row.outstandingPesewas} /> },
+              { id: 'cycle', header: 'Cycle', cell: (row) => row.cycleBatch },
+              { id: 'start', header: 'Start', cell: (row) => row.startDate },
+            ]}
+          />
+        </RecordCard>
+      ) : null}
+
+      {file.scheduleWeeks.length > 0 ? (
+        <RecordCard title="Repayment schedule">
+          <LoanScheduleTable weeks={file.scheduleWeeks} />
+        </RecordCard>
+      ) : null}
+
+      {file.paymentLog.length > 0 ? (
+        <RecordCard title="Payment history">
+          <DataTable
+            variant="executive"
+            caption="Payment log"
+            data={file.paymentLog}
+            getRowId={(row) => row.id}
+            columns={[
+              { id: 'date', header: 'Date', cell: (row) => row.recordedAt },
+              { id: 'amount', header: 'Amount', cell: (row) => <CurrencyAmount value={row.amountPesewas} /> },
+              { id: 'week', header: 'Week', cell: (row) => row.weekNumber ?? '—' },
+              { id: 'collector', header: 'Collector', cell: (row) => row.collectorLabel ?? row.collectorName ?? '—' },
+            ]}
+          />
+        </RecordCard>
+      ) : null}
 
       <RecordCard title="Audit timeline">
         {file.audit.length === 0 ? (
@@ -136,13 +235,6 @@ export function RecordsFilePanel({ borrowerId }: { borrowerId: string }) {
           </ul>
         )}
       </RecordCard>
-
-      <p className="text-caption text-text-muted">
-        Open the operational profile for loans and payments:{' '}
-        <Link href={`/borrowers/${borrower.id}`} className="font-semibold text-brand-primary">
-          Borrower profile
-        </Link>
-      </p>
     </div>
   );
 }

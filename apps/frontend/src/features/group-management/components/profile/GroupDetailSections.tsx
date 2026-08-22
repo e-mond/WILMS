@@ -29,6 +29,10 @@ export function GroupInformationSection({ group }: GroupInformationSectionProps)
           { label: 'Group Status', value: group.statusLabel },
           { label: 'Creation Date', value: formatDisplayDate(group.formedAt) },
           { label: 'Community / Zone', value: group.community },
+          {
+            label: 'Collection day',
+            value: group.paymentDay ?? 'Not assigned — required before new disbursements',
+          },
           { label: 'Assigned Collector', value: group.collector.fullName },
           { label: 'Registration Officer', value: group.registrationOfficerName },
           { label: 'Group Leader', value: group.leader.fullName },

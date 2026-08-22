@@ -598,7 +598,7 @@ export async function emitPaymentOverdueLadderNotification(input: {
           event: 'MISSED_PAYMENT',
           title,
           body: `${input.borrowerName} delinquency day ${input.daysOverdue} (GHS ${amountGhs}, loan ${input.loanDisplayId}).`,
-          href: '/reports/defaulters',
+          href: '/reports/missed-payments',
           borrowerId: input.borrowerId,
           loanId: input.loanId,
           correlationId: input.correlationId,
@@ -792,7 +792,7 @@ export async function emitAdminMissedPaymentSummary(input: {
       event: 'SUPERVISOR_ALERT',
       title: 'Missed payments summary',
       body,
-      href: '/reports/defaulters',
+      href: '/reports/missed-payments',
       correlationId: input.correlationId,
     });
   }

@@ -56,6 +56,7 @@ import type {
   DailyCollectionReport,
   DailyCollectionReportParams,
   DefaulterReport,
+  MissedPaymentReport,
   FinancialLedgerReport,
   FinancialLedgerReportParams,
   GroupRiskReport,
@@ -74,6 +75,7 @@ import type {
   ReplaceGroupLeaderInput,
   TransferGroupMemberInput,
   UpdateGroupDisplayNameInput,
+  UpdateGroupPaymentDayInput,
 } from '@/types/group-detail';
 import type {
   AssignLoanPoolMembershipInput,
@@ -281,6 +283,7 @@ export interface IGroupService {
   transferMember(input: TransferGroupMemberInput): Promise<GroupDetail>;
   replaceLeader(input: ReplaceGroupLeaderInput): Promise<GroupDetail>;
   updateDisplayName(input: UpdateGroupDisplayNameInput): Promise<GroupDetail>;
+  updatePaymentDay(input: UpdateGroupPaymentDayInput): Promise<GroupDetail>;
   recordAdjustment(input: RecordGroupAdjustmentInput): Promise<GroupDetail>;
   dissolveGroup(input: import('@/types/enterprise').DissolveGroupInput): Promise<unknown>;
   replaceMember(input: import('@/types/enterprise').ReplaceGroupMemberInput): Promise<unknown>;
@@ -388,6 +391,7 @@ export interface IReportService {
   getLoanPortfolioReport(params?: LoanPortfolioReportParams): Promise<LoanPortfolioReport>;
   getDailyCollectionReport(params: DailyCollectionReportParams): Promise<DailyCollectionReport>;
   getDefaulterReport(): Promise<DefaulterReport>;
+  getMissedPaymentReport(): Promise<MissedPaymentReport>;
   getCollectorPerformanceReport(): Promise<CollectorPerformanceReport>;
   getGroupRiskReport(): Promise<GroupRiskReport>;
   getFinancialLedgerReport(params?: FinancialLedgerReportParams): Promise<FinancialLedgerReport>;

@@ -26,6 +26,7 @@ const EXACT_TITLES: Record<string, string> = {
   '/auditor/audit-log': 'Audit Log',
   '/reports/loan-portfolio': 'Loan Portfolio Report',
   '/reports/daily-collection': 'Daily Collection Report',
+  '/reports/missed-payments': 'Missed Payments Report',
   '/reports/defaulters': 'Defaulter Report',
   '/reports/collector-performance': 'Collector Performance Report',
   '/reports/group-risk': 'Group Risk Report',

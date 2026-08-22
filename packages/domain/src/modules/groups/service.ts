@@ -6,6 +6,8 @@ import {
   formatGroupAtCapacityMessage,
   getGroupSizeLimits,
 } from '../settings/group-limits.js';
+import { isValidPaymentDay } from '../../domain/loan/payment-day.js';
+import { normalizePaymentDay } from '../../domain/reconciliation/weekday.js';
 import { isDatabaseEnabled, getDb } from '../../db/client.js';
 import { groupMembers, groups } from '../../db/schema/groups.js';
 import { collectors } from '../../db/schema/users.js';
@@ -61,6 +63,7 @@ export interface GroupListResponse {
 }
 
 export interface GroupDetail extends GroupSummaryItem {
+  paymentDay?: string | null;
   status: GroupStatus;
   statusLabel: string;
   leaderName: string;
@@ -242,6 +245,7 @@ async function loadGroupRows(): Promise<
       status: 'ACTIVE' as const,
       collectorUserId: null,
       leaderBorrowerId: record.memberIds[0] ?? null,
+      paymentDay: null,
       formedAt: new Date(record.formedAt),
       createdAt: new Date(record.formedAt),
       updatedAt: new Date(record.formedAt),
@@ -644,6 +648,7 @@ export async function getGroupDetail(groupId: string): Promise<GroupDetail> {
 
   return {
     ...summary,
+    paymentDay: row.paymentDay ?? null,
     status,
     statusLabel: statusLabel(status),
     leaderName: leaderMember?.fullName ?? '—',
@@ -887,6 +892,9 @@ export async function addMember(input: {
     throw new Error('NOT_FOUND');
   }
 
+  const activeLoans = await listActiveLoansForBorrowers(group.members.map((member) => member.borrowerId));
+  assertBorrowerMatchesGroupCollectionDay(group, borrower.id, activeLoans);
+
   if (isDatabaseEnabled()) {
     const db = getDb();
     await db
@@ -974,6 +982,9 @@ export async function transferMember(input: {
   if (!borrower) {
     throw new Error('NOT_FOUND');
   }
+
+  const activeLoans = await listActiveLoansForBorrowers([borrower.id]);
+  assertBorrowerMatchesGroupCollectionDay(targetGroup, borrower.id, activeLoans);
 
   await removeMember({ groupId: input.groupId, borrowerId: input.borrowerId });
 
@@ -1151,6 +1162,71 @@ export async function listActiveLoansForBorrowers(borrowerIds: string[]) {
   return loans.filter((loan) => borrowerIds.includes(loan.borrowerId));
 }
 
+function assertBorrowerMatchesGroupCollectionDay(
+  group: GroupDetail,
+  borrowerId: string,
+  activeLoans: Awaited<ReturnType<typeof listActiveLoansForBorrowers>>,
+): void {
+  if (!group.paymentDay) {
+    return;
+  }
+
+  const borrowerLoan = activeLoans.find((loan) => loan.borrowerId === borrowerId);
+  if (
+    borrowerLoan &&
+    normalizePaymentDay(borrowerLoan.paymentDay) !== normalizePaymentDay(group.paymentDay)
+  ) {
+    throw new Error(
+      `VALIDATION:Borrower's active loan uses ${borrowerLoan.paymentDay}. This group collects on ${group.paymentDay}. All members must share one collection day.`,
+    );
+  }
+}
+
+export async function updateGroupPaymentDay(input: {
+  groupId: string;
+  paymentDay: string;
+  actorUserId: string;
+  reason?: string;
+}): Promise<GroupDetail> {
+  if (!isValidPaymentDay(input.paymentDay)) {
+    throw new Error('VALIDATION:Every group must be assigned a collection day (Sunday through Saturday).');
+  }
+
+  const group = await getGroupDetail(input.groupId);
+  const memberIds = group.members.map((member) => member.borrowerId);
+  const activeLoans = await listActiveLoansForBorrowers(memberIds);
+
+  for (const loan of activeLoans) {
+    if (normalizePaymentDay(loan.paymentDay) !== normalizePaymentDay(input.paymentDay)) {
+      throw new Error(
+        `VALIDATION:Active loan ${loan.id} uses ${loan.paymentDay}. Resolve payment-day mismatches before changing the group collection day.`,
+      );
+    }
+  }
+
+  if (!isDatabaseEnabled()) {
+    throw new Error('VALIDATION:Database persistence is required to update groups.');
+  }
+
+  const db = getDb();
+  await db
+    .update(groups)
+    .set({ paymentDay: input.paymentDay, updatedAt: new Date() })
+    .where(eq(groups.id, input.groupId));
+
+  appendAuditEntry({
+    action: 'group.payment_day_updated',
+    actorId: input.actorUserId,
+    targetEntityId: input.groupId,
+    targetEntityType: 'group',
+    reason:
+      input.reason?.trim() ||
+      `Set collection day to ${input.paymentDay} for ${group.displayName || group.name}`,
+  });
+
+  return getGroupDetail(input.groupId);
+}
+
 function normalizeCommunity(community: string): string {
   return community.trim().toLowerCase();
 }
@@ -1170,6 +1246,7 @@ export interface CreateGroupInput {
   community: string;
   displayName?: string;
   collectorUserId: string;
+  paymentDay: string;
   memberBorrowerIds?: string[];
 }
 
@@ -1198,6 +1275,10 @@ export async function createGroup(
     throw new Error('VALIDATION:Every group must be assigned a collector.');
   }
 
+  if (!isValidPaymentDay(input.paymentDay)) {
+    throw new Error('VALIDATION:Every group must be assigned a collection day (Sunday through Saturday).');
+  }
+
   const collector = await userRepo.getUserById(input.collectorUserId);
   if (!collector) {
     throw new Error('VALIDATION:Collector not found.');
@@ -1219,6 +1300,7 @@ export async function createGroup(
     status: 'ACTIVE',
     collectorUserId: input.collectorUserId,
     leaderBorrowerId,
+    paymentDay: input.paymentDay,
     formedAt: now,
   });
 

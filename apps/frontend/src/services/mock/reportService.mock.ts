@@ -82,6 +82,23 @@ const reportServiceMock: IReportService = {
     return buildDefaulterReport();
   },
 
+  async getMissedPaymentReport() {
+    await simulateDelay();
+    const report = buildDefaulterReport();
+    return {
+      generatedAt: report.generatedAt,
+      summary: {
+        totalMissedBorrowers: report.summary.totalDefaulters,
+        totalOutstandingPesewas: report.summary.totalOutstandingPesewas,
+      },
+      rows: report.rows.map((row) => ({
+        ...row,
+        loanId: row.id.replace(/^def-/, ''),
+        loanStatus: 'ACTIVE',
+      })),
+    };
+  },
+
   async getCollectorPerformanceReport() {
     await simulateDelay();
     return buildCollectorPerformanceReport(getFinancialTransactions());

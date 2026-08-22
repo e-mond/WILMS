@@ -221,6 +221,66 @@ async function downloadRegistrationAgreementPdf(
   });
 }
 
+async function loadImageDataUrl(url: string): Promise<string | null> {
+  if (typeof window === 'undefined' || !url.trim()) {
+    return null;
+  }
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      return null;
+    }
+
+    const blob = await response.blob();
+    return await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : null);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+async function renderRecordPhotos(doc: jsPDF, document: WilmsExportDocument, startY: number): Promise<number> {
+  const photos = document.recordPhotos;
+  if (!photos) {
+    return startY;
+  }
+
+  const entries = [
+    { url: photos.borrowerPhotoUrl, label: photos.borrowerName ?? 'Borrower' },
+    { url: photos.guarantorPhotoUrl, label: photos.guarantorName ?? 'Guarantor' },
+  ].filter((entry) => Boolean(entry.url));
+
+  if (entries.length === 0) {
+    return startY;
+  }
+
+  let cursorY = startY;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text('Identity photos', 14, cursorY);
+  cursorY += 8;
+
+  let x = 14;
+  for (const entry of entries) {
+    const dataUrl = await loadImageDataUrl(entry.url!);
+    if (dataUrl) {
+      const format = dataUrl.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+      doc.addImage(dataUrl, format, x, cursorY, 35, 35);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.text(entry.label, x, cursorY + 38);
+      x += 45;
+    }
+  }
+
+  return cursorY + 48;
+}
+
 function drawCoverPage(doc: jsPDF, document: WilmsExportDocument): void {
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -286,6 +346,7 @@ export async function downloadWilmsPdf(document: WilmsExportDocument, filename: 
   doc.addPage();
 
   let cursorY = drawDocumentHeader(doc, document);
+  cursorY = await renderRecordPhotos(doc, document, cursorY + 8);
 
   for (const section of document.sections) {
     if (cursorY > doc.internal.pageSize.getHeight() - 40) {

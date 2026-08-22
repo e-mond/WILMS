@@ -316,6 +316,20 @@
       "when": 1785976800000,
       "tag": "0044_v180_borrower_update_requests",
       "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1786063200000,
+      "tag": "0045_group_collection_day",
+      "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1786149600000,
+      "tag": "0046_backfill_group_payment_day",
+      "breakpoints": true
     }
   ]
 }
