@@ -50,11 +50,14 @@ async function resolveDatabaseUrlFromNeon() {
       projectId = preferred.id;
     } catch (error) {
       const scopedMatch = String(error instanceof Error ? error.message : error).match(
-        /subject_project_id:"([^"]+)"/,
+        /subject_project_id:?\\?"([^"\\]+)\\"?/,
       );
       if (scopedMatch?.[1]) {
         projectId = scopedMatch[1];
         console.log(`Using Neon project id ${projectId} from scoped API key.`);
+      } else if (process.env.NEON_API_KEY?.trim()) {
+        projectId = process.env.NEON_PROJECT_ID?.trim() || 'flat-meadow-93186712';
+        console.log(`Using Neon project id ${projectId} for scoped API key fallback.`);
       } else {
         throw error;
       }
