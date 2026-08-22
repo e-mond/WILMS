@@ -173,6 +173,21 @@ export function evaluateGuarantorEligibility(
   }
 
   if (isExempt) {
+    if (activeGuaranteeCount >= maxGuarantees) {
+      return withScore(
+        {
+          isEligible: false,
+          activeGuaranteeCount,
+          maxGuarantees,
+          isDuplicateRegistration: false,
+          validationStatus: GUARANTOR_VALIDATION_STATUS.AT_LIMIT,
+          message: `Guarantor has reached the leader maximum of ${maxGuarantees} active guarantees.`,
+        },
+        normalizedPhone,
+        borrowers,
+      );
+    }
+
     return withScore(
       {
         isEligible: true,
