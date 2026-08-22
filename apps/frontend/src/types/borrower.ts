@@ -39,6 +39,8 @@ export interface BorrowerRiskSummary {
   notes: string[];
 }
 
+import type { BorrowerLoanHistoryEntry, LoanProgressSummary } from '@/types/loan';
+
 export interface BorrowerFullProfile extends BorrowerDetail {
   idType?: string;
   city?: string;
@@ -46,11 +48,17 @@ export interface BorrowerFullProfile extends BorrowerDetail {
   district?: string;
   guarantorName?: string;
   guarantorPhone?: string;
+  guarantorPhotoUrl?: string | null;
+  businessAddress?: string;
+  subDistrictUnit?: string;
+  electoralArea?: string;
   /** Whether this borrower is the group leader or a member. */
   groupRole?: 'LEADER' | 'MEMBER' | null;
   collectorId?: string | null;
   /** Display label e.g. Kwame Mensah (COL-012). */
   collectorLabel?: string | null;
+  loans?: BorrowerLoanHistoryEntry[];
+  progress?: LoanProgressSummary | null;
   risk: BorrowerRiskSummary;
 }
 

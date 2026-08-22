@@ -19,7 +19,7 @@ export const DASHBOARD_ALERT_CATEGORY_META: Record<
     category: 'MISSED_PAYMENT',
     defaultSeverity: 'danger',
     icon: 'danger',
-    defaultHref: '/reports/defaulters',
+    defaultHref: '/reports/missed-payments',
   },
   RECONCILIATION_VARIANCE: {
     category: 'RECONCILIATION_VARIANCE',

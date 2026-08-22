@@ -57,6 +57,7 @@ export interface GroupCycleInfo {
 }
 
 export interface GroupDetail extends GroupSummary {
+  paymentDay?: string | null;
   status: GroupStatus;
   statusLabel: string;
   leaderName: string;
@@ -110,6 +111,13 @@ export interface UpdateGroupDisplayNameInput {
   groupId: string;
   displayName: string;
   actorUserId: string;
+}
+
+export interface UpdateGroupPaymentDayInput {
+  groupId: string;
+  paymentDay: string;
+  actorUserId: string;
+  reason?: string;
 }
 
 export type ReplaceGroupLeaderInput = GroupMembershipChangeInput;

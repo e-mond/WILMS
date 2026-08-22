@@ -215,6 +215,27 @@ export async function createLoan(
         throw new Error('VALIDATION:This borrower already has an active or pending loan.');
       }
 
+      if (borrower.groupId) {
+        const { getGroupDetail } = await import('../groups/service.js');
+        try {
+          const group = await getGroupDetail(borrower.groupId);
+          if (!group.paymentDay) {
+            throw new Error(
+              'VALIDATION:Assign a collection day to this group before creating loans for its members.',
+            );
+          }
+          if (input.paymentDay !== group.paymentDay) {
+            throw new Error(
+              `VALIDATION:Payment day must match the group collection day (${group.paymentDay}). All members in a group pay on the same weekday.`,
+            );
+          }
+        } catch (error) {
+          if (error instanceof Error && error.message.startsWith('VALIDATION:')) {
+            throw error;
+          }
+        }
+      }
+
       if (!isValidPaymentDay(input.paymentDay)) {
         throw new Error('VALIDATION:Payment day must be a valid weekday (Sunday through Saturday).');
       }
