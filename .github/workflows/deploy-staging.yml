@@ -31,15 +31,9 @@ jobs:
         run: npm ci
 
       - name: Run staging database migrations
-        run: npm run db:migrate -w @wilms/api
+        run: npm run db:migrate -w @wilms/domain
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
-
-      - name: Deploy API to Railway (staging)
-        uses: berviantoleo/railway-deploy@main
-        with:
-          railway_token: ${{ secrets.RAILWAY_TOKEN }}
-          service: ${{ secrets.RAILWAY_STAGING_SERVICE_ID }}
 
       - name: Deploy frontend to Vercel (preview)
         uses: amondnet/vercel-action@v25

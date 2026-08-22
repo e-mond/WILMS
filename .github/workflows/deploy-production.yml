@@ -13,55 +13,29 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  verify-baseline:
+  deploy-production:
     if: inputs.confirm == 'deploy'
     runs-on: ubuntu-latest
+    environment: production
     steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
       - name: Confirm current production health
         run: |
           curl -fsS "${{ secrets.WILMS_API_URL }}/health"
           echo "Baseline reachable (migrate step will bring schema current)"
 
-  deploy-api:
-    if: inputs.confirm == 'deploy'
-    needs: verify-baseline
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-
-      - run: npm ci
-
       - name: Run database migrations
-        run: npm run db:migrate -w @wilms/api
+        run: npm run db:migrate -w @wilms/domain
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-      - name: Deploy API to Railway
-        uses: berviantoleo/railway-deploy@main
-        with:
-          railway_token: ${{ secrets.RAILWAY_TOKEN }}
-          service: ${{ secrets.RAILWAY_SERVICE_ID }}
-
-  deploy-frontend:
-    if: inputs.confirm == 'deploy'
-    needs: deploy-api
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-
-      - run: npm ci
 
       - name: Deploy to Vercel production
         uses: amondnet/vercel-action@v25
@@ -71,21 +45,6 @@ jobs:
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           working-directory: .
           vercel-args: '--prod'
-
-  verify-production:
-    if: inputs.confirm == 'deploy'
-    needs: [deploy-api, deploy-frontend]
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-
-      - run: npm ci
 
       - name: Health check (200)
         run: curl -fsS "${{ secrets.WILMS_API_URL }}/health"
