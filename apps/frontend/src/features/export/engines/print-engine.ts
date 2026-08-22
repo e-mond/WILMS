@@ -117,6 +117,25 @@ export function buildWilmsPrintHtml(document: WilmsExportDocument): string {
   }
 
   const sections = document.sections.map(renderSection).join('');
+  const photoBlock = document.recordPhotos
+    ? `
+      <section class="wilms-section wilms-photo-grid">
+        <h2>Identity photos</h2>
+        <div class="wilms-photo-row">
+          ${
+            document.recordPhotos.borrowerPhotoUrl
+              ? `<figure><img src="${escapeHtml(document.recordPhotos.borrowerPhotoUrl)}" alt="Borrower photo" /><figcaption>${escapeHtml(document.recordPhotos.borrowerName ?? 'Borrower')}</figcaption></figure>`
+              : ''
+          }
+          ${
+            document.recordPhotos.guarantorPhotoUrl
+              ? `<figure><img src="${escapeHtml(document.recordPhotos.guarantorPhotoUrl)}" alt="Guarantor photo" /><figcaption>${escapeHtml(document.recordPhotos.guarantorName ?? 'Guarantor')}</figcaption></figure>`
+              : ''
+          }
+        </div>
+      </section>
+    `
+    : '';
   const signatures = document.signatures?.length
     ? `
       <section class="wilms-section">
@@ -260,6 +279,30 @@ export function buildWilmsPrintHtml(document: WilmsExportDocument): string {
         font-size: 8pt;
         margin-bottom: 4px;
       }
+      .wilms-photo-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-top: 12px;
+      }
+      .wilms-photo-row figure {
+        margin: 0;
+        text-align: center;
+        width: 140px;
+      }
+      .wilms-photo-row img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border: 1px solid ${WILMS_EXPORT_COLORS.border};
+        border-radius: 4px;
+        background: #f5f7f6;
+      }
+      .wilms-photo-row figcaption {
+        margin-top: 6px;
+        font-size: 8pt;
+        color: ${WILMS_EXPORT_COLORS.muted};
+      }
       .wilms-signatures {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -311,6 +354,7 @@ export function buildWilmsPrintHtml(document: WilmsExportDocument): string {
         <h2>Executive Summary</h2>
         <p>${escapeHtml(document.executiveSummary ?? 'Official WILMS export document.')}</p>
       </section>
+      ${photoBlock}
       ${sections}
       ${signatures}
     </main>

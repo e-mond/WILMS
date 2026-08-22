@@ -40,6 +40,10 @@ const reportService: IReportService = {
     return apiClient.get('/reports/defaulters');
   },
 
+  getMissedPaymentReport() {
+    return apiClient.get('/reports/missed-payments');
+  },
+
   getCollectorPerformanceReport() {
     return apiClient.get('/reports/collector-performance');
   },

@@ -85,6 +85,7 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
   const [selectedGroupId, setSelectedGroupId] = useState('');
   const [selectedCollectorId, setSelectedCollectorId] = useState('');
   const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupPaymentDay, setNewGroupPaymentDay] = useState('Tuesday');
   const [workflowMessage, setWorkflowMessage] = useState<string | null>(null);
 
 
@@ -126,6 +127,7 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
         name: newGroupName.trim(),
         community: data?.community ?? 'General',
         collectorUserId: selectedCollectorId,
+        paymentDay: newGroupPaymentDay,
         memberBorrowerIds: [borrowerId],
       });
     },
@@ -454,6 +456,19 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
                     value={newGroupName}
                     onChange={(event) => setNewGroupName(event.target.value)}
                   />
+                  <Select
+                    aria-label="Group collection day"
+                    value={newGroupPaymentDay}
+                    onChange={(event) => setNewGroupPaymentDay(event.target.value)}
+                  >
+                    <option value="Sunday">Sunday</option>
+                    <option value="Monday">Monday</option>
+                    <option value="Tuesday">Tuesday</option>
+                    <option value="Wednesday">Wednesday</option>
+                    <option value="Thursday">Thursday</option>
+                    <option value="Friday">Friday</option>
+                    <option value="Saturday">Saturday</option>
+                  </Select>
                   <p className="text-caption text-text-secondary">
                     Community is pre-filled from the application ({data?.community ?? 'unknown'}). Select a collector, then create the group.
                   </p>
