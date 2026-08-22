@@ -100,6 +100,7 @@ export interface CreateLoanFormValues {
 
 export interface BorrowerLoanHistoryEntry {
   id: string;
+  displayId?: string;
   amountPesewas: number;
   outstandingPesewas: number;
   weeklyPaymentPesewas: number;
