@@ -8,6 +8,7 @@ import {
 } from '../settings/group-limits.js';
 import { isValidPaymentDay } from '../../domain/loan/payment-day.js';
 import { normalizePaymentDay } from '../../domain/reconciliation/weekday.js';
+import { isUndefinedColumnError } from '../../lib/db-errors.js';
 import { isDatabaseEnabled, getDb } from '../../db/client.js';
 import { groupMembers, groups } from '../../db/schema/groups.js';
 import { collectors } from '../../db/schema/users.js';
@@ -256,7 +257,39 @@ async function loadGroupRows(): Promise<
   }
 
   const db = getDb();
-  const rows = await db.select().from(groups).where(isNull(groups.deletedAt));
+  let rows: Array<typeof groups.$inferSelect>;
+
+  try {
+    rows = await db.select().from(groups).where(isNull(groups.deletedAt));
+  } catch (error) {
+    if (!isUndefinedColumnError(error, 'payment_day')) {
+      throw error;
+    }
+
+    const legacyRows = await db
+      .select({
+        id: groups.id,
+        systemId: groups.systemId,
+        name: groups.name,
+        displayName: groups.displayName,
+        community: groups.community,
+        communityId: groups.communityId,
+        subDistrictUnitId: groups.subDistrictUnitId,
+        electoralAreaId: groups.electoralAreaId,
+        status: groups.status,
+        collectorUserId: groups.collectorUserId,
+        leaderBorrowerId: groups.leaderBorrowerId,
+        formedAt: groups.formedAt,
+        createdAt: groups.createdAt,
+        updatedAt: groups.updatedAt,
+        version: groups.version,
+        deletedAt: groups.deletedAt,
+      })
+      .from(groups)
+      .where(isNull(groups.deletedAt));
+
+    rows = legacyRows.map((row) => ({ ...row, paymentDay: null }));
+  }
   const memberRows = await db
     .select()
     .from(groupMembers)
@@ -1209,10 +1242,19 @@ export async function updateGroupPaymentDay(input: {
   }
 
   const db = getDb();
-  await db
-    .update(groups)
-    .set({ paymentDay: input.paymentDay, updatedAt: new Date() })
-    .where(eq(groups.id, input.groupId));
+  try {
+    await db
+      .update(groups)
+      .set({ paymentDay: input.paymentDay, updatedAt: new Date() })
+      .where(eq(groups.id, input.groupId));
+  } catch (error) {
+    if (isUndefinedColumnError(error, 'payment_day')) {
+      throw new Error(
+        'VALIDATION:Database migration 0045_group_collection_day is pending. Run npm run db:migrate -w @wilms/domain before assigning collection days.',
+      );
+    }
+    throw error;
+  }
 
   appendAuditEntry({
     action: 'group.payment_day_updated',

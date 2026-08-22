@@ -11,6 +11,8 @@ import { buildBorrowerProfileExportDocument } from '@/features/export/builders/b
 import { useWilmsExportActor } from '@/features/export/hooks/useWilmsExportActor';
 import { apiClient } from '@/utils/apiClient';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
+import { resolveLoanDisplayId } from '@/utils/entity-display-id';
+import { formatDisplayDate } from '@/utils/format-date';
 import type { BorrowerFullProfile } from '@/types/borrower';
 import type { LoanPaymentLogEntry } from '@/types/loan';
 import type { LoanScheduleWeek } from '@/types/loan-schedule';
@@ -173,12 +175,12 @@ export function RecordsFilePanel({ borrowerId }: { borrowerId: string }) {
             data={borrower.loans}
             getRowId={(row) => row.id}
             columns={[
-              { id: 'id', header: 'Loan', cell: (row) => row.id },
+              { id: 'id', header: 'Loan', cell: (row) => resolveLoanDisplayId(row) },
               { id: 'status', header: 'Status', cell: (row) => <LoanStatusBadge status={row.status} /> },
               { id: 'amount', header: 'Principal', cell: (row) => <CurrencyAmount value={row.amountPesewas} /> },
               { id: 'outstanding', header: 'Outstanding', cell: (row) => <CurrencyAmount value={row.outstandingPesewas} /> },
               { id: 'cycle', header: 'Cycle', cell: (row) => row.cycleBatch },
-              { id: 'start', header: 'Start', cell: (row) => row.startDate },
+              { id: 'start', header: 'Start', cell: (row) => formatDisplayDate(row.startDate) },
             ]}
           />
         </RecordCard>
@@ -198,9 +200,14 @@ export function RecordsFilePanel({ borrowerId }: { borrowerId: string }) {
             data={file.paymentLog}
             getRowId={(row) => row.id}
             columns={[
-              { id: 'date', header: 'Date', cell: (row) => row.recordedAt },
+              { id: 'date', header: 'Date', cell: (row) => formatDisplayDate(row.recordedAt) },
               { id: 'amount', header: 'Amount', cell: (row) => <CurrencyAmount value={row.amountPesewas} /> },
-              { id: 'week', header: 'Week', cell: (row) => row.weekNumber ?? '—' },
+              {
+                id: 'week',
+                header: 'Week',
+                cell: (row) =>
+                  row.weekNumber != null && row.weekNumber > 0 ? `Week ${row.weekNumber}` : '—',
+              },
               { id: 'collector', header: 'Collector', cell: (row) => row.collectorLabel ?? row.collectorName ?? '—' },
             ]}
           />
