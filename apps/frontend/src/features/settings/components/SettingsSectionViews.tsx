@@ -402,6 +402,9 @@ export function LoanRulesSectionView({ settings }: { settings: SystemSettings })
   );
   const [allowLoanRollovers, setAllowLoanRollovers] = useState(settings.allowLoanRollovers);
   const [latePaymentGraceDays, setLatePaymentGraceDays] = useState(String(settings.latePaymentGraceDays));
+  const [maxGuarantorGuarantees, setMaxGuarantorGuarantees] = useState(
+    String(settings.maxGuarantorGuarantees ?? 3),
+  );
   const [adminFeeGhs, setAdminFeeGhs] = useState((settings.adminFeePesewas / 100).toFixed(2));
 
   useEffect(() => {
@@ -411,6 +414,7 @@ export function LoanRulesSectionView({ settings }: { settings: SystemSettings })
     setDefaultLoanDurationWeeks(String(settings.defaultLoanDurationWeeks));
     setAllowLoanRollovers(settings.allowLoanRollovers);
     setLatePaymentGraceDays(String(settings.latePaymentGraceDays));
+    setMaxGuarantorGuarantees(String(settings.maxGuarantorGuarantees ?? 3));
     setAdminFeeGhs((settings.adminFeePesewas / 100).toFixed(2));
   }, [settings]);
 
@@ -546,6 +550,28 @@ export function LoanRulesSectionView({ settings }: { settings: SystemSettings })
           </Select>
         }
       />
+      <SettingsSettingRow
+        title="Max Guarantor Guarantees"
+        description="How many active borrowers one guarantor may cover. Group leaders get +2."
+        control={
+          isSuperAdmin ? (
+            <Input
+              type="number"
+              min={1}
+              max={20}
+              value={maxGuarantorGuarantees}
+              onChange={(event) => setMaxGuarantorGuarantees(event.target.value)}
+              aria-label="Max guarantor guarantees"
+            />
+          ) : (
+            <Input
+              defaultValue={`${settings.maxGuarantorGuarantees ?? 3} borrowers`}
+              readOnly
+              aria-label="Max guarantor guarantees"
+            />
+          )
+        }
+      />
       {isSuperAdmin ? (
         <div className="flex justify-end pt-wilms-2">
           <PermissionGate permission={PERMISSION.MANAGE_SYSTEM_SETTINGS}>
@@ -567,6 +593,7 @@ export function LoanRulesSectionView({ settings }: { settings: SystemSettings })
                     defaultLoanDurationWeeks: Number.parseInt(defaultLoanDurationWeeks, 10),
                     allowLoanRollovers,
                     latePaymentGraceDays: Number.parseInt(latePaymentGraceDays, 10),
+                    maxGuarantorGuarantees: Number.parseInt(maxGuarantorGuarantees, 10),
                     adminFeePesewas: parsedAdminFee,
                   },
                   'Loan rules updated',

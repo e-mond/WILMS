@@ -24,6 +24,7 @@ export const MOCK_SYSTEM_SETTINGS: SystemSettings = {
   defaultLoanDurationWeeks: 12,
   allowLoanRollovers: true,
   latePaymentGraceDays: 3,
+  maxGuarantorGuarantees: 3,
   smsProvider: 'smsnotifygh',
   smsSenderId: 'WILMS-GH',
   missedPaymentSmsEnabled: true,
