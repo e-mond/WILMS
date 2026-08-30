@@ -50,6 +50,18 @@ riskFlagsRouter.get(
   }),
 );
 
+riskFlagsRouter.get(
+  '/risk-flags/assignees',
+  requirePermission(PERMISSION.REVIEW_RISK_FLAGS),
+  asyncHandler(async (_req, res) => {
+    try {
+      sendData(res, await riskFlagService.listRiskFlagAssignees());
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
 riskFlagsRouter.post(
   '/risk-flags',
   validateBody(createRiskFlagSchema),

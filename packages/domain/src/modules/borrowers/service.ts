@@ -106,6 +106,7 @@ function toSummary(record: BorrowerRecord, sequence?: number) {
     fullName: record.fullName,
     phone: record.phone,
     status: record.status,
+    community: record.community,
     groupName: record.groupName,
     groupId: record.groupId,
     photoUrl: record.profile.photoUploadId

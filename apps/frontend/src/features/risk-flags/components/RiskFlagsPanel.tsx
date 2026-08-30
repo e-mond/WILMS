@@ -20,7 +20,9 @@ import { FLAG_STATUS_DISPLAY } from '@/constants/risk-flag-display';
 import { Input } from '@/components/ui/Input';
 import { Pagination } from '@/components/ui/Pagination';
 import { RiskFlagsAsidePanel } from '@/features/risk-flags/components/RiskFlagsAsidePanel';
+import { AssignOfficerModal } from '@/features/risk-flags/components/AssignOfficerModal';
 import { RaiseFlagModal } from '@/features/risk-flags/components/RaiseFlagModal';
+import { ResolveFlagModal } from '@/features/risk-flags/components/ResolveFlagModal';
 import { useRiskFlagActions } from '@/features/risk-flags/hooks/useRiskFlagActions';
 import { useRiskFlagDetail } from '@/features/risk-flags/hooks/useRiskFlagDetail';
 import { useRiskFlags } from '@/features/risk-flags/hooks/useRiskFlags';
@@ -100,6 +102,10 @@ export function RiskFlagsPanel() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [raiseFlagOpen, setRaiseFlagOpen] = useState(false);
   const [isRaisingFlag, setIsRaisingFlag] = useState(false);
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [isAssigning, setIsAssigning] = useState(false);
+  const [resolveOpen, setResolveOpen] = useState(false);
+  const [isResolving, setIsResolving] = useState(false);
 
   const filteredFlags = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -171,11 +177,11 @@ export function RiskFlagsPanel() {
         selected={selected}
         timeline={timeline}
         onEscalate={() => void escalateToBlacklist(selected)}
-        onResolve={() => void markResolved(selected)}
-        onAssign={() => void assignOfficer(selected)}
+        onResolve={() => setResolveOpen(true)}
+        onAssign={() => setAssignOpen(true)}
       />
     );
-  }, [assignOfficer, data, escalateToBlacklist, markResolved, selected, timeline]);
+  }, [data, escalateToBlacklist, selected, timeline]);
 
   useShellAsideContent(asideContent);
 
@@ -367,8 +373,10 @@ export function RiskFlagsPanel() {
           },
           {
             id: 'officer',
-            header: 'Officer',
-            cell: (row) => <span className="whitespace-nowrap">{row.officerName}</span>,
+            header: 'Assigned to',
+            cell: (row) => (
+              <span className="whitespace-nowrap">{row.assignedToName ?? row.officerName}</span>
+            ),
           },
           {
             id: 'raised',
@@ -410,6 +418,40 @@ export function RiskFlagsPanel() {
             setRaiseFlagOpen(false);
           } finally {
             setIsRaisingFlag(false);
+          }
+        }}
+      />
+
+      <AssignOfficerModal
+        flag={selected}
+        isOpen={assignOpen}
+        isSubmitting={isAssigning}
+        onClose={() => setAssignOpen(false)}
+        onSubmit={async (assignedToUserId) => {
+          if (!selected) return;
+          setIsAssigning(true);
+          try {
+            await assignOfficer(selected, assignedToUserId);
+            setAssignOpen(false);
+          } finally {
+            setIsAssigning(false);
+          }
+        }}
+      />
+
+      <ResolveFlagModal
+        flag={selected}
+        isOpen={resolveOpen}
+        isSubmitting={isResolving}
+        onClose={() => setResolveOpen(false)}
+        onSubmit={async (reason) => {
+          if (!selected) return;
+          setIsResolving(true);
+          try {
+            await markResolved(selected, reason);
+            setResolveOpen(false);
+          } finally {
+            setIsResolving(false);
           }
         }}
       />

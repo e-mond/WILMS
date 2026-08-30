@@ -16,16 +16,22 @@ export function useRiskFlagActions() {
 
   const invalidate = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: riskFlagsQueryKey });
+    void queryClient.invalidateQueries({ queryKey: ['risk-flags', 'detail'] });
   }, [queryClient]);
 
   const escalateToBlacklist = useCallback(
     async (flag: RiskFlagSummary) => {
       try {
-        await riskFlagService.escalateRiskFlag(flag.id);
+        const detail = await riskFlagService.escalateRiskFlag(flag.id);
         invalidate();
-        toast.warning('Escalate to Blacklist', {
-          message: `${flag.entityName} queued for Super Admin approval.`,
-        });
+        const message =
+          detail.escalation?.message ??
+          'Flag marked critical for blacklist review.';
+        if (detail.escalation?.borrowerBlacklisted) {
+          toast.success('Escalated to blacklist', { message });
+        } else {
+          toast.warning('Escalated to critical', { message });
+        }
       } catch {
         toast.error('Unable to escalate flag', { message: 'Try again shortly.' });
       }
@@ -34,9 +40,9 @@ export function useRiskFlagActions() {
   );
 
   const markResolved = useCallback(
-    async (flag: RiskFlagSummary) => {
+    async (flag: RiskFlagSummary, reason: string) => {
       try {
-        await riskFlagService.resolveRiskFlag(flag.id);
+        await riskFlagService.resolveRiskFlag(flag.id, { reason });
         invalidate();
         const label = resolveRiskFlagDisplayId(flag);
         toast.success('Flag resolved', { message: `${label} marked resolved.` });
@@ -48,23 +54,20 @@ export function useRiskFlagActions() {
   );
 
   const assignOfficer = useCallback(
-    async (flag: RiskFlagSummary) => {
-      const assignedToUserId = user?.id;
-      if (!assignedToUserId) {
-        toast.error('Unable to assign officer', { message: 'Sign in to assign review.' });
-        return;
-      }
-
+    async (flag: RiskFlagSummary, assignedToUserId: string) => {
       try {
-        await riskFlagService.assignRiskFlag(flag.id, { assignedToUserId });
+        const detail = await riskFlagService.assignRiskFlag(flag.id, { assignedToUserId });
         invalidate();
         const label = resolveRiskFlagDisplayId(flag);
-        toast.info('Officer assigned', { message: `Review assigned for ${label}.` });
+        const assigneeName = detail.assignedToName ?? 'officer';
+        toast.info('Officer assigned', {
+          message: `${label} assigned to ${assigneeName}. They were notified.`,
+        });
       } catch {
         toast.error('Unable to assign officer', { message: 'Try again shortly.' });
       }
     },
-    [invalidate, toast, user?.id],
+    [invalidate, toast],
   );
 
   const raiseFlag = useCallback(
