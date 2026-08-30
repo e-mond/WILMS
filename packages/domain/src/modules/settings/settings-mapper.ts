@@ -22,6 +22,7 @@ export interface SystemSettingsDto {
   defaultLoanDurationWeeks: number;
   allowLoanRollovers: boolean;
   latePaymentGraceDays: number;
+  maxGuarantorGuarantees: number;
   smsProvider: string;
   smsSenderId: string;
   missedPaymentSmsEnabled: boolean;
@@ -58,6 +59,7 @@ export const DEFAULT_SYSTEM_SETTINGS: SystemSettingsDto = {
   defaultLoanDurationWeeks: 12,
   allowLoanRollovers: true,
   latePaymentGraceDays: 3,
+  maxGuarantorGuarantees: 3,
   smsProvider: 'smsnotifygh',
   smsSenderId: 'WILMS-GH',
   missedPaymentSmsEnabled: true,
@@ -94,6 +96,7 @@ export function mapSystemSettingsRow(row: SystemSettingsRow): SystemSettingsDto 
     defaultLoanDurationWeeks: row.defaultLoanDurationWeeks,
     allowLoanRollovers: row.allowLoanRollovers,
     latePaymentGraceDays: row.latePaymentGraceDays,
+    maxGuarantorGuarantees: row.maxGuarantorGuarantees ?? 3,
     smsProvider: row.smsProvider,
     smsSenderId: row.smsSenderId,
     missedPaymentSmsEnabled: row.missedPaymentSmsEnabled,

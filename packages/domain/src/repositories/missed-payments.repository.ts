@@ -59,7 +59,7 @@ export async function queryMissedPaymentAggregates(
   const groupNameCte = tx
     .select({
       borrowerId: groupMembers.borrowerId,
-      groupName: groups.name,
+      groupName: sql<string>`COALESCE(${groups.displayName}, ${groups.name})`,
     })
     .from(groupMembers)
     .innerJoin(groups, eq(groupMembers.groupId, groups.id))

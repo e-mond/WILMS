@@ -115,6 +115,7 @@ export interface UpdateSystemSettingsInput {
   defaultLoanDurationWeeks?: number;
   allowLoanRollovers?: boolean;
   latePaymentGraceDays?: number;
+  maxGuarantorGuarantees?: number;
   smsProvider?: string;
   smsSenderId?: string;
   missedPaymentSmsEnabled?: boolean;
@@ -368,6 +369,15 @@ function validateGroupSizeRules(minGroupSize: number, maxGroupSize: number): voi
   }
 }
 
+function validateGuarantorLimit(maxGuarantorGuarantees: number): void {
+  if (!Number.isFinite(maxGuarantorGuarantees) || maxGuarantorGuarantees < 1) {
+    throw new Error('VALIDATION:Maximum guarantor guarantees must be at least 1.');
+  }
+  if (maxGuarantorGuarantees > 20) {
+    throw new Error('VALIDATION:Maximum guarantor guarantees cannot exceed 20.');
+  }
+}
+
 export async function updateSettings(
   input: UpdateSystemSettingsInput,
   actorId?: string,
@@ -375,7 +385,10 @@ export async function updateSettings(
   const current = await getSettings();
   const minGroupSize = input.minGroupSize ?? current.minGroupSize;
   const maxGroupSize = input.maxGroupSize ?? current.maxGroupSize;
+  const maxGuarantorGuarantees =
+    input.maxGuarantorGuarantees ?? current.maxGuarantorGuarantees ?? 3;
   validateGroupSizeRules(minGroupSize, maxGroupSize);
+  validateGuarantorLimit(maxGuarantorGuarantees);
 
   if (!isDatabaseEnabled()) {
     systemSettings = {
@@ -383,6 +396,7 @@ export async function updateSettings(
       ...input,
       minGroupSize,
       maxGroupSize,
+      maxGuarantorGuarantees,
       updatedAt: new Date().toISOString(),
     };
     if (actorId) {
@@ -401,6 +415,7 @@ export async function updateSettings(
     ...input,
     minGroupSize,
     maxGroupSize,
+    maxGuarantorGuarantees,
   });
 
   if (actorId) {

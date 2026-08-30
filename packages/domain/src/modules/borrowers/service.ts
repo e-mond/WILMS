@@ -800,7 +800,12 @@ export async function checkGuarantorEligibility(input: {
   isApprovedCommunityLeader?: boolean;
 }) {
   const { evaluateGuarantorEligibility } = await import('./guarantor-eligibility.js');
-  return evaluateGuarantorEligibility(input, await listBorrowers());
+  const { getGuarantorLimits } = await import('../settings/guarantor-limits.js');
+  const limits = await getGuarantorLimits();
+  return evaluateGuarantorEligibility(input, await listBorrowers(), {
+    maxGuarantees: limits.maxGuarantorGuarantees,
+    maxLeaderGuarantees: limits.maxLeaderGuarantorGuarantees,
+  });
 }
 
 export async function listRegistrationDraftsForOfficer(officerId: string) {

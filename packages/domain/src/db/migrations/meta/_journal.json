@@ -330,6 +330,13 @@
       "when": 1786149600000,
       "tag": "0046_backfill_group_payment_day",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1786236000000,
+      "tag": "0047_max_guarantor_guarantees",
+      "breakpoints": true
     }
   ]
 }

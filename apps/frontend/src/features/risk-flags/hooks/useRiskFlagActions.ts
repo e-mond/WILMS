@@ -6,6 +6,7 @@ import { riskFlagService } from '@/services';
 import { riskFlagsQueryKey } from '@/features/risk-flags/hooks/useRiskFlags';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
+import { resolveRiskFlagDisplayId } from '@/utils/entity-display-id';
 import type { FlagEntityType, FlagType, RiskFlagSummary } from '@/types/risk-flag';
 
 export function useRiskFlagActions() {
@@ -37,7 +38,8 @@ export function useRiskFlagActions() {
       try {
         await riskFlagService.resolveRiskFlag(flag.id);
         invalidate();
-        toast.success('Flag resolved', { message: `${flag.id} marked resolved.` });
+        const label = resolveRiskFlagDisplayId(flag);
+        toast.success('Flag resolved', { message: `${label} marked resolved.` });
       } catch {
         toast.error('Unable to resolve flag', { message: 'Try again shortly.' });
       }
@@ -56,7 +58,8 @@ export function useRiskFlagActions() {
       try {
         await riskFlagService.assignRiskFlag(flag.id, { assignedToUserId });
         invalidate();
-        toast.info('Officer assigned', { message: `Review assigned for ${flag.id}.` });
+        const label = resolveRiskFlagDisplayId(flag);
+        toast.info('Officer assigned', { message: `Review assigned for ${label}.` });
       } catch {
         toast.error('Unable to assign officer', { message: 'Try again shortly.' });
       }
