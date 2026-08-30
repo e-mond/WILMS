@@ -133,7 +133,7 @@ import type {
 } from '@/types/expense';
 import type { PaymentEntryContext } from '@/types/payment-entry';
 import type { EditPaymentInput, MarkMissedPaymentInput, MarkMissedPaymentResult, PaymentTransaction, RecordPaymentInput } from '@/types/payment';
-import type { RiskFlagDetail, RiskFlagListResponse, CreateRiskFlagInput, ResolveRiskFlagInput, AssignRiskFlagInput } from '@/types/risk-flag';
+import type { RiskFlagDetail, RiskFlagListResponse, CreateRiskFlagInput, ResolveRiskFlagInput, AssignRiskFlagInput, RiskFlagAssigneeOption } from '@/types/risk-flag';
 import type {
   AdminFeeStatus,
   AwaitingAdminFeeBorrower,
@@ -297,6 +297,7 @@ export interface ICollectorManagementService {
 
 export interface IRiskFlagService {
   listRiskFlags(): Promise<RiskFlagListResponse>;
+  listRiskFlagAssignees(): Promise<RiskFlagAssigneeOption[]>;
   getRiskFlag(id: string): Promise<RiskFlagDetail>;
   createRiskFlag(input: CreateRiskFlagInput): Promise<RiskFlagDetail>;
   escalateRiskFlag(id: string): Promise<RiskFlagDetail>;

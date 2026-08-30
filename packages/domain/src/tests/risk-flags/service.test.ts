@@ -18,8 +18,13 @@ vi.mock('../../infrastructure/audit/audit-log.js', () => ({
   appendAuditEntry: mocks.appendAuditEntry,
 }));
 
+vi.mock('../../infrastructure/notifications/in-app-notify.js', () => ({
+  createInAppNotification: vi.fn(),
+}));
+
 vi.mock('../../repositories/user.repository.js', () => ({
   getUserById: mocks.getUserById,
+  listUsers: vi.fn().mockResolvedValue([]),
 }));
 
 import {
@@ -168,7 +173,12 @@ describe('risk-flags service', () => {
   });
 
   it('assigns a risk flag to a user', async () => {
-    mocks.getUserById.mockResolvedValue({ id: 'user-2', displayName: 'Reviewer' });
+    mocks.getUserById.mockResolvedValue({
+      id: 'user-2',
+      displayName: 'Reviewer',
+      status: 'ACTIVE',
+      role: 'APPROVER',
+    });
 
     const flagRow = {
       id: 'flag-1',
@@ -186,10 +196,12 @@ describe('risk-flags service', () => {
       activeMembers: null,
       totalMembers: null,
       reason: null,
+      assignedToUserId: 'user-2',
       deletedAt: null,
+      updatedAt: new Date('2026-06-01T00:00:00.000Z'),
     };
 
-    mockSelectChain([{ ...flagRow, status: 'OPEN' }]);
+    mockSelectChain([{ ...flagRow, status: 'OPEN', assignedToUserId: null }]);
     mockSelectChain([flagRow]);
 
     const result = await assignRiskFlag('flag-1', 'user-2', 'actor-1', 'Super Admin');

@@ -13,7 +13,23 @@ import { loanSchedules } from '../../db/schema/loan-schedules.js';
 import { loans } from '../../db/schema/loans.js';
 import { riskFlags } from '../../db/schema/risk-flags.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
+import { createInAppNotification } from '../../infrastructure/notifications/in-app-notify.js';
 import * as userRepo from '../../repositories/user.repository.js';
+import { ROLE_LABELS, USER_ROLE, type UserRole } from '@wilms/shared-rbac';
+import { BORROWER_STATUS } from '@wilms/shared-contracts';
+
+const RISK_FLAG_ASSIGNABLE_ROLES = new Set<UserRole>([
+  USER_ROLE.SUPER_ADMIN,
+  USER_ROLE.APPROVER,
+  USER_ROLE.REGISTRATION_OFFICER,
+]);
+
+export interface RiskFlagAssigneeOption {
+  id: string;
+  displayName: string;
+  role: string;
+  roleLabel: string;
+}
 
 export interface RiskFlagSummary {
   id: string;
@@ -26,6 +42,8 @@ export interface RiskFlagSummary {
   flagType: string;
   community: string;
   officerName: string;
+  assignedToUserId?: string;
+  assignedToName?: string;
   raisedAt: string;
   arrearsPesewas: number;
   status: string;
@@ -49,6 +67,10 @@ export interface RiskFlagListResponse {
 
 export interface RiskFlagDetail extends RiskFlagSummary {
   timeline: Array<{ id: string; message: string; recordedAt: string }>;
+  escalation?: {
+    borrowerBlacklisted: boolean;
+    message: string;
+  };
 }
 
 const FLAG_TYPE_LABELS: Record<string, string> = {
@@ -238,6 +260,7 @@ async function enrichFlagRows(
       flagType: row.flagType,
       community: row.community,
       officerName: row.officerName,
+      assignedToUserId: row.assignedToUserId ?? undefined,
       raisedAt: row.raisedAt.toISOString(),
       arrearsPesewas: row.arrearsPesewas,
       status: row.status,
@@ -268,7 +291,7 @@ async function enrichFlagRowsUnsafe(
   ];
   const groupsById = await loadGroupEnrichment([...new Set(relatedGroupIds)]);
 
-  return rows.map((row) => {
+  const summaries: RiskFlagSummary[] = rows.map((row) => {
     const displayId = formatRiskFlagDisplayId({ id: row.id, raisedAt: row.raisedAt });
     let entityDisplayId = formatEntityDisplayId({
       entityType: row.entityType,
@@ -342,6 +365,8 @@ async function enrichFlagRowsUnsafe(
       flagType: row.flagType,
       community: row.community,
       officerName: row.officerName,
+      assignedToUserId: row.assignedToUserId ?? undefined,
+      assignedToName: undefined,
       raisedAt: row.raisedAt.toISOString(),
       arrearsPesewas,
       status: row.status,
@@ -350,6 +375,27 @@ async function enrichFlagRowsUnsafe(
       totalMembers,
     };
   });
+
+  const assigneeIds = [
+    ...new Set(
+      summaries
+        .map((flag) => flag.assignedToUserId)
+        .filter((id): id is string => Boolean(id)),
+    ),
+  ];
+  if (assigneeIds.length > 0) {
+    const users = await userRepo.listUsers();
+    const nameById = new Map(
+      users.filter((user) => assigneeIds.includes(user.id)).map((user) => [user.id, user.displayName]),
+    );
+    for (const flag of summaries) {
+      if (flag.assignedToUserId) {
+        flag.assignedToName = nameById.get(flag.assignedToUserId);
+      }
+    }
+  }
+
+  return summaries;
 }
 
 export async function listRiskFlags(): Promise<RiskFlagListResponse> {
@@ -411,6 +457,26 @@ export async function listRiskFlags(): Promise<RiskFlagListResponse> {
   };
 }
 
+export async function listRiskFlagAssignees(): Promise<RiskFlagAssigneeOption[]> {
+  requireDatabase();
+
+  const users = await userRepo.listUsers();
+  return users
+    .filter(
+      (user) =>
+        user.status === 'ACTIVE' &&
+        RISK_FLAG_ASSIGNABLE_ROLES.has(user.role as UserRole),
+    )
+    .map((user) => ({
+      id: user.id,
+      displayName: user.displayName,
+      role: user.role,
+      roleLabel:
+        ROLE_LABELS[user.role as UserRole] ?? user.role,
+    }))
+    .sort((left, right) => left.displayName.localeCompare(right.displayName));
+}
+
 export async function getRiskFlag(id: string): Promise<RiskFlagDetail> {
   if (!isDatabaseEnabled()) {
     throw new Error('NOT_FOUND');
@@ -428,16 +494,41 @@ export async function getRiskFlag(id: string): Promise<RiskFlagDetail> {
   }
 
   const summary = await rowToSummary(row);
+  const timeline: RiskFlagDetail['timeline'] = [
+    {
+      id: `${row.id}-raised`,
+      message: row.reason ?? `${FLAG_TYPE_LABELS[summary.flagType] ?? summary.flagType} flag raised`,
+      recordedAt: summary.raisedAt,
+    },
+  ];
+
+  if (summary.assignedToName || summary.assignedToUserId) {
+    timeline.push({
+      id: `${row.id}-assigned`,
+      message: `Assigned to ${summary.assignedToName ?? 'reviewer'} for follow-up`,
+      recordedAt: row.updatedAt?.toISOString?.() ?? summary.raisedAt,
+    });
+  }
+
+  if (summary.status === 'CRITICAL' || summary.flagType === 'BLACKLISTED') {
+    timeline.push({
+      id: `${row.id}-escalated`,
+      message: 'Escalated to critical / blacklist review',
+      recordedAt: row.updatedAt?.toISOString?.() ?? summary.raisedAt,
+    });
+  }
+
+  if (summary.status === 'RESOLVED') {
+    timeline.push({
+      id: `${row.id}-resolved`,
+      message: row.reason ? `Resolved: ${row.reason}` : 'Flag marked resolved',
+      recordedAt: row.updatedAt?.toISOString?.() ?? summary.raisedAt,
+    });
+  }
 
   return {
     ...summary,
-    timeline: [
-      {
-        id: `${row.id}-raised`,
-        message: row.reason ?? `${summary.flagType} flag raised`,
-        recordedAt: summary.raisedAt,
-      },
-    ],
+    timeline,
   };
 }
 
@@ -583,7 +674,61 @@ export async function escalateRiskFlag(
     targetEntityType: 'risk-flag',
   });
 
-  return getRiskFlag(id);
+  let borrowerBlacklisted = false;
+  let escalationMessage =
+    'Flag marked critical for blacklist review. Active borrowers are not auto-blacklisted — complete a formal blacklist action if required.';
+
+  if (row.entityType === 'BORROWER' || row.entityType === 'APPLICATION') {
+    try {
+      const { getBorrower } = await import('../../db/persistence.js');
+      const { blacklistBorrower } = await import('../borrowers/service.js');
+      const borrower = await getBorrower(row.entityId);
+      if (borrower?.status === BORROWER_STATUS.PENDING) {
+        await blacklistBorrower(
+          row.entityId,
+          row.reason?.trim() || `Escalated from risk flag ${formatRiskFlagDisplayId({ id: row.id, raisedAt: row.raisedAt })}`,
+          actorId,
+          actorDisplayName,
+        );
+        borrowerBlacklisted = true;
+        escalationMessage =
+          'Pending application blacklisted and flag marked critical. Registration officer was notified.';
+      }
+    } catch {
+      // Borrower may already be non-pending or unavailable; flag escalation still stands.
+    }
+  }
+
+  try {
+    const users = await userRepo.listUsers();
+    const admins = users.filter(
+      (user) =>
+        user.status === 'ACTIVE' &&
+        (user.role === USER_ROLE.SUPER_ADMIN || user.role === USER_ROLE.APPROVER) &&
+        user.id !== actorId,
+    );
+    const displayId = formatRiskFlagDisplayId({ id: row.id, raisedAt: row.raisedAt });
+    for (const admin of admins) {
+      void createInAppNotification({
+        userId: admin.id,
+        event: 'SUPERVISOR_ALERT',
+        title: 'Risk flag escalated',
+        body: `${displayId}: ${row.entityName} escalated to critical blacklist review.`,
+        href: '/risk-flags',
+      });
+    }
+  } catch {
+    // Notifications are best-effort.
+  }
+
+  const detail = await getRiskFlag(id);
+  return {
+    ...detail,
+    escalation: {
+      borrowerBlacklisted,
+      message: escalationMessage,
+    },
+  };
 }
 
 export async function resolveRiskFlag(
@@ -605,11 +750,13 @@ export async function resolveRiskFlag(
     throw new Error('NOT_FOUND');
   }
 
+  const resolutionNote = reason?.trim() || row.reason;
+
   await db
     .update(riskFlags)
     .set({
       status: 'RESOLVED',
-      reason: reason?.trim() ?? row.reason,
+      reason: resolutionNote,
       updatedAt: new Date(),
     })
     .where(eq(riskFlags.id, id));
@@ -620,8 +767,19 @@ export async function resolveRiskFlag(
     actorDisplayName,
     targetEntityId: id,
     targetEntityType: 'risk-flag',
-    reason,
+    reason: resolutionNote ?? undefined,
   });
+
+  if (row.assignedToUserId && row.assignedToUserId !== actorId) {
+    const displayId = formatRiskFlagDisplayId({ id: row.id, raisedAt: row.raisedAt });
+    void createInAppNotification({
+      userId: row.assignedToUserId,
+      event: 'SUPERVISOR_ALERT',
+      title: 'Risk flag resolved',
+      body: `${displayId}: ${row.entityName} was marked resolved${resolutionNote ? ` — ${resolutionNote}` : ''}.`,
+      href: '/risk-flags',
+    });
+  }
 
   return getRiskFlag(id);
 }
@@ -638,6 +796,14 @@ export async function assignRiskFlag(
   if (!assignee) {
     throw new Error('VALIDATION:Assigned user not found.');
   }
+  if (assignee.status && assignee.status !== 'ACTIVE') {
+    throw new Error('VALIDATION:Assigned user must be an active staff account.');
+  }
+  if (!RISK_FLAG_ASSIGNABLE_ROLES.has(assignee.role as UserRole)) {
+    throw new Error(
+      'VALIDATION:Assignee must be an active Super Admin, Approver, or Registration Officer.',
+    );
+  }
 
   const db = getDb();
   const [row] = await db
@@ -650,10 +816,17 @@ export async function assignRiskFlag(
     throw new Error('NOT_FOUND');
   }
 
+  if (row.status === 'RESOLVED') {
+    throw new Error('VALIDATION:Resolved risk flags cannot be assigned.');
+  }
+
+  const previousAssigneeId = row.assignedToUserId ?? null;
+
   await db
     .update(riskFlags)
     .set({
       assignedToUserId,
+      officerName: assignee.displayName,
       status: row.status === 'OPEN' ? 'UNDER_REVIEW' : row.status,
       updatedAt: new Date(),
     })
@@ -667,6 +840,27 @@ export async function assignRiskFlag(
     targetEntityType: 'risk-flag',
     reason: `Assigned to ${assignee.displayName}`,
   });
+
+  const displayId = formatRiskFlagDisplayId({ id: row.id, raisedAt: row.raisedAt });
+  const flagLabel = FLAG_TYPE_LABELS[row.flagType] ?? row.flagType;
+
+  void createInAppNotification({
+    userId: assignee.id,
+    event: 'SUPERVISOR_ALERT',
+    title: 'Risk flag assigned to you',
+    body: `${displayId}: ${row.entityName} (${flagLabel}) needs your review.`,
+    href: '/risk-flags',
+  });
+
+  if (previousAssigneeId && previousAssigneeId !== assignedToUserId && previousAssigneeId !== actorId) {
+    void createInAppNotification({
+      userId: previousAssigneeId,
+      event: 'SUPERVISOR_ALERT',
+      title: 'Risk flag reassigned',
+      body: `${displayId}: ${row.entityName} was reassigned to ${assignee.displayName}.`,
+      href: '/risk-flags',
+    });
+  }
 
   return getRiskFlag(id);
 }

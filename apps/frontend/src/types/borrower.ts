@@ -9,6 +9,7 @@ export interface BorrowerSummary {
   fullName: string;
   phone: string;
   status: BorrowerStatus;
+  community?: string;
   groupName: string;
   groupId?: string;
   photoUrl?: string | null;
