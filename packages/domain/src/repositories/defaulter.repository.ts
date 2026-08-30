@@ -61,11 +61,11 @@ export async function queryDefaulterAggregates(
     .groupBy(payments.borrowerId)
     .as('last_payment_cte');
 
-  // Group name: take the first group the borrower belongs to
+  // Group name: prefer staff-facing display name
   const groupNameCte = tx
     .select({
       borrowerId: groupMembers.borrowerId,
-      groupName: groups.name,
+      groupName: sql<string>`COALESCE(${groups.displayName}, ${groups.name})`,
     })
     .from(groupMembers)
     .innerJoin(groups, eq(groupMembers.groupId, groups.id))

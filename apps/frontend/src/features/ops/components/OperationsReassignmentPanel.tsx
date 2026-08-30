@@ -15,6 +15,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import { groupService, loanService } from '@/services';
 import { ApiError } from '@/types/api';
+import { resolveBorrowerDisplayId } from '@/utils/format-borrower-display-id';
+import { resolveLoanDisplayId } from '@/utils/entity-display-id';
 
 type OpsTab = 'group' | 'collector' | 'payment-day';
 
@@ -28,6 +30,7 @@ export function OperationsReassignmentPanel() {
   const [sourceGroupId, setSourceGroupId] = useState('');
   const [targetGroupId, setTargetGroupId] = useState('');
   const [borrowerId, setBorrowerId] = useState('');
+  const [borrowerQuery, setBorrowerQuery] = useState('');
   const [collectorGroupId, setCollectorGroupId] = useState('');
   const [collectorId, setCollectorId] = useState('');
   const [loanId, setLoanId] = useState('');
@@ -42,6 +45,56 @@ export function OperationsReassignmentPanel() {
   const groups = useMemo(() => groupsQuery.data?.groups ?? [], [groupsQuery.data]);
   const { data: collectorsData } = useCollectorsManagement();
   const collectors = useMemo(() => collectorsData?.collectors ?? [], [collectorsData]);
+
+  const sourceGroupDetailQuery = useQuery({
+    queryKey: ['groups', 'ops-reassignment', sourceGroupId],
+    queryFn: () => groupService.getGroup(sourceGroupId),
+    enabled: Boolean(sourceGroupId),
+  });
+
+  const activeLoansQuery = useQuery({
+    queryKey: ['loans', 'ops-reassignment', 'portfolio'],
+    queryFn: () => loanService.listPortfolioEntries(),
+    enabled: tab === 'payment-day',
+  });
+
+  const sourceMembers = sourceGroupDetailQuery.data?.members ?? [];
+  const normalizedBorrowerQuery = borrowerQuery.trim().toLowerCase();
+  const borrowerSuggestions = useMemo(() => {
+    if (!normalizedBorrowerQuery) {
+      return sourceMembers.slice(0, 8);
+    }
+    return sourceMembers
+      .filter((member) => {
+        const displayId = resolveBorrowerDisplayId({
+          id: member.borrowerId,
+          displayId: member.displayId,
+        }).toLowerCase();
+        return (
+          member.fullName.toLowerCase().includes(normalizedBorrowerQuery) ||
+          displayId.includes(normalizedBorrowerQuery) ||
+          member.borrowerId.toLowerCase().includes(normalizedBorrowerQuery)
+        );
+      })
+      .slice(0, 8);
+  }, [normalizedBorrowerQuery, sourceMembers]);
+
+  const selectedBorrower = sourceMembers.find((member) => member.borrowerId === borrowerId);
+  const selectedBorrowerLabel = selectedBorrower
+    ? `${resolveBorrowerDisplayId({
+        id: selectedBorrower.borrowerId,
+        displayId: selectedBorrower.displayId,
+      })} — ${selectedBorrower.fullName}`
+    : borrowerId;
+
+  const activeLoans = useMemo(
+    () => (activeLoansQuery.data ?? []).filter((loan) => loan.status === 'ACTIVE'),
+    [activeLoansQuery.data],
+  );
+  const selectedLoan = activeLoans.find((loan) => loan.id === loanId);
+  const selectedLoanLabel = selectedLoan
+    ? `${resolveLoanDisplayId(selectedLoan)}${selectedLoan.borrowerName ? ` — ${selectedLoan.borrowerName}` : ''}`
+    : loanId;
 
   const invalidateOperationalQueries = async () => {
     await Promise.all([
@@ -184,8 +237,16 @@ export function OperationsReassignmentPanel() {
           </CardHeader>
           <CardContent className="space-y-wilms-4">
             <label className="block space-y-wilms-1 text-small">
-              <span>Source group ID</span>
-              <Select value={sourceGroupId} onChange={(event) => setSourceGroupId(event.target.value)}>
+              <span>Source group</span>
+              <Select
+                value={sourceGroupId}
+                onChange={(event) => {
+                  setSourceGroupId(event.target.value);
+                  setBorrowerId('');
+                  setBorrowerQuery('');
+                  setPreview(null);
+                }}
+              >
                 <option value="">Select source group</option>
                 {groups.map((group) => (
                   <option key={group.id} value={group.id}>
@@ -195,12 +256,66 @@ export function OperationsReassignmentPanel() {
               </Select>
             </label>
             <label className="block space-y-wilms-1 text-small">
-              <span>Borrower ID</span>
+              <span>Borrower</span>
               <Input
-                value={borrowerId}
-                onChange={(event) => setBorrowerId(event.target.value)}
-                placeholder="Borrower UUID"
+                value={borrowerQuery}
+                onChange={(event) => {
+                  setBorrowerQuery(event.target.value);
+                  setBorrowerId('');
+                  setPreview(null);
+                }}
+                placeholder={
+                  sourceGroupId
+                    ? 'Search by name or BRW-… ID'
+                    : 'Select a source group first'
+                }
+                disabled={!sourceGroupId}
+                list="ops-reassignment-borrowers"
+                autoComplete="off"
               />
+              <datalist id="ops-reassignment-borrowers">
+                {borrowerSuggestions.map((member) => {
+                  const displayId = resolveBorrowerDisplayId({
+                    id: member.borrowerId,
+                    displayId: member.displayId,
+                  });
+                  return (
+                    <option
+                      key={member.borrowerId}
+                      value={`${displayId} — ${member.fullName}`}
+                    />
+                  );
+                })}
+              </datalist>
+              {sourceGroupId && borrowerSuggestions.length > 0 ? (
+                <ul className="mt-wilms-1 max-h-40 overflow-auto rounded-md border border-border bg-card">
+                  {borrowerSuggestions.map((member) => {
+                    const displayId = resolveBorrowerDisplayId({
+                      id: member.borrowerId,
+                      displayId: member.displayId,
+                    });
+                    const label = `${displayId} — ${member.fullName}`;
+                    return (
+                      <li key={member.borrowerId}>
+                        <button
+                          type="button"
+                          className="w-full px-wilms-3 py-wilms-2 text-left text-small hover:bg-background"
+                          onClick={() => {
+                            setBorrowerId(member.borrowerId);
+                            setBorrowerQuery(label);
+                            setPreview(null);
+                          }}
+                        >
+                          {label}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : null}
+              {sourceGroupId && sourceMembers.length === 0 && !sourceGroupDetailQuery.isLoading ? (
+                <p className="text-small text-text-muted">No members found in this group.</p>
+              ) : null}
             </label>
             <label className="block space-y-wilms-1 text-small">
               <span>Target group</span>
@@ -225,7 +340,7 @@ export function OperationsReassignmentPanel() {
                 disabled={!sourceGroupId || !targetGroupId || !borrowerId || !reason.trim()}
                 onClick={() =>
                   setPreview(
-                    `Move borrower ${borrowerId} from ${sourceGroup?.displayName || sourceGroupId} to ${targetGroup?.displayName || targetGroupId}. Membership, expected collections, and collector queues will update.`,
+                    `Move ${selectedBorrowerLabel} from ${sourceGroup?.displayName || sourceGroupId} to ${targetGroup?.displayName || targetGroupId}. Membership, expected collections, and collector queues will update.`,
                   )
                 }
               >
@@ -330,12 +445,16 @@ export function OperationsReassignmentPanel() {
               while preserving historical payments.
             </Alert>
             <label className="block space-y-wilms-1 text-small">
-              <span>Loan ID</span>
-              <Input
-                value={loanId}
-                onChange={(event) => setLoanId(event.target.value)}
-                placeholder="Loan UUID"
-              />
+              <span>Loan</span>
+              <Select value={loanId} onChange={(event) => setLoanId(event.target.value)}>
+                <option value="">Select active loan</option>
+                {activeLoans.map((loan) => (
+                  <option key={loan.id} value={loan.id}>
+                    {resolveLoanDisplayId(loan)}
+                    {loan.borrowerName ? ` — ${loan.borrowerName}` : ''}
+                  </option>
+                ))}
+              </Select>
             </label>
             <label className="block space-y-wilms-1 text-small">
               <span>New payment day</span>
@@ -367,7 +486,7 @@ export function OperationsReassignmentPanel() {
                 disabled={!loanId || !toPaymentDay || !effectiveFrom || !reason.trim()}
                 onClick={() =>
                   setPreview(
-                    `Request payment day ${toPaymentDay} for loan ${loanId} from ${effectiveFrom}. Future schedule weeks will move; paid and historical weeks stay unchanged.`,
+                    `Request payment day ${toPaymentDay} for ${selectedLoanLabel} from ${effectiveFrom}. Future schedule weeks will move; paid and historical weeks stay unchanged.`,
                   )
                 }
               >

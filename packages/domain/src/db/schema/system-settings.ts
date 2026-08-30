@@ -27,6 +27,7 @@ export const systemSettings = pgTable('system_settings', {
   defaultLoanDurationWeeks: integer('default_loan_duration_weeks').notNull().default(12),
   allowLoanRollovers: boolean('allow_loan_rollovers').notNull().default(true),
   latePaymentGraceDays: integer('late_payment_grace_days').notNull().default(3),
+  maxGuarantorGuarantees: integer('max_guarantor_guarantees').notNull().default(3),
   smsProvider: text('sms_provider').notNull().default('smsnotifygh'),
   smsSenderId: text('sms_sender_id').notNull().default('WILMS-GH'),
   missedPaymentSmsEnabled: boolean('missed_payment_sms_enabled').notNull().default(true),

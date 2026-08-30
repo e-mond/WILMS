@@ -10,6 +10,10 @@ const NESTED_BREADCRUMB_PARENTS: Array<{
   parent: ShellBreadcrumbItem;
 }> = [
   {
+    test: (pathname) => pathname.startsWith('/ops/') && pathname !== '/ops',
+    parent: { label: 'Operations', href: '/ops' },
+  },
+  {
     test: (pathname) => pathname.startsWith('/reports/') && pathname !== '/reports',
     parent: { label: 'Reports', href: '/reports' },
   },

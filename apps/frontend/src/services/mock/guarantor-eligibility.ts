@@ -1,3 +1,4 @@
+import { getSystemSettingsStore } from '@/services/mock/settings.store';
 import { BORROWER_STATUS } from '@/types/borrower';
 import {
   GUARANTOR_VALIDATION_STATUS,
@@ -73,6 +74,10 @@ function isSameBorrower(entry: BorrowerRegistryEntry, input: GuarantorEligibilit
 export function checkGuarantorEligibility(
   input: GuarantorEligibilityInput,
 ): GuarantorEligibilityResult {
+  const settingsMax =
+    getSystemSettingsStore().maxGuarantorGuarantees ?? MAX_GUARANTOR_GUARANTEES;
+  const defaultMax = Math.max(1, settingsMax);
+  const leaderMax = defaultMax + 2;
   const normalizedPhone = input.guarantorPhone.trim();
   const borrowerPhone = input.borrowerPhone?.trim();
 
@@ -80,11 +85,11 @@ export function checkGuarantorEligibility(
     return {
       isEligible: false,
       activeGuaranteeCount: 0,
-      maxGuarantees: MAX_GUARANTOR_GUARANTEES,
+      maxGuarantees: defaultMax,
       isDuplicateRegistration: false,
       validationStatus: GUARANTOR_VALIDATION_STATUS.VALID,
       message: 'Guarantor phone must differ from borrower phone.',
-      ...scoreFromMetrics(0, MAX_GUARANTOR_GUARANTEES),
+      ...scoreFromMetrics(0, defaultMax),
     };
   }
 
@@ -97,7 +102,7 @@ export function checkGuarantorEligibility(
   const activeGuaranteeCount = linkedActive.filter((entry) => !isSameBorrower(entry, input)).length;
 
   const isExempt = Boolean(input.isGroupLeader || input.isApprovedCommunityLeader);
-  const maxGuarantees = isExempt ? MAX_GUARANTOR_GUARANTEES + 2 : MAX_GUARANTOR_GUARANTEES;
+  const maxGuarantees = isExempt ? leaderMax : defaultMax;
   const score = scoreFromMetrics(activeGuaranteeCount, maxGuarantees);
 
   if (duplicateForSameBorrower) {
@@ -124,14 +129,14 @@ export function checkGuarantorEligibility(
     };
   }
 
-  if (activeGuaranteeCount >= MAX_GUARANTOR_GUARANTEES) {
+  if (activeGuaranteeCount >= defaultMax) {
     return {
       isEligible: false,
       activeGuaranteeCount,
-      maxGuarantees: MAX_GUARANTOR_GUARANTEES,
+      maxGuarantees: defaultMax,
       isDuplicateRegistration: false,
       validationStatus: GUARANTOR_VALIDATION_STATUS.AT_LIMIT,
-      message: `Guarantor has reached the maximum of ${MAX_GUARANTOR_GUARANTEES} active guarantees.`,
+      message: `Guarantor has reached the maximum of ${defaultMax} active guarantees.`,
       ...score,
     };
   }
@@ -139,10 +144,10 @@ export function checkGuarantorEligibility(
   return {
     isEligible: true,
     activeGuaranteeCount,
-    maxGuarantees: MAX_GUARANTOR_GUARANTEES,
+    maxGuarantees: defaultMax,
     isDuplicateRegistration: false,
     validationStatus: GUARANTOR_VALIDATION_STATUS.VALID,
-    message: `Current Guarantees: ${activeGuaranteeCount} of ${MAX_GUARANTOR_GUARANTEES}`,
+    message: `Current Guarantees: ${activeGuaranteeCount} of ${defaultMax}`,
     ...score,
   };
 }
