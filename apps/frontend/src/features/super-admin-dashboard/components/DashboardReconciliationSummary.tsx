@@ -3,10 +3,12 @@
 import Link from 'next/link';
 import { useMemo } from 'react';
 import { Clock3 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { CurrencyAmount, KpiCard } from '@/components/data-display';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { ExecutiveKpiGrid } from '@/components/layout/executive';
 import { useReconciliationList } from '@/features/reconciliation/hooks/useReconciliationReview';
+import { reconciliationService } from '@/services';
 import { needsReconciliationReview } from '@/utils/reconciliation-review';
 import { cn } from '@/utils/cn';
 import { RECONCILIATION_STATUS_LABELS } from '@/constants/reconciliation-status';
@@ -31,6 +33,11 @@ function isSameDay(iso: string | undefined, now: Date): boolean {
 
 export function DashboardReconciliationSummary({ compact = false }: { compact?: boolean }) {
   const { data, isLoading, isError, refetch } = useReconciliationList();
+  const opsQuery = useQuery({
+    queryKey: ['reconciliations', 'ops-snapshot'],
+    queryFn: () => reconciliationService.getReconciliationOpsSnapshot(),
+    staleTime: 30_000,
+  });
   const now = useMemo(() => new Date(), []);
 
   const summary = useMemo(() => {
@@ -58,13 +65,15 @@ export function DashboardReconciliationSummary({ compact = false }: { compact?: 
       }));
 
     return {
-      pendingTotal: pending.length,
-      approvedToday,
-      rejectedToday,
-      submittedCount: submitted.length,
+      pendingTotal: opsQuery.data?.pendingReview ?? pending.length,
+      missingRecent: opsQuery.data?.missingRecentSubmissions ?? 0,
+      windowDays: opsQuery.data?.windowDays ?? 7,
+      approvedToday: opsQuery.data?.approvedToday ?? approvedToday,
+      rejectedToday: opsQuery.data?.rejectedToday ?? rejectedToday,
+      submittedCount: opsQuery.data?.submittedCount ?? submitted.length,
       latestPending,
     };
-  }, [data, now]);
+  }, [data, now, opsQuery.data]);
 
   if (isLoading) {
     return (
@@ -88,10 +97,17 @@ export function DashboardReconciliationSummary({ compact = false }: { compact?: 
 
   const metrics = [
     {
-      label: 'Pending',
+      label: 'Pending review',
       value: summary.pendingTotal,
       trend: summary.pendingTotal === 0 ? 'Clear' : 'Needs review',
       tone: summary.pendingTotal > 0 ? 'warn' : 'ok',
+      icon: PENDING_AGING_ICON,
+    },
+    {
+      label: `Missing (${summary.windowDays}d)`,
+      value: summary.missingRecent,
+      trend: summary.missingRecent === 0 ? 'All submitted' : 'No cash submit',
+      tone: summary.missingRecent > 0 ? 'danger' : 'ok',
       icon: PENDING_AGING_ICON,
     },
     {
@@ -107,13 +123,6 @@ export function DashboardReconciliationSummary({ compact = false }: { compact?: 
       trend: summary.rejectedToday > 0 ? 'Actioned' : 'None yet',
       tone: summary.rejectedToday > 0 ? 'danger' : 'ok',
       icon: PENDING_AGING_ICON,
-    },
-    {
-      label: 'Total submitted',
-      value: summary.submittedCount,
-      trend: `${summary.pendingTotal} open`,
-      tone: 'info' as const,
-      icon: undefined,
     },
   ] as const;
 
@@ -131,9 +140,10 @@ export function DashboardReconciliationSummary({ compact = false }: { compact?: 
           <p className="text-small font-semibold uppercase tracking-wide text-status-info">
             Reconciliation
           </p>
-          <h3 className="text-heading-3 font-semibold text-text-primary">Pending queue</h3>
+          <h3 className="text-heading-3 font-semibold text-text-primary">Cash control queue</h3>
           <p className="mt-wilms-1 text-small text-text-muted">
-            Collector cash submissions awaiting review
+            Submitted reconciliations awaiting review, plus collectors with no submission in the
+            last {summary.windowDays} days. Age is days since the cash sheet was submitted.
           </p>
         </div>
         <Link
@@ -163,7 +173,6 @@ export function DashboardReconciliationSummary({ compact = false }: { compact?: 
               metric.tone === 'ok' && 'text-status-active',
               metric.tone === 'warn' && 'text-status-at-risk',
               metric.tone === 'danger' && 'text-danger',
-              metric.tone === 'info' && 'text-text-primary',
             )}
           />
         ))}
@@ -185,7 +194,9 @@ export function DashboardReconciliationSummary({ compact = false }: { compact?: 
             {summary.latestPending.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-wilms-3 py-wilms-4 text-text-muted">
-                  No pending reconciliations — all submitted cash reconciliations are clear.
+                  {summary.missingRecent > 0
+                    ? `No submitted sheets waiting for review. ${summary.missingRecent} collector(s) have not submitted in the last ${summary.windowDays} days — see Missing above.`
+                    : 'No pending review items — all submitted cash reconciliations are clear.'}
                 </td>
               </tr>
             ) : (

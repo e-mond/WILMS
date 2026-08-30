@@ -366,10 +366,21 @@ export interface IDashboardService {
   getDashboardSummary(): Promise<DashboardSummary>;
 }
 
+export interface ReconciliationOpsSnapshot {
+  pendingReview: number;
+  missingRecentSubmissions: number;
+  approvedToday: number;
+  rejectedToday: number;
+  submittedCount: number;
+  windowDays: number;
+  asOfDate: string;
+}
+
 export interface IReconciliationService {
   getCollectorReconciliation(collectorId: string, date: string): Promise<ReconciliationSummary>;
   submitReconciliation(input: SubmitReconciliationInput): Promise<ReconciliationSummary>;
   listReconciliations(filter?: { collectorId?: string }): Promise<ReconciliationSummary[]>;
+  getReconciliationOpsSnapshot(): Promise<ReconciliationOpsSnapshot>;
   getReconciliation(id: string): Promise<ReconciliationSummary>;
   getReconciliationHistory(id: string): Promise<ReconciliationHistoryEntry[]>;
   reviewReconciliation(id: string, input: ReviewReconciliationInput): Promise<ReconciliationSummary>;

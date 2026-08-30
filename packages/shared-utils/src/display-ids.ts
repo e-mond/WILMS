@@ -140,6 +140,20 @@ export function formatBorrowerDisplayId(
   return `BRW-${year}-${paddedSequence(seq, 5)}`;
 }
 
+export function formatRiskFlagDisplayId(input: {
+  id?: string;
+  raisedAt?: string | Date | null;
+  sequence?: number;
+}): string {
+  const raisedAt =
+    input.raisedAt instanceof Date
+      ? input.raisedAt.toISOString()
+      : (input.raisedAt ?? undefined);
+  const year = yearFromIso(raisedAt);
+  const sequence = input.sequence ?? sequenceFromId(input.id);
+  return `FLG-${year}-${paddedSequence(sequence, 5)}`;
+}
+
 export function formatUserDisplayId(input: { sequence?: number; id?: string; staffId?: string }): string {
   const staffId = input.staffId?.trim();
   if (staffId) {
@@ -173,5 +187,5 @@ export function formatDisbursementDisplayId(input: {
 }
 
 export function isReadableWilmsId(value: string): boolean {
-  return /^(BWR|BRW|BOR|COL|GRP|LOAN|LN|POOL|ENT|USR|TXN|DIS|MEM|EXP)-/i.test(value.trim());
+  return /^(BWR|BRW|BOR|COL|GRP|LOAN|LN|POOL|ENT|USR|TXN|DIS|MEM|EXP|FLG)-/i.test(value.trim());
 }
