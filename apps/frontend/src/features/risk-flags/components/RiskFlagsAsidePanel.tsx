@@ -87,8 +87,10 @@ export function RiskFlagsAsidePanel({
 
           <dl className="mt-wilms-4 grid grid-cols-2 gap-wilms-3 text-small">
             <div>
-              <dt className="text-text-muted">Officer</dt>
-              <dd className="font-semibold">{selected.officerName}</dd>
+              <dt className="text-text-muted">Assigned to</dt>
+              <dd className="font-semibold">
+                {selected.assignedToName ?? selected.officerName ?? '—'}
+              </dd>
             </div>
             <div>
               <dt className="text-text-muted">Community</dt>

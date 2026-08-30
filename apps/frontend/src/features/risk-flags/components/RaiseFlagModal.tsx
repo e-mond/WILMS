@@ -17,6 +17,7 @@ export interface RaiseFlagFormValues {
   entityType: string;
   flagType: string;
   community: string;
+  reason?: string;
 }
 
 export interface RaiseFlagModalProps {
@@ -44,6 +45,7 @@ export function RaiseFlagModal({
   const [entityType, setEntityType] = useState<string>(FLAG_ENTITY_TYPE.BORROWER);
   const [flagType, setFlagType] = useState<string>(FLAG_TYPE.MISSED_PAYMENT);
   const [community, setCommunity] = useState('');
+  const [reason, setReason] = useState('');
   const [query, setQuery] = useState('');
 
   const borrowersQuery = useQuery({
@@ -76,7 +78,7 @@ export function RaiseFlagModal({
         ]
           .filter(Boolean)
           .join(' · '),
-        community: borrower.groupName,
+        community: borrower.community?.trim() || borrower.groupName || '',
       }));
     }
 
@@ -152,6 +154,7 @@ export function RaiseFlagModal({
                 entityType,
                 flagType,
                 community: community.trim(),
+                reason: reason.trim() || undefined,
               })
             }
           >
@@ -272,6 +275,19 @@ export function RaiseFlagModal({
             value={community}
             onChange={(event) => setCommunity(event.target.value)}
             placeholder="Filled from selected entity"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="raise-flag-notes" className="text-small font-semibold text-text-primary">
+            Reason <span className="font-normal text-text-muted">(optional)</span>
+          </label>
+          <Input
+            id="raise-flag-notes"
+            className="mt-wilms-2"
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
+            placeholder="Why this entity needs review"
           />
         </div>
       </div>
