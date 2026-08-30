@@ -1,10 +1,6 @@
-import { and, count, eq, isNull, ne, sql } from 'drizzle-orm';
-import { getDb, isDatabaseEnabled } from '../db/client.js';
-import { borrowers } from '../db/schema/borrowers.js';
-import { groups, groupMembers } from '../db/schema/groups.js';
+import { and, count, eq, isNull, sql } from 'drizzle-orm';
+import { getDb, isDatabaseEnabled, type WilmsDb } from '../db/client.js';
 import { loans } from '../db/schema/loans.js';
-import { loanSchedules } from '../db/schema/loan-schedules.js';
-import { payments } from '../db/schema/payments.js';
 
 export interface DefaulterAggregateRow {
   loanId: string;
@@ -22,15 +18,23 @@ export interface DefaulterAggregateSummary {
   totalOutstandingPesewas: number;
 }
 
+type AggregateSqlRow = {
+  loan_id?: string;
+  borrower_id?: string;
+  borrower_name?: string;
+  community?: string;
+  group_name?: string;
+  missed_weeks?: number | string;
+  loan_balance_pesewas?: number | string;
+  last_payment_date?: string | null;
+};
+
 /**
- * Database-level defaulter aggregation.
- * Returns only DEFAULTED loans. All aggregates (missed weeks, outstanding, last payment)
- * are computed in SQL — no per-row N+1 queries, no full list loads, no app-side reduce.
- *
- * Fallback: returns null when DB is not enabled; caller uses the legacy in-memory path.
+ * Database-level defaulter aggregation for DEFAULTED loans.
+ * Uses raw SQL CTEs for Neon/Drizzle stability; returns null so callers can fall back.
  */
 export async function queryDefaulterAggregates(
-  tx = getDb(),
+  tx: WilmsDb = getDb(),
 ): Promise<{
   rows: DefaulterAggregateRow[];
   summary: DefaulterAggregateSummary;
@@ -39,84 +43,77 @@ export async function queryDefaulterAggregates(
     return null;
   }
 
-  // Missed weeks per loan (schedule rows with status = 'MISSED')
-  const missedWeeksCte = tx
-    .select({
-      loanId: loanSchedules.loanId,
-      missedCount: count().as('missed_count'),
-    })
-    .from(loanSchedules)
-    .where(eq(loanSchedules.status, 'MISSED'))
-    .groupBy(loanSchedules.loanId)
-    .as('missed_cte');
+  try {
+    const result = await tx.execute(sql`
+      WITH missed_cte AS (
+        SELECT loan_id, COUNT(*)::int AS missed_count
+        FROM loan_schedules
+        WHERE status = 'MISSED'
+        GROUP BY loan_id
+      ),
+      last_payment_cte AS (
+        SELECT borrower_id, MAX(payment_date) AS last_date
+        FROM payments
+        WHERE status <> 'REVERSED'
+        GROUP BY borrower_id
+      ),
+      group_name_cte AS (
+        SELECT DISTINCT ON (gm.borrower_id)
+          gm.borrower_id,
+          COALESCE(g.display_name, g.name) AS group_name
+        FROM group_members gm
+        INNER JOIN groups g ON g.id = gm.group_id
+        WHERE gm.removed_at IS NULL
+        ORDER BY gm.borrower_id, gm.joined_at DESC
+      )
+      SELECT
+        l.id AS loan_id,
+        l.borrower_id,
+        b.full_name AS borrower_name,
+        b.community,
+        COALESCE(gn.group_name, '') AS group_name,
+        COALESCE(m.missed_count, 0)::int AS missed_weeks,
+        ROUND(l.loan_balance::numeric * 100)::int AS loan_balance_pesewas,
+        lp.last_date AS last_payment_date
+      FROM loans l
+      INNER JOIN borrowers b ON b.id = l.borrower_id
+      LEFT JOIN missed_cte m ON m.loan_id = l.id
+      LEFT JOIN last_payment_cte lp ON lp.borrower_id = l.borrower_id
+      LEFT JOIN group_name_cte gn ON gn.borrower_id = l.borrower_id
+      WHERE l.external_status = 'DEFAULTED'
+        AND l.deleted_at IS NULL
+    `);
 
-  // Last confirmed payment date per borrower (excluding reversals)
-  const lastPaymentCte = tx
-    .select({
-      borrowerId: payments.borrowerId,
-      lastDate: sql<string>`MAX(${payments.paymentDate})`.as('last_date'),
-    })
-    .from(payments)
-    .where(ne(payments.status, 'REVERSED'))
-    .groupBy(payments.borrowerId)
-    .as('last_payment_cte');
+    const mapped: DefaulterAggregateRow[] = (result.rows as AggregateSqlRow[]).map((row) => ({
+      loanId: String(row.loan_id ?? ''),
+      borrowerId: String(row.borrower_id ?? ''),
+      borrowerName: String(row.borrower_name ?? 'Unknown borrower'),
+      community: String(row.community ?? '—'),
+      groupName: String(row.group_name ?? ''),
+      missedWeeks: Number(row.missed_weeks ?? 0),
+      outstandingPesewas: Number(row.loan_balance_pesewas ?? 0),
+      lastPaymentDate: row.last_payment_date ?? null,
+    }));
 
-  // Group name: prefer staff-facing display name
-  const groupNameCte = tx
-    .select({
-      borrowerId: groupMembers.borrowerId,
-      groupName: sql<string>`COALESCE(${groups.displayName}, ${groups.name})`,
-    })
-    .from(groupMembers)
-    .innerJoin(groups, eq(groupMembers.groupId, groups.id))
-    .where(isNull(groupMembers.removedAt))
-    .as('group_name_cte');
+    const totalOutstandingPesewas = mapped.reduce(
+      (sum, row) => sum + row.outstandingPesewas,
+      0,
+    );
 
-  const rows = await tx
-    .select({
-      loanId: loans.id,
-      borrowerId: loans.borrowerId,
-      borrowerName: borrowers.fullName,
-      community: borrowers.community,
-      groupName: sql<string>`COALESCE(${groupNameCte.groupName}, '')`,
-      missedWeeks: sql<number>`COALESCE(${missedWeeksCte.missedCount}, 0)::int`,
-      loanBalancePesewas: sql<number>`ROUND(${loans.loanBalance}::numeric * 100)::int`,
-      lastPaymentDate: sql<string | null>`${lastPaymentCte.lastDate}`,
-    })
-    .from(loans)
-    .innerJoin(borrowers, eq(loans.borrowerId, borrowers.id))
-    .leftJoin(missedWeeksCte, eq(loans.id, missedWeeksCte.loanId))
-    .leftJoin(lastPaymentCte, eq(loans.borrowerId, lastPaymentCte.borrowerId))
-    .leftJoin(groupNameCte, eq(loans.borrowerId, groupNameCte.borrowerId))
-    .where(and(eq(loans.externalStatus, 'DEFAULTED'), isNull(loans.deletedAt)));
-
-  const mapped: DefaulterAggregateRow[] = rows.map((row) => ({
-    loanId: row.loanId,
-    borrowerId: row.borrowerId,
-    borrowerName: row.borrowerName,
-    community: row.community,
-    groupName: row.groupName,
-    missedWeeks: Number(row.missedWeeks),
-    outstandingPesewas: Number(row.loanBalancePesewas),
-    lastPaymentDate: row.lastPaymentDate ?? null,
-  }));
-
-  const totalOutstandingPesewas = mapped.reduce(
-    (sum, row) => sum + row.outstandingPesewas,
-    0,
-  );
-
-  return {
-    rows: mapped,
-    summary: {
-      totalDefaulters: mapped.length,
-      totalOutstandingPesewas,
-    },
-  };
+    return {
+      rows: mapped,
+      summary: {
+        totalDefaulters: mapped.length,
+        totalOutstandingPesewas,
+      },
+    };
+  } catch {
+    return null;
+  }
 }
 
 /** Count of all DEFAULTED non-deleted loans in the database. */
-export async function countDefaultedLoans(tx = getDb()): Promise<number> {
+export async function countDefaultedLoans(tx: WilmsDb = getDb()): Promise<number> {
   if (!isDatabaseEnabled()) {
     return 0;
   }
