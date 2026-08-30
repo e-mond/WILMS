@@ -30,7 +30,7 @@ import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { buildDefaultFlagTimeline } from '@/utils/risk-flag-list';
 import { FLAG_STATUS, FLAG_TYPE, type RiskFlagSummary } from '@/types/risk-flag';
 import { formatDisplayDate } from '@/utils/format-date';
-import { resolveEntityDisplayId } from '@/utils/entity-display-id';
+import { resolveEntityDisplayId, resolveRiskFlagDisplayId } from '@/utils/entity-display-id';
 import { EMPTY_STATE_COPY } from '@/constants/empty-state-copy';
 
 const STATUS_FILTERS = [
@@ -332,7 +332,9 @@ export function RiskFlagsPanel() {
               priority: 'primary',
             header: sortHeader('Flag ID', 'id'),
             cell: (row) => (
-              <span className="whitespace-nowrap font-semibold text-executive-gold">{row.id}</span>
+              <span className="whitespace-nowrap font-semibold text-executive-gold">
+                {resolveRiskFlagDisplayId(row)}
+              </span>
             ),
           },
           {

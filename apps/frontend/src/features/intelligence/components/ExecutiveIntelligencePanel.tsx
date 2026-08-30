@@ -381,12 +381,14 @@ function ExecutiveDashboardContent({ data }: { data: ExecutiveDashboard }) {
             label="Reconciliation alerts"
             icon={<BellRing className="h-4 w-4" aria-hidden="true" />}
             value={operational.reconciliationAlerts ?? 0}
+            trend="Pending review + missing submits"
           />
           <KpiCard
             variant="executive"
             label="Notifications sent"
             icon={<Send className="h-4 w-4" aria-hidden="true" />}
             value={operational.notificationSent ?? 0}
+            trend="Last 30 days"
           />
         </ExecutiveKpiGrid>
       </section>

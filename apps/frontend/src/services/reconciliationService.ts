@@ -1,6 +1,7 @@
 import type { ReconciliationHistoryEntry, SubmitReconciliationInput } from '@/types/reconciliation';
 import type {
   IReconciliationService,
+  ReconciliationOpsSnapshot,
   ReconciliationSummary,
   ReviewReconciliationInput,
 } from '@/types/services';
@@ -28,6 +29,10 @@ const reconciliationService: IReconciliationService = {
       ? `?collectorId=${encodeURIComponent(filter.collectorId)}`
       : '';
     return apiClient.get<ReconciliationSummary[]>(`/reconciliations${query}`);
+  },
+
+  getReconciliationOpsSnapshot(): Promise<ReconciliationOpsSnapshot> {
+    return apiClient.get<ReconciliationOpsSnapshot>('/reconciliations/ops-snapshot');
   },
 
   getReconciliation(id: string): Promise<ReconciliationSummary> {

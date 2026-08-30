@@ -23,7 +23,7 @@ import {
   type RiskFlagListResponse,
   type RiskFlagSummary,
 } from '@/types/risk-flag';
-import { resolveEntityDisplayId } from '@/utils/entity-display-id';
+import { resolveEntityDisplayId, resolveRiskFlagDisplayId } from '@/utils/entity-display-id';
 import { formatDisplayDate } from '@/utils/format-date';
 
 const FLAG_TYPE_TONE = {
@@ -68,7 +68,7 @@ export function RiskFlagsAsidePanel({
     <>
       {selected ? (
         <DetailSidebarCard
-          eyebrow={selected.id}
+          eyebrow={resolveRiskFlagDisplayId(selected)}
           title={selected.entityName}
           subtitle={`${resolveEntityDisplayId(selected)} · ${selected.community}`}
         >

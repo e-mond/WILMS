@@ -10,6 +10,7 @@ import {
   formatUserDisplayId,
   formatPaymentDisplayId,
   formatDisbursementDisplayId,
+  formatRiskFlagDisplayId,
   isReadableWilmsId,
 } from '@wilms/shared-utils';
 
@@ -25,6 +26,7 @@ export {
   formatUserDisplayId,
   formatPaymentDisplayId,
   formatDisbursementDisplayId,
+  formatRiskFlagDisplayId,
   isReadableWilmsId,
 };
 
@@ -253,4 +255,20 @@ export function resolveEntityDisplayId(flag: {
       entityName: flag.entityName,
     })
   );
+}
+
+export function resolveRiskFlagDisplayId(flag: {
+  id: string;
+  displayId?: string;
+  raisedAt?: string;
+}): string {
+  if (flag.displayId) {
+    return flag.displayId;
+  }
+
+  if (isReadableWilmsId(flag.id)) {
+    return flag.id.toUpperCase();
+  }
+
+  return formatRiskFlagDisplayId({ id: flag.id, raisedAt: flag.raisedAt });
 }
