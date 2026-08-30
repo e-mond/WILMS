@@ -88,6 +88,13 @@ vi.mock('../../repositories/loan-pool.repository.js', () => ({
   reconcilePoolAllocationsFromLoans: vi.fn(async () => undefined),
 }));
 
+vi.mock('../../repositories/missed-payments.repository.js', () => ({
+  queryMissedPaymentAggregates: vi.fn(async () => ({
+    rows: [],
+    summary: { totalMissedBorrowers: 0, totalOutstandingPesewas: 0 },
+  })),
+}));
+
 vi.mock('../../repositories/user.repository.js', () => ({
   listCollectors: vi.fn(async () => []),
 }));

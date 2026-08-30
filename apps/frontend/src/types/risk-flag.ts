@@ -38,6 +38,8 @@ export interface RiskFlagSummary {
   flagType: FlagType;
   community: string;
   officerName: string;
+  assignedToUserId?: string;
+  assignedToName?: string;
   raisedAt: string;
   arrearsPesewas: number;
   status: FlagStatus;
@@ -84,6 +86,10 @@ export interface RiskFlagDetail extends RiskFlagSummary {
   activeMembers?: number;
   totalMembers?: number;
   timeline: FlagTimelineEvent[];
+  escalation?: {
+    borrowerBlacklisted: boolean;
+    message: string;
+  };
 }
 
 export interface CreateRiskFlagInput {
@@ -103,4 +109,11 @@ export interface ResolveRiskFlagInput {
 
 export interface AssignRiskFlagInput {
   assignedToUserId: string;
+}
+
+export interface RiskFlagAssigneeOption {
+  id: string;
+  displayName: string;
+  role: string;
+  roleLabel: string;
 }
