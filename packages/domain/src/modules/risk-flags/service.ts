@@ -68,6 +68,7 @@ interface BorrowerEnrichment {
 
 interface GroupEnrichment {
   name: string;
+  displayName: string;
   systemId: string;
   formedAt: Date;
   activeMembers: number;
@@ -132,6 +133,35 @@ async function loadMissedWeeksByBorrower(
   return map;
 }
 
+async function loadMissedArrearsByBorrower(
+  borrowerIds: string[],
+): Promise<Map<string, number>> {
+  const map = new Map<string, number>();
+  if (borrowerIds.length === 0) return map;
+
+  const db = getDb();
+  const rows = await db
+    .select({
+      borrowerId: loans.borrowerId,
+      arrearsPesewas: sql<number>`COALESCE(ROUND(SUM(${loanSchedules.installmentAmount}::numeric) * 100), 0)::int`,
+    })
+    .from(loanSchedules)
+    .innerJoin(loans, eq(loanSchedules.loanId, loans.id))
+    .where(
+      and(
+        inArray(loans.borrowerId, borrowerIds),
+        eq(loanSchedules.status, 'MISSED'),
+        isNull(loans.deletedAt),
+      ),
+    )
+    .groupBy(loans.borrowerId);
+
+  for (const row of rows) {
+    map.set(row.borrowerId, Number(row.arrearsPesewas));
+  }
+  return map;
+}
+
 async function loadGroupEnrichment(groupIds: string[]): Promise<Map<string, GroupEnrichment>> {
   const map = new Map<string, GroupEnrichment>();
   if (groupIds.length === 0) return map;
@@ -141,6 +171,7 @@ async function loadGroupEnrichment(groupIds: string[]): Promise<Map<string, Grou
     .select({
       id: groups.id,
       name: groups.name,
+      displayName: groups.displayName,
       systemId: groups.systemId,
       formedAt: groups.formedAt,
     })
@@ -171,6 +202,7 @@ async function loadGroupEnrichment(groupIds: string[]): Promise<Map<string, Grou
     const members = membersByGroup.get(row.id) ?? { totalMembers: 0, activeMembers: 0 };
     map.set(row.id, {
       name: row.name,
+      displayName: row.displayName || row.name,
       systemId: row.systemId,
       formedAt: row.formedAt,
       activeMembers: members.activeMembers,
@@ -228,6 +260,7 @@ async function enrichFlagRowsUnsafe(
 
   const borrowersById = await loadBorrowerEnrichment(borrowerIds);
   const missedByBorrower = await loadMissedWeeksByBorrower(borrowerIds);
+  const arrearsByBorrower = await loadMissedArrearsByBorrower(borrowerIds);
 
   const relatedGroupIds = [
     ...groupEntityIds,
@@ -246,6 +279,7 @@ async function enrichFlagRowsUnsafe(
     let weeksOverdue = row.weeksOverdue ?? undefined;
     let activeMembers = row.activeMembers ?? undefined;
     let totalMembers = row.totalMembers ?? undefined;
+    let arrearsPesewas = row.arrearsPesewas;
 
     if (row.entityType === 'BORROWER') {
       const borrower = borrowersById.get(row.entityId);
@@ -264,6 +298,13 @@ async function enrichFlagRowsUnsafe(
             weeksOverdue = missed;
           }
         }
+        const liveArrears = arrearsByBorrower.get(row.entityId);
+        if (liveArrears != null && liveArrears > 0) {
+          arrearsPesewas = liveArrears;
+        } else if (arrearsPesewas <= 0) {
+          // Fall back to outstanding loan balance when schedule installments are unavailable.
+          arrearsPesewas = row.arrearsPesewas;
+        }
         if (
           (activeMembers == null || totalMembers == null) &&
           borrower.groupId &&
@@ -272,7 +313,7 @@ async function enrichFlagRowsUnsafe(
           const group = groupsById.get(borrower.groupId)!;
           activeMembers = activeMembers ?? group.activeMembers;
           totalMembers = totalMembers ?? group.totalMembers;
-          groupName = groupName ?? group.name;
+          groupName = groupName ?? group.displayName;
         }
       }
     }
@@ -284,7 +325,7 @@ async function enrichFlagRowsUnsafe(
           systemId: group.systemId,
           createdAt: group.formedAt.toISOString(),
         });
-        groupName = groupName ?? group.name;
+        groupName = groupName ?? group.displayName;
         activeMembers = activeMembers ?? group.activeMembers;
         totalMembers = totalMembers ?? group.totalMembers;
       }
@@ -302,7 +343,7 @@ async function enrichFlagRowsUnsafe(
       community: row.community,
       officerName: row.officerName,
       raisedAt: row.raisedAt.toISOString(),
-      arrearsPesewas: row.arrearsPesewas,
+      arrearsPesewas,
       status: row.status,
       weeksOverdue,
       activeMembers,
@@ -431,6 +472,7 @@ export async function createRiskFlag(
   let weeksOverdue: number | null = null;
   let activeMembers: number | null = null;
   let totalMembers: number | null = null;
+  let arrearsPesewas = input.arrearsPesewas ?? 0;
 
   if (input.entityType === 'BORROWER') {
     try {
@@ -440,11 +482,15 @@ export async function createRiskFlag(
         groupName = borrower.groupName || null;
         const missed = await loadMissedWeeksByBorrower([input.entityId]);
         weeksOverdue = missed.get(input.entityId) ?? null;
+        if (arrearsPesewas <= 0) {
+          const arrears = await loadMissedArrearsByBorrower([input.entityId]);
+          arrearsPesewas = arrears.get(input.entityId) ?? 0;
+        }
         if (borrower.groupId) {
           const groupsById = await loadGroupEnrichment([borrower.groupId]);
           const group = groupsById.get(borrower.groupId);
           if (group) {
-            groupName = group.name;
+            groupName = group.displayName;
             activeMembers = group.activeMembers;
             totalMembers = group.totalMembers;
           }
@@ -458,7 +504,7 @@ export async function createRiskFlag(
       const groupsById = await loadGroupEnrichment([input.entityId]);
       const group = groupsById.get(input.entityId);
       if (group) {
-        groupName = group.name;
+        groupName = group.displayName;
         activeMembers = group.activeMembers;
         totalMembers = group.totalMembers;
       }
@@ -478,7 +524,7 @@ export async function createRiskFlag(
     community: input.community.trim(),
     officerName: input.officerName?.trim() ?? '—',
     raisedAt: now,
-    arrearsPesewas: input.arrearsPesewas ?? 0,
+    arrearsPesewas,
     status: 'OPEN',
     weeksOverdue,
     activeMembers,

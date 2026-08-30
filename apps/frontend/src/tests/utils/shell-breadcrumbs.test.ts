@@ -9,11 +9,11 @@ describe('resolveShellBreadcrumbs', () => {
     ]);
   });
 
-  it('returns distinct operations crumbs for the platform control centre', () => {
-    expect(resolveShellBreadcrumbs('/ops')).toEqual([
-      { label: 'Home', href: '/dashboard' },
+  it('returns nested operations crumbs for reassignment control centre', () => {
+    expect(resolveShellBreadcrumbs('/ops/reassignment')).toEqual([
+      { label: 'Dashboard', href: '/dashboard' },
       { label: 'Operations', href: '/ops' },
-      { label: 'System Health' },
+      { label: 'Reassignment' },
     ]);
   });
 

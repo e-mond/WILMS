@@ -5,6 +5,11 @@ import { normalizeGhanaPhone } from '../../infrastructure/sms/normalize-phone.js
 
 export const MAX_GUARANTOR_GUARANTEES = 3;
 
+export interface GuarantorLimitOptions {
+  maxGuarantees?: number;
+  maxLeaderGuarantees?: number;
+}
+
 /** Statuses that occupy a guarantor slot. Rejected and blacklisted do not. */
 export const ACTIVE_GUARANTEE_STATUSES = new Set<string>([
   BORROWER_STATUS.PENDING,
@@ -125,7 +130,13 @@ function withScore(
 export function evaluateGuarantorEligibility(
   input: GuarantorEligibilityInput,
   borrowers: BorrowerRecord[],
+  options?: GuarantorLimitOptions,
 ): GuarantorEligibilityResult {
+  const defaultMax = Math.max(1, options?.maxGuarantees ?? MAX_GUARANTOR_GUARANTEES);
+  const leaderMax = Math.max(
+    defaultMax,
+    options?.maxLeaderGuarantees ?? defaultMax + 2,
+  );
   const normalizedPhone = input.guarantorPhone.trim();
   const borrowerPhone = input.borrowerPhone?.trim();
 
@@ -134,7 +145,7 @@ export function evaluateGuarantorEligibility(
       {
         isEligible: false,
         activeGuaranteeCount: 0,
-        maxGuarantees: MAX_GUARANTOR_GUARANTEES,
+        maxGuarantees: defaultMax,
         isDuplicateRegistration: false,
         validationStatus: 'INVALID',
         message: 'Guarantor phone must differ from borrower phone.',
@@ -154,7 +165,7 @@ export function evaluateGuarantorEligibility(
   const activeGuaranteeCount = otherActiveGuarantees.length;
 
   const isExempt = Boolean(input.isGroupLeader || input.isApprovedCommunityLeader);
-  const maxGuarantees = isExempt ? MAX_GUARANTOR_GUARANTEES + 2 : MAX_GUARANTOR_GUARANTEES;
+  const maxGuarantees = isExempt ? leaderMax : defaultMax;
 
   if (duplicateForSameBorrower) {
     return withScore(
@@ -202,15 +213,15 @@ export function evaluateGuarantorEligibility(
     );
   }
 
-  if (activeGuaranteeCount >= MAX_GUARANTOR_GUARANTEES) {
+  if (activeGuaranteeCount >= defaultMax) {
     return withScore(
       {
         isEligible: false,
         activeGuaranteeCount,
-        maxGuarantees: MAX_GUARANTOR_GUARANTEES,
+        maxGuarantees: defaultMax,
         isDuplicateRegistration: false,
         validationStatus: GUARANTOR_VALIDATION_STATUS.AT_LIMIT,
-        message: `Guarantor has reached the maximum of ${MAX_GUARANTOR_GUARANTEES} active guarantees.`,
+        message: `Guarantor has reached the maximum of ${defaultMax} active guarantees.`,
       },
       normalizedPhone,
       borrowers,
@@ -221,10 +232,10 @@ export function evaluateGuarantorEligibility(
     {
       isEligible: true,
       activeGuaranteeCount,
-      maxGuarantees: MAX_GUARANTOR_GUARANTEES,
+      maxGuarantees: defaultMax,
       isDuplicateRegistration: false,
       validationStatus: GUARANTOR_VALIDATION_STATUS.VALID,
-      message: `Current Guarantees: ${activeGuaranteeCount} of ${MAX_GUARANTOR_GUARANTEES}`,
+      message: `Current Guarantees: ${activeGuaranteeCount} of ${defaultMax}`,
     },
     normalizedPhone,
     borrowers,

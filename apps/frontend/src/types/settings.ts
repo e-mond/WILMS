@@ -20,6 +20,7 @@ export interface SystemSettings {
   defaultLoanDurationWeeks: number;
   allowLoanRollovers: boolean;
   latePaymentGraceDays: number;
+  maxGuarantorGuarantees: number;
   smsProvider: string;
   smsSenderId: string;
   missedPaymentSmsEnabled: boolean;

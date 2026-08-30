@@ -2,6 +2,7 @@ const EXACT_TITLES: Record<string, string> = {
   '/dashboard': 'Operational Dashboard',
   '/executive': 'Executive Intelligence',
   '/ops': 'Operations',
+  '/ops/reassignment': 'Reassignment',
   '/documentation': 'Documentation Centre',
   '/records': 'Borrower Records',
   '/approver/records': 'Borrower Records',
