@@ -1,5 +1,4 @@
 import { formatUserDisplayId } from '@wilms/shared-utils';
-import { BORROWER_STATUS } from '@wilms/shared-contracts';
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import { listBorrowers, listPayments } from '../../db/persistence.js';
 import { getDb, isDatabaseEnabled } from '../../db/client.js';
@@ -7,11 +6,13 @@ import { notifications } from '../../db/schema/notifications.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import * as paymentRepo from '../../repositories/payment.repository.js';
 import * as userRepo from '../../repositories/user.repository.js';
+import * as missedPaymentsRepo from '../../repositories/missed-payments.repository.js';
 import { listGroupsResponse } from '../groups/service.js';
 import {
   buildDashboardFinancialOverview,
   type DashboardFinancialOverview,
 } from './financial-overview.js';
+import { buildBorrowerSegmentsFromStatuses } from './borrower-segments.js';
 
 export type { DashboardFinancialOverview };
 
@@ -115,47 +116,24 @@ async function buildRecentAlertsForUser(userId?: string): Promise<DashboardSumma
 export async function getDashboardSummary(options?: {
   userId?: string;
 }): Promise<DashboardSummary> {
-  const [borrowers, groupsResponse, financialOverview, recentAlerts] = await Promise.all([
-    listBorrowers(),
-    listGroupsResponse(),
-    buildDashboardFinancialOverview(),
-    buildRecentAlertsForUser(options?.userId),
-  ]);
+  const [borrowers, groupsResponse, financialOverview, recentAlerts, missedPaymentAggregates] =
+    await Promise.all([
+      listBorrowers(),
+      listGroupsResponse(),
+      buildDashboardFinancialOverview(),
+      buildRecentAlertsForUser(options?.userId),
+      missedPaymentsRepo.queryMissedPaymentAggregates(),
+    ]);
 
   const groups = groupsResponse.groups;
 
-  const borrowerSegments = [
-    {
-      id: 'active',
-      label: 'Active',
-      count: borrowers.filter((entry) => entry.status === BORROWER_STATUS.APPROVED).length,
-      tone: 'active' as const,
-    },
-    {
-      id: 'at-risk',
-      label: 'At risk',
-      count: borrowers.filter((entry) => entry.status === BORROWER_STATUS.AT_RISK).length,
-      tone: 'atRisk' as const,
-    },
-    {
-      id: 'defaulted',
-      label: 'Defaulted',
-      count: borrowers.filter((entry) => entry.status === BORROWER_STATUS.DEFAULTED).length,
-      tone: 'defaulted' as const,
-    },
-    {
-      id: 'blacklisted',
-      label: 'Blacklisted',
-      count: borrowers.filter((entry) => entry.status === BORROWER_STATUS.BLACKLISTED).length,
-      tone: 'blacklisted' as const,
-    },
-    {
-      id: 'pending',
-      label: 'Pending',
-      count: borrowers.filter((entry) => entry.status === BORROWER_STATUS.PENDING).length,
-      tone: 'pending' as const,
-    },
-  ];
+  const missedWeeksByBorrowerId = new Map<string, number>();
+  for (const row of missedPaymentAggregates?.rows ?? []) {
+    const existing = missedWeeksByBorrowerId.get(row.borrowerId) ?? 0;
+    missedWeeksByBorrowerId.set(row.borrowerId, Math.max(existing, row.missedWeeks));
+  }
+
+  const borrowerSegments = buildBorrowerSegmentsFromStatuses(borrowers, missedWeeksByBorrowerId);
 
   let paymentsByCollector = new Map<string, number>();
   let collectorPerformance: DashboardSummary['collectorPerformance'] = [];

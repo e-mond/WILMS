@@ -10,6 +10,7 @@ export {
   formatDisbursementDisplayId,
   formatPaymentDisplayId,
   formatPoolDisplayId,
+  formatRiskFlagDisplayId,
   formatUserDisplayId,
   isReadableWilmsId,
 } from './display-ids';
