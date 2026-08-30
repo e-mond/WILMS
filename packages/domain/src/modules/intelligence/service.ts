@@ -1,5 +1,5 @@
 import { uuidv7 } from 'uuidv7';
-import { desc, eq, sql } from 'drizzle-orm';
+import { and, count, desc, eq, gte, isNotNull, isNull, sql } from 'drizzle-orm';
 import { isDatabaseEnabled, getDb } from '../../db/client.js';
 import {
   alertThresholds,
@@ -23,6 +23,8 @@ import { decimalToPesewas } from '../../domain/money.js';
 import { listBorrowers, listPayments } from '../../db/persistence.js';
 import { listGroupsResponse } from '../groups/service.js';
 import { getExpenseSummary } from '../expenses/service.js';
+import { getReconciliationOpsSnapshot } from '../reconciliation/service.js';
+import { notifications } from '../../db/schema/notifications.js';
 
 const memoryExports: Array<Record<string, unknown>> = [];
 const memoryThresholds: Array<Record<string, unknown>> = [
@@ -67,6 +69,27 @@ function addDaysIso(isoDate: string, days: number): string {
   return date.toISOString().slice(0, 10);
 }
 
+async function countDurableNotificationsSent(windowDays = 30): Promise<number> {
+  if (!isDatabaseEnabled()) {
+    return getNotificationMetrics().sent;
+  }
+
+  const since = new Date(`${addDaysIso(new Date().toISOString().slice(0, 10), -(windowDays - 1))}T00:00:00.000Z`);
+  const db = getDb();
+  const [row] = await db
+    .select({ value: count() })
+    .from(notifications)
+    .where(
+      and(
+        isNull(notifications.deletedAt),
+        isNotNull(notifications.sentAt),
+        gte(notifications.sentAt, since),
+      ),
+    );
+
+  return Number(row?.value ?? 0);
+}
+
 export async function buildExecutiveDashboard(input?: {
   region?: string;
   district?: string;
@@ -74,14 +97,18 @@ export async function buildExecutiveDashboard(input?: {
   electoralArea?: string;
   community?: string;
   asOfDate?: string;
+  userId?: string;
 }) {
-  const [summary, writeOffs, aging, ops, expenses] = await Promise.all([
-    getDashboardSummary(),
-    buildWriteOffReport(),
-    buildAgingAnalysisReport(),
-    buildOpsStatusReport(),
-    getExpenseSummary(),
-  ]);
+  const [summary, writeOffs, aging, ops, expenses, reconOps, durableNotificationSent] =
+    await Promise.all([
+      getDashboardSummary({ userId: input?.userId }),
+      buildWriteOffReport(),
+      buildAgingAnalysisReport(),
+      buildOpsStatusReport(),
+      getExpenseSummary(),
+      getReconciliationOpsSnapshot({ asOfDate: input?.asOfDate }).catch(() => null),
+      countDurableNotificationsSent().catch(() => null),
+    ]);
 
   const overview = summary.financialOverview;
   const totalPortfolio =
@@ -116,6 +143,9 @@ export async function buildExecutiveDashboard(input?: {
 
   const scheduler = getSchedulerLastRuns();
   const notif = getNotificationMetrics();
+  const reconciliationAlerts =
+    (reconOps?.pendingReview ?? 0) + (reconOps?.missingRecentSubmissions ?? 0);
+  const notificationSent = durableNotificationSent ?? notif.sent;
 
   return {
     generatedAt: new Date().toISOString(),
@@ -148,10 +178,8 @@ export async function buildExecutiveDashboard(input?: {
       activeLoans: overview.lending.totalActiveLoans,
       closedLoans: overview.lending.totalClosedLoans,
       collectorPerformance: summary.collectorPerformance.slice(0, 10),
-      reconciliationAlerts: summary.recentAlerts.filter((a) =>
-        /reconcil/i.test(a.category + a.message),
-      ).length,
-      notificationSent: notif.sent,
+      reconciliationAlerts,
+      notificationSent,
       notificationFailed: notif.failed,
       schedulerPaymentOk: scheduler.paymentNotifications?.success ?? null,
       schedulerCommsOk: scheduler.communications?.success ?? null,

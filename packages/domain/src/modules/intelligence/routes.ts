@@ -38,6 +38,7 @@ intelligenceRouter.get(
         subDistrictUnit: typeof req.query.subDistrictUnit === 'string' ? req.query.subDistrictUnit : undefined,
         electoralArea: typeof req.query.electoralArea === 'string' ? req.query.electoralArea : undefined,
         asOfDate: typeof req.query.asOf === 'string' ? req.query.asOf : undefined,
+        userId: req.session!.userId,
       }),
     );
   }),

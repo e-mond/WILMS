@@ -5,10 +5,11 @@
  * Audit entries are best-effort async after commit (P14.3A pattern).
  */
 import { z } from 'zod';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq, isNull, sql } from 'drizzle-orm';
 import { USER_ROLE } from '@wilms/shared-rbac';
 import { isDatabaseEnabled, runInTransaction, getDb } from '../../db/client.js';
 import { financialReconciliations } from '../../db/schema/financial-reconciliations.js';
+import { groups } from '../../db/schema/groups.js';
 import { users } from '../../db/schema/users.js';
 import { buildReconciliationSnapshot } from '../../domain/reconciliation/snapshot.js';
 import { calculateExpectedDuePesewas } from '../../domain/reconciliation/expected-cash.js';
@@ -664,4 +665,116 @@ async function notifyCollectorOfReconciliationReview(input: {
   } catch {
     // Notification delivery is best-effort.
   }
+}
+
+function startOfUtcDay(date: Date): Date {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+}
+
+function addUtcDays(isoDate: string, days: number): string {
+  const date = new Date(`${isoDate}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function needsReconciliationReview(row: {
+  status: string;
+  varianceFlagged: boolean;
+}): boolean {
+  if (row.status === 'APPROVED' || row.status === 'REJECTED' || row.status === 'LOCKED') {
+    return false;
+  }
+  return (
+    row.varianceFlagged ||
+    row.status === 'PENDING_REVIEW' ||
+    row.status === 'UNDER_INVESTIGATION' ||
+    row.status === 'REOPENED' ||
+    row.status === 'SUBMITTED'
+  );
+}
+
+/**
+ * Ops snapshot for dashboards:
+ * - pendingReview = submitted rows still awaiting approve/reject
+ * - missingRecentSubmissions = active-group collectors with no submit in the window
+ */
+export async function getReconciliationOpsSnapshot(options?: {
+  windowDays?: number;
+  asOfDate?: string;
+}): Promise<{
+  pendingReview: number;
+  missingRecentSubmissions: number;
+  approvedToday: number;
+  rejectedToday: number;
+  submittedCount: number;
+  windowDays: number;
+  asOfDate: string;
+}> {
+  requireDatabase();
+
+  const windowDays = Math.max(1, options?.windowDays ?? 7);
+  const asOfDate = options?.asOfDate ?? new Date().toISOString().slice(0, 10);
+  const windowStart = addUtcDays(asOfDate, -(windowDays - 1));
+  const todayStart = startOfUtcDay(new Date(`${asOfDate}T00:00:00.000Z`));
+
+  const [rows, collectors] = await Promise.all([
+    reconciliationRepo.listReconciliations(),
+    userRepo.listCollectors(),
+  ]);
+
+  const activeCollectorIds = new Set(
+    (
+      await getDb()
+        .selectDistinct({ collectorUserId: groups.collectorUserId })
+        .from(groups)
+        .where(and(isNull(groups.deletedAt), sql`${groups.collectorUserId} IS NOT NULL`))
+    )
+      .map((row) => row.collectorUserId)
+      .filter((id): id is string => Boolean(id)),
+  );
+
+  // Prefer collectors assigned to live groups; fall back to staff roster if none assigned.
+  const expectedCollectorIds =
+    activeCollectorIds.size > 0
+      ? activeCollectorIds
+      : new Set(collectors.map(({ user }) => user.id));
+
+  const submittedInWindow = new Set(
+    rows
+      .filter((row) => row.reconciliationDate >= windowStart && row.reconciliationDate <= asOfDate)
+      .map((row) => row.collectorUserId),
+  );
+
+  let pendingReview = 0;
+  let approvedToday = 0;
+  let rejectedToday = 0;
+
+  for (const row of rows) {
+    if (needsReconciliationReview(row)) {
+      pendingReview += 1;
+    }
+    const reviewedAt = row.reviewedAt ?? row.submittedAt;
+    const reviewedDay = startOfUtcDay(reviewedAt);
+    if (reviewedDay.getTime() === todayStart.getTime()) {
+      if (row.status === 'APPROVED') approvedToday += 1;
+      if (row.status === 'REJECTED') rejectedToday += 1;
+    }
+  }
+
+  let missingRecentSubmissions = 0;
+  for (const collectorId of expectedCollectorIds) {
+    if (!submittedInWindow.has(collectorId)) {
+      missingRecentSubmissions += 1;
+    }
+  }
+
+  return {
+    pendingReview,
+    missingRecentSubmissions,
+    approvedToday,
+    rejectedToday,
+    submittedCount: rows.length,
+    windowDays,
+    asOfDate,
+  };
 }

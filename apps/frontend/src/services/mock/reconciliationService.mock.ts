@@ -138,6 +138,19 @@ const reconciliationServiceMock: IReconciliationService = {
     return [];
   },
 
+  async getReconciliationOpsSnapshot() {
+    await simulateDelay();
+    return {
+      pendingReview: 0,
+      missingRecentSubmissions: 0,
+      approvedToday: 0,
+      rejectedToday: 0,
+      submittedCount: 0,
+      windowDays: 7,
+      asOfDate: new Date().toISOString().slice(0, 10),
+    };
+  },
+
   async getReconciliation(id: string) {
     await simulateDelay();
     void id;

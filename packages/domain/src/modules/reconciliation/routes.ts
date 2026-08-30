@@ -87,6 +87,18 @@ reconciliationRouter.get(
 );
 
 reconciliationRouter.get(
+  '/reconciliations/ops-snapshot',
+  requirePermission(PERMISSION.RECORD_COLLECTIONS, PERMISSION.VIEW_REPORTS),
+  asyncHandler(async (_req, res) => {
+    try {
+      sendData(res, await reconciliationService.getReconciliationOpsSnapshot());
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+reconciliationRouter.get(
   '/reconciliations/:id',
   requirePermission(PERMISSION.RECORD_COLLECTIONS, PERMISSION.VIEW_REPORTS),
   asyncHandler(async (req, res) => {
