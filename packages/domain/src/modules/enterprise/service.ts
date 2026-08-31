@@ -31,6 +31,14 @@ const memoryReplacements: Array<Record<string, unknown>> = [];
 const memoryDissolutions: Array<Record<string, unknown>> = [];
 const memoryLoginEvents: Array<Record<string, unknown>> = [];
 
+export function __resetEnterpriseWorkflowMemoryForTests() {
+  memoryRelocations.length = 0;
+  memoryScheduleChanges.length = 0;
+  memoryReplacements.length = 0;
+  memoryDissolutions.length = 0;
+  memoryLoginEvents.length = 0;
+}
+
 export async function relocateBorrower(input: {
   borrowerId: string;
   community: string;
@@ -483,6 +491,7 @@ export async function approveScheduleChange(input: {
       effectiveFrom: row.effectiveFrom,
       reason: row.reason,
       status: row.status,
+      requestedByUserId: row.requestedByUserId,
     };
   }
 
@@ -491,6 +500,11 @@ export async function approveScheduleChange(input: {
   }
   if (record.status !== 'PENDING' && record.status !== 'REVIEWED') {
     throw new Error('VALIDATION:Schedule change is not awaiting approval.');
+  }
+  if (record.requestedByUserId === input.actorUserId) {
+    throw new Error(
+      'FORBIDDEN:You cannot approve a payment day change you requested. Ask another authorised reviewer.',
+    );
   }
 
   const loan = await loanRepo.findLoanById(String(record.loanId));
@@ -586,6 +600,11 @@ export async function reviewScheduleChange(input: {
     if (row.status !== 'PENDING') {
       throw new Error('VALIDATION:Only pending schedule changes can be reviewed.');
     }
+    if (row.requestedByUserId === input.actorUserId) {
+      throw new Error(
+        'FORBIDDEN:You cannot review a payment day change you requested. Ask another authorised reviewer.',
+      );
+    }
     await db
       .update(loanScheduleChanges)
       .set({
@@ -601,6 +620,11 @@ export async function reviewScheduleChange(input: {
   const record = memoryScheduleChanges.find((entry) => entry.id === input.changeId);
   if (!record) {
     throw new Error('NOT_FOUND');
+  }
+  if (record.requestedByUserId === input.actorUserId) {
+    throw new Error(
+      'FORBIDDEN:You cannot review a payment day change you requested. Ask another authorised reviewer.',
+    );
   }
   record.status = 'REVIEWED';
   record.reviewedByUserId = input.actorUserId;
