@@ -14,6 +14,10 @@ import type {
 import type { LoanSchedule } from '@/types/loan-schedule';
 import type { ILoanService } from '@/types/services';
 import type { DisbursementEligibility } from '@/types/transaction';
+import type {
+  LoanScheduleChangeRecord,
+  ScheduleChangeDecisionResult,
+} from '@/types/enterprise';
 
 const loanService: ILoanService = {
   listLoans(): Promise<LoanSummary[]> {
@@ -82,6 +86,24 @@ const loanService: ILoanService = {
 
   requestScheduleChange(loanId, input) {
     return apiClient.post(`/loans/${loanId}/schedule-change`, input);
+  },
+
+  listPendingScheduleChanges(): Promise<LoanScheduleChangeRecord[]> {
+    return apiClient.get<LoanScheduleChangeRecord[]>('/loan-schedule-changes/pending');
+  },
+
+  reviewScheduleChange(changeId: string, note?: string): Promise<ScheduleChangeDecisionResult> {
+    return apiClient.post<ScheduleChangeDecisionResult>(
+      `/loan-schedule-changes/${changeId}/review`,
+      note?.trim() ? { note: note.trim() } : {},
+    );
+  },
+
+  approveScheduleChange(changeId: string, note?: string): Promise<ScheduleChangeDecisionResult> {
+    return apiClient.post<ScheduleChangeDecisionResult>(
+      `/loan-schedule-changes/${changeId}/approve`,
+      note?.trim() ? { note: note.trim() } : {},
+    );
   },
 };
 

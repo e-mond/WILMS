@@ -1,6 +1,7 @@
 import { normalizeBorrowerId, validateBorrowerId } from '@wilms/shared-validation';
+import { and, inArray, isNull } from 'drizzle-orm';
 import { appendAuditEntry, listAuditEntries } from '../../infrastructure/audit/audit-log.js';
-import { isDatabaseEnabled } from '../../db/client.js';
+import { getDb, isDatabaseEnabled } from '../../db/client.js';
 import {
   BORROWER_STATUS,
   deleteBorrower,
@@ -11,6 +12,7 @@ import {
   saveBorrower,
   type BorrowerRecord,
 } from '../../db/persistence.js';
+import { groups } from '../../db/schema/groups.js';
 import * as userRepo from '../../repositories/user.repository.js';
 import { resolveUploadAccessUrlById } from '../../infrastructure/uploads/index.js';
 import { DEMO_USERS } from '../../seed/demo-users.js';
@@ -32,6 +34,7 @@ import * as loanService from '../loans/service.js';
 import { buildBorrowerRiskSummary } from './borrower-risk.js';
 import { formatBorrowerDisplayId } from './display-id.js';
 import { resolveLocationIdsByNames } from '../locations/service.js';
+import { normalizeGhanaPhone } from '../../infrastructure/sms/normalize-phone.js';
 
 const AUDIT_ACTION = {
   BORROWER_REGISTERED: 'borrower.registered',
@@ -803,10 +806,39 @@ export async function checkGuarantorEligibility(input: {
   const { evaluateGuarantorEligibility } = await import('./guarantor-eligibility.js');
   const { getGuarantorLimits } = await import('../settings/guarantor-limits.js');
   const limits = await getGuarantorLimits();
-  return evaluateGuarantorEligibility(input, await listBorrowers(), {
+  const borrowers = await listBorrowers();
+
+  let derivedIsGroupLeader = Boolean(input.isGroupLeader);
+  if (!derivedIsGroupLeader && isDatabaseEnabled()) {
+    const matchingBorrowerIds = borrowers
+      .filter(
+        (record) =>
+          record.phone?.trim() &&
+          normalizeGhanaPhone(record.phone) === normalizeGhanaPhone(input.guarantorPhone),
+      )
+      .map((record) => record.id);
+
+    if (matchingBorrowerIds.length > 0) {
+      const db = getDb();
+      const leaderRows = await db
+        .select({ leaderBorrowerId: groups.leaderBorrowerId })
+        .from(groups)
+        .where(and(inArray(groups.leaderBorrowerId, matchingBorrowerIds), isNull(groups.deletedAt)));
+      derivedIsGroupLeader = leaderRows.length > 0;
+    }
+  }
+
+  return evaluateGuarantorEligibility(
+    {
+      ...input,
+      isGroupLeader: derivedIsGroupLeader,
+    },
+    borrowers,
+    {
     maxGuarantees: limits.maxGuarantorGuarantees,
     maxLeaderGuarantees: limits.maxLeaderGuarantorGuarantees,
-  });
+    },
+  );
 }
 
 export async function listRegistrationDraftsForOfficer(officerId: string) {
