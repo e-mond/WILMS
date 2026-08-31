@@ -234,6 +234,15 @@ export interface ILoanService {
     loanId: string,
     input: Omit<import('@/types/enterprise').RequestScheduleChangeInput, 'loanId'>,
   ): Promise<unknown>;
+  listPendingScheduleChanges(): Promise<import('@/types/enterprise').LoanScheduleChangeRecord[]>;
+  reviewScheduleChange(
+    changeId: string,
+    note?: string,
+  ): Promise<import('@/types/enterprise').ScheduleChangeDecisionResult>;
+  approveScheduleChange(
+    changeId: string,
+    note?: string,
+  ): Promise<import('@/types/enterprise').ScheduleChangeDecisionResult>;
 }
 
 export interface ITransactionService {

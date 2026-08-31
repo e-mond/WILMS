@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { PermissionGate } from '@/components/auth/PermissionGate';
 import { Alert } from '@/components/feedback/Alert';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -10,6 +11,8 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
 import { PAYMENT_DAY_OPTIONS } from '@/constants/loan';
+import { PERMISSION } from '@/constants/permissions';
+import { PendingScheduleChangeQueue } from '@/features/ops/components/PendingScheduleChangeQueue';
 import { useCollectorsManagement } from '@/features/collector-management/hooks/useCollectorsManagement';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
@@ -101,6 +104,7 @@ export function OperationsReassignmentPanel() {
       queryClient.invalidateQueries({ queryKey: ['groups'] }),
       queryClient.invalidateQueries({ queryKey: ['borrowers'] }),
       queryClient.invalidateQueries({ queryKey: ['loans'] }),
+      queryClient.invalidateQueries({ queryKey: ['loan-schedule-changes'] }),
       queryClient.invalidateQueries({ queryKey: ['dashboard'] }),
       queryClient.invalidateQueries({ queryKey: ['collector-dashboard'] }),
       queryClient.invalidateQueries({ queryKey: ['reports'] }),
@@ -435,80 +439,95 @@ export function OperationsReassignmentPanel() {
       ) : null}
 
       {tab === 'payment-day' ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Change repayment weekday</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-wilms-4">
-            <Alert title="Maker-checker">
-              This creates a schedule-change request. Approving it recalculates future PENDING weeks
-              while preserving historical payments.
-            </Alert>
-            <label className="block space-y-wilms-1 text-small">
-              <span>Loan</span>
-              <Select value={loanId} onChange={(event) => setLoanId(event.target.value)}>
-                <option value="">Select active loan</option>
-                {activeLoans.map((loan) => (
-                  <option key={loan.id} value={loan.id}>
-                    {resolveLoanDisplayId(loan)}
-                    {loan.borrowerName ? ` — ${loan.borrowerName}` : ''}
-                  </option>
-                ))}
-              </Select>
-            </label>
-            <label className="block space-y-wilms-1 text-small">
-              <span>New payment day</span>
-              <Select value={toPaymentDay} onChange={(event) => setToPaymentDay(event.target.value)}>
-                {PAYMENT_DAY_OPTIONS.map((day) => (
-                  <option key={day} value={day}>
-                    {day}
-                  </option>
-                ))}
-              </Select>
-            </label>
-            <label className="block space-y-wilms-1 text-small">
-              <span>Effective from</span>
-              <Input
-                type="date"
-                value={effectiveFrom}
-                onChange={(event) => setEffectiveFrom(event.target.value)}
-              />
-            </label>
-            <label className="block space-y-wilms-1 text-small">
-              <span>Reason</span>
-              <Textarea value={reason} onChange={(event) => setReason(event.target.value)} rows={3} />
-            </label>
-            {preview ? <Alert title="Preview">{preview}</Alert> : null}
-            <div className="flex flex-wrap gap-wilms-2">
-              <Button
-                type="button"
-                variant="secondary"
-                disabled={!loanId || !toPaymentDay || !effectiveFrom || !reason.trim()}
-                onClick={() =>
-                  setPreview(
-                    `Request payment day ${toPaymentDay} for ${selectedLoanLabel} from ${effectiveFrom}. Future schedule weeks will move; paid and historical weeks stay unchanged.`,
-                  )
-                }
-              >
-                Preview
-              </Button>
-              <Button
-                type="button"
-                disabled={
-                  !preview ||
-                  paymentDayMutation.isPending ||
-                  !loanId ||
-                  !toPaymentDay ||
-                  !effectiveFrom ||
-                  !reason.trim()
-                }
-                onClick={() => paymentDayMutation.mutate()}
-              >
-                {paymentDayMutation.isPending ? 'Requesting…' : 'Confirm request'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="space-y-wilms-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Change repayment weekday</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-wilms-4">
+              <Alert title="Maker-checker">
+                This creates a schedule-change request. A different authorised reviewer must review
+                or approve it before future PENDING weeks are recalculated.
+              </Alert>
+              <label className="block space-y-wilms-1 text-small">
+                <span>Loan</span>
+                <Select value={loanId} onChange={(event) => setLoanId(event.target.value)}>
+                  <option value="">Select active loan</option>
+                  {activeLoans.map((loan) => (
+                    <option key={loan.id} value={loan.id}>
+                      {resolveLoanDisplayId(loan)}
+                      {loan.borrowerName ? ` — ${loan.borrowerName}` : ''}
+                    </option>
+                  ))}
+                </Select>
+              </label>
+              <label className="block space-y-wilms-1 text-small">
+                <span>New payment day</span>
+                <Select value={toPaymentDay} onChange={(event) => setToPaymentDay(event.target.value)}>
+                  {PAYMENT_DAY_OPTIONS.map((day) => (
+                    <option key={day} value={day}>
+                      {day}
+                    </option>
+                  ))}
+                </Select>
+              </label>
+              <label className="block space-y-wilms-1 text-small">
+                <span>Effective from</span>
+                <Input
+                  type="date"
+                  value={effectiveFrom}
+                  onChange={(event) => setEffectiveFrom(event.target.value)}
+                />
+              </label>
+              <label className="block space-y-wilms-1 text-small">
+                <span>Reason</span>
+                <Textarea value={reason} onChange={(event) => setReason(event.target.value)} rows={3} />
+              </label>
+              {preview ? <Alert title="Preview">{preview}</Alert> : null}
+              <div className="flex flex-wrap gap-wilms-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={!loanId || !toPaymentDay || !effectiveFrom || !reason.trim()}
+                  onClick={() =>
+                    setPreview(
+                      `Request payment day ${toPaymentDay} for ${selectedLoanLabel} from ${effectiveFrom}. Future schedule weeks will move; paid and historical weeks stay unchanged.`,
+                    )
+                  }
+                >
+                  Preview
+                </Button>
+                <Button
+                  type="button"
+                  disabled={
+                    !preview ||
+                    paymentDayMutation.isPending ||
+                    !loanId ||
+                    !toPaymentDay ||
+                    !effectiveFrom ||
+                    !reason.trim()
+                  }
+                  onClick={() => paymentDayMutation.mutate()}
+                >
+                  {paymentDayMutation.isPending ? 'Requesting…' : 'Confirm request'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <PermissionGate
+            permissions={[PERMISSION.APPROVE_BORROWERS, PERMISSION.MANAGE_SYSTEM_SETTINGS]}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle>Review pending requests</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PendingScheduleChangeQueue />
+              </CardContent>
+            </Card>
+          </PermissionGate>
+        </div>
       ) : null}
     </div>
   );

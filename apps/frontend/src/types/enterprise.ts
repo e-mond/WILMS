@@ -48,6 +48,30 @@ export interface RequestScheduleChangeInput {
   reason: string;
 }
 
+export interface LoanScheduleChangeRecord {
+  id: string;
+  loanId: string;
+  borrowerId: string;
+  status: 'PENDING' | 'REVIEWED' | 'APPROVED';
+  fromPaymentDay: string;
+  toPaymentDay: string;
+  effectiveFrom: string;
+  reason: string;
+  requestedByUserId: string;
+  reviewedByUserId?: string | null;
+  approvedByUserId?: string | null;
+  reviewNote?: string | null;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface ScheduleChangeDecisionResult {
+  id: string;
+  status: 'REVIEWED' | 'APPROVED';
+  recalculatedWeeks?: number;
+  nextDueDate?: string | null;
+}
+
 export interface ForceLogoutResult {
   ok: true;
   userId: string;
