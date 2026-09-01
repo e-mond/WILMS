@@ -12,6 +12,7 @@ import {
 import { DetailSidebarCard, ExecutiveKpiGrid } from '@/components/layout/executive';
 import { ExecutiveDetailLayout } from '@/components/layout/ExecutiveDetailLayout';
 import { EmptyState } from '@/components/feedback/EmptyState';
+import { Alert } from '@/components/feedback/Alert';
 import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { Button } from '@/components/ui/Button';
@@ -65,6 +66,12 @@ export function LoanDetailPanel({ loanId }: LoanDetailPanelProps) {
     isError: isPaymentLogError,
     refetch: refetchPaymentLog,
   } = useLoanPaymentLog(loanId);
+
+  const { data: pendingScheduleChange } = useQuery({
+    queryKey: ['loan-schedule-changes', 'loan', loanId],
+    queryFn: () => loanService.getPendingScheduleChangeForLoan(loanId),
+    enabled: Boolean(loanId),
+  });
 
   const approveLoan = useApproveLoan(loanId);
   const disburseLoan = useDisburseLoan(loanId);
@@ -138,6 +145,18 @@ export function LoanDetailPanel({ loanId }: LoanDetailPanelProps) {
 
   return (
     <div className="space-y-wilms-4">
+      {pendingScheduleChange ? (
+        <Alert title="Payment day change pending">
+          A change from {pendingScheduleChange.fromPaymentDay} to{' '}
+          {pendingScheduleChange.toPaymentDay} (effective{' '}
+          {formatDisplayDate(pendingScheduleChange.effectiveFrom)}) is awaiting{' '}
+          {pendingScheduleChange.status === 'PENDING' ? 'review' : 'Super Admin approval'}. The
+          loan schedule and payment day shown below reflect the current approved schedule only.{' '}
+          <Link href="/ops/reassignment?tab=payment-day" className="font-semibold underline">
+            Open payment day queue
+          </Link>
+        </Alert>
+      ) : null}
       <div className="flex flex-wrap items-start justify-between gap-wilms-3">
         <div>
           <h1 className="text-heading-1 font-semibold text-text-primary">{loanLabel}</h1>

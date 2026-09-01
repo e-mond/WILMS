@@ -79,6 +79,11 @@ export const PAGE_GUIDANCE = {
     body: 'Approve or reject collector holiday requests. You cannot approve a request you created.',
     example: 'Approve only after confirming the date does not conflict with critical collections.',
   },
+  approverScheduleChanges: {
+    title: 'Review payment day changes',
+    body: 'Review Super Admin payment day requests. You cannot review a request you submitted. Super Admin approval applies the new schedule and notifies the borrower and collector.',
+    example: 'Review the effective date and weekday shift, then reject if the reason is insufficient.',
+  },
   approverPending: {
     title: 'Approval queue',
     body: 'Review new borrower applications submitted by registration officers. Approve, reject with reason, or blacklist when required.',
