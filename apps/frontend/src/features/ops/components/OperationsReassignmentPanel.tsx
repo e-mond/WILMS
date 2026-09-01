@@ -61,6 +61,33 @@ export function OperationsReassignmentPanel() {
     enabled: tab === 'payment-day',
   });
 
+  const pendingLoanChangeQuery = useQuery({
+    queryKey: ['loan-schedule-changes', 'loan', loanId],
+    queryFn: () => loanService.getPendingScheduleChangeForLoan(loanId),
+    enabled: tab === 'payment-day' && Boolean(loanId),
+  });
+
+  const previewScheduleMutation = useMutation({
+    mutationFn: () =>
+      loanService.previewScheduleChange(loanId, {
+        toPaymentDay,
+        effectiveFrom,
+      }),
+    onSuccess: (result) => {
+      setPreview(
+        `${result.recalculatedWeeks} pending week(s) would move to ${result.toPaymentDay}. Next due date: ${result.nextDueDate ?? '—'}. Paid and missed weeks stay unchanged.`,
+      );
+    },
+    onError: (error) => {
+      toast.error('Preview failed', {
+        message:
+          error instanceof ApiError
+            ? error.message
+            : 'We could not preview the schedule change.',
+      });
+    },
+  });
+
   const sourceMembers = sourceGroupDetailQuery.data?.members ?? [];
   const normalizedBorrowerQuery = borrowerQuery.trim().toLowerCase();
   const borrowerSuggestions = useMemo(() => {
@@ -94,10 +121,6 @@ export function OperationsReassignmentPanel() {
     () => (activeLoansQuery.data ?? []).filter((loan) => loan.status === 'ACTIVE'),
     [activeLoansQuery.data],
   );
-  const selectedLoan = activeLoans.find((loan) => loan.id === loanId);
-  const selectedLoanLabel = selectedLoan
-    ? `${resolveLoanDisplayId(selectedLoan)}${selectedLoan.borrowerName ? ` — ${selectedLoan.borrowerName}` : ''}`
-    : loanId;
 
   const invalidateOperationalQueries = async () => {
     await Promise.all([
@@ -173,7 +196,7 @@ export function OperationsReassignmentPanel() {
       }),
     onSuccess: async () => {
       toast.success('Payment day change requested', {
-        message: 'Approve the pending schedule change to recalculate future weeks.',
+        message: 'Approvers and supervisors were notified. Review and Super Admin approval are required.',
       });
       setPreview(null);
       setReason('');
@@ -447,8 +470,17 @@ export function OperationsReassignmentPanel() {
             <CardContent className="space-y-wilms-4">
               <Alert title="Maker-checker">
                 This creates a schedule-change request. A different authorised reviewer must review
-                or approve it before future PENDING weeks are recalculated.
+                it, then a different Super Admin must approve it before future PENDING weeks are
+                recalculated. The borrower and assigned collector are notified on approval.
               </Alert>
+              {pendingLoanChangeQuery.data ? (
+                <Alert title="Pending change exists">
+                  This loan already has a pending payment day change (
+                  {pendingLoanChangeQuery.data.fromPaymentDay} →{' '}
+                  {pendingLoanChangeQuery.data.toPaymentDay}). Resolve it before submitting another
+                  request.
+                </Alert>
+              ) : null}
               <label className="block space-y-wilms-1 text-small">
                 <span>Loan</span>
                 <Select value={loanId} onChange={(event) => setLoanId(event.target.value)}>
@@ -488,14 +520,17 @@ export function OperationsReassignmentPanel() {
                 <Button
                   type="button"
                   variant="secondary"
-                  disabled={!loanId || !toPaymentDay || !effectiveFrom || !reason.trim()}
-                  onClick={() =>
-                    setPreview(
-                      `Request payment day ${toPaymentDay} for ${selectedLoanLabel} from ${effectiveFrom}. Future schedule weeks will move; paid and historical weeks stay unchanged.`,
-                    )
+                  disabled={
+                    !loanId ||
+                    !toPaymentDay ||
+                    !effectiveFrom ||
+                    !reason.trim() ||
+                    previewScheduleMutation.isPending ||
+                    Boolean(pendingLoanChangeQuery.data)
                   }
+                  onClick={() => void previewScheduleMutation.mutateAsync()}
                 >
-                  Preview
+                  {previewScheduleMutation.isPending ? 'Previewing…' : 'Preview'}
                 </Button>
                 <Button
                   type="button"
@@ -505,7 +540,8 @@ export function OperationsReassignmentPanel() {
                     !loanId ||
                     !toPaymentDay ||
                     !effectiveFrom ||
-                    !reason.trim()
+                    !reason.trim() ||
+                    Boolean(pendingLoanChangeQuery.data)
                   }
                   onClick={() => paymentDayMutation.mutate()}
                 >

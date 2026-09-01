@@ -538,7 +538,9 @@ Borrowers do not hold portal accounts; SMS is the borrower-facing channel.
 
 ### Borrower lifecycle (authoritative)
 
-Registration submitted → registration approved (group + collector assigned) → loan created → loan approved (**admin-fee instruction**) → admin fee recorded → disbursed → repayment schedule issued → reminder (1 day before) → due today → payment received / multi-week receipt → missed payment → grace reminder → escalation → loan completed. Collector, group, and payment-day changes notify the borrower when they occur.
+Registration submitted → registration approved (group + collector assigned) → loan created → loan approved (**admin-fee instruction**) → admin fee recorded → disbursed → repayment schedule issued → reminder (1 day before) → due today → payment received / multi-week receipt → missed payment → grace reminder → escalation → loan completed. Collector and group changes notify the borrower when they occur.
+
+**Payment day changes** use a three-step maker-checker flow: Super Admin request → Approver review → different Super Admin approval. On request, approvers/Super Admins and the assigned collector receive in-app alerts. On approval, the borrower receives SMS/email, the collector and requester receive in-app alerts, and future PENDING schedule weeks are recalculated. Loan detail pages show a pending-change banner until the request is approved or rejected.
 
 Admin fee is instructed **after loan approval** and is required **before disbursement**, not before loan create or approve.
 
@@ -548,7 +550,7 @@ Admin fee is instructed **after loan approval** and is required **before disburs
 - **Quiet hours:** respected via notification preferences / settings
 - **Deduplication:** delivery keys prevent duplicate SMS/email/in-app sends
 - **Escalation ladder:** grace-period reminder then escalation after `latePaymentGraceDays`
-- **Operational alerts:** reconciliation variance, scheduler failures, expense review, missed-payment summaries
+- **Operational alerts:** reconciliation variance, scheduler failures, expense review, missed-payment summaries, payment day change requests
 
 Implementation: `packages/domain/src/infrastructure/notifications/`.  
 Copy, channel matrix, and timing: [`documentation/notifications/`](documentation/notifications/).

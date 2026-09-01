@@ -206,6 +206,12 @@ export const APPROVER_NAV: ShellNavItem[] = [
     icon: 'holidays',
     group: 'operations',
   },
+  {
+    href: '/approver/schedule-changes',
+    label: 'Payment day',
+    icon: 'queue',
+    group: 'operations',
+  },
   { href: '/approver/reviewed', label: 'Reviewed', icon: 'reviewed', group: 'operations' },
   { href: '/approver/records', label: 'Borrower Records', icon: 'audit', group: 'operations' },
   { href: '/approver/settings', label: 'Settings', icon: 'settings', group: 'administration' },
