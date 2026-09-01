@@ -131,7 +131,7 @@ describe('PaymentEntryPanel', () => {
     expect(screen.getByRole('button', { name: /Pay current week/i })).toBeEnabled();
   });
 
-  it('disables payment buttons when the oldest unpaid week is marked missed', async () => {
+  it('enables catch-up payment when the oldest unpaid week is marked missed', async () => {
     mockGetPaymentEntryContext.mockResolvedValue(
       payableContext({
         oldestObligation: {
@@ -156,10 +156,9 @@ describe('PaymentEntryPanel', () => {
             status: SCHEDULE_WEEK_STATUS.MISSED,
           },
         ],
-        canAcceptPayment: false,
+        canAcceptPayment: true,
         recordedMissed: true,
-        blockReason:
-          'This borrower was marked missed. Payment buttons are disabled until the missed week is cleared by operations.',
+        totalMissedWeeks: 1,
       }),
     );
 
@@ -170,8 +169,8 @@ describe('PaymentEntryPanel', () => {
     );
 
     expect(await screen.findByRole('heading', { name: 'Ama Mensah' })).toBeInTheDocument();
-    expect(screen.getByText(/marked missed/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Pay current week/i })).toBeDisabled();
+    expect(screen.getByText(/Missed payment arrears/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Pay current week/i })).toBeEnabled();
     expect(screen.getByRole('button', { name: /Mark this week as missed/i })).toBeDisabled();
   });
 

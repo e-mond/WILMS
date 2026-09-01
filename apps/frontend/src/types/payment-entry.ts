@@ -38,6 +38,7 @@ export interface PaymentEntryContext {
   graceDays?: number;
   escalationLevel?: PaymentEscalationLevel;
   consecutiveMissedWeeks?: number;
+  totalMissedWeeks?: number;
   lastPayment?: {
     id: string;
     paymentDate: string;

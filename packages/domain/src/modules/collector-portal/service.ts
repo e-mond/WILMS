@@ -83,6 +83,7 @@ export interface CollectorDashboard {
     payableWeeksCount?: number;
     collectedPesewas: number;
     paymentStatus: 'COLLECTED' | 'PENDING' | 'MISSED';
+    missedWeeksCount?: number;
   }>;
   missedAlerts: Array<{
     borrowerId: string;
@@ -195,18 +196,20 @@ export async function getCollectorDashboard(
     );
     const payableByLoanId = new Map<
       string,
-      { expectedPesewas: number; hasMissed: boolean; weeksCount: number }
+      { expectedPesewas: number; hasMissed: boolean; weeksCount: number; missedWeekCount: number }
     >();
     for (const week of payableWeeks) {
       const current = payableByLoanId.get(week.loanId) ?? {
         expectedPesewas: 0,
         hasMissed: false,
         weeksCount: 0,
+        missedWeekCount: 0,
       };
       current.expectedPesewas += decimalToPesewas(week.installmentAmount);
       current.weeksCount += 1;
       if (week.status === 'MISSED') {
         current.hasMissed = true;
+        current.missedWeekCount += 1;
       }
       payableByLoanId.set(week.loanId, current);
     }
@@ -240,6 +243,7 @@ export async function getCollectorDashboard(
         expectedPesewas: weeklyExpected,
         weeklyPaymentPesewas: weeklyInstallment,
         payableWeeksCount: payable?.weeksCount ?? (weeklyExpected > 0 ? 1 : 0),
+        missedWeeksCount: payable?.missedWeekCount ?? 0,
         collectedPesewas: collectedForBorrower,
         paymentStatus,
       });
@@ -372,7 +376,7 @@ export async function getCollectorDashboard(
       borrowerId: row.borrowerId,
       borrowerName: row.borrowerName,
       loanId: row.loanId,
-      missedWeeks: 1,
+      missedWeeks: Math.max(row.missedWeeksCount ?? 1, 1),
     }));
 
   return {

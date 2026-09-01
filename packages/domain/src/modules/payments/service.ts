@@ -137,14 +137,11 @@ export async function getPaymentEntryContext(borrowerId: string, referenceDate?:
     weeksCount: 1,
   });
 
-  /** Once the oldest unpaid week is marked missed, payment actions are locked (same as group sheet). */
-  const recordedMissed = obligationWeeks[0]?.status === 'MISSED';
-  if (!blockReason && recordedMissed) {
-    blockReason =
-      'This borrower was marked missed. Payment buttons are disabled until the missed week is cleared by operations.';
-  }
+  const totalMissedWeeks = scheduleWeeks.filter((week) => week.status === 'MISSED').length;
+  const hasMissedArrears = missedWeeks.length > 0;
+  const recordedMissed = hasMissedArrears;
 
-  const isPaymentDay = !blockReason?.includes('assigned payment day');
+  const isPaymentDay = !blockReason?.includes('assigned payment day') && !blockReason?.includes('payment day (');
   const nextDue =
     scheduleWeeks.find((week) => week.status === 'PENDING' && week.dueDate > ref) ??
     obligationWeeks[0];
@@ -175,6 +172,7 @@ export async function getPaymentEntryContext(borrowerId: string, referenceDate?:
     graceDays: settings.latePaymentGraceDays,
     escalationLevel: graceInfo.escalationLevel,
     consecutiveMissedWeeks,
+    totalMissedWeeks,
     lastPayment: lastPayment
       ? {
           id: lastPayment.id,
@@ -183,7 +181,7 @@ export async function getPaymentEntryContext(borrowerId: string, referenceDate?:
         }
       : undefined,
     maxPayableWeeks: obligationWeeks.length,
-    canAcceptPayment: !blockReason && obligationWeeks.length > 0 && !recordedMissed,
+    canAcceptPayment: !blockReason && obligationWeeks.length > 0,
     blockReason,
     recordedMissed,
   };
@@ -263,13 +261,6 @@ async function postPayment(
 
   if (validationError) {
     throw new Error(`VALIDATION:${validationError}`);
-  }
-
-  const payableWeeks = getPayableWeeks(scheduleWeeks, input.paymentDate);
-  if (payableWeeks[0]?.status === 'MISSED') {
-    throw new Error(
-      'VALIDATION:This borrower was marked missed. Payment cannot be recorded for a missed week from the payment entry screen.',
-    );
   }
 
   const allocation = applyPaymentToSchedule(scheduleWeeks, input.paymentDate, weeksCount);

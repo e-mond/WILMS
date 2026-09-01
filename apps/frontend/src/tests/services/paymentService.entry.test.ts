@@ -50,7 +50,7 @@ describe('paymentService.mock payment entry', () => {
     expect(schedule?.[3]?.status).toBe(SCHEDULE_WEEK_STATUS.PAID);
   });
 
-  it('blocks partial payments and wrong-day submissions', async () => {
+  it('blocks partial payments', async () => {
     await expect(
       paymentServiceMock.recordPayment({
         borrowerId: 'borrower-001',
@@ -60,15 +60,18 @@ describe('paymentService.mock payment entry', () => {
         gps: SAMPLE_GPS,
       }),
     ).rejects.toMatchObject({ code: API_ERROR_CODE.VALIDATION });
+  });
 
-    await expect(
-      paymentServiceMock.recordPayment({
-        borrowerId: 'borrower-001',
-        amountPesewas: 5000,
-        paymentDate: '2026-05-30',
-        collectorId: 'user-collector',
-        gps: SAMPLE_GPS,
-      }),
-    ).rejects.toMatchObject({ code: API_ERROR_CODE.VALIDATION });
+  it('allows catch-up payment on a non-payment day when the oldest obligation is missed', async () => {
+    await paymentServiceMock.recordPayment({
+      borrowerId: 'borrower-001',
+      amountPesewas: 5000,
+      paymentDate: '2026-05-30',
+      collectorId: 'user-collector',
+      gps: SAMPLE_GPS,
+    });
+
+    const schedule = getStoredLoanSchedule('loan-001');
+    expect(schedule?.[3]?.status).toBe(SCHEDULE_WEEK_STATUS.PAID);
   });
 });

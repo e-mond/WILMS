@@ -145,6 +145,18 @@ export function buildEscalationNoticeSmsBody(input: { collectorName?: string }):
   return `WILMS: Your repayment remains unpaid after the grace period. Your account has been flagged for follow-up by your group and collector. Please contact ${collector} immediately to avoid further action.`;
 }
 
+export function buildWeeklyArrearsReminderSmsBody(input: {
+  borrowerName: string;
+  missedWeekCount: number;
+  totalArrearsPesewas: number;
+  collectorName?: string;
+}): string {
+  const totalGhs = formatGhsAmount(input.totalArrearsPesewas);
+  const collector = input.collectorName?.trim() || 'your collector';
+  const weekLabel = input.missedWeekCount === 1 ? '1 missed week' : `${input.missedWeekCount} missed weeks`;
+  return `WILMS: Dear ${input.borrowerName}, you still have ${weekLabel} outstanding (GHS ${totalGhs} total). Please pay your collector, ${collector}, as soon as possible to bring your account current.`;
+}
+
 export function buildLoanDisbursedScheduleSmsBody(input: LoanDisbursedScheduleSmsInput): string {
   const weeklyGhs = formatGhsAmount(input.weeklyAmountPesewas);
   return `WILMS: Repayment Schedule — Group: ${input.groupName} | Collector: ${input.collectorName} | Weekly payment: GHS ${weeklyGhs} | Payment day: ${input.paymentDay} | First payment: ${input.firstDueDate} | Total weeks: ${input.totalWeeks}. Please make each payment on or before the due date.`;
