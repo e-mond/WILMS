@@ -218,6 +218,50 @@ async function buildScheduleRecalculation(loanId: string, toPaymentDay: string, 
   return { recalculated, nextDueDate };
 }
 
+async function hasActiveApproverUsers(): Promise<boolean> {
+  const staff = await userRepo.listUsers();
+  return staff.some(
+    (user) => user.status === 'ACTIVE' && user.role === USER_ROLE.APPROVER,
+  );
+}
+
+async function assertCanReviewScheduleChange(actorUserId: string): Promise<void> {
+  const actor = await userRepo.getUserById(actorUserId);
+  if (actor?.role !== USER_ROLE.SUPER_ADMIN) {
+    return;
+  }
+
+  if (await hasActiveApproverUsers()) {
+    throw new Error(
+      'FORBIDDEN:Super Admins cannot review payment day changes when an Approver is available. Ask an Approver to review first, then approve as a Super Admin who did not request the change.',
+    );
+  }
+}
+
+async function assertCanApproveScheduleChange(input: {
+  record: { reviewedByUserId?: string | null; requestedByUserId?: string | null };
+  actorUserId: string;
+}): Promise<void> {
+  if (input.record.requestedByUserId === input.actorUserId) {
+    throw new Error(
+      'FORBIDDEN:You cannot approve a payment day change you requested. Ask another authorised reviewer.',
+    );
+  }
+
+  if (input.record.reviewedByUserId !== input.actorUserId) {
+    return;
+  }
+
+  const actor = await userRepo.getUserById(input.actorUserId);
+  if (actor?.role === USER_ROLE.SUPER_ADMIN) {
+    return;
+  }
+
+  throw new Error(
+    'FORBIDDEN:You cannot approve a payment day change you reviewed. Ask a Super Admin to approve it.',
+  );
+}
+
 export async function relocateBorrower(input: {
   borrowerId: string;
   community: string;
@@ -726,16 +770,10 @@ export async function approveScheduleChange(input: {
   if (!record) {
     throw new Error('NOT_FOUND');
   }
-  if (record.requestedByUserId === input.actorUserId) {
-    throw new Error(
-      'FORBIDDEN:You cannot approve a payment day change you requested. Ask another authorised reviewer.',
-    );
-  }
-  if (record.reviewedByUserId === input.actorUserId) {
-    throw new Error(
-      'FORBIDDEN:You cannot approve a payment day change you reviewed. Ask another Super Admin to approve it.',
-    );
-  }
+  await assertCanApproveScheduleChange({
+    record,
+    actorUserId: input.actorUserId,
+  });
   if (record.status !== 'REVIEWED') {
     throw new Error(
       'VALIDATION:Schedule change must be reviewed before approval. Ask an authorised reviewer to review it first.',
@@ -856,6 +894,7 @@ export async function reviewScheduleChange(input: {
       'FORBIDDEN:You cannot review a payment day change you requested. Ask another authorised reviewer.',
     );
   }
+  await assertCanReviewScheduleChange(input.actorUserId);
 
   if (isDatabaseEnabled()) {
     const db = getDb();
