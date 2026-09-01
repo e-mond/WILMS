@@ -35,6 +35,7 @@ import * as borrowerRepo from '../../repositories/borrower.repository.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import * as scheduleRepo from '../../repositories/loan-schedule.repository.js';
 import { getSettings } from '../settings/service.js';
+import { listHolidays } from '../organization-holidays/service.js';
 
 export interface PaymentSchedulerResult {
   referenceDate: string;
@@ -181,6 +182,12 @@ export async function processPaymentNotificationJobs(
           ref,
           settings.latePaymentGraceDays,
         );
+        await scheduleRepo.ensureMissedPaymentRolloverWeeks(loanRow.id, {
+          durationWeeks: loanRow.durationWeeks,
+          weeklyPaymentPesewas: weeklyPesewas,
+          allowRollovers: settings.allowLoanRollovers,
+          holidayDates: (await listHolidays()).map((holiday) => holiday.holidayDate),
+        });
 
         for (const missed of newlyMissed) {
           await emitPaymentMissedNotification({

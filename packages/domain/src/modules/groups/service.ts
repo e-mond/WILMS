@@ -1170,6 +1170,7 @@ export async function getGroupsForCollector(collectorId: string): Promise<GroupR
       displayName: row.displayName,
       community: row.community,
       memberIds: row.memberIds,
+      leaderBorrowerId: row.leaderBorrowerId ?? row.memberIds[0] ?? null,
       formedAt: row.formedAt.toISOString(),
     }));
 }
