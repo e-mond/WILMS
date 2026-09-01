@@ -17,6 +17,7 @@ import {
   type LoanDetailDto,
 } from '../../domain/loan/mappers.js';
 import { generateLoanScheduleWeeks } from '../../domain/loan/schedule.js';
+import { refreshLoanScheduleState } from '../../domain/loan/refresh-schedule-state.js';
 import { isValidPaymentDay } from '../../domain/loan/payment-day.js';
 import { runWithIdempotency } from '../../infrastructure/idempotency/run-with-idempotency.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
@@ -661,7 +662,15 @@ export async function getLoanSchedule(loanId: string, referenceDate?: string) {
 
   const ref = referenceDate ?? new Date().toISOString().slice(0, 10);
   const settings = await getSettings();
-  await scheduleRepo.applyMissedWeekMarking(loanId, ref, settings.latePaymentGraceDays);
+  const { listHolidays } = await import('../organization-holidays/service.js');
+  const holidays = await listHolidays();
+  await refreshLoanScheduleState({
+    loan,
+    referenceDate: ref,
+    graceDays: settings.latePaymentGraceDays,
+    allowLoanRollovers: settings.allowLoanRollovers,
+    holidayDates: holidays.map((holiday) => holiday.holidayDate),
+  });
   const weeks = await scheduleRepo.listScheduleWeeks(loanId);
 
   if (!weeks.length) {

@@ -136,6 +136,17 @@ function resolvePaymentStatus(input: {
   return 'PENDING';
 }
 
+function resolveGroupLeaderName(
+  group: { leaderBorrowerId?: string | null; memberIds: string[] },
+  borrowers: Array<{ id: string; fullName: string }>,
+): string {
+  const leaderId = group.leaderBorrowerId ?? group.memberIds[0];
+  if (!leaderId) {
+    return '—';
+  }
+  return borrowers.find((borrower) => borrower.id === leaderId)?.fullName ?? '—';
+}
+
 export async function getCollectorDashboard(
   collectorId: string,
   date?: string,
@@ -339,7 +350,7 @@ export async function getCollectorDashboard(
         groupId: group.id,
         groupName: group.displayName,
         community: group.community,
-        leaderName: '—',
+        leaderName: resolveGroupLeaderName(group, borrowers),
         groupPhotoUrl: '',
         collectedCount,
         expectedCount: dueGroupBorrowers.length,

@@ -4,6 +4,8 @@ import { getDb } from '../db/client.js';
 import { loanSchedules } from '../db/schema/loan-schedules.js';
 import { pesewasToDecimal } from '../domain/money.js';
 import type { ScheduleWeekDraft } from '../domain/loan/schedule.js';
+import { buildRolloverWeekDrafts } from '../domain/loan/schedule-rollover.js';
+import type { RepaymentCadence } from '../domain/loan/schedule-cadence.js';
 
 export async function insertScheduleWeeks(
   loanId: string,
@@ -260,4 +262,33 @@ export async function applyMissedWeekMarking(
   }
 
   return newlyMissed;
+}
+
+export async function ensureMissedPaymentRolloverWeeks(
+  loanId: string,
+  input: {
+    durationWeeks: number;
+    weeklyPaymentPesewas: number;
+    allowRollovers: boolean;
+    cadence?: RepaymentCadence;
+    holidayDates?: Iterable<string>;
+  },
+  tx: WilmsDb = getDb(),
+): Promise<number> {
+  const weeks = await listScheduleWeeks(loanId, tx);
+  const drafts = buildRolloverWeekDrafts({
+    existingWeeks: weeks,
+    durationWeeks: input.durationWeeks,
+    weeklyPaymentPesewas: input.weeklyPaymentPesewas,
+    allowRollovers: input.allowRollovers,
+    cadence: input.cadence,
+    holidayDates: input.holidayDates,
+  });
+
+  if (drafts.length === 0) {
+    return 0;
+  }
+
+  await insertScheduleWeeks(loanId, drafts, tx);
+  return drafts.length;
 }
