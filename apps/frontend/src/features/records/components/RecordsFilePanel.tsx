@@ -128,6 +128,39 @@ export function RecordsFilePanel({ borrowerId }: { borrowerId: string }) {
         />
       </div>
 
+      <section className="grid gap-wilms-4 md:grid-cols-3">
+        <RecordCard title="Repayment status">
+          <Row
+            label="Missed weeks"
+            value={String(
+              file.scheduleWeeks.filter((week) => week.status === 'MISSED').length ||
+                borrower.progress?.totalMissed ||
+                0,
+            )}
+          />
+          <Row
+            label="Weeks completed"
+            value={String(borrower.progress?.weeksCompleted ?? '—')}
+          />
+          <Row
+            label="Payment consistency"
+            value={
+              borrower.progress?.paymentConsistencyScore != null
+                ? `${borrower.progress.paymentConsistencyScore}%`
+                : '—'
+            }
+          />
+          <Row
+            label="Outstanding arrears"
+            value={
+              file.scheduleWeeks.filter((week) => week.status === 'MISSED').length > 0
+                ? `${file.scheduleWeeks.filter((week) => week.status === 'MISSED').length} instalment(s)`
+                : 'None'
+            }
+          />
+        </RecordCard>
+      </section>
+
       <section className="grid gap-wilms-4 md:grid-cols-2">
         <RecordCard title="Personal details">
           <Row label="Ghana Card / ID" value={borrower.nationalId} />

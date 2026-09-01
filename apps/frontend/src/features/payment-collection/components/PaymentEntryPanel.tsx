@@ -326,6 +326,14 @@ export function PaymentEntryPanel({ borrowerId }: PaymentEntryPanelProps) {
             </Alert>
           ) : null}
 
+          {data.recordedMissed ? (
+            <Alert title="Missed payment arrears" variant="warning">
+              This borrower has {data.totalMissedWeeks ?? data.missedWeeks?.length ?? 0} missed week(s).
+              Catch-up payments are enabled — record payment to clear the oldest missed instalment first.
+              Weekly SMS reminders continue until all arrears are paid.
+            </Alert>
+          ) : null}
+
           {data.blockReason ? (
             <Alert title="Payment not available" variant="warning">
               {data.blockReason}

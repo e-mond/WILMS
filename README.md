@@ -542,6 +542,8 @@ Registration submitted → registration approved (group + collector assigned) �
 
 **Payment day changes** use a three-step maker-checker flow: Super Admin request → Approver review → different Super Admin approval. On request, approvers/Super Admins and the assigned collector receive in-app alerts. On approval, the borrower receives SMS/email, the collector and requester receive in-app alerts, and future PENDING schedule weeks are recalculated. Loan detail pages show a pending-change banner until the request is approved or rejected.
 
+**Missed payments:** After grace expires, schedule weeks are marked MISSED. Borrowers receive SMS on the overdue ladder (days 1, grace, grace+1, grace+2, then every 7 days) plus a consolidated weekly reminder on their payment day while arrears remain. Collectors can record catch-up payments against missed weeks from the payment entry screen. Missed week counts appear on borrower profiles, records files, and collector dashboards.
+
 Admin fee is instructed **after loan approval** and is required **before disbursement**, not before loan create or approve.
 
 ### Control plane
