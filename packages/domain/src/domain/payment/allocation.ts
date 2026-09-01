@@ -74,23 +74,27 @@ export function validatePaymentSubmission(input: {
   }
 
   const oldestPayable = payable[0]!;
-  const referenceWeekday = new Intl.DateTimeFormat('en-US', {
-    weekday: 'long',
-    timeZone: 'UTC',
-  }).format(new Date(`${input.referenceDate}T00:00:00.000Z`));
+  const catchingUpMissedArrears = oldestPayable.status === 'MISSED';
 
-  const dueWeekday = new Intl.DateTimeFormat('en-US', {
-    weekday: 'long',
-    timeZone: 'UTC',
-  }).format(new Date(`${oldestPayable.dueDate}T00:00:00.000Z`));
+  if (!catchingUpMissedArrears) {
+    const referenceWeekday = new Intl.DateTimeFormat('en-US', {
+      weekday: 'long',
+      timeZone: 'UTC',
+    }).format(new Date(`${input.referenceDate}T00:00:00.000Z`));
 
-  const weekdayAllowed =
-    normalizePaymentDay(referenceWeekday) === normalizePaymentDay(input.paymentDay) ||
-    normalizePaymentDay(referenceWeekday) === normalizePaymentDay(dueWeekday) ||
-    input.referenceDate === oldestPayable.dueDate;
+    const dueWeekday = new Intl.DateTimeFormat('en-US', {
+      weekday: 'long',
+      timeZone: 'UTC',
+    }).format(new Date(`${oldestPayable.dueDate}T00:00:00.000Z`));
 
-  if (!weekdayAllowed) {
-    return `Payments can only be recorded on the assigned payment day (${input.paymentDay}) or the scheduled due date after holiday adjustment (${oldestPayable.dueDate}).`;
+    const weekdayAllowed =
+      normalizePaymentDay(referenceWeekday) === normalizePaymentDay(input.paymentDay) ||
+      normalizePaymentDay(referenceWeekday) === normalizePaymentDay(dueWeekday) ||
+      input.referenceDate === oldestPayable.dueDate;
+
+    if (!weekdayAllowed) {
+      return `Payments can only be recorded on the assigned payment day (${input.paymentDay}) or the scheduled due date after holiday adjustment (${oldestPayable.dueDate}).`;
+    }
   }
 
   return undefined;

@@ -23,6 +23,7 @@ import {
   buildMissedPaymentSmsBody,
   buildGracePeriodReminderSmsBody,
   buildEscalationNoticeSmsBody,
+  buildWeeklyArrearsReminderSmsBody,
   buildMultiWeekPaymentSmsBody,
   buildPaymentConfirmationEmail,
   buildPaymentConfirmationSmsBody,
@@ -41,6 +42,8 @@ export const DEDUPE = {
   paymentConfirmed: (paymentId: string) => `payment-confirmed:${paymentId}`,
   paymentReversed: (paymentId: string) => `payment-reversed:${paymentId}`,
   adminMissedSummary: (date: string) => `admin-missed-summary:${date}`,
+  weeklyArrearsReminder: (loanId: string, referenceDate: string) =>
+    `weekly-arrears:${loanId}:${referenceDate}`,
   scheduleChanged: (loanId: string, version: string) => `schedule-changed:${loanId}:${version}`,
 } as const;
 
@@ -547,9 +550,15 @@ export async function emitPaymentOverdueLadderNotification(input: {
   } else if (input.daysOverdue === graceDays + 2) {
     title = 'Super Admin delinquency alert';
     sendBorrowerSms = false;
-  } else if (input.daysOverdue >= 7) {
-    title = 'Escalated delinquency';
-    smsBody = buildEscalationNoticeSmsBody({ collectorName: context.collectorName });
+  } else if (input.daysOverdue >= 7 && input.daysOverdue % 7 === 0) {
+    title = 'Weekly arrears reminder';
+    smsBody = buildWeeklyArrearsReminderSmsBody({
+      borrowerName: input.borrowerName,
+      missedWeekCount: 1,
+      totalArrearsPesewas: input.amountPesewas,
+      collectorName: context.collectorName,
+    });
+    collectorBody = `${input.borrowerName} is ${input.daysOverdue} day(s) overdue (GHS ${amountGhs}). Follow up for catch-up payment.`;
   }
 
   if (input.borrowerPhone && sendBorrowerSms) {
@@ -608,6 +617,66 @@ export async function emitPaymentOverdueLadderNotification(input: {
   }
 
   recordNotificationMetric('payment_missed');
+}
+
+/** Weekly reminder while MISSED arrears remain outstanding (fires on payment day). */
+export async function emitWeeklyArrearsReminder(input: {
+  borrowerId: string;
+  borrowerName: string;
+  borrowerPhone?: string;
+  borrowerEmail?: string;
+  loanId: string;
+  loanDisplayId: string;
+  missedWeekCount: number;
+  totalArrearsPesewas: number;
+  paymentDay: string;
+  referenceDate: string;
+  collectorUserId?: string;
+  correlationId?: string;
+}): Promise<boolean> {
+  const dedupeKey = DEDUPE.weeklyArrearsReminder(input.loanId, input.referenceDate);
+  const settings = await getSettings();
+  const context = await resolveBorrowerCollectionContext(input.borrowerId);
+  const smsBody = buildWeeklyArrearsReminderSmsBody({
+    borrowerName: input.borrowerName,
+    missedWeekCount: input.missedWeekCount,
+    totalArrearsPesewas: input.totalArrearsPesewas,
+    collectorName: context.collectorName,
+  });
+
+  let sent = false;
+  if (input.borrowerPhone) {
+    sent = await dispatchBorrowerSms({
+      dedupeKey,
+      notificationType: 'WEEKLY_ARREARS_REMINDER',
+      event: 'MISSED_PAYMENT',
+      to: input.borrowerPhone,
+      body: smsBody,
+      enabled: settings.smsNotificationsEnabled && settings.missedPaymentSmsEnabled,
+      borrowerId: input.borrowerId,
+      loanId: input.loanId,
+      correlationId: input.correlationId,
+    });
+  }
+
+  const collectorId =
+    input.collectorUserId ?? (await resolveCollectorUserIdForBorrower(input.borrowerId));
+  if (collectorId) {
+    await dispatchStaffInApp({
+      dedupeKey,
+      notificationType: 'WEEKLY_ARREARS_REMINDER',
+      userId: collectorId,
+      event: 'MISSED_PAYMENT',
+      title: 'Weekly arrears reminder',
+      body: `${input.borrowerName} has ${input.missedWeekCount} missed week(s) (GHS ${formatGhsAmount(input.totalArrearsPesewas)}). Record catch-up payment when collected.`,
+      href: `/collector/payment/${input.borrowerId}`,
+      borrowerId: input.borrowerId,
+      loanId: input.loanId,
+      correlationId: input.correlationId,
+    });
+  }
+
+  return sent;
 }
 
 /** Notify borrower, assigned collector, and admins when a payment is missed. */
