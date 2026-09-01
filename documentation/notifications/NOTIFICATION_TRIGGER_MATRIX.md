@@ -17,6 +17,8 @@ Quiet hours and channel preferences in system settings still apply. Push is mirr
 | Reminder (1 day before) | Scheduler, pending week due = T+lead | Yes | Optional | Yes (staff mirror) | Yes |
 | Due today | Scheduler, pending week due = today | Yes | No | Yes (staff mirror) | Yes |
 | Missed payment | Scheduler newly marked missed | Yes | Yes | Yes (collector) | Yes |
+| Weekly arrears reminder | Scheduler on payment day while MISSED weeks remain | Yes | No | Yes (collector) | Yes |
+| Overdue ladder (weekly) | Scheduler every 7 days while overdue | Yes | No | Yes (collector) | Yes |
 | Grace reminder | Ladder day = grace days | Yes | No | Yes (collector) | Yes |
 | Escalation | Ladder day = grace + 1 | Yes | Yes (staff/admin) | Yes | Yes |
 | Payment received | `emitPaymentConfirmedNotification` | Yes | Optional | Yes (collector) | Optional |

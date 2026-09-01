@@ -58,7 +58,9 @@ describe('payment-entry.utils', () => {
         weeklyPaymentPesewas: 5000,
         paymentDay: 'Friday',
         referenceDate: '2026-05-30',
-        scheduleWeeks: SCHEDULE,
+        scheduleWeeks: SCHEDULE.map((week) =>
+          week.weekNumber === 4 ? { ...week, status: SCHEDULE_WEEK_STATUS.PENDING } : week,
+        ),
       }),
     ).toContain('payment day');
 
@@ -73,7 +75,7 @@ describe('payment-entry.utils', () => {
     ).toContain('Advance');
   });
 
-  it('builds payment entry context with arrears totals', () => {
+  it('builds payment entry context with arrears totals and allows catch-up payment', () => {
     const context = buildPaymentEntryContext({
       borrowerId: 'borrower-001',
       borrowerName: 'Ama Mensah',
@@ -83,15 +85,27 @@ describe('payment-entry.utils', () => {
       paymentDay: 'Friday',
       weeklyPaymentPesewas: 5000,
       scheduleWeeks: SCHEDULE,
-      referenceDate: '2026-05-29',
+      referenceDate: '2026-05-30',
     });
 
-    expect(context.canAcceptPayment).toBe(false);
+    expect(context.canAcceptPayment).toBe(true);
     expect(context.recordedMissed).toBe(true);
-    expect(context.blockReason).toMatch(/marked missed/i);
+    expect(context.totalMissedWeeks).toBe(1);
     expect(context.obligationWeeks).toHaveLength(2);
     expect(context.totalOutstandingObligationsPesewas).toBe(10000);
     expect(context.oldestObligation?.weekNumber).toBe(4);
+  });
+
+  it('allows catch-up validation when oldest obligation is missed', () => {
+    expect(
+      validatePaymentSubmission({
+        amountPesewas: 5000,
+        weeklyPaymentPesewas: 5000,
+        paymentDay: 'Friday',
+        referenceDate: '2026-05-30',
+        scheduleWeeks: SCHEDULE,
+      }),
+    ).toBeUndefined();
   });
 
   it('allows payment when the oldest unpaid week is still pending', () => {

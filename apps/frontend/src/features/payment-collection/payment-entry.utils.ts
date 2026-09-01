@@ -92,14 +92,15 @@ export function validatePaymentSubmission({
     return amountError;
   }
 
-  if (!isPaymentDayForDate(paymentDay, referenceDate)) {
-    return `Payments can only be recorded on the assigned payment day (${paymentDay}).`;
-  }
-
   const oldestWeek = getOldestPayableWeek(scheduleWeeks, referenceDate);
 
   if (!oldestWeek) {
     return 'No outstanding obligation is due. Advance payments are not allowed.';
+  }
+
+  const catchingUpMissedArrears = oldestWeek.status === SCHEDULE_WEEK_STATUS.MISSED;
+  if (!catchingUpMissedArrears && !isPaymentDayForDate(paymentDay, referenceDate)) {
+    return `Payments can only be recorded on the assigned payment day (${paymentDay}).`;
   }
 
   return undefined;
@@ -133,28 +134,28 @@ export function buildPaymentEntryContext({
   scheduleWeeks,
   referenceDate = new Date().toISOString().slice(0, 10),
 }: BuildPaymentEntryContextInput): PaymentEntryContext {
-  const isPaymentDay = isPaymentDayForDate(paymentDay, referenceDate);
   const obligationWeeks = getPayableObligationWeeks(scheduleWeeks, referenceDate);
   const oldestObligation = obligationWeeks[0];
+  const missedWeeks = obligationWeeks.filter((week) => week.status === SCHEDULE_WEEK_STATUS.MISSED);
+  const totalMissedWeeks = scheduleWeeks.filter(
+    (week) => week.status === SCHEDULE_WEEK_STATUS.MISSED,
+  ).length;
   const totalOutstandingObligationsPesewas = obligationWeeks.reduce(
     (total, week) => total + week.amountPesewas,
     0,
   );
+  const isPaymentDay = isPaymentDayForDate(paymentDay, referenceDate);
+  const recordedMissed = missedWeeks.length > 0;
 
   let blockReason: string | undefined;
   let canAcceptPayment = Boolean(oldestObligation);
-  const recordedMissed = oldestObligation?.status === SCHEDULE_WEEK_STATUS.MISSED;
 
-  if (!isPaymentDay) {
-    canAcceptPayment = false;
-    blockReason = `Today is not this borrower's payment day (${paymentDay}).`;
-  } else if (!oldestObligation) {
+  if (!oldestObligation) {
     canAcceptPayment = false;
     blockReason = 'No outstanding obligation is due. Advance payments are not allowed.';
-  } else if (recordedMissed) {
+  } else if (!recordedMissed && !isPaymentDay) {
     canAcceptPayment = false;
-    blockReason =
-      'This borrower was marked missed. Payment buttons are disabled until the missed week is cleared by operations.';
+    blockReason = `Today is not this borrower's payment day (${paymentDay}).`;
   }
 
   return {
@@ -170,6 +171,8 @@ export function buildPaymentEntryContext({
     requiredAmountPesewas: weeklyPaymentPesewas,
     oldestObligation,
     obligationWeeks,
+    missedWeeks,
+    totalMissedWeeks,
     totalOutstandingObligationsPesewas,
     canAcceptPayment,
     blockReason,
