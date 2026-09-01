@@ -24,7 +24,10 @@ Quiet hours and channel preferences in system settings still apply. Push is mirr
 | Loan completed | `notifyLoanFullyPaid` | Yes | Yes | Yes (collector) | Yes |
 | Collector changed | `notifyCollectorReassignedToBorrower` | Yes | Optional | Yes | Yes |
 | Group changed | `notifyGroupAssigned` on transfer | Yes | Optional | Yes | Yes |
-| Payment day changed | `emitScheduleChangedNotification` | Yes | Yes | Yes | Yes |
+| Payment day change requested | `requestScheduleChange` | No | No | Yes (approvers, Super Admins, collector) | Yes |
+| Payment day change reviewed | `reviewScheduleChange` | No | No | Yes (requester, Super Admins) | Yes |
+| Payment day changed (approved) | `emitScheduleChangedNotification` + staff in-app | Yes | Yes | Yes (collector, requester) | Yes |
+| Payment day change rejected | `rejectScheduleChange` | No | No | Yes (requester) | Yes |
 
 ## In-app recipient note
 

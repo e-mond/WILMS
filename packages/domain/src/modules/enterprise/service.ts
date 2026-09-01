@@ -1,6 +1,7 @@
 import { uuidv7 } from 'uuidv7';
 import { and, eq, isNull, sql } from 'drizzle-orm';
-import { isDatabaseEnabled, getDb } from '../../db/client.js';
+import { USER_ROLE } from '@wilms/shared-rbac';
+import { isDatabaseEnabled, getDb, runInTransaction } from '../../db/client.js';
 import {
   authLoginEvents,
   borrowerRelocations,
@@ -13,6 +14,9 @@ import { loans } from '../../db/schema/loans.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
 import { emitScheduleChangedNotification } from '../../infrastructure/notifications/ops-notifications.js';
 import { notifyCollectorAssigned } from '../../infrastructure/notifications/event-dispatch.js';
+import { createInAppNotification } from '../../infrastructure/notifications/in-app-notify.js';
+import type { InAppEvent } from '../../infrastructure/notifications/in-app-notify.js';
+import { resolveCollectorUserIdForBorrower } from '../../infrastructure/notifications/payment-notifications.js';
 import { getBorrower, saveBorrower } from '../../db/persistence.js';
 import * as loanRepo from '../../repositories/loan.repository.js';
 import * as scheduleRepo from '../../repositories/loan-schedule.repository.js';
@@ -37,6 +41,156 @@ export function __resetEnterpriseWorkflowMemoryForTests() {
   memoryReplacements.length = 0;
   memoryDissolutions.length = 0;
   memoryLoginEvents.length = 0;
+}
+
+const SCHEDULE_CHANGE_HREF = '/ops/reassignment?tab=payment-day';
+const APPROVER_SCHEDULE_CHANGE_HREF = '/approver/schedule-changes';
+
+function assertIsoDate(value: string, label: string): string {
+  const trimmed = value.trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    throw new Error(`VALIDATION:${label} must be YYYY-MM-DD.`);
+  }
+  return trimmed;
+}
+
+async function notifyStaffInApp(input: {
+  userId: string;
+  title: string;
+  body: string;
+  href: string;
+  event?: InAppEvent;
+  borrowerId?: string;
+  loanId?: string;
+}): Promise<void> {
+  try {
+    await createInAppNotification({
+      userId: input.userId,
+      event: input.event ?? 'COMMUNICATION',
+      title: input.title,
+      body: input.body,
+      href: input.href,
+      borrowerId: input.borrowerId,
+      loanId: input.loanId,
+    });
+  } catch {
+    // Notification failure must not block workflow.
+  }
+}
+
+async function notifyScheduleChangeSupervisors(input: {
+  excludeUserId?: string;
+  title: string;
+  body: string;
+  href?: string;
+}): Promise<void> {
+  if (!isDatabaseEnabled()) {
+    return;
+  }
+  try {
+    const staff = await userRepo.listUsers();
+    const recipients = staff.filter(
+      (user) =>
+        user.status === 'ACTIVE' &&
+        (user.role === USER_ROLE.SUPER_ADMIN || user.role === USER_ROLE.APPROVER) &&
+        user.id !== input.excludeUserId,
+    );
+    await Promise.all(
+      recipients.map((user) =>
+        notifyStaffInApp({
+          userId: user.id,
+          event: 'SUPERVISOR_ALERT',
+          title: input.title,
+          body: input.body,
+          href: input.href ?? SCHEDULE_CHANGE_HREF,
+        }),
+      ),
+    );
+  } catch {
+    // Ignore notify failures.
+  }
+}
+
+async function loadScheduleChangeRecord(changeId: string): Promise<Record<string, unknown> | undefined> {
+  const memoryRecord = memoryScheduleChanges.find((entry) => entry.id === changeId);
+  if (!isDatabaseEnabled()) {
+    return memoryRecord;
+  }
+  const db = getDb();
+  const [row] = await db
+    .select()
+    .from(loanScheduleChanges)
+    .where(eq(loanScheduleChanges.id, changeId))
+    .limit(1);
+  if (!row) {
+    return undefined;
+  }
+  return {
+    id: row.id,
+    loanId: row.loanId,
+    borrowerId: row.borrowerId,
+    status: row.status,
+    fromPaymentDay: row.fromPaymentDay,
+    toPaymentDay: row.toPaymentDay,
+    effectiveFrom: row.effectiveFrom,
+    reason: row.reason,
+    requestedByUserId: row.requestedByUserId,
+    reviewedByUserId: row.reviewedByUserId,
+    approvedByUserId: row.approvedByUserId,
+    reviewNote: row.reviewNote,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
+async function findActiveScheduleChangeForLoan(loanId: string): Promise<Record<string, unknown> | undefined> {
+  if (!isDatabaseEnabled()) {
+    return memoryScheduleChanges.find(
+      (entry) =>
+        entry.loanId === loanId && (entry.status === 'PENDING' || entry.status === 'REVIEWED'),
+    );
+  }
+  const db = getDb();
+  const [row] = await db
+    .select()
+    .from(loanScheduleChanges)
+    .where(
+      and(
+        eq(loanScheduleChanges.loanId, loanId),
+        sql`${loanScheduleChanges.status} in ('PENDING', 'REVIEWED')`,
+      ),
+    )
+    .limit(1);
+  if (!row) {
+    return undefined;
+  }
+  return {
+    id: row.id,
+    loanId: row.loanId,
+    borrowerId: row.borrowerId,
+    status: row.status,
+    fromPaymentDay: row.fromPaymentDay,
+    toPaymentDay: row.toPaymentDay,
+    effectiveFrom: row.effectiveFrom,
+    reason: row.reason,
+    requestedByUserId: row.requestedByUserId,
+    reviewedByUserId: row.reviewedByUserId,
+    approvedByUserId: row.approvedByUserId,
+    reviewNote: row.reviewNote,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
+async function buildScheduleRecalculation(loanId: string, toPaymentDay: string, effectiveFrom: string) {
+  const holidays = normalizeHolidayDates((await listHolidays()).map((entry) => entry.holidayDate));
+  const weeks = await scheduleRepo.listScheduleWeeks(loanId);
+  return recalculatePendingDueDatesForPaymentDay({
+    weeks,
+    toPaymentDay,
+    effectiveFrom,
+    holidayDates: holidays,
+  });
 }
 
 export async function relocateBorrower(input: {
@@ -409,6 +563,7 @@ export async function requestScheduleChange(input: {
 }) {
   const reason = input.reason.trim();
   const toPaymentDay = input.toPaymentDay.trim();
+  const effectiveFrom = assertIsoDate(input.effectiveFrom, 'Effective from');
   if (!reason || !toPaymentDay) {
     throw new Error('VALIDATION:Payment day and reason are required.');
   }
@@ -420,6 +575,19 @@ export async function requestScheduleChange(input: {
   if (!loan) {
     throw new Error('NOT_FOUND');
   }
+  if (loan.externalStatus !== 'ACTIVE') {
+    throw new Error('VALIDATION:Payment day changes are only allowed for active loans.');
+  }
+  if (loan.paymentDay === toPaymentDay) {
+    throw new Error('VALIDATION:New payment day must differ from the current payment day.');
+  }
+
+  const existingPending = await findActiveScheduleChangeForLoan(loan.id);
+  if (existingPending) {
+    throw new Error(
+      'CONFLICT:This loan already has a pending payment day change awaiting review or approval.',
+    );
+  }
 
   const record = {
     id: uuidv7(),
@@ -428,7 +596,7 @@ export async function requestScheduleChange(input: {
     status: 'PENDING',
     fromPaymentDay: loan.paymentDay,
     toPaymentDay,
-    effectiveFrom: input.effectiveFrom,
+    effectiveFrom,
     reason,
     requestedByUserId: input.actorUserId,
     createdAt: new Date().toISOString(),
@@ -460,7 +628,68 @@ export async function requestScheduleChange(input: {
     reason,
   });
 
+  await notifyScheduleChangeSupervisors({
+    excludeUserId: input.actorUserId,
+    title: 'Payment day change requested',
+    body: `Loan ${loan.id}: ${loan.paymentDay} → ${toPaymentDay} from ${effectiveFrom}.`,
+    href: APPROVER_SCHEDULE_CHANGE_HREF,
+  });
+
+  const collectorUserId = await resolveCollectorUserIdForBorrower(loan.borrowerId);
+  if (collectorUserId && collectorUserId !== input.actorUserId) {
+    await notifyStaffInApp({
+      userId: collectorUserId,
+      event: 'SUPERVISOR_ALERT',
+      title: 'Payment day change requested',
+      body: `A payment day change to ${toPaymentDay} was requested for one of your borrowers.`,
+      href: SCHEDULE_CHANGE_HREF,
+      borrowerId: loan.borrowerId,
+      loanId: loan.id,
+    });
+  }
+
   return record;
+}
+
+export async function previewScheduleChange(input: {
+  loanId: string;
+  toPaymentDay: string;
+  effectiveFrom: string;
+}) {
+  const toPaymentDay = input.toPaymentDay.trim();
+  const effectiveFrom = assertIsoDate(input.effectiveFrom, 'Effective from');
+  if (!(PAYMENT_DAY_OPTIONS as readonly string[]).includes(toPaymentDay)) {
+    throw new Error('VALIDATION:Invalid payment day.');
+  }
+
+  const loan = await loanRepo.findLoanById(input.loanId);
+  if (!loan) {
+    throw new Error('NOT_FOUND');
+  }
+  if (loan.externalStatus !== 'ACTIVE') {
+    throw new Error('VALIDATION:Payment day changes are only allowed for active loans.');
+  }
+  if (loan.paymentDay === toPaymentDay) {
+    throw new Error('VALIDATION:New payment day must differ from the current payment day.');
+  }
+
+  const recalculated = await buildScheduleRecalculation(loan.id, toPaymentDay, effectiveFrom);
+  return {
+    loanId: loan.id,
+    fromPaymentDay: loan.paymentDay,
+    toPaymentDay,
+    effectiveFrom,
+    recalculatedWeeks: recalculated.length,
+    nextDueDate: recalculated[0]?.dueDate ?? null,
+    sampleWeeks: recalculated.slice(0, 5).map((week) => ({
+      weekNumber: week.weekNumber,
+      dueDate: week.dueDate,
+    })),
+  };
+}
+
+export async function getPendingScheduleChangeForLoan(loanId: string) {
+  return (await findActiveScheduleChangeForLoan(loanId)) ?? null;
 }
 
 export async function approveScheduleChange(input: {
@@ -468,42 +697,23 @@ export async function approveScheduleChange(input: {
   actorUserId: string;
   note?: string;
 }) {
-  let record =
-    (memoryScheduleChanges.find((entry) => entry.id === input.changeId) as
-      | Record<string, unknown>
-      | undefined) ?? undefined;
-
-  if (isDatabaseEnabled()) {
-    const db = getDb();
-    const [row] = await db
-      .select()
-      .from(loanScheduleChanges)
-      .where(eq(loanScheduleChanges.id, input.changeId))
-      .limit(1);
-    if (!row) {
-      throw new Error('NOT_FOUND');
-    }
-    record = {
-      id: row.id,
-      loanId: row.loanId,
-      borrowerId: row.borrowerId,
-      toPaymentDay: row.toPaymentDay,
-      effectiveFrom: row.effectiveFrom,
-      reason: row.reason,
-      status: row.status,
-      requestedByUserId: row.requestedByUserId,
-    };
-  }
-
+  const record = await loadScheduleChangeRecord(input.changeId);
   if (!record) {
     throw new Error('NOT_FOUND');
-  }
-  if (record.status !== 'PENDING' && record.status !== 'REVIEWED') {
-    throw new Error('VALIDATION:Schedule change is not awaiting approval.');
   }
   if (record.requestedByUserId === input.actorUserId) {
     throw new Error(
       'FORBIDDEN:You cannot approve a payment day change you requested. Ask another authorised reviewer.',
+    );
+  }
+  if (record.reviewedByUserId === input.actorUserId) {
+    throw new Error(
+      'FORBIDDEN:You cannot approve a payment day change you reviewed. Ask another Super Admin to approve it.',
+    );
+  }
+  if (record.status !== 'REVIEWED') {
+    throw new Error(
+      'VALIDATION:Schedule change must be reviewed before approval. Ask an authorised reviewer to review it first.',
     );
   }
 
@@ -512,46 +722,46 @@ export async function approveScheduleChange(input: {
     throw new Error('NOT_FOUND');
   }
 
-  const holidays = normalizeHolidayDates((await listHolidays()).map((entry) => entry.holidayDate));
-  const weeks = await scheduleRepo.listScheduleWeeks(loan.id);
-  const recalculated = recalculatePendingDueDatesForPaymentDay({
-    weeks,
-    toPaymentDay: String(record.toPaymentDay),
-    effectiveFrom: String(record.effectiveFrom),
-    holidayDates: holidays,
-  });
+  const recalculated = await buildScheduleRecalculation(
+    loan.id,
+    String(record.toPaymentDay),
+    String(record.effectiveFrom),
+  );
+  const nextDueDate = recalculated[0]?.dueDate ?? String(record.effectiveFrom);
 
   if (isDatabaseEnabled()) {
-    const db = getDb();
-    for (const week of recalculated) {
-      await scheduleRepo.updateScheduleWeekDueDate(
-        {
-          loanId: loan.id,
-          weekNumber: week.weekNumber,
-          dueDate: week.dueDate,
-        },
-        db,
-      );
-    }
-    await db
-      .update(loans)
-      .set({ paymentDay: String(record.toPaymentDay), updatedAt: new Date() })
-      .where(eq(loans.id, loan.id));
-    await db
-      .update(loanScheduleChanges)
-      .set({
-        status: 'APPROVED',
-        approvedByUserId: input.actorUserId,
-        reviewNote: input.note?.trim() || null,
-        updatedAt: new Date(),
-      })
-      .where(eq(loanScheduleChanges.id, String(record.id)));
+    await runInTransaction(async (tx) => {
+      for (const week of recalculated) {
+        await scheduleRepo.updateScheduleWeekDueDate(
+          {
+            loanId: loan.id,
+            weekNumber: week.weekNumber,
+            dueDate: week.dueDate,
+          },
+          tx,
+        );
+      }
+      await tx
+        .update(loans)
+        .set({ paymentDay: String(record.toPaymentDay), updatedAt: new Date() })
+        .where(eq(loans.id, loan.id));
+      await tx
+        .update(loanScheduleChanges)
+        .set({
+          status: 'APPROVED',
+          approvedByUserId: input.actorUserId,
+          reviewNote: input.note?.trim() || null,
+          updatedAt: new Date(),
+        })
+        .where(eq(loanScheduleChanges.id, String(record.id)));
+    });
   } else {
     record.status = 'APPROVED';
     record.approvedByUserId = input.actorUserId;
   }
 
   const borrower = await getBorrower(loan.borrowerId);
+  const collectorUserId = await resolveCollectorUserIdForBorrower(loan.borrowerId);
   if (borrower) {
     await emitScheduleChangedNotification({
       borrowerId: borrower.id,
@@ -559,10 +769,32 @@ export async function approveScheduleChange(input: {
       borrowerPhone: borrower.phone,
       borrowerEmail: borrower.profile?.email,
       loanId: loan.id,
-      dueDate: recalculated[0]?.dueDate ?? String(record.effectiveFrom),
+      dueDate: nextDueDate,
       paymentDay: String(record.toPaymentDay),
       weeklyAmountPesewas: Math.round(Number(loan.installmentAmount) * 100),
       note: `Payment day moved to ${String(record.toPaymentDay)}.`,
+    });
+  }
+
+  if (collectorUserId) {
+    await notifyStaffInApp({
+      userId: collectorUserId,
+      event: 'SCHEDULE_CHANGED',
+      title: 'Payment day changed',
+      body: `${borrower?.fullName ?? 'Borrower'}: payment day is now ${String(record.toPaymentDay)}. Next due: ${nextDueDate}.`,
+      href: `/records/${loan.borrowerId}`,
+      borrowerId: loan.borrowerId,
+      loanId: loan.id,
+    });
+  }
+
+  if (record.requestedByUserId && record.requestedByUserId !== input.actorUserId) {
+    await notifyStaffInApp({
+      userId: String(record.requestedByUserId),
+      title: 'Payment day change approved',
+      body: `${recalculated.length} future weeks recalculated. Next due: ${nextDueDate}.`,
+      href: SCHEDULE_CHANGE_HREF,
+      loanId: loan.id,
     });
   }
 
@@ -578,7 +810,7 @@ export async function approveScheduleChange(input: {
     ...record,
     status: 'APPROVED',
     recalculatedWeeks: recalculated.length,
-    nextDueDate: recalculated[0]?.dueDate ?? null,
+    nextDueDate,
   };
 }
 
@@ -587,24 +819,21 @@ export async function reviewScheduleChange(input: {
   actorUserId: string;
   note?: string;
 }) {
+  const record = await loadScheduleChangeRecord(input.changeId);
+  if (!record) {
+    throw new Error('NOT_FOUND');
+  }
+  if (record.status !== 'PENDING') {
+    throw new Error('VALIDATION:Only pending schedule changes can be reviewed.');
+  }
+  if (record.requestedByUserId === input.actorUserId) {
+    throw new Error(
+      'FORBIDDEN:You cannot review a payment day change you requested. Ask another authorised reviewer.',
+    );
+  }
+
   if (isDatabaseEnabled()) {
     const db = getDb();
-    const [row] = await db
-      .select()
-      .from(loanScheduleChanges)
-      .where(eq(loanScheduleChanges.id, input.changeId))
-      .limit(1);
-    if (!row) {
-      throw new Error('NOT_FOUND');
-    }
-    if (row.status !== 'PENDING') {
-      throw new Error('VALIDATION:Only pending schedule changes can be reviewed.');
-    }
-    if (row.requestedByUserId === input.actorUserId) {
-      throw new Error(
-        'FORBIDDEN:You cannot review a payment day change you requested. Ask another authorised reviewer.',
-      );
-    }
     await db
       .update(loanScheduleChanges)
       .set({
@@ -614,21 +843,92 @@ export async function reviewScheduleChange(input: {
         updatedAt: new Date(),
       })
       .where(eq(loanScheduleChanges.id, input.changeId));
-    return { id: input.changeId, status: 'REVIEWED' as const };
+  } else {
+    record.status = 'REVIEWED';
+    record.reviewedByUserId = input.actorUserId;
   }
 
-  const record = memoryScheduleChanges.find((entry) => entry.id === input.changeId);
+  appendAuditEntry({
+    action: 'LOAN_SCHEDULE_CHANGE_REVIEWED',
+    actorId: input.actorUserId,
+    targetEntityId: String(record.loanId),
+    targetEntityType: 'loan',
+    reason: input.note?.trim() || String(record.reason ?? ''),
+  });
+
+  if (record.requestedByUserId) {
+    await notifyStaffInApp({
+      userId: String(record.requestedByUserId),
+      title: 'Payment day change reviewed',
+      body: `Your request (${String(record.fromPaymentDay)} → ${String(record.toPaymentDay)}) was reviewed and awaits Super Admin approval.`,
+      href: SCHEDULE_CHANGE_HREF,
+      loanId: String(record.loanId),
+    });
+  }
+
+  await notifyScheduleChangeSupervisors({
+    excludeUserId: input.actorUserId,
+    title: 'Payment day change ready for approval',
+    body: `Reviewed change ${String(record.fromPaymentDay)} → ${String(record.toPaymentDay)} awaits Super Admin approval.`,
+    href: SCHEDULE_CHANGE_HREF,
+  });
+
+  return { id: input.changeId, status: 'REVIEWED' as const };
+}
+
+export async function rejectScheduleChange(input: {
+  changeId: string;
+  actorUserId: string;
+  note?: string;
+}) {
+  const record = await loadScheduleChangeRecord(input.changeId);
   if (!record) {
     throw new Error('NOT_FOUND');
   }
+  if (record.status !== 'PENDING' && record.status !== 'REVIEWED') {
+    throw new Error('VALIDATION:Only pending or reviewed schedule changes can be rejected.');
+  }
   if (record.requestedByUserId === input.actorUserId) {
     throw new Error(
-      'FORBIDDEN:You cannot review a payment day change you requested. Ask another authorised reviewer.',
+      'FORBIDDEN:You cannot reject a payment day change you requested. Ask another authorised reviewer.',
     );
   }
-  record.status = 'REVIEWED';
-  record.reviewedByUserId = input.actorUserId;
-  return { id: input.changeId, status: 'REVIEWED' as const };
+
+  if (isDatabaseEnabled()) {
+    const db = getDb();
+    await db
+      .update(loanScheduleChanges)
+      .set({
+        status: 'REJECTED',
+        reviewedByUserId: input.actorUserId,
+        reviewNote: input.note?.trim() || null,
+        updatedAt: new Date(),
+      })
+      .where(eq(loanScheduleChanges.id, input.changeId));
+  } else {
+    record.status = 'REJECTED';
+    record.reviewedByUserId = input.actorUserId;
+  }
+
+  appendAuditEntry({
+    action: 'LOAN_SCHEDULE_CHANGE_REJECTED',
+    actorId: input.actorUserId,
+    targetEntityId: String(record.loanId),
+    targetEntityType: 'loan',
+    reason: input.note?.trim() || String(record.reason ?? ''),
+  });
+
+  if (record.requestedByUserId) {
+    await notifyStaffInApp({
+      userId: String(record.requestedByUserId),
+      title: 'Payment day change rejected',
+      body: `Your request (${String(record.fromPaymentDay)} → ${String(record.toPaymentDay)}) was rejected.`,
+      href: SCHEDULE_CHANGE_HREF,
+      loanId: String(record.loanId),
+    });
+  }
+
+  return { id: input.changeId, status: 'REJECTED' as const };
 }
 
 export async function listPendingScheduleChanges() {
