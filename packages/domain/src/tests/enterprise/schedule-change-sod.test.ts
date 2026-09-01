@@ -40,6 +40,7 @@ vi.mock('../../repositories/loan.repository.js', () => ({
     paymentDay: 'Tuesday',
     externalStatus: 'ACTIVE',
     installmentAmount: '100',
+    durationWeeks: 12,
   })),
 }));
 
@@ -48,7 +49,16 @@ vi.mock('../../repositories/loan-schedule.repository.js', () => ({
     { weekNumber: 3, dueDate: '2026-08-20', status: 'PENDING' },
     { weekNumber: 4, dueDate: '2026-08-27', status: 'PENDING' },
   ]),
+  applyMissedWeekMarking: vi.fn(async () => []),
+  ensureMissedPaymentRolloverWeeks: vi.fn(async () => 0),
   updateScheduleWeekDueDate: vi.fn(async () => undefined),
+}));
+
+vi.mock('../../modules/settings/service.js', () => ({
+  getSettings: vi.fn(async () => ({
+    latePaymentGraceDays: 3,
+    allowLoanRollovers: true,
+  })),
 }));
 
 vi.mock('../../repositories/user.repository.js', () => ({

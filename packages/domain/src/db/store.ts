@@ -79,6 +79,7 @@ export interface GroupRecord {
   community: string;
   communityId?: string;
   memberIds: string[];
+  leaderBorrowerId?: string | null;
   formedAt: string;
 }
 
