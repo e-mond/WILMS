@@ -24,7 +24,10 @@ import * as userRepo from '../../repositories/user.repository.js';
 import { listHolidays } from '../organization-holidays/service.js';
 import { normalizeHolidayDates } from '../../domain/loan/holiday-shift.js';
 import { recalculatePendingDueDatesForPaymentDay } from '../../domain/loan/schedule.js';
+import { resolveNextScheduleDueDate } from '../../domain/loan/schedule-rollover.js';
+import { refreshLoanScheduleState } from '../../domain/loan/refresh-schedule-state.js';
 import { PAYMENT_DAY_OPTIONS } from '../../domain/loan/payment-day.js';
+import { getSettings } from '../settings/service.js';
 import { getGroupDetail, removeMember, validateMembershipRemoval } from '../groups/service.js';
 import { decimalToPesewas } from '../../domain/money.js';
 import { assignBorrowerToGroup } from '../../db/persistence.js';
@@ -183,14 +186,36 @@ async function findActiveScheduleChangeForLoan(loanId: string): Promise<Record<s
 }
 
 async function buildScheduleRecalculation(loanId: string, toPaymentDay: string, effectiveFrom: string) {
+  const loan = await loanRepo.findLoanById(loanId);
+  if (!loan) {
+    throw new Error('NOT_FOUND');
+  }
+
+  const settings = await getSettings();
   const holidays = normalizeHolidayDates((await listHolidays()).map((entry) => entry.holidayDate));
+  await refreshLoanScheduleState({
+    loan,
+    referenceDate: effectiveFrom,
+    graceDays: settings.latePaymentGraceDays,
+    allowLoanRollovers: settings.allowLoanRollovers,
+    holidayDates: holidays,
+  });
+
   const weeks = await scheduleRepo.listScheduleWeeks(loanId);
-  return recalculatePendingDueDatesForPaymentDay({
+  const recalculated = recalculatePendingDueDatesForPaymentDay({
     weeks,
     toPaymentDay,
     effectiveFrom,
     holidayDates: holidays,
   });
+  const nextDueDate =
+    recalculated[0]?.dueDate ??
+    resolveNextScheduleDueDate({
+      weeks,
+      effectiveFrom,
+    });
+
+  return { recalculated, nextDueDate };
 }
 
 export async function relocateBorrower(input: {
@@ -673,14 +698,14 @@ export async function previewScheduleChange(input: {
     throw new Error('VALIDATION:New payment day must differ from the current payment day.');
   }
 
-  const recalculated = await buildScheduleRecalculation(loan.id, toPaymentDay, effectiveFrom);
+  const { recalculated, nextDueDate } = await buildScheduleRecalculation(loan.id, toPaymentDay, effectiveFrom);
   return {
     loanId: loan.id,
     fromPaymentDay: loan.paymentDay,
     toPaymentDay,
     effectiveFrom,
     recalculatedWeeks: recalculated.length,
-    nextDueDate: recalculated[0]?.dueDate ?? null,
+    nextDueDate,
     sampleWeeks: recalculated.slice(0, 5).map((week) => ({
       weekNumber: week.weekNumber,
       dueDate: week.dueDate,
@@ -722,12 +747,12 @@ export async function approveScheduleChange(input: {
     throw new Error('NOT_FOUND');
   }
 
-  const recalculated = await buildScheduleRecalculation(
+  const { recalculated, nextDueDate } = await buildScheduleRecalculation(
     loan.id,
     String(record.toPaymentDay),
     String(record.effectiveFrom),
   );
-  const nextDueDate = recalculated[0]?.dueDate ?? String(record.effectiveFrom);
+  const resolvedNextDueDate = nextDueDate ?? String(record.effectiveFrom);
 
   if (isDatabaseEnabled()) {
     await runInTransaction(async (tx) => {
@@ -769,7 +794,7 @@ export async function approveScheduleChange(input: {
       borrowerPhone: borrower.phone,
       borrowerEmail: borrower.profile?.email,
       loanId: loan.id,
-      dueDate: nextDueDate,
+      dueDate: resolvedNextDueDate,
       paymentDay: String(record.toPaymentDay),
       weeklyAmountPesewas: Math.round(Number(loan.installmentAmount) * 100),
       note: `Payment day moved to ${String(record.toPaymentDay)}.`,
@@ -781,7 +806,7 @@ export async function approveScheduleChange(input: {
       userId: collectorUserId,
       event: 'SCHEDULE_CHANGED',
       title: 'Payment day changed',
-      body: `${borrower?.fullName ?? 'Borrower'}: payment day is now ${String(record.toPaymentDay)}. Next due: ${nextDueDate}.`,
+      body: `${borrower?.fullName ?? 'Borrower'}: payment day is now ${String(record.toPaymentDay)}. Next due: ${resolvedNextDueDate}.`,
       href: `/records/${loan.borrowerId}`,
       borrowerId: loan.borrowerId,
       loanId: loan.id,
@@ -792,7 +817,7 @@ export async function approveScheduleChange(input: {
     await notifyStaffInApp({
       userId: String(record.requestedByUserId),
       title: 'Payment day change approved',
-      body: `${recalculated.length} future weeks recalculated. Next due: ${nextDueDate}.`,
+      body: `${recalculated.length} future weeks recalculated. Next due: ${resolvedNextDueDate}.`,
       href: SCHEDULE_CHANGE_HREF,
       loanId: loan.id,
     });
@@ -810,7 +835,7 @@ export async function approveScheduleChange(input: {
     ...record,
     status: 'APPROVED',
     recalculatedWeeks: recalculated.length,
-    nextDueDate,
+    nextDueDate: resolvedNextDueDate,
   };
 }
 

@@ -30,6 +30,7 @@ import * as paymentRepo from '../../repositories/payment.repository.js';
 import * as poolRepo from '../../repositories/loan-pool.repository.js';
 import * as scheduleRepo from '../../repositories/loan-schedule.repository.js';
 import { getSettings } from '../settings/service.js';
+import { refreshLoanScheduleState } from '../../domain/loan/refresh-schedule-state.js';
 
 export const recordPaymentSchema = z.object({
   borrowerId: z.string().min(1),
@@ -94,13 +95,15 @@ export async function getPaymentEntryContext(borrowerId: string, referenceDate?:
 
   const loan = mapLoanRowToDetail(activeLoan);
   const settings = await getSettings();
-  const newlyMissedWeeks = await scheduleRepo.applyMissedWeekMarking(
-    loan.id,
-    ref,
-    settings.latePaymentGraceDays,
-  );
-  // Missed-payment notifications are dispatched by the payment notification scheduler.
-  void newlyMissedWeeks;
+  const { listHolidays } = await import('../organization-holidays/service.js');
+  const holidays = await listHolidays();
+  await refreshLoanScheduleState({
+    loan: activeLoan,
+    referenceDate: ref,
+    graceDays: settings.latePaymentGraceDays,
+    allowLoanRollovers: settings.allowLoanRollovers,
+    holidayDates: holidays.map((holiday) => holiday.holidayDate),
+  });
   const scheduleRows = await scheduleRepo.listScheduleWeeks(loan.id);
   const scheduleWeeks = scheduleRows.map(mapScheduleRow);
 
@@ -242,11 +245,15 @@ async function postPayment(
 
   const loan = mapLoanRowToDetail(activeLoan);
   const settings = await getSettings();
-  await scheduleRepo.applyMissedWeekMarking(
-    loan.id,
-    input.paymentDate,
-    settings.latePaymentGraceDays,
-  );
+  const { listHolidays } = await import('../organization-holidays/service.js');
+  const holidays = await listHolidays();
+  await refreshLoanScheduleState({
+    loan: activeLoan,
+    referenceDate: input.paymentDate,
+    graceDays: settings.latePaymentGraceDays,
+    allowLoanRollovers: settings.allowLoanRollovers,
+    holidayDates: holidays.map((holiday) => holiday.holidayDate),
+  });
   const scheduleRows = await scheduleRepo.listScheduleWeeks(loan.id);
   const scheduleWeeks = scheduleRows.map(mapScheduleRow);
 
