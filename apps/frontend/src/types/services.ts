@@ -243,6 +243,17 @@ export interface ILoanService {
     changeId: string,
     note?: string,
   ): Promise<import('@/types/enterprise').ScheduleChangeDecisionResult>;
+  rejectScheduleChange(
+    changeId: string,
+    note?: string,
+  ): Promise<import('@/types/enterprise').ScheduleChangeDecisionResult>;
+  previewScheduleChange(
+    loanId: string,
+    input: { toPaymentDay: string; effectiveFrom: string },
+  ): Promise<import('@/types/enterprise').ScheduleChangePreviewResult>;
+  getPendingScheduleChangeForLoan(
+    loanId: string,
+  ): Promise<import('@/types/enterprise').LoanScheduleChangeRecord | null>;
 }
 
 export interface ITransactionService {

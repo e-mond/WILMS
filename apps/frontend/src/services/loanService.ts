@@ -105,6 +105,26 @@ const loanService: ILoanService = {
       note?.trim() ? { note: note.trim() } : {},
     );
   },
+
+  rejectScheduleChange(changeId: string, note?: string): Promise<ScheduleChangeDecisionResult> {
+    return apiClient.post<ScheduleChangeDecisionResult>(
+      `/loan-schedule-changes/${changeId}/reject`,
+      note?.trim() ? { note: note.trim() } : {},
+    );
+  },
+
+  previewScheduleChange(loanId, input) {
+    return apiClient.post<import('@/types/enterprise').ScheduleChangePreviewResult>(
+      `/loans/${loanId}/schedule-change/preview`,
+      input,
+    );
+  },
+
+  getPendingScheduleChangeForLoan(loanId: string) {
+    return apiClient.get<LoanScheduleChangeRecord | null>(
+      `/loans/${loanId}/schedule-changes/pending`,
+    );
+  },
 };
 
 export default loanService;

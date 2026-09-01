@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { DataTable } from '@/components/data-display';
@@ -55,7 +56,9 @@ export function PendingScheduleChangeQueue() {
     mutationFn: (changeId: string) => loanService.reviewScheduleChange(changeId, notes[changeId]),
     onSuccess: async () => {
       await invalidate();
-      toast.success('Schedule change reviewed');
+      toast.success('Schedule change reviewed', {
+        message: 'Super Admin approval is required before the loan schedule updates.',
+      });
     },
     onError: (err: unknown) => {
       toast.error('Unable to review schedule change', {
@@ -71,12 +74,25 @@ export function PendingScheduleChangeQueue() {
       toast.success('Schedule change approved', {
         message:
           result.nextDueDate != null
-            ? `${result.recalculatedWeeks ?? 0} future weeks updated. Next due date: ${formatDisplayDate(result.nextDueDate)}.`
-            : 'Future pending weeks were recalculated.',
+            ? `${result.recalculatedWeeks ?? 0} future weeks updated. Next due date: ${formatDisplayDate(result.nextDueDate)}. Borrower and collector notified.`
+            : 'Future pending weeks were recalculated. Borrower and collector notified.',
       });
     },
     onError: (err: unknown) => {
       toast.error('Unable to approve schedule change', {
+        message: err instanceof Error ? err.message : 'Try again shortly.',
+      });
+    },
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: (changeId: string) => loanService.rejectScheduleChange(changeId, notes[changeId]),
+    onSuccess: async () => {
+      await invalidate();
+      toast.success('Schedule change rejected');
+    },
+    onError: (err: unknown) => {
+      toast.error('Unable to reject schedule change', {
         message: err instanceof Error ? err.message : 'Try again shortly.',
       });
     },
@@ -103,7 +119,8 @@ export function PendingScheduleChangeQueue() {
       <div>
         <h3 className="text-heading-3 font-semibold text-text-primary">Pending payment day changes</h3>
         <p className="text-small text-text-muted">
-          Schedule changes stay pending until a different authorised reviewer clears them.
+          Review first, then a different Super Admin approves. Borrower SMS/email and collector
+          in-app alerts fire on approval.
         </p>
       </div>
       {rows.length === 0 ? (
@@ -127,6 +144,12 @@ export function PendingScheduleChangeQueue() {
                       {loan ? resolveLoanDisplayId(loan) : row.loanId}
                     </p>
                     <p className="text-small text-text-muted">{loan?.borrowerName ?? row.borrowerId}</p>
+                    <Link
+                      href={`/records/${row.borrowerId}`}
+                      className="text-small font-medium text-brand-primary hover:underline"
+                    >
+                      View borrower record
+                    </Link>
                   </div>
                 );
               },
@@ -134,7 +157,7 @@ export function PendingScheduleChangeQueue() {
             {
               id: 'change',
               header: 'Change',
-              cell: (row) => `${row.fromPaymentDay} -> ${row.toPaymentDay}`,
+              cell: (row) => `${row.fromPaymentDay} → ${row.toPaymentDay}`,
             },
             {
               id: 'effectiveFrom',
@@ -171,16 +194,38 @@ export function PendingScheduleChangeQueue() {
                       <Button
                         size="sm"
                         variant="secondary"
-                        disabled={reviewMutation.isPending || approveMutation.isPending || row.status !== 'PENDING'}
+                        disabled={
+                          reviewMutation.isPending ||
+                          approveMutation.isPending ||
+                          rejectMutation.isPending ||
+                          row.status !== 'PENDING'
+                        }
                         onClick={() => void reviewMutation.mutateAsync(row.id)}
                       >
                         Review
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={
+                          reviewMutation.isPending ||
+                          approveMutation.isPending ||
+                          rejectMutation.isPending
+                        }
+                        onClick={() => void rejectMutation.mutateAsync(row.id)}
+                      >
+                        Reject
                       </Button>
                     </PermissionGate>
                     <PermissionGate permission={PERMISSION.MANAGE_SYSTEM_SETTINGS}>
                       <Button
                         size="sm"
-                        disabled={reviewMutation.isPending || approveMutation.isPending}
+                        disabled={
+                          reviewMutation.isPending ||
+                          approveMutation.isPending ||
+                          rejectMutation.isPending ||
+                          row.status !== 'REVIEWED'
+                        }
                         onClick={() => void approveMutation.mutateAsync(row.id)}
                       >
                         Approve

@@ -17,6 +17,12 @@ function mapError(error: unknown): never {
     if (error.message.startsWith('VALIDATION:')) {
       throw new AppError(error.message.slice('VALIDATION:'.length), ERROR_CODE.VALIDATION, 422);
     }
+    if (error.message.startsWith('FORBIDDEN:')) {
+      throw new AppError(error.message.slice('FORBIDDEN:'.length), ERROR_CODE.FORBIDDEN, 403);
+    }
+    if (error.message.startsWith('CONFLICT:')) {
+      throw new AppError(error.message.slice('CONFLICT:'.length), ERROR_CODE.CONFLICT, 409);
+    }
   }
   throw error;
 }
@@ -123,11 +129,7 @@ enterpriseRouter.post(
 
 enterpriseRouter.post(
   '/loans/:id/schedule-change',
-  requirePermission(
-    PERMISSION.RECORD_COLLECTIONS,
-    PERMISSION.APPROVE_BORROWERS,
-    PERMISSION.MANAGE_SYSTEM_SETTINGS,
-  ),
+  requirePermission(PERMISSION.MANAGE_SYSTEM_SETTINGS),
   validateBody(
     z.object({
       toPaymentDay: z.string().min(1),
@@ -152,6 +154,38 @@ enterpriseRouter.post(
   }),
 );
 
+enterpriseRouter.post(
+  '/loans/:id/schedule-change/preview',
+  requirePermission(PERMISSION.MANAGE_SYSTEM_SETTINGS, PERMISSION.APPROVE_BORROWERS),
+  validateBody(
+    z.object({
+      toPaymentDay: z.string().min(1),
+      effectiveFrom: z.string().min(1),
+    }),
+  ),
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(
+        res,
+        await enterpriseService.previewScheduleChange({
+          loanId: req.params.id!,
+          ...req.body,
+        }),
+      );
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+enterpriseRouter.get(
+  '/loans/:id/schedule-changes/pending',
+  requirePermission(PERMISSION.APPROVE_BORROWERS, PERMISSION.MANAGE_SYSTEM_SETTINGS),
+  asyncHandler(async (req, res) => {
+    sendData(res, await enterpriseService.getPendingScheduleChangeForLoan(req.params.id!));
+  }),
+);
+
 enterpriseRouter.get(
   '/loan-schedule-changes/pending',
   requirePermission(PERMISSION.APPROVE_BORROWERS, PERMISSION.MANAGE_SYSTEM_SETTINGS),
@@ -169,6 +203,26 @@ enterpriseRouter.post(
       sendData(
         res,
         await enterpriseService.reviewScheduleChange({
+          changeId: req.params.id!,
+          actorUserId: req.session!.userId,
+          note: req.body.note,
+        }),
+      );
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+enterpriseRouter.post(
+  '/loan-schedule-changes/:id/reject',
+  requirePermission(PERMISSION.APPROVE_BORROWERS, PERMISSION.MANAGE_SYSTEM_SETTINGS),
+  validateBody(z.object({ note: z.string().optional() })),
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(
+        res,
+        await enterpriseService.rejectScheduleChange({
           changeId: req.params.id!,
           actorUserId: req.session!.userId,
           note: req.body.note,

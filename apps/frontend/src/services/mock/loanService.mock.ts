@@ -465,6 +465,27 @@ const loanServiceMock: ILoanService = {
     );
   },
 
+  async rejectScheduleChange() {
+    throw new ApiError(
+      'Loan schedule rejection is not available in mock mode.',
+      API_ERROR_CODE.VALIDATION,
+      501,
+    );
+  },
+
+  async previewScheduleChange() {
+    throw new ApiError(
+      'Loan schedule preview is not available in mock mode.',
+      API_ERROR_CODE.VALIDATION,
+      501,
+    );
+  },
+
+  async getPendingScheduleChangeForLoan() {
+    await simulateDelay();
+    return null;
+  },
+
   async approveLoan(loanId: string): Promise<LoanDetail> {
     await simulateDelay();
     const loanIndex = mockLoans.findIndex((entry) => entry.id === loanId);

@@ -52,7 +52,7 @@ export interface LoanScheduleChangeRecord {
   id: string;
   loanId: string;
   borrowerId: string;
-  status: 'PENDING' | 'REVIEWED' | 'APPROVED';
+  status: 'PENDING' | 'REVIEWED' | 'APPROVED' | 'REJECTED';
   fromPaymentDay: string;
   toPaymentDay: string;
   effectiveFrom: string;
@@ -65,9 +65,19 @@ export interface LoanScheduleChangeRecord {
   updatedAt?: string;
 }
 
+export interface ScheduleChangePreviewResult {
+  loanId: string;
+  fromPaymentDay: string;
+  toPaymentDay: string;
+  effectiveFrom: string;
+  recalculatedWeeks: number;
+  nextDueDate: string | null;
+  sampleWeeks: Array<{ weekNumber: number; dueDate: string }>;
+}
+
 export interface ScheduleChangeDecisionResult {
   id: string;
-  status: 'REVIEWED' | 'APPROVED';
+  status: 'REVIEWED' | 'APPROVED' | 'REJECTED';
   recalculatedWeeks?: number;
   nextDueDate?: string | null;
 }
