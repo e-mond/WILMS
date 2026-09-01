@@ -13,7 +13,9 @@ import { loanService } from '@/services';
 import type { LoanScheduleChangeRecord } from '@/types/enterprise';
 import { formatDisplayDate } from '@/utils/format-date';
 import { resolveLoanDisplayId } from '@/utils/entity-display-id';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
+import { useOptionalPermissionContext } from '@/components/providers/PermissionProvider';
 
 const pendingScheduleChangesQueryKey = ['loan-schedule-changes', 'pending'] as const;
 
@@ -21,6 +23,12 @@ export function PendingScheduleChangeQueue() {
   const toast = useToast();
   const queryClient = useQueryClient();
   const [notes, setNotes] = useState<Record<string, string>>({});
+  const { user } = useAuth();
+  const permissionContext = useOptionalPermissionContext();
+  const canReview =
+    permissionContext?.hasPermission(PERMISSION.APPROVE_BORROWERS) === true &&
+    permissionContext?.hasPermission(PERMISSION.MANAGE_SYSTEM_SETTINGS) !== true;
+  const canApprove = permissionContext?.hasPermission(PERMISSION.MANAGE_SYSTEM_SETTINGS) === true;
 
   const {
     data: changes,
@@ -119,8 +127,8 @@ export function PendingScheduleChangeQueue() {
       <div>
         <h3 className="text-heading-3 font-semibold text-text-primary">Pending payment day changes</h3>
         <p className="text-small text-text-muted">
-          Review first, then a different Super Admin approves. Borrower SMS/email and collector
-          in-app alerts fire on approval.
+          Approvers review first. A Super Admin who did not request the change then approves.
+          Super Admins should not use Review when an Approver account is available.
         </p>
       </div>
       {rows.length === 0 ? (
@@ -178,7 +186,13 @@ export function PendingScheduleChangeQueue() {
               id: 'actions',
               header: 'Actions',
               className: 'min-w-[18rem]',
-              cell: (row) => (
+              cell: (row) => {
+                const isRequester = user?.id === row.requestedByUserId;
+                const approveBlockedReason = isRequester
+                  ? 'You requested this change. Another Super Admin must approve it.'
+                  : null;
+
+                return (
                 <div className="flex flex-col gap-wilms-2">
                   <input
                     aria-label={`Decision note for ${row.id}`}
@@ -190,50 +204,73 @@ export function PendingScheduleChangeQueue() {
                     }
                   />
                   <div className="flex flex-wrap gap-wilms-2">
-                    <PermissionGate permission={PERMISSION.APPROVE_BORROWERS}>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        disabled={
-                          reviewMutation.isPending ||
-                          approveMutation.isPending ||
-                          rejectMutation.isPending ||
-                          row.status !== 'PENDING'
-                        }
-                        onClick={() => void reviewMutation.mutateAsync(row.id)}
-                      >
-                        Review
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        disabled={
-                          reviewMutation.isPending ||
-                          approveMutation.isPending ||
-                          rejectMutation.isPending
-                        }
-                        onClick={() => void rejectMutation.mutateAsync(row.id)}
-                      >
-                        Reject
-                      </Button>
-                    </PermissionGate>
-                    <PermissionGate permission={PERMISSION.MANAGE_SYSTEM_SETTINGS}>
-                      <Button
-                        size="sm"
-                        disabled={
-                          reviewMutation.isPending ||
-                          approveMutation.isPending ||
-                          rejectMutation.isPending ||
-                          row.status !== 'REVIEWED'
-                        }
-                        onClick={() => void approveMutation.mutateAsync(row.id)}
-                      >
-                        Approve
-                      </Button>
-                    </PermissionGate>
+                    {canReview ? (
+                      <PermissionGate permission={PERMISSION.APPROVE_BORROWERS}>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          disabled={
+                            reviewMutation.isPending ||
+                            approveMutation.isPending ||
+                            rejectMutation.isPending ||
+                            row.status !== 'PENDING'
+                          }
+                          onClick={() => void reviewMutation.mutateAsync(row.id)}
+                        >
+                          Review
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          disabled={
+                            reviewMutation.isPending ||
+                            approveMutation.isPending ||
+                            rejectMutation.isPending
+                          }
+                          onClick={() => void rejectMutation.mutateAsync(row.id)}
+                        >
+                          Reject
+                        </Button>
+                      </PermissionGate>
+                    ) : null}
+                    {canApprove ? (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          disabled={
+                            reviewMutation.isPending ||
+                            approveMutation.isPending ||
+                            rejectMutation.isPending ||
+                            isRequester
+                          }
+                          onClick={() => void rejectMutation.mutateAsync(row.id)}
+                        >
+                          Reject
+                        </Button>
+                        <Button
+                          size="sm"
+                          disabled={
+                            reviewMutation.isPending ||
+                            approveMutation.isPending ||
+                            rejectMutation.isPending ||
+                            row.status !== 'REVIEWED' ||
+                            Boolean(approveBlockedReason)
+                          }
+                          title={approveBlockedReason ?? undefined}
+                          onClick={() => void approveMutation.mutateAsync(row.id)}
+                        >
+                          Approve
+                        </Button>
+                      </>
+                    ) : null}
                   </div>
+                  {approveBlockedReason && row.status === 'REVIEWED' ? (
+                    <p className="text-small text-text-muted">{approveBlockedReason}</p>
+                  ) : null}
                 </div>
-              ),
+                );
+              },
             },
           ]}
         />

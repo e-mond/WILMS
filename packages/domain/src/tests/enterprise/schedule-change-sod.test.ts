@@ -5,6 +5,7 @@ const {
   emitScheduleChangedNotification,
   resolveCollectorUserIdForBorrower,
   listUsers,
+  getUserById,
 } = vi.hoisted(() => ({
   createInAppNotification: vi.fn(async () => undefined),
   emitScheduleChangedNotification: vi.fn(async () => undefined),
@@ -24,7 +25,23 @@ const {
       email: 's@test',
       displayName: 'Admin',
     },
+    {
+      id: 'admin-2',
+      role: 'SUPER_ADMIN',
+      status: 'ACTIVE',
+      email: 's2@test',
+      displayName: 'Admin Two',
+    },
   ]),
+  getUserById: vi.fn(async (id: string) => {
+    if (id === 'approver-1') {
+      return { id, role: 'APPROVER', status: 'ACTIVE' };
+    }
+    if (id === 'admin-1' || id === 'admin-2') {
+      return { id, role: 'SUPER_ADMIN', status: 'ACTIVE' };
+    }
+    return null;
+  }),
 }));
 
 vi.mock('../../db/client.js', () => ({
@@ -63,7 +80,7 @@ vi.mock('../../modules/settings/service.js', () => ({
 
 vi.mock('../../repositories/user.repository.js', () => ({
   listUsers,
-  getUserById: vi.fn(async () => null),
+  getUserById,
 }));
 
 vi.mock('../../db/persistence.js', () => ({
@@ -159,7 +176,7 @@ describe('schedule change maker-checker', () => {
     ).rejects.toThrow(/must be reviewed before approval/i);
   });
 
-  it('blocks the reviewer from approving the same payment day change', async () => {
+  it('blocks approver-role reviewers from approving the same payment day change', async () => {
     const service = await import('../../modules/enterprise/service.js');
     const request = await service.requestScheduleChange({
       loanId: 'loan-4',
@@ -180,6 +197,48 @@ describe('schedule change maker-checker', () => {
         actorUserId: 'approver-1',
       }),
     ).rejects.toThrow(/cannot approve a payment day change you reviewed/i);
+  });
+
+  it('blocks super admins from reviewing when an approver account is available', async () => {
+    const service = await import('../../modules/enterprise/service.js');
+    const request = await service.requestScheduleChange({
+      loanId: 'loan-4b',
+      toPaymentDay: 'Thursday',
+      effectiveFrom: '2026-08-10',
+      reason: 'Route change',
+      actorUserId: 'user-requester',
+    });
+
+    await expect(
+      service.reviewScheduleChange({
+        changeId: request.id,
+        actorUserId: 'admin-2',
+      }),
+    ).rejects.toThrow(/Super Admins cannot review payment day changes/i);
+  });
+
+  it('allows a super admin to approve after they reviewed the change', async () => {
+    const service = await import('../../modules/enterprise/service.js');
+    const request = await service.requestScheduleChange({
+      loanId: 'loan-4c',
+      toPaymentDay: 'Thursday',
+      effectiveFrom: '2026-08-10',
+      reason: 'Route change',
+      actorUserId: 'user-requester',
+    });
+
+    listUsers.mockResolvedValueOnce([]);
+    await service.reviewScheduleChange({
+      changeId: request.id,
+      actorUserId: 'admin-2',
+    });
+
+    const result = await service.approveScheduleChange({
+      changeId: request.id,
+      actorUserId: 'admin-2',
+    });
+
+    expect(result.status).toBe('APPROVED');
   });
 
   it('rejects duplicate pending requests for the same loan', async () => {
