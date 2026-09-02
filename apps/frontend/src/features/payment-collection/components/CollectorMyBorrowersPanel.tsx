@@ -110,7 +110,7 @@ export function CollectorMyBorrowersPanel() {
       <GuidedEmptyState
         {...EMPTY_STATE_COPY.collectorsDashboard}
         title="No assigned borrowers"
-        description="Active loans assigned to you will appear here."
+        description="Borrowers assigned to your groups will appear here, including those who have completed their loans."
         actionHref="/collector/dashboard"
         actionLabel="View collection dashboard"
       />
@@ -172,7 +172,7 @@ export function CollectorMyBorrowersPanel() {
       <DataTable<CollectorDashboardBorrower>
         mobileLayout="stack"
         variant="executive"
-        caption="Assigned borrowers due for collection"
+        caption="Assigned borrowers"
         data={borrowers}
         emptyMessage="No borrowers match your search."
         getRowId={(row) => row.borrowerId}
@@ -183,7 +183,12 @@ export function CollectorMyBorrowersPanel() {
             header: 'Borrower',
             cell: (row) => (
               <div>
-                <p className="font-semibold text-text-primary">{row.borrowerName}</p>
+                <Link
+                  href={`/collector/borrowers/${row.borrowerId}`}
+                  className="font-semibold text-text-primary hover:text-brand-primary hover:underline"
+                >
+                  {row.borrowerName}
+                </Link>
                 <p className="text-small text-text-muted">{row.community}</p>
               </div>
             ),
@@ -209,12 +214,22 @@ export function CollectorMyBorrowersPanel() {
             id: 'action',
             header: 'Action',
             cell: (row) => (
-              <Link
-                href={`/collector/payment/${row.borrowerId}`}
-                className="text-small font-semibold text-brand-primary hover:underline"
-              >
-                Record payment
-              </Link>
+              <div className="flex flex-wrap gap-x-wilms-3 gap-y-wilms-1">
+                <Link
+                  href={`/collector/borrowers/${row.borrowerId}`}
+                  className="text-small font-semibold text-brand-primary hover:underline"
+                >
+                  View profile
+                </Link>
+                {row.expectedPesewas > 0 ? (
+                  <Link
+                    href={`/collector/payment/${row.borrowerId}`}
+                    className="text-small font-semibold text-brand-primary hover:underline"
+                  >
+                    Record payment
+                  </Link>
+                ) : null}
+              </div>
             ),
           },
         ]}

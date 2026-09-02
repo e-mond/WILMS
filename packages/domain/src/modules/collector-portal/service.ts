@@ -418,6 +418,141 @@ export async function getCollectorDashboard(
 }
 
 export async function listAssignedBorrowers(collectorId: string, date?: string) {
-  const dashboard = await getCollectorDashboard(collectorId, date);
-  return dashboard.borrowers;
+  const referenceDate = resolveReferenceDate(date);
+  const useDb = isDatabaseEnabled();
+  const [borrowers, payments, assignedGroups] = await Promise.all([
+    listBorrowers(),
+    useDb
+      ? paymentRepo.listPaymentsForDate(referenceDate, { collectorId })
+      : listPayments(),
+    groupService.getGroupsForCollector(collectorId),
+  ]);
+
+  const borrowerGroupId = new Map<string, { groupId: string; groupName: string }>();
+  for (const group of assignedGroups) {
+    for (const memberId of group.memberIds) {
+      borrowerGroupId.set(memberId, { groupId: group.id, groupName: group.displayName });
+    }
+  }
+
+  const scopedBorrowers =
+    borrowerGroupId.size > 0
+      ? borrowers.filter((borrower) => borrowerGroupId.has(borrower.id))
+      : [];
+
+  const collectorPayments = useDb
+    ? payments
+    : payments.filter(
+        (payment) =>
+          payment.collectorId === collectorId && payment.paymentDate === referenceDate,
+      );
+
+  const borrowerRows: CollectorDashboard['borrowers'] = [];
+
+  if (isDatabaseEnabled()) {
+    const borrowerIds = scopedBorrowers.map((borrower) => borrower.id);
+    const allLoans = await loanRepo.listLoansForBorrowerIds(borrowerIds);
+    const activeLoans = allLoans.filter((loan) => loan.externalStatus === 'ACTIVE');
+    const loansByBorrower = new Map<string, typeof allLoans>();
+    for (const loan of allLoans) {
+      const list = loansByBorrower.get(loan.borrowerId) ?? [];
+      list.push(loan);
+      loansByBorrower.set(loan.borrowerId, list);
+    }
+
+    const loanIds = activeLoans.map((loan) => loan.id);
+    const payableWeeks = await scheduleRepo.listPayableScheduleWeeksForLoans(
+      loanIds,
+      referenceDate,
+    );
+    const payableByLoanId = new Map<
+      string,
+      { expectedPesewas: number; hasMissed: boolean; weeksCount: number; missedWeekCount: number }
+    >();
+    for (const week of payableWeeks) {
+      const current = payableByLoanId.get(week.loanId) ?? {
+        expectedPesewas: 0,
+        hasMissed: false,
+        weeksCount: 0,
+        missedWeekCount: 0,
+      };
+      current.expectedPesewas += decimalToPesewas(week.installmentAmount);
+      current.weeksCount += 1;
+      if (week.status === 'MISSED') {
+        current.hasMissed = true;
+        current.missedWeekCount += 1;
+      }
+      payableByLoanId.set(week.loanId, current);
+    }
+
+    for (const borrower of scopedBorrowers) {
+      const borrowerLoans = loansByBorrower.get(borrower.id) ?? [];
+      const activeLoan = borrowerLoans.find((loan) => loan.externalStatus === 'ACTIVE');
+      const profileLoan =
+        activeLoan ??
+        [...borrowerLoans].sort(
+          (left, right) => right.createdAt.getTime() - left.createdAt.getTime(),
+        )[0];
+      const loan = activeLoan;
+      const payable = loan ? payableByLoanId.get(loan.id) : undefined;
+      const weeklyInstallment = loan ? decimalToPesewas(loan.installmentAmount) : 0;
+      const weeklyExpected =
+        payable?.expectedPesewas ??
+        (loan && isLoanDueOnDate(loan.paymentDay, referenceDate) ? weeklyInstallment : 0);
+      const collectedForBorrower = collectorPayments
+        .filter((payment) => payment.borrowerId === borrower.id)
+        .reduce((sum, payment) => sum + payment.amountPesewas, 0);
+      const groupMeta = borrowerGroupId.get(borrower.id);
+      const hasCompletedLoanOnly =
+        !activeLoan && borrowerLoans.some((entry) => entry.externalStatus === 'COMPLETED');
+      const paymentStatus = hasCompletedLoanOnly
+        ? ('COLLECTED' as const)
+        : resolvePaymentStatus({
+            weeklyExpected,
+            collectedForBorrower,
+            scheduleStatus: payable?.hasMissed
+              ? 'MISSED'
+              : weeklyExpected > 0
+                ? 'PENDING'
+                : undefined,
+          });
+
+      borrowerRows.push({
+        borrowerId: borrower.id,
+        borrowerName: borrower.fullName,
+        phone: borrower.phone,
+        community: borrower.community,
+        groupId: groupMeta?.groupId ?? borrower.groupId ?? '',
+        groupName: groupMeta?.groupName ?? (borrower.groupName || '—'),
+        loanId: profileLoan?.id ?? '',
+        expectedPesewas: weeklyExpected,
+        weeklyPaymentPesewas: weeklyInstallment,
+        payableWeeksCount: payable?.weeksCount ?? (weeklyExpected > 0 ? 1 : 0),
+        missedWeeksCount: payable?.missedWeekCount ?? 0,
+        collectedPesewas: collectedForBorrower,
+        paymentStatus,
+      });
+    }
+  } else {
+    for (const borrower of scopedBorrowers) {
+      const collectedForBorrower = collectorPayments
+        .filter((payment) => payment.borrowerId === borrower.id)
+        .reduce((sum, payment) => sum + payment.amountPesewas, 0);
+      const groupMeta = borrowerGroupId.get(borrower.id);
+      borrowerRows.push({
+        borrowerId: borrower.id,
+        borrowerName: borrower.fullName,
+        phone: borrower.phone,
+        community: borrower.community,
+        groupId: groupMeta?.groupId ?? '',
+        groupName: groupMeta?.groupName ?? (borrower.groupName || '—'),
+        loanId: '',
+        expectedPesewas: 0,
+        collectedPesewas: collectedForBorrower,
+        paymentStatus: collectedForBorrower > 0 ? 'COLLECTED' : 'PENDING',
+      });
+    }
+  }
+
+  return borrowerRows.sort((left, right) => left.borrowerName.localeCompare(right.borrowerName));
 }
