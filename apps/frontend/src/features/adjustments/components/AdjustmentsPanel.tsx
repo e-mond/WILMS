@@ -20,6 +20,8 @@ import { useAdjustmentActions } from '@/features/adjustments/hooks/useAdjustment
 import { useAdjustments } from '@/features/adjustments/hooks/useAdjustments';
 import type { AdjustmentRequest } from '@/types/adjustment';
 import { formatDisplayDate } from '@/utils/format-date';
+import { resolveAdjustmentDisplayId } from '@/utils/entity-display-id';
+import { resolveAuditReason } from '@/utils/audit-reason-display';
 
 export function AdjustmentsPanel() {
   const { data, isLoading, isError, error, refetch } = useAdjustments();
@@ -99,7 +101,11 @@ export function AdjustmentsPanel() {
             {
               id: 'id',
               header: 'Request ID',
-              cell: (row) => <span className="font-semibold text-brand-primary">{row.id}</span>,
+              cell: (row) => (
+                <span className="font-semibold text-brand-primary">
+                  {resolveAdjustmentDisplayId(row)}
+                </span>
+              ),
             },
             {
               id: 'requestedAt',
@@ -118,7 +124,7 @@ export function AdjustmentsPanel() {
               cell: (row) => <CurrencyAmount value={row.amountPesewas} />,
             },
             { id: 'requestedBy', header: 'Requested by', cell: (row) => row.requestedBy },
-            { id: 'reason', header: 'Reason', cell: (row) => row.reason },
+            { id: 'reason', header: 'Reason', cell: (row) => resolveAuditReason(row.reason) },
             {
               id: 'actions',
               header: 'Actions',

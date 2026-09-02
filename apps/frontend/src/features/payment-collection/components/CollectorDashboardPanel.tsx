@@ -418,7 +418,12 @@ export function CollectorDashboardPanel() {
                     <div className="flex items-center gap-wilms-3">
                       <Avatar label={row.borrowerName} photoUrl={row.borrowerPhotoUrl} size="sm" />
                       <div className="min-w-0">
-                        <p className="truncate font-semibold text-text-primary">{row.borrowerName}</p>
+                        <Link
+                          href={`/collector/borrowers/${row.borrowerId}`}
+                          className="truncate font-semibold text-text-primary hover:text-brand-primary hover:underline"
+                        >
+                          {row.borrowerName}
+                        </Link>
                         <p className="truncate text-small text-text-muted">{row.groupName}</p>
                       </div>
                     </div>
@@ -449,12 +454,22 @@ export function CollectorDashboardPanel() {
                   header: 'Action',
                   priority: 'meta',
                   cell: (row) => (
-                    <Link
-                      href={`/collector/payment/${row.borrowerId}`}
-                      className="text-small font-semibold text-brand-primary hover:underline"
-                    >
-                      Record payment
-                    </Link>
+                    <div className="flex flex-wrap gap-x-wilms-3 gap-y-wilms-1">
+                      <Link
+                        href={`/collector/borrowers/${row.borrowerId}`}
+                        className="text-small font-semibold text-brand-primary hover:underline"
+                      >
+                        View profile
+                      </Link>
+                      {row.expectedPesewas > 0 ? (
+                        <Link
+                          href={`/collector/payment/${row.borrowerId}`}
+                          className="text-small font-semibold text-brand-primary hover:underline"
+                        >
+                          Record payment
+                        </Link>
+                      ) : null}
+                    </div>
                   ),
                 },
               ]}

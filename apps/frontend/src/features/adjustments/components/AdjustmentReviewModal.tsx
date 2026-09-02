@@ -8,6 +8,8 @@ import { Textarea } from '@/components/ui/Textarea';
 import { ADJUSTMENT_TYPE_LABELS } from '@/constants/adjustment-display';
 import { adjustmentReasonSchema } from '@/features/adjustments/adjustment.schema';
 import type { AdjustmentRequest } from '@/types/adjustment';
+import { resolveAdjustmentDisplayId } from '@/utils/entity-display-id';
+import { resolveAuditReason } from '@/utils/audit-reason-display';
 
 export type AdjustmentReviewAction = 'approve' | 'reject';
 
@@ -104,6 +106,10 @@ export function AdjustmentReviewModal({
         <p>{copy.description}</p>
         <dl className="grid gap-wilms-2 rounded-sm border border-border bg-background p-wilms-3">
           <div>
+            <dt className="text-small font-semibold">Request ID</dt>
+            <dd className="text-text-primary">{resolveAdjustmentDisplayId(request)}</dd>
+          </div>
+          <div>
             <dt className="text-small font-semibold">Borrower</dt>
             <dd className="text-text-primary">{request.borrowerName}</dd>
           </div>
@@ -119,7 +125,7 @@ export function AdjustmentReviewModal({
           </div>
           <div>
             <dt className="text-small font-semibold">Original reason</dt>
-            <dd className="text-text-primary">{request.reason}</dd>
+            <dd className="text-text-primary">{resolveAuditReason(request.reason)}</dd>
           </div>
         </dl>
         {requiresReason ? (

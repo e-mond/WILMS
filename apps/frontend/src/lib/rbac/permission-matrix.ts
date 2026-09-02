@@ -132,6 +132,7 @@ export const NAV_ITEM_PERMISSIONS: Record<string, PermissionId[]> = {
   '/collector/dashboard': [PERMISSION.ACCESS_COLLECTOR_PORTAL],
   '/collector/admin-fee': [PERMISSION.RECORD_COLLECTIONS],
   '/collector/my-borrowers': [PERMISSION.VIEW_ASSIGNED_BORROWERS],
+  '/collector/borrowers': [PERMISSION.VIEW_ASSIGNED_BORROWERS],
   '/collector/borrower-updates': [PERMISSION.ACCESS_COLLECTOR_PORTAL],
   '/collector/expenses': [PERMISSION.RECORD_EXPENSES],
   '/collector/reconciliation': [PERMISSION.RECORD_COLLECTIONS],

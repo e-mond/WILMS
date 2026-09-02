@@ -25,7 +25,7 @@ import { useAuditLogReport } from '@/features/reports/hooks/useAuditLogReport';
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { settingsService } from '@/services';
 import type { AuditEntry } from '@/types/services';
-import { resolveEntityDisplayId, resolveUserDisplayId } from '@/utils/entity-display-id';
+import { resolveEntityDisplayId, resolveUserDisplayId, resolveAdjustmentDisplayId } from '@/utils/entity-display-id';
 import { groupAuditEntriesByPeriod } from '@/utils/audit-log-groups';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
 import { formatDisplayDate } from '@/utils/format-date';
@@ -50,13 +50,21 @@ function resolveActorSubLabel(entry: AuditEntry): string | null {
 }
 
 function resolveTargetEntityLabel(entry: AuditEntry): string {
-  return (
-    entry.targetEntityDisplayId ??
-    resolveEntityDisplayId({
-      entityId: entry.targetEntityId,
-      entityType: entry.targetEntityType,
-    })
-  );
+  if (entry.targetEntityDisplayId) {
+    return entry.targetEntityDisplayId;
+  }
+
+  if (entry.targetEntityType === 'ADJUSTMENT') {
+    return resolveAdjustmentDisplayId({
+      id: entry.targetEntityId,
+      requestedAt: entry.createdAt,
+    });
+  }
+
+  return resolveEntityDisplayId({
+    entityId: entry.targetEntityId,
+    entityType: entry.targetEntityType,
+  });
 }
 
 function formatAuditTimestamp(value: string): { date: string; time: string } {
