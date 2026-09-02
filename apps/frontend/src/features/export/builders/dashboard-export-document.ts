@@ -1,6 +1,5 @@
 import { WILMS_REPORT_TYPE, type WilmsExportDocument } from '@/features/export/types';
 import { generateReportId } from '@/features/export/utils/report-id';
-import { getWilmsEnvironment } from '@/features/export/utils/environment';
 import { formatExportTimestamp, formatPesewasForExport } from '@/features/export/utils/formatters';
 import type { DashboardSummary } from '@/types/dashboard';
 
@@ -20,7 +19,6 @@ export function buildDashboardExportDocument(input: DashboardExportInput): Wilms
       reportId,
       generatedAt,
       generatedBy: input.generatedBy,
-      environment: getWilmsEnvironment(),
       referencePrefix: 'DSH',
     },
     executiveSummary: `Operational dashboard snapshot generated ${generatedAt}.`,
