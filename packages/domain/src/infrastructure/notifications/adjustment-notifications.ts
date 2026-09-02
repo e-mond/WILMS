@@ -14,6 +14,7 @@ import { formatGhsAmount } from './templates.js';
 
 export const ADJUSTMENT_DEDUPE = {
   requested: (adjustmentId: string) => `adjustment-requested:${adjustmentId}`,
+  reviewed: (adjustmentId: string, status: string) => `adjustment-reviewed:${adjustmentId}:${status}`,
 } as const;
 
 async function listActiveSuperAdminIds(): Promise<string[]> {
@@ -108,4 +109,39 @@ export async function notifyAdjustmentRequested(input: {
       }),
     ),
   );
+}
+
+/** Notify the requester when their adjustment is approved or rejected. */
+export async function notifyAdjustmentReviewed(input: {
+  adjustmentId: string;
+  displayId: string;
+  typeLabel: string;
+  borrowerName: string;
+  amountPesewas: number;
+  status: 'APPROVED' | 'REJECTED';
+  requestedByUserId: string;
+  reviewNote?: string;
+}): Promise<void> {
+  if (!input.requestedByUserId.trim()) {
+    return;
+  }
+
+  const amountGhs = formatGhsAmount(input.amountPesewas);
+  const approved = input.status === 'APPROVED';
+  const note = input.reviewNote?.trim();
+  const body = approved
+    ? `Your ${input.typeLabel} request ${input.displayId} for ${input.borrowerName} (GHS ${amountGhs}) was approved.`
+    : `Your ${input.typeLabel} request ${input.displayId} for ${input.borrowerName} (GHS ${amountGhs}) was rejected${
+        note ? `: ${note}` : '.'
+      }`;
+
+  await dispatchAdjustmentInApp({
+    dedupeKey: ADJUSTMENT_DEDUPE.reviewed(input.adjustmentId, input.status),
+    notificationType: approved ? 'ADJUSTMENT_APPROVED' : 'ADJUSTMENT_REJECTED',
+    userId: input.requestedByUserId,
+    title: approved ? 'Adjustment approved' : 'Adjustment rejected',
+    body,
+    href: '/collector/my-borrowers',
+    correlationId: input.adjustmentId,
+  });
 }

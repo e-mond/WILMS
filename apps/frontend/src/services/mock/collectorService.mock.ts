@@ -4,7 +4,7 @@ import { assembleCollectorDashboard } from '@/services/mock/collector-dashboard.
 import {
   buildAllCollectorBorrowerRows,
 } from '@/features/payment-collection/collector-dashboard.utils';
-import { loadCollectorDashboardInputs } from '@/services/mock/collector-dashboard-inputs';
+import { loadCollectorBookInputs, loadCollectorDashboardInputs } from '@/services/mock/collector-dashboard-inputs';
 import reconciliationServiceMock from '@/services/mock/reconciliationService.mock';
 import { simulateDelay } from '@/services/mock/delay';
 import { localIsoDate } from '@/utils/weekday';
@@ -33,7 +33,7 @@ const collectorServiceMock: ICollectorService = {
     await simulateDelay();
 
     const referenceDate = date ?? localIsoDate();
-    const { loans, payments } = await loadCollectorDashboardInputs(referenceDate);
+    const { loans, payments } = await loadCollectorBookInputs(referenceDate);
     const reconciliation = await reconciliationServiceMock.getCollectorReconciliation(
       collectorId,
       referenceDate,
