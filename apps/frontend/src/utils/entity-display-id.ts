@@ -3,6 +3,7 @@ import {
   formatCollectorDisplayId,
   formatCollectorStaffLabel,
   formatEntityDisplayId,
+  formatAdjustmentDisplayId,
   formatExpenseDisplayId,
   formatGroupDisplayId,
   formatLoanDisplayId,
@@ -19,6 +20,7 @@ export {
   formatCollectorDisplayId,
   formatCollectorStaffLabel,
   formatEntityDisplayId,
+  formatAdjustmentDisplayId,
   formatExpenseDisplayId,
   formatGroupDisplayId,
   formatLoanDisplayId,
@@ -271,4 +273,23 @@ export function resolveRiskFlagDisplayId(flag: {
   }
 
   return formatRiskFlagDisplayId({ id: flag.id, raisedAt: flag.raisedAt });
+}
+
+export function resolveAdjustmentDisplayId(adjustment: {
+  id: string;
+  displayId?: string;
+  requestedAt?: string;
+}): string {
+  if (adjustment.displayId) {
+    return adjustment.displayId;
+  }
+
+  if (isReadableWilmsId(adjustment.id)) {
+    return adjustment.id.toUpperCase();
+  }
+
+  return formatAdjustmentDisplayId({
+    id: adjustment.id,
+    requestedAt: adjustment.requestedAt,
+  });
 }

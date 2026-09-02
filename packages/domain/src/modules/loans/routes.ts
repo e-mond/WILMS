@@ -9,6 +9,9 @@ import { requireAuth } from '../../middleware/authenticate.js';
 import { requirePermission } from '../../middleware/require-permission.js';
 import { validateBody } from '../../middleware/validate-body.js';
 import { PAYMENT_DAY_OPTIONS } from '../../domain/loan/payment-day.js';
+import { assertBorrowerReadAccess } from '../borrowers/access.js';
+import type { SessionUser } from '../../middleware/authenticate.js';
+import * as loanRepo from '../../repositories/loan.repository.js';
 import * as loanService from './service.js';
 
 const createLoanSchema = z.object({
@@ -29,7 +32,18 @@ function mapError(error: unknown): never {
   if (error instanceof Error && error.message === 'NOT_FOUND') {
     throw new AppError('Resource not found.', ERROR_CODE.NOT_FOUND, 404);
   }
+  if (error instanceof Error && error.message === 'FORBIDDEN') {
+    throw new AppError('You do not have permission to perform this action.', ERROR_CODE.UNAUTHORIZED, 403);
+  }
   mapFinancialRouteError(error);
+}
+
+async function assertLoanReadAccess(session: SessionUser, loanId: string) {
+  const loan = await loanRepo.findLoanById(loanId);
+  if (!loan) {
+    throw new AppError('Resource not found.', ERROR_CODE.NOT_FOUND, 404);
+  }
+  await assertBorrowerReadAccess(session, loan.borrowerId);
 }
 
 export const loansRouter = Router();
@@ -75,9 +89,10 @@ loansRouter.get(
 
 loansRouter.get(
   '/borrowers/:borrowerId/loans',
-  requirePermission(PERMISSION.VIEW_FINANCIAL_REPORTS),
+  requirePermission(PERMISSION.VIEW_FINANCIAL_REPORTS, PERMISSION.VIEW_ASSIGNED_BORROWERS),
   asyncHandler(async (req, res) => {
     try {
+      await assertBorrowerReadAccess(req.session!, req.params.borrowerId!);
       sendData(res, await loanService.listBorrowerLoans(req.params.borrowerId!));
     } catch (error) {
       mapError(error);
@@ -111,9 +126,10 @@ loansRouter.get(
 
 loansRouter.get(
   '/loans/:id/schedule',
-  requirePermission(PERMISSION.VIEW_FINANCIAL_REPORTS),
+  requirePermission(PERMISSION.VIEW_FINANCIAL_REPORTS, PERMISSION.VIEW_ASSIGNED_BORROWERS),
   asyncHandler(async (req, res) => {
     try {
+      await assertLoanReadAccess(req.session!, req.params.id!);
       sendData(
         res,
         await loanService.getLoanSchedule(
@@ -129,9 +145,10 @@ loansRouter.get(
 
 loansRouter.get(
   '/loans/:id/progress',
-  requirePermission(PERMISSION.VIEW_FINANCIAL_REPORTS),
+  requirePermission(PERMISSION.VIEW_FINANCIAL_REPORTS, PERMISSION.VIEW_ASSIGNED_BORROWERS),
   asyncHandler(async (req, res) => {
     try {
+      await assertLoanReadAccess(req.session!, req.params.id!);
       sendData(
         res,
         await loanService.getLoanProgress(
@@ -147,9 +164,10 @@ loansRouter.get(
 
 loansRouter.get(
   '/loans/:id/payments',
-  requirePermission(PERMISSION.VIEW_FINANCIAL_REPORTS),
+  requirePermission(PERMISSION.VIEW_FINANCIAL_REPORTS, PERMISSION.VIEW_ASSIGNED_BORROWERS),
   asyncHandler(async (req, res) => {
     try {
+      await assertLoanReadAccess(req.session!, req.params.id!);
       sendData(res, await loanService.listLoanPaymentLog(req.params.id!));
     } catch (error) {
       mapError(error);

@@ -23,7 +23,7 @@ import {
 import { LOAN_LIFECYCLE } from '../../domain/loan/lifecycle.js';
 import { decimalToPesewas, pesewasToDecimal } from '../../domain/money.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
-import { notifyAdjustmentRequested } from '../../infrastructure/notifications/adjustment-notifications.js';
+import { notifyAdjustmentRequested, notifyAdjustmentReviewed } from '../../infrastructure/notifications/adjustment-notifications.js';
 import { formatAdjustmentDisplayId } from '@wilms/shared-utils';
 import { runWithIdempotency } from '../../infrastructure/idempotency/run-with-idempotency.js';
 import * as adjustmentHistoryRepo from '../../repositories/adjustment-history.repository.js';
@@ -363,6 +363,19 @@ export async function approveAdjustment(
         reason: pending.reason,
       });
 
+      void notifyAdjustmentReviewed({
+        adjustmentId: id,
+        displayId: formatAdjustmentDisplayId({
+          id: pending.id,
+          requestedAt: pending.requestedAt.toISOString(),
+        }),
+        typeLabel: pending.type.replace(/_/g, ' ').toLowerCase(),
+        borrowerName: pending.borrowerName,
+        amountPesewas: pending.amountPesewas,
+        status: 'APPROVED',
+        requestedByUserId: pending.requestedByUserId,
+      }).catch(() => undefined);
+
       return mapAdjustmentRowToRequest(updated);
     },
   });
@@ -422,6 +435,20 @@ export async function rejectAdjustment(
     targetEntityType: 'adjustment',
     reason: trimmedReason,
   });
+
+  void notifyAdjustmentReviewed({
+    adjustmentId: id,
+    displayId: formatAdjustmentDisplayId({
+      id: pending.id,
+      requestedAt: pending.requestedAt.toISOString(),
+    }),
+    typeLabel: pending.type.replace(/_/g, ' ').toLowerCase(),
+    borrowerName: pending.borrowerName,
+    amountPesewas: pending.amountPesewas,
+    status: 'REJECTED',
+    requestedByUserId: pending.requestedByUserId,
+    reviewNote: trimmedReason,
+  }).catch(() => undefined);
 
   return mapAdjustmentRowToRequest(updated);
 }
