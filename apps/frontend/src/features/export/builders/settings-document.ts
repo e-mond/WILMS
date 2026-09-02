@@ -1,7 +1,6 @@
 import type { SettingsUserRecord, SystemSettings } from '@/types/settings';
 import { WILMS_REPORT_TYPE, type WilmsExportDocument } from '@/features/export/types';
 import { generateReportId } from '@/features/export/utils/report-id';
-import { getWilmsEnvironment } from '@/features/export/utils/environment';
 import { formatExportTimestamp, formatPesewasForExport } from '@/features/export/utils/formatters';
 
 export interface SettingsExportInput {
@@ -22,7 +21,6 @@ export function buildSettingsExportDocument(input: SettingsExportInput): WilmsEx
       reportId,
       generatedAt,
       generatedBy: input.generatedBy,
-      environment: getWilmsEnvironment(),
       referencePrefix: 'SET',
     },
     executiveSummary: `WILMS configuration snapshot for ${input.activeSectionLabel} as of ${generatedAt}.`,

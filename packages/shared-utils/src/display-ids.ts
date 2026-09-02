@@ -112,6 +112,16 @@ export function formatExpenseDisplayId(input: {
   return `EXP-${year}-${paddedSequence(sequence, 3)}`;
 }
 
+export function formatAdjustmentDisplayId(input: {
+  id?: string;
+  requestedAt?: string;
+  sequence?: number;
+}): string {
+  const year = yearFromIso(input.requestedAt);
+  const sequence = input.sequence ?? sequenceFromId(input.id);
+  return `ADJ-${year}-${paddedSequence(sequence, 5)}`;
+}
+
 export function formatEntityDisplayId(input: {
   entityType: string;
   entityId: string;
@@ -187,5 +197,5 @@ export function formatDisbursementDisplayId(input: {
 }
 
 export function isReadableWilmsId(value: string): boolean {
-  return /^(BWR|BRW|BOR|COL|GRP|LOAN|LN|POOL|ENT|USR|TXN|DIS|MEM|EXP|FLG)-/i.test(value.trim());
+  return /^(BWR|BRW|BOR|COL|GRP|LOAN|LN|POOL|ENT|USR|TXN|DIS|MEM|EXP|FLG|ADJ)-/i.test(value.trim());
 }

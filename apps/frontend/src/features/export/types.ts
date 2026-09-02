@@ -29,7 +29,8 @@ export interface WilmsExportMetadata {
   reportId: string;
   generatedAt: string;
   generatedBy: string;
-  environment: WilmsEnvironment;
+  /** @deprecated No longer rendered on exports; kept optional for legacy documents. */
+  environment?: WilmsEnvironment;
   referencePrefix: string;
   entityRef?: string;
 }

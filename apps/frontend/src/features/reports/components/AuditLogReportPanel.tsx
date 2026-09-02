@@ -29,6 +29,7 @@ import { resolveEntityDisplayId, resolveUserDisplayId } from '@/utils/entity-dis
 import { groupAuditEntriesByPeriod } from '@/utils/audit-log-groups';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
 import { formatDisplayDate } from '@/utils/format-date';
+import { resolveAuditReason } from '@/utils/audit-reason-display';
 import { cn } from '@/utils/cn';
 
 const CSV_HEADERS = ['Timestamp', 'User', 'Action', 'Entity Type', 'Entity ID', 'Reason'];
@@ -131,7 +132,7 @@ export function AuditLogReportPanel() {
           AUDIT_ACTION_LABELS[entry.action],
           entry.targetEntityType,
           resolveTargetEntityLabel(entry),
-          entry.reason ?? '—',
+          resolveAuditReason(entry.reason),
         ];
       }),
     [data],
@@ -151,7 +152,7 @@ export function AuditLogReportPanel() {
         entry.action,
         entry.targetEntityType,
         resolveTargetEntityLabel(entry),
-        entry.reason ?? '',
+        resolveAuditReason(entry.reason),
       ]
         .join(' ')
         .toLowerCase();
@@ -381,7 +382,7 @@ export function AuditLogReportPanel() {
               header: 'Reason',
               className: cn('w-[22%] min-w-[10rem]'),
               cell: (entry) => (
-                <span className="text-small text-text-muted">{entry.reason ?? '—'}</span>
+                <span className="text-small text-text-muted">{resolveAuditReason(entry.reason)}</span>
               ),
             },
           ]}

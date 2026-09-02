@@ -108,6 +108,12 @@ export const SUPER_ADMIN_NAV: ShellNavItem[] = [
   { href: '/risk-flags', label: 'Risk & Flags', icon: 'risk', group: 'operations' },
   { href: '/expenses', label: 'Expense Management', icon: 'expenses', group: 'financial' },
   {
+    href: '/adjustments',
+    label: 'Adjustments',
+    icon: 'adjustments',
+    group: 'financial',
+  },
+  {
     href: '/communication-center',
     label: 'Communication Center',
     icon: 'messages',

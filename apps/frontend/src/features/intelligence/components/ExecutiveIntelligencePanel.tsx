@@ -21,19 +21,16 @@ import {
   UsersRound,
   Wallet,
 } from 'lucide-react';
-import { CurrencyAmount, DataTable, KpiCard } from '@/components/data-display';
+import { CurrencyAmount, KpiCard } from '@/components/data-display';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
 import { ExecutiveKpiGrid, ManagementToolbar } from '@/components/layout/executive';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
 import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
 import { WILMS_REPORT_TYPE } from '@/features/export';
 import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
 import { intelligenceService } from '@/services/intelligenceService';
-import type { ExecutiveDashboard, ForecastSeriesPoint, ForecastSnapshot } from '@/types/intelligence';
+import type { ExecutiveDashboard } from '@/types/intelligence';
 import { formatPesewasForCsv } from '@/utils/export-csv';
 
 function todayIso(): string {
@@ -44,7 +41,6 @@ export function ExecutiveIntelligencePanel() {
   const [communityDraft, setCommunityDraft] = useState('');
   const [community, setCommunity] = useState('');
   const [asOf, setAsOf] = useState(todayIso);
-  const [horizonDays, setHorizonDays] = useState(28);
 
   const dashboardQuery = useQuery({
     queryKey: ['intelligence', 'executive-dashboard', community, asOf] as const,
@@ -53,11 +49,6 @@ export function ExecutiveIntelligencePanel() {
         community: community || undefined,
         asOf: asOf || undefined,
       }),
-  });
-
-  const forecastQuery = useQuery({
-    queryKey: ['intelligence', 'forecast', horizonDays] as const,
-    queryFn: () => intelligenceService.getForecast(horizonDays),
   });
 
   const { showLoading, isTimedOut, isForbidden } = useQueryLoadingPolicy({
@@ -81,7 +72,7 @@ export function ExecutiveIntelligencePanel() {
             Portfolio health
           </h1>
           <p className="mt-wilms-3 max-w-2xl text-body text-text-muted">
-            Portfolio value, collection performance, delinquency, and forecast as of the selected date.{' '}
+            Portfolio value, collection performance, and delinquency as of the selected date.{' '}
             <Link href="/dashboard" className="font-semibold text-brand-primary hover:underline">
               Operational dashboard
             </Link>
@@ -135,43 +126,6 @@ export function ExecutiveIntelligencePanel() {
           <ExecutiveDashboardContent data={dashboardQuery.data} />
         ) : null}
       </QueryStatePanel>
-
-      <Tabs defaultValue="forecast">
-        <div className="flex flex-wrap items-end justify-between gap-wilms-3">
-          <div>
-            <TabsList aria-label="Executive forecast">
-              <TabsTrigger value="forecast">Forecast</TabsTrigger>
-            </TabsList>
-            <p className="mt-wilms-2 text-small text-text-muted">
-              Schedule-based weekly due × observed collection rate.
-            </p>
-          </div>
-          <label className="block text-small text-text-muted print:hidden">
-            Horizon (days)
-            <Select
-              className="mt-1 w-32"
-              value={String(horizonDays)}
-              onChange={(event) => setHorizonDays(Number(event.target.value))}
-            >
-              <option value="14">14</option>
-              <option value="28">28</option>
-              <option value="56">56</option>
-              <option value="84">84</option>
-            </Select>
-          </label>
-        </div>
-        <TabsContent value="forecast">
-          <Card>
-            <CardHeader>
-              <CardTitle>Forecast</CardTitle>
-              <CardDescription>Projected collections over the selected horizon.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ForecastSection query={forecastQuery} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
     </div>
   );
 }
@@ -392,105 +346,6 @@ function ExecutiveDashboardContent({ data }: { data: ExecutiveDashboard }) {
           />
         </ExecutiveKpiGrid>
       </section>
-    </div>
-  );
-}
-
-function ForecastSection({
-  query,
-}: {
-  query: {
-    data?: ForecastSnapshot;
-    isLoading: boolean;
-    isError: boolean;
-    error: unknown;
-    isFetching: boolean;
-    refetch: () => unknown;
-  };
-}) {
-  const { showLoading, isTimedOut, isForbidden } = useQueryLoadingPolicy({
-    isLoading: query.isLoading,
-    isError: query.isError,
-    error: query.error,
-  });
-
-  return (
-    <QueryStatePanel
-      isLoading={query.isLoading}
-      showLoading={showLoading}
-      isTimedOut={isTimedOut}
-      isError={query.isError}
-      error={query.error}
-      errorMessage="Unable to load forecast."
-      isForbidden={isForbidden}
-      onRetry={() => void query.refetch()}
-      variant="table"
-    >
-      {query.data ? <ForecastContent data={query.data} /> : null}
-    </QueryStatePanel>
-  );
-}
-
-function ForecastContent({ data }: { data: ForecastSnapshot }) {
-  const summary = data.summary ?? {};
-  const series = data.series ?? [];
-
-  return (
-    <div className="space-y-wilms-4">
-      <ExecutiveKpiGrid>
-        <KpiCard
-          variant="executive"
-          label="Expected collections"
-          value={<CurrencyAmount value={summary.expectedCollectionsPesewas ?? 0} />}
-        />
-        <KpiCard
-          variant="executive"
-          label="Projected collections"
-          value={<CurrencyAmount value={summary.projectedCollectionsPesewas ?? 0} />}
-        />
-        <KpiCard
-          variant="executive"
-          label="Projected cash flow"
-          value={<CurrencyAmount value={summary.projectedCashFlowPesewas ?? 0} />}
-        />
-        <KpiCard
-          variant="executive"
-          label="Liquidity forecast"
-          value={<CurrencyAmount value={summary.liquidityForecastPesewas ?? 0} />}
-        />
-      </ExecutiveKpiGrid>
-
-      <p className="text-small text-text-muted">
-        Horizon {data.horizonDays} days
-        {data.assumptions?.collectionRatePercent != null
-          ? ` · collection rate ${data.assumptions.collectionRatePercent}%`
-          : ''}
-      </p>
-
-      <DataTable<ForecastSeriesPoint>
-        variant="executive"
-        caption="Forecast series"
-        data={series}
-        getRowId={(row) => row.weekStarting}
-        columns={[
-          { id: 'week', header: 'Week starting', cell: (row) => row.weekStarting },
-          {
-            id: 'expected',
-            header: 'Expected',
-            cell: (row) => <CurrencyAmount value={row.expectedPesewas} />,
-          },
-          {
-            id: 'projected',
-            header: 'Projected',
-            cell: (row) => <CurrencyAmount value={row.projectedPesewas} />,
-          },
-          {
-            id: 'expense',
-            header: 'Expenses',
-            cell: (row) => <CurrencyAmount value={row.expensePesewas} />,
-          },
-        ]}
-      />
     </div>
   );
 }
