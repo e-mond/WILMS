@@ -4,6 +4,7 @@ export {
   formatCollectorDisplayId,
   formatCollectorStaffLabel,
   formatEntityDisplayId,
+  formatAdjustmentDisplayId,
   formatExpenseDisplayId,
   formatGroupDisplayId,
   formatLoanDisplayId,

@@ -112,7 +112,7 @@ describe('PaymentEditSection', () => {
           borrowerName: 'Ama Mensah',
           loanId: 'loan-001',
           amountPesewas: 5000,
-          reason: expect.stringContaining('payment-locked-001'),
+          reason: expect.stringMatching(/Payment TXN-20260528-\d{3} on 2026-05-28:/),
         }),
         'user-collector',
         'Field Collector',

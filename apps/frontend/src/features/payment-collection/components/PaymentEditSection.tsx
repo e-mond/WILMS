@@ -15,6 +15,7 @@ import { ADJUSTMENT_TYPE } from '@/types/adjustment';
 import type { PaymentTransaction } from '@/types/payment';
 import { ApiError } from '@/types/api';
 import { formatDisplayDate } from '@/utils/format-date';
+import { resolvePaymentDisplayId } from '@/utils/entity-display-id';
 
 export interface PaymentEditSectionProps {
   payment: PaymentTransaction;
@@ -64,7 +65,7 @@ export function PaymentEditSection({
         borrowerName,
         loanId,
         amountPesewas: payment.amountPesewas,
-        reason: `Payment ${payment.id} on ${payment.paymentDate}: ${parsed.data.reason}`,
+        reason: `Payment ${resolvePaymentDisplayId(payment)} on ${payment.paymentDate}: ${parsed.data.reason}`,
       });
       setAdjustmentSuccessMessage(
         'Adjustment request submitted. A Super Admin must approve before the ledger changes.',

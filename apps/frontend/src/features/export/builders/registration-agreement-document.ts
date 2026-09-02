@@ -2,7 +2,6 @@ import type { BorrowerRegistrationFormValues } from '@/types/borrower-registrati
 import type { RegistrationLegalConfig } from '@/types/registration-legal';
 import { WILMS_REPORT_TYPE, type WilmsExportDocument } from '@/features/export/types';
 import { generateReportId } from '@/features/export/utils/report-id';
-import { getWilmsEnvironment } from '@/features/export/utils/environment';
 import { formatExportTimestamp } from '@/features/export/utils/formatters';
 import { buildRegistrationAgreementContent, type RegistrationAgreementMedia } from '@/utils/registration-agreement-fields';
 
@@ -33,7 +32,6 @@ export function buildRegistrationAgreementExportDocument(
       reportId,
       generatedAt: formatExportTimestamp(),
       generatedBy: input.generatedBy,
-      environment: getWilmsEnvironment(),
       referencePrefix: 'WILMS-REG',
       entityRef: input.values.fullName,
     },

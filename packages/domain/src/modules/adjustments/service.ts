@@ -23,6 +23,8 @@ import {
 import { LOAN_LIFECYCLE } from '../../domain/loan/lifecycle.js';
 import { decimalToPesewas, pesewasToDecimal } from '../../domain/money.js';
 import { appendAuditEntry } from '../../infrastructure/audit/audit-log.js';
+import { notifyAdjustmentRequested } from '../../infrastructure/notifications/adjustment-notifications.js';
+import { formatAdjustmentDisplayId } from '@wilms/shared-utils';
 import { runWithIdempotency } from '../../infrastructure/idempotency/run-with-idempotency.js';
 import * as adjustmentHistoryRepo from '../../repositories/adjustment-history.repository.js';
 import * as adjustmentRepo from '../../repositories/adjustment.repository.js';
@@ -155,6 +157,19 @@ export async function createAdjustment(
         targetEntityType: 'adjustment',
         reason: input.reason.trim(),
       });
+
+      void notifyAdjustmentRequested({
+        adjustmentId: row.id,
+        displayId: formatAdjustmentDisplayId({
+          id: row.id,
+          requestedAt: requestedAt.toISOString(),
+        }),
+        typeLabel: row.type.replace(/_/g, ' ').toLowerCase(),
+        borrowerName: input.borrowerName.trim(),
+        amountPesewas: input.amountPesewas,
+        requestedByUserId: input.actorId,
+        requestedByDisplayName: input.actorDisplayName.trim(),
+      }).catch(() => undefined);
 
       return mapAdjustmentRowToRequest(row);
     },
