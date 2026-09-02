@@ -372,8 +372,8 @@ export function CollectorDashboardPanel() {
           <CardContent>
           {todayGroups.length === 0 ? (
             <EmptyState
-              title="No groups due today"
-              description={`No assigned groups have ${summary.paymentDayLabel} as their payment day.`}
+              title="No groups with collections due"
+              description="None of your assigned groups have payable installments or arrears as of today."
             />
           ) : (
             <div className="grid w-full min-w-0 gap-wilms-3 sm:grid-cols-2">
@@ -399,8 +399,8 @@ export function CollectorDashboardPanel() {
           </div>
           {borrowers.length === 0 ? (
             <EmptyState
-              title="No collections scheduled today"
-              description={`No borrowers have ${summary.paymentDayLabel} as their assigned payment day.`}
+              title="No collections due"
+              description="No borrowers in your book have payable installments or arrears due as of today."
             />
           ) : (
             <DataTable<CollectorDashboardBorrower>

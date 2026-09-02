@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { formatEntityDisplayId, formatPaymentDisplayId, formatUserDisplayId, isReadableWilmsId } from '@wilms/shared-utils';
+import { formatEntityDisplayId, formatPaymentDisplayId, formatUserDisplayId, formatAdjustmentDisplayId, isReadableWilmsId } from '@wilms/shared-utils';
 import { isDatabaseEnabled } from '../../db/client.js';
 import { auditRepository } from '../../repositories/index.js';
 import { normalizeAuditAction } from '../../repositories/audit.repository.js';
@@ -45,6 +45,13 @@ function resolveTargetEntityDisplayId(
 
   if (entry.targetEntityType === 'payment') {
     return formatPaymentDisplayId({ recordedAt: entry.createdAt });
+  }
+
+  if (entry.targetEntityType === 'adjustment') {
+    return formatAdjustmentDisplayId({
+      id: entry.targetEntityId,
+      requestedAt: entry.createdAt,
+    });
   }
 
   return formatEntityDisplayId({
