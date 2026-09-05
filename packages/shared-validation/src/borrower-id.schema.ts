@@ -6,18 +6,25 @@ export interface BorrowerIdValidationResult {
 }
 
 const GHANA_CARD_PATTERN = /^GHA-\d{9}-\d$/;
-const VOTER_ID_PATTERN = /^[A-Z0-9]{10}$|^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+/**
+ * Ghana Voter IDs are alphanumeric. Historical and current cards include:
+ * - short codes with a letter prefix (e.g. A01010)
+ * - 8–12 digit numeric IDs
+ * - hyphenated groups that normalize to 5–15 alphanumerics
+ */
+const VOTER_ID_PATTERN = /^[A-Z0-9]{5,15}$/;
 const PASSPORT_PATTERN = /^[A-Z0-9]{6,9}$/;
 
 export const BORROWER_ID_PLACEHOLDERS: Record<BorrowerIdType, string> = {
   GHANA_CARD: 'GHA-123456789-0',
-  VOTER_ID: '1234567890',
+  VOTER_ID: 'A01010',
   PASSPORT: 'G1234567',
 };
 
 export const BORROWER_ID_ERROR_MESSAGES: Record<BorrowerIdType, string> = {
   GHANA_CARD: 'Enter a valid Ghana Card number (GHA-XXXXXXXXX-X).',
-  VOTER_ID: 'Enter a valid Voter ID (10 characters or XXXX-XXXX-XXXX).',
+  VOTER_ID:
+    'Enter a valid Voter ID (5–15 letters and/or numbers, e.g. A01010). Spaces and hyphens are optional.',
   PASSPORT: 'Enter a valid passport number (6–9 letters or digits).',
 };
 
@@ -33,6 +40,11 @@ export function formatGhanaCardInput(value: string): string {
   }
 
   return `GHA-${digits.slice(0, 9)}-${digits.slice(9)}`;
+}
+
+/** Normalize Voter ID for storage and comparison: uppercase, strip spaces/hyphens. */
+export function normalizeVoterId(idNumber: string): string {
+  return idNumber.trim().toUpperCase().replace(/[\s-]+/g, '');
 }
 
 export function normalizeBorrowerId(idType: string, idNumber: string): string {
@@ -57,7 +69,7 @@ export function normalizeBorrowerId(idType: string, idNumber: string): string {
       return upper;
     }
     case 'VOTER_ID':
-      return trimmed.toUpperCase().replace(/\s+/g, '');
+      return normalizeVoterId(trimmed);
     case 'PASSPORT':
       return trimmed.toUpperCase().replace(/\s+/g, '');
     default:
@@ -81,9 +93,12 @@ export function validateBorrowerId(
         ? { valid: true }
         : { valid: false, error: BORROWER_ID_ERROR_MESSAGES.GHANA_CARD };
     case 'VOTER_ID':
-      return VOTER_ID_PATTERN.test(normalized)
-        ? { valid: true }
-        : { valid: false, error: BORROWER_ID_ERROR_MESSAGES.VOTER_ID };
+      if (!VOTER_ID_PATTERN.test(normalized)) {
+        return { valid: false, error: BORROWER_ID_ERROR_MESSAGES.VOTER_ID };
+      }
+      // Reject IDs that are only punctuation leftovers or clearly not voter IDs
+      // (already covered by pattern). Require at least one alphanumeric which pattern ensures.
+      return { valid: true };
     case 'PASSPORT':
       return PASSPORT_PATTERN.test(normalized)
         ? { valid: true }

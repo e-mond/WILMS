@@ -4,6 +4,7 @@ export {
   BORROWER_ID_PLACEHOLDERS,
   formatGhanaCardInput,
   normalizeBorrowerId,
+  normalizeVoterId,
   validateBorrowerId,
   type BorrowerIdType,
   type BorrowerIdValidationResult,

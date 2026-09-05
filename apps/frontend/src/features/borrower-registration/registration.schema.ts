@@ -101,6 +101,15 @@ const personalDetailsBaseSchema = z.object({
 
 export const personalDetailsSchema = personalDetailsBaseSchema.superRefine((data, ctx) => {
   refineBorrowerId(ctx, data.idType, data.idNumber, 'idNumber');
+
+  // A local file without a persisted upload id means the attachment failed to save.
+  if (data.idDocument instanceof File && !data.idDocumentUploadId?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'ID document upload did not complete. Please upload or scan again.',
+      path: ['idDocument'],
+    });
+  }
 });
 
 const ghanaGpsAddressSchema = z
@@ -254,6 +263,13 @@ export const borrowerRegistrationSchema = personalDetailsBaseSchema
   .superRefine((data, ctx) => {
     refineBorrowerId(ctx, data.idType, data.idNumber, 'idNumber');
     refineBorrowerId(ctx, data.guarantorIdType, data.guarantorIdNumber, 'guarantorIdNumber');
+    if (data.idDocument instanceof File && !data.idDocumentUploadId?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'ID document upload did not complete. Please upload or scan again.',
+        path: ['idDocument'],
+      });
+    }
     if (data.typeOfWork === 'Other' && !data.typeOfWorkOther?.trim()) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

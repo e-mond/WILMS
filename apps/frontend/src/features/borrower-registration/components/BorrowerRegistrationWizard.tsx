@@ -4,7 +4,11 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
-import { BORROWER_ID_PLACEHOLDERS, formatGhanaCardInput } from '@wilms/shared-validation';
+import {
+  BORROWER_ID_PLACEHOLDERS,
+  formatGhanaCardInput,
+  normalizeBorrowerId,
+} from '@wilms/shared-validation';
 import { Alert } from '@/components/feedback/Alert';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { FormField, MultiStepForm, PhotoUploadField } from '@/components/forms';
@@ -743,8 +747,16 @@ export function BorrowerRegistrationWizard() {
               {...idNumberField}
               onBlur={(event) => {
                 void idNumberField.onBlur(event);
-                if (getValues('idType') === BORROWER_ID_TYPE.GHANA_CARD) {
+                const idType = getValues('idType');
+                if (idType === BORROWER_ID_TYPE.GHANA_CARD) {
                   setValue('idNumber', formatGhanaCardInput(event.target.value), {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                  return;
+                }
+                if (idType === BORROWER_ID_TYPE.VOTER_ID || idType === BORROWER_ID_TYPE.PASSPORT) {
+                  setValue('idNumber', normalizeBorrowerId(idType, event.target.value), {
                     shouldDirty: true,
                     shouldValidate: true,
                   });
