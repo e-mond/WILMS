@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  BORROWER_ID_ERROR_MESSAGES,
   BORROWER_ID_PLACEHOLDERS,
   formatGhanaCardInput,
   normalizeBorrowerId,
+  normalizeVoterId,
   validateBorrowerId,
 } from '@wilms/shared-validation';
 
@@ -19,13 +21,37 @@ describe('borrower ID validation', () => {
     expect(result.error).toContain('Ghana Card');
   });
 
-  it('accepts voter ID formats', () => {
-    expect(validateBorrowerId('VOTER_ID', '1234567890').valid).toBe(true);
-    expect(validateBorrowerId('VOTER_ID', '1234-5678-9012').valid).toBe(true);
+  it('accepts alphanumeric voter IDs such as A01010', () => {
+    expect(validateBorrowerId('VOTER_ID', 'A01010').valid).toBe(true);
+    expect(normalizeBorrowerId('VOTER_ID', 'A01010')).toBe('A01010');
   });
 
-  it('rejects invalid voter IDs', () => {
+  it('normalizes lowercase voter IDs to uppercase', () => {
+    expect(normalizeVoterId('a01010')).toBe('A01010');
+    expect(normalizeBorrowerId('VOTER_ID', 'a01010')).toBe('A01010');
+    expect(validateBorrowerId('VOTER_ID', 'a01010').valid).toBe(true);
+  });
+
+  it('accepts realistic alphanumeric and numeric voter ID formats', () => {
+    expect(validateBorrowerId('VOTER_ID', 'B123456789').valid).toBe(true);
+    expect(validateBorrowerId('VOTER_ID', '1234567890').valid).toBe(true);
+    expect(validateBorrowerId('VOTER_ID', '1234-5678-9012').valid).toBe(true);
+    expect(normalizeBorrowerId('VOTER_ID', 'ab-12 34')).toBe('AB1234');
+  });
+
+  it('rejects empty, whitespace-only, too-short, and special-character voter IDs', () => {
+    expect(validateBorrowerId('VOTER_ID', '').valid).toBe(false);
+    expect(validateBorrowerId('VOTER_ID', '   ').valid).toBe(false);
     expect(validateBorrowerId('VOTER_ID', '123').valid).toBe(false);
+    expect(validateBorrowerId('VOTER_ID', 'A01@10').valid).toBe(false);
+    expect(validateBorrowerId('VOTER_ID', 'A01010!').valid).toBe(false);
+    expect(validateBorrowerId('VOTER_ID', '123').error).toBe(BORROWER_ID_ERROR_MESSAGES.VOTER_ID);
+  });
+
+  it('does not apply voter ID rules to Ghana Card or Passport', () => {
+    expect(validateBorrowerId('GHANA_CARD', 'A01010').valid).toBe(false);
+    expect(validateBorrowerId('PASSPORT', 'A01010').valid).toBe(true);
+    expect(validateBorrowerId('PASSPORT', 'A0101').valid).toBe(false);
   });
 
   it('accepts passport numbers', () => {
@@ -42,5 +68,6 @@ describe('borrower ID validation', () => {
 
   it('exposes placeholders per ID type', () => {
     expect(BORROWER_ID_PLACEHOLDERS.GHANA_CARD).toBe('GHA-123456789-0');
+    expect(BORROWER_ID_PLACEHOLDERS.VOTER_ID).toBe('A01010');
   });
 });

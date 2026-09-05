@@ -786,7 +786,7 @@ export async function checkBlacklist(input: { phone?: string; idType?: string; i
       input.idType &&
         input.idNumber &&
         record.idType === input.idType &&
-        record.idNumber === input.idNumber,
+        record.idNumber === normalizeBorrowerId(input.idType, input.idNumber),
     );
   });
 

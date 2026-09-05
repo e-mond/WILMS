@@ -7,8 +7,13 @@ import { cn } from '@/utils/cn';
 export interface WebcamCaptureProps {
   onCapture: (file: File) => void;
   onUnavailable?: () => void;
+  /** Called when the user (or browser) denies camera permission. */
+  onPermissionDenied?: () => void;
   disabled?: boolean;
   className?: string;
+  /** Prefer rear camera for document scans. */
+  facingMode?: 'user' | 'environment';
+  idleHint?: string;
 }
 
 function dataUrlToFile(dataUrl: string, fileName: string): File {
@@ -28,8 +33,11 @@ function dataUrlToFile(dataUrl: string, fileName: string): File {
 export function WebcamCapture({
   onCapture,
   onUnavailable,
+  onPermissionDenied,
   disabled = false,
   className,
+  facingMode = 'user',
+  idleHint = 'Open the camera to capture a passport-style photo.',
 }: WebcamCaptureProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -56,7 +64,7 @@ export function WebcamCapture({
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user' },
+        video: { facingMode },
         audio: false,
       });
 
@@ -69,9 +77,19 @@ export function WebcamCapture({
 
       setIsActive(true);
       setPreviewUrl(null);
-    } catch {
-      setError('Camera not available on this device');
-      onUnavailable?.();
+    } catch (err) {
+      const denied =
+        err instanceof DOMException &&
+        (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError');
+      if (denied) {
+        setError(
+          'Camera access was denied. You can allow camera access in your browser settings or upload the document instead.',
+        );
+        onPermissionDenied?.();
+      } else {
+        setError('Camera not available on this device');
+        onUnavailable?.();
+      }
     }
   };
 
@@ -129,7 +147,7 @@ export function WebcamCapture({
           />
           {!isActive ? (
             <div className="px-wilms-4 py-wilms-8 text-center text-small text-text-muted">
-              Open the camera to capture a passport-style photo.
+              {idleHint}
             </div>
           ) : null}
         </div>

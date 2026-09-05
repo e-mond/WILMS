@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState, type ChangeEvent } from 'react';
 import { Button } from '@/components/ui/Button';
+import { WebcamCapture } from '@/components/forms/WebcamCapture';
 import type { UploadPurpose, UploadRecord } from '@/types/upload';
 import {
   deleteUploadedFile,
@@ -12,6 +13,17 @@ import { cn } from '@/utils/cn';
 import { resolveMediaPreviewUrl } from '@/utils/media-preview';
 
 const DEFAULT_ACCEPT = 'image/*,application/pdf';
+const ALLOWED_DOCUMENT_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'application/pdf',
+]);
+
+export const DOCUMENT_CAMERA_DENIED_MESSAGE =
+  'Camera access was denied. You can allow camera access in your browser settings or upload the document instead.';
 
 export interface DocumentUploadProps {
   id: string;
@@ -33,6 +45,34 @@ function isPreviewableImage(mimeType: string): boolean {
   return mimeType.startsWith('image/');
 }
 
+function isMobileDevice(): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(window.navigator.userAgent);
+}
+
+function validateDocumentFile(file: File): string | null {
+  if (file.size <= 0) {
+    return 'File must not be empty.';
+  }
+
+  const mime = (file.type || '').toLowerCase();
+  if (!mime) {
+    return 'Unable to determine file type. Upload a PDF or image file.';
+  }
+
+  if (
+    ALLOWED_DOCUMENT_MIME_TYPES.has(mime) ||
+    (mime.startsWith('image/') && mime !== 'image/svg+xml')
+  ) {
+    return null;
+  }
+
+  return 'Upload a PDF or image file (JPEG, PNG, WebP, or GIF).';
+}
+
 export function DocumentUpload({
   id,
   label,
@@ -50,14 +90,20 @@ export function DocumentUpload({
 }: DocumentUploadProps) {
   const helperId = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const blobUrlRef = useRef<string | null>(null);
+  const [localPreviewFile, setLocalPreviewFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [localError, setLocalError] = useState<string | null>(null);
   const [uploadRecord, setUploadRecord] = useState<UploadRecord | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [mode, setMode] = useState<'idle' | 'scan'>('idle');
+  const isMobile = isMobileDevice();
+
+  const displayFile = value ?? localPreviewFile;
 
   useEffect(() => {
-    if (!value) {
+    if (!displayFile) {
       if (blobUrlRef.current) {
         URL.revokeObjectURL(blobUrlRef.current);
         blobUrlRef.current = null;
@@ -66,8 +112,8 @@ export function DocumentUpload({
       return;
     }
 
-    if (isPreviewableImage(value.type)) {
-      const objectUrl = resolveMediaPreviewUrl(value);
+    if (isPreviewableImage(displayFile.type)) {
+      const objectUrl = resolveMediaPreviewUrl(displayFile);
       if (!objectUrl) {
         setPreviewUrl(uploadRecord?.url ?? null);
         return;
@@ -87,7 +133,7 @@ export function DocumentUpload({
     }
 
     setPreviewUrl(uploadRecord?.url ?? null);
-  }, [value, uploadRecord?.url]);
+  }, [displayFile, uploadRecord?.url]);
 
   const displayError = error ?? localError;
   const showError = hasError || Boolean(displayError);
@@ -95,26 +141,35 @@ export function DocumentUpload({
   const handleFileSelection = async (file: File | null) => {
     if (!file) {
       setLocalError(null);
+      setLocalPreviewFile(null);
       onChange(null);
       onBlur?.();
+      setMode('idle');
       return;
     }
 
-    if (file.size <= 0) {
-      setLocalError('File must not be empty.');
+    const validationError = validateDocumentFile(file);
+    if (validationError) {
+      setLocalError(validationError);
+      setLocalPreviewFile(null);
       onChange(null);
       onBlur?.();
+      setMode('idle');
       return;
     }
 
     setLocalError(null);
-    onChange(file);
-    onBlur?.();
+    setMode('idle');
 
     if (!uploadPurpose) {
+      setLocalPreviewFile(null);
+      onChange(file);
+      onBlur?.();
       return;
     }
 
+    // Preview locally while upload runs; only commit to the form after persistence succeeds.
+    setLocalPreviewFile(file);
     setIsUploading(true);
 
     try {
@@ -148,6 +203,9 @@ export function DocumentUpload({
           setPreviewUrl(result.url);
         }
         onUploadRecordChange?.(queuedRecord);
+        setLocalPreviewFile(null);
+        onChange(file);
+        onBlur?.();
         return;
       }
 
@@ -156,10 +214,16 @@ export function DocumentUpload({
         setPreviewUrl(result.url);
       }
       onUploadRecordChange?.(result);
+      setLocalPreviewFile(null);
+      onChange(file);
+      onBlur?.();
     } catch {
-      setLocalError('Unable to upload document. Try again.');
+      setLocalError('Unable to upload document. Try again or choose a different file.');
       setUploadRecord(null);
       onUploadRecordChange?.(null);
+      setLocalPreviewFile(null);
+      onChange(null);
+      onBlur?.();
     } finally {
       setIsUploading(false);
     }
@@ -172,8 +236,10 @@ export function DocumentUpload({
 
   const handleRemove = async () => {
     setLocalError(null);
+    setLocalPreviewFile(null);
     onChange(null);
     onBlur?.();
+    setMode('idle');
 
     if (uploadRecord?.id) {
       await deleteUploadedFile(uploadRecord.id);
@@ -181,6 +247,24 @@ export function DocumentUpload({
 
     setUploadRecord(null);
     onUploadRecordChange?.(null);
+  };
+
+  const openScanFlow = () => {
+    setLocalError(null);
+
+    if (isMobile) {
+      cameraInputRef.current?.click();
+      return;
+    }
+
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+      setLocalError(
+        'Camera capture is not available on this device. Please upload the document instead.',
+      );
+      return;
+    }
+
+    setMode('scan');
   };
 
   return (
@@ -195,23 +279,40 @@ export function DocumentUpload({
         aria-describedby={helperId}
         onChange={handleInputChange}
       />
+      <input
+        ref={cameraInputRef}
+        id={`${id}-camera`}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        disabled={disabled || isUploading}
+        className="sr-only"
+        aria-hidden
+        tabIndex={-1}
+        onChange={handleInputChange}
+      />
 
-      {value ? (
+      {displayFile ? (
         <div className="overflow-hidden rounded-sm border border-border bg-card">
-          {previewUrl && isPreviewableImage(value.type) ? (
+          {previewUrl && isPreviewableImage(displayFile.type) ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={previewUrl}
-              alt={`Preview of ${value.name}`}
+              alt={`Preview of ${displayFile.name}`}
               className="mx-auto max-h-64 w-full object-contain"
             />
           ) : (
             <div className="px-wilms-4 py-wilms-6 text-center text-small text-text-muted">
-              {value.name} ({Math.round(value.size / 1024)} KB)
+              {displayFile.name} ({Math.round(displayFile.size / 1024)} KB)
             </div>
           )}
           <div className="border-t border-border px-wilms-3 py-wilms-2 text-small text-text-muted">
-            {uploadRecord ? 'Uploaded' : 'Selected'} · {value.name}
+            {isUploading
+              ? 'Uploading…'
+              : uploadRecord
+                ? 'Uploaded'
+                : 'Selected'}{' '}
+            · {displayFile.name}
           </div>
         </div>
       ) : (
@@ -223,26 +324,61 @@ export function DocumentUpload({
         >
           <p className="text-body font-semibold text-text-primary">{label}</p>
           <p id={helperId} className="mt-wilms-1 text-small text-text-muted">
-            Upload a PDF or image file. Maximum size depends on server policy.
+            Upload a PDF or image, or scan the ID with your camera. Maximum size depends on server
+            policy.
           </p>
         </div>
       )}
 
-      <div className="flex flex-col gap-wilms-2 sm:flex-row">
+      {!displayFile && mode === 'scan' && !isMobile ? (
+        <WebcamCapture
+          disabled={disabled || isUploading}
+          facingMode="environment"
+          idleHint="Open the camera to scan the ID document."
+          onCapture={(file) => void handleFileSelection(file)}
+          onUnavailable={() => {
+            setMode('idle');
+            setLocalError(
+              'Camera capture is not available on this device. Please upload the document instead.',
+            );
+          }}
+          onPermissionDenied={() => {
+            setMode('idle');
+            setLocalError(DOCUMENT_CAMERA_DENIED_MESSAGE);
+          }}
+        />
+      ) : null}
+
+      <div className="flex flex-col gap-wilms-2 sm:flex-row sm:flex-wrap">
         <Button
           type="button"
           variant="primary"
           size="sm"
+          className="w-full sm:w-auto"
           disabled={disabled || isUploading}
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => {
+            setMode('idle');
+            fileInputRef.current?.click();
+          }}
         >
-          {value ? 'Replace file' : 'Upload file'}
+          {displayFile ? 'Replace file' : 'Upload file'}
         </Button>
-        {value ? (
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className="w-full sm:w-auto"
+          disabled={disabled || isUploading}
+          onClick={openScanFlow}
+        >
+          {displayFile ? 'Rescan document' : 'Scan document'}
+        </Button>
+        {displayFile ? (
           <Button
             type="button"
             variant="ghost"
             size="sm"
+            className="w-full sm:w-auto"
             disabled={disabled || isUploading}
             onClick={() => void handleRemove()}
           >
