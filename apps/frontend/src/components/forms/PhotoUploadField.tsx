@@ -16,7 +16,7 @@ export interface PhotoUploadFieldProps {
   disabled?: boolean;
   registrationSessionId?: string;
   officerId?: string;
-  captureTarget?: 'borrower' | 'guarantor';
+  captureTarget?: 'borrower' | 'guarantor' | 'id_document';
   uploadPurpose?: import('@/types/upload').UploadPurpose;
   entityId?: string;
   onUploadRecordChange?: (record: import('@/types/upload').UploadRecord | null) => void;

@@ -48,13 +48,20 @@ describe('DocumentUpload', () => {
     });
   });
 
-  it('renders upload and scan actions', () => {
+  it('renders upload, scan, and capture-using-mobile actions on desktop', () => {
     render(
-      <DocumentUpload id="idDocument" label="National ID scan or photo" onChange={vi.fn()} />,
+      <DocumentUpload
+        id="idDocument"
+        label="National ID scan or photo"
+        onChange={vi.fn()}
+        registrationSessionId="reg-1"
+        officerId="officer-1"
+      />,
     );
 
     expect(screen.getByRole('button', { name: 'Upload file' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Scan document' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Capture using mobile' })).toBeInTheDocument();
     expect(document.getElementById('idDocument-camera')).toHaveAttribute('capture', 'environment');
   });
 

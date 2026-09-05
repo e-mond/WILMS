@@ -16,6 +16,7 @@ export interface GuarantorEligibilityInput {
   guarantorName: string;
   borrowerPhone?: string;
   borrowerIdNumber?: string;
+  excludeBorrowerId?: string;
   isGroupLeader?: boolean;
   isApprovedCommunityLeader?: boolean;
 }
@@ -25,7 +26,7 @@ export interface GuarantorEligibilityResult {
   activeGuaranteeCount: number;
   maxGuarantees: number;
   isDuplicateRegistration: boolean;
-  validationStatus: GuarantorValidationStatus;
+  validationStatus: GuarantorValidationStatus | 'INVALID';
   message?: string;
   eligibilityScore: number;
   riskRating: 'LOW' | 'MEDIUM' | 'HIGH';

@@ -58,7 +58,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { borrowerService, locationService } from '@/services';
 import type { RegistrationConflictReport } from '@/types/borrower-conflicts';
 import type { BorrowerRegistrationFormValues } from '@/types/borrower-registration';
+import { GuarantorSearchField } from '@/features/borrower-registration/components/GuarantorSearchField';
 import type { GuarantorEligibilityResult } from '@/types/guarantor-eligibility';
+import type { GuarantorLookupResult } from '@/types/guarantor-search';
 import { ApiError } from '@/types/api';
 
 const REGISTRATION_STEP_LABELS = [
@@ -115,6 +117,8 @@ export function BorrowerRegistrationWizard() {
   });
   const [warningsAcknowledged, setWarningsAcknowledged] = useState(false);
   const [guarantorEligibility, setGuarantorEligibility] = useState<GuarantorEligibilityResult | null>(null);
+  const [selectedGuarantor, setSelectedGuarantor] = useState<GuarantorLookupResult | null>(null);
+  const [isManualGuarantorEntry, setIsManualGuarantorEntry] = useState(false);
   const registrationSessionRef = useRef(
     searchParams.get('edit') ?? `reg-${user?.id ?? 'guest'}-${crypto.randomUUID()}`,
   );
@@ -782,6 +786,8 @@ export function BorrowerRegistrationWizard() {
                   onChange={field.onChange}
                   uploadPurpose={UPLOAD_PURPOSE.REGISTRATION_ATTACHMENT}
                   entityId={user?.id}
+                  registrationSessionId={registrationSessionId}
+                  officerId={user?.id}
                   onUploadRecordChange={(record) =>
                     setValue('idDocumentUploadId', record?.id, { shouldDirty: true })
                   }
@@ -1159,11 +1165,78 @@ export function BorrowerRegistrationWizard() {
             htmlFor="guarantorName"
             required
             error={errors.guarantorName?.message}
+            className="md:col-span-2"
+            hint="Search an existing guarantor or borrower, or enter details manually."
           >
-            <Input
+            <GuarantorSearchField
               id="guarantorName"
+              value={watchedGuarantorName}
               hasError={Boolean(errors.guarantorName)}
-              {...register('guarantorName')}
+              borrowerPhone={watch('phone')}
+              borrowerIdNumber={watch('idNumber')}
+              selected={selectedGuarantor}
+              isManualEntry={isManualGuarantorEntry}
+              onChange={(next) => {
+                setValue('guarantorName', next, { shouldDirty: true, shouldValidate: true });
+                if (selectedGuarantor) {
+                  setSelectedGuarantor(null);
+                  setGuarantorEligibility(null);
+                }
+              }}
+              onBlur={() => void trigger('guarantorName')}
+              onSelected={(lookup) => {
+                if (!lookup) {
+                  setSelectedGuarantor(null);
+                  setIsManualGuarantorEntry(false);
+                  setGuarantorEligibility(null);
+                  setValue('guarantorPhone', '', { shouldDirty: true });
+                  setValue('guarantorIdType', '', { shouldDirty: true });
+                  setValue('guarantorIdNumber', '', { shouldDirty: true });
+                  setValue('guarantorPhoto', null, { shouldDirty: true });
+                  setValue('guarantorPhotoUploadId', undefined, { shouldDirty: true });
+                  return;
+                }
+
+                setIsManualGuarantorEntry(false);
+                setSelectedGuarantor(lookup);
+                setGuarantorEligibility(lookup.eligibility);
+                setValue('guarantorName', lookup.name, { shouldDirty: true, shouldValidate: true });
+                setValue('guarantorPhone', lookup.phone, { shouldDirty: true, shouldValidate: true });
+                if (lookup.idType) {
+                  setValue('guarantorIdType', lookup.idType as typeof BORROWER_ID_TYPE[keyof typeof BORROWER_ID_TYPE], {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                }
+                if (lookup.idNumber) {
+                  setValue('guarantorIdNumber', lookup.idNumber, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                }
+                if (lookup.photoUploadId) {
+                  setValue('guarantorPhotoUploadId', lookup.photoUploadId, { shouldDirty: true });
+                  setValue('guarantorPhoto', null, { shouldDirty: true });
+                }
+                if (lookup.isGroupLeader) {
+                  setValue('guarantorRelationship', 'Group Leader', {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                }
+                clearErrors(['guarantorPhone', 'guarantorName', 'guarantorIdNumber']);
+                if (!lookup.eligibility.isEligible) {
+                  setError('guarantorPhone', {
+                    type: 'manual',
+                    message: lookup.eligibility.message ?? 'Guarantor is not eligible.',
+                  });
+                }
+              }}
+              onManualEntry={() => {
+                setSelectedGuarantor(null);
+                setIsManualGuarantorEntry(true);
+                setGuarantorEligibility(null);
+              }}
             />
           </FormField>
           <FormField
@@ -1176,6 +1249,7 @@ export function BorrowerRegistrationWizard() {
               id="guarantorPhone"
               type="tel"
               hasError={Boolean(errors.guarantorPhone)}
+              readOnly={Boolean(selectedGuarantor)}
               {...register('guarantorPhone')}
             />
           </FormField>
@@ -1188,6 +1262,7 @@ export function BorrowerRegistrationWizard() {
             <Select
               id="guarantorIdType"
               hasError={Boolean(errors.guarantorIdType)}
+              disabled={Boolean(selectedGuarantor)}
               {...register('guarantorIdType')}
             >
               <option value="">Select ID type</option>
@@ -1207,6 +1282,7 @@ export function BorrowerRegistrationWizard() {
             <Input
               id="guarantorIdNumber"
               hasError={Boolean(errors.guarantorIdNumber)}
+              readOnly={Boolean(selectedGuarantor)}
               placeholder={
                 watchedGuarantorIdType
                   ? BORROWER_ID_PLACEHOLDERS[
@@ -1216,6 +1292,7 @@ export function BorrowerRegistrationWizard() {
               }
               {...register('guarantorIdNumber', {
                 onBlur: (event) => {
+                  if (selectedGuarantor) return;
                   if (getValues('guarantorIdType') === BORROWER_ID_TYPE.GHANA_CARD) {
                     setValue('guarantorIdNumber', formatGhanaCardInput(event.target.value), {
                       shouldDirty: true,
@@ -1248,9 +1325,14 @@ export function BorrowerRegistrationWizard() {
           <FormField
             label="Guarantor passport photo"
             htmlFor="guarantorPhoto"
-            required
+            required={!selectedGuarantor?.photoUploadId}
             error={errors.guarantorPhoto?.message}
             className="md:col-span-2"
+            hint={
+              selectedGuarantor?.photoUploadId
+                ? 'Photo loaded from the existing WILMS record.'
+                : undefined
+            }
           >
             <Controller
               control={control}
@@ -1264,6 +1346,7 @@ export function BorrowerRegistrationWizard() {
                   error={errors.guarantorPhoto?.message}
                   onBlur={field.onBlur}
                   onChange={field.onChange}
+                  disabled={Boolean(selectedGuarantor?.photoUploadId)}
                   registrationSessionId={registrationSessionId}
                   officerId={user?.id}
                   captureTarget="guarantor"
@@ -1286,6 +1369,18 @@ export function BorrowerRegistrationWizard() {
             >
               {guarantorEligibility.message ??
                 `Current Guarantees: ${guarantorEligibility.activeGuaranteeCount} of ${guarantorEligibility.maxGuarantees}`}
+            </div>
+          ) : null}
+          {selectedGuarantor && selectedGuarantor.guaranteedBorrowers.length > 0 ? (
+            <div className="md:col-span-2 rounded-sm border border-border bg-card px-wilms-3 py-wilms-2 text-small text-text-muted">
+              <p className="font-semibold text-text-primary">Currently guaranteeing</p>
+              <ul className="mt-wilms-1 list-disc pl-wilms-4">
+                {selectedGuarantor.guaranteedBorrowers.slice(0, 5).map((entry) => (
+                  <li key={entry.displayId}>
+                    {entry.fullName} ({entry.displayId}) · {entry.community}
+                  </li>
+                ))}
+              </ul>
             </div>
           ) : null}
         </section>
@@ -1410,6 +1505,7 @@ export function BorrowerRegistrationWizard() {
         <RegistrationReviewPanel
           values={getValues()}
           guarantorEligibility={guarantorEligibility}
+          selectedGuarantor={selectedGuarantor}
           officerName={user?.displayName ?? 'Registration Officer'}
         />
       ) : null}
