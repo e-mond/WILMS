@@ -103,7 +103,10 @@ export function RegistrationReviewPanel({
         </div>
         <WilmsExportActions
           document={exportDocument}
-          filenameBase={buildBrandedExportFilenameBase(['Borrower_Registration', values.fullName])}
+          filenameBase={buildBrandedExportFilenameBase([
+            'Borrower_Registration_Review',
+            values.fullName,
+          ])}
           permissions={[PERMISSION.REGISTER_BORROWERS]}
           formats={[...REGISTRATION_AGREEMENT_EXPORT_FORMATS]}
         />

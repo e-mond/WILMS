@@ -388,6 +388,8 @@ function createPrintFrame(html: string): HTMLIFrameElement | null {
     border: '0',
     opacity: '0',
     pointerEvents: 'none',
+    background: '#ffffff',
+    colorScheme: 'light',
   });
 
   window.document.body.appendChild(iframe);
@@ -402,6 +404,17 @@ function createPrintFrame(html: string): HTMLIFrameElement | null {
   frameDocument.open();
   frameDocument.write(html);
   frameDocument.close();
+
+  try {
+    frameDocument.documentElement.style.colorScheme = 'light';
+    frameDocument.documentElement.style.background = '#ffffff';
+    if (frameDocument.body) {
+      frameDocument.body.style.background = '#ffffff';
+      frameDocument.body.style.color = '#1a1a1a';
+    }
+  } catch {
+    // CSS embedded in the HTML still isolates print colors.
+  }
 
   return iframe;
 }
