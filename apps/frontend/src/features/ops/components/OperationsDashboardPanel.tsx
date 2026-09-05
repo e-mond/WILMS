@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState, useTransition } from 'react';
+import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { BookOpen } from 'lucide-react';
@@ -14,6 +14,8 @@ import { Textarea } from '@/components/ui/Textarea';
 import { ExecutiveKpiGrid } from '@/components/layout/executive';
 import { PERMISSION } from '@/constants/permissions';
 import { DOCUMENTATION_STATS } from '@/features/documentation/catalog';
+import { OperationsAsidePanel } from '@/features/ops/components/OperationsAsidePanel';
+import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { useToast } from '@/hooks/useToast';
 import { intelligenceService } from '@/services/intelligenceService';
 import { opsService, type OpsStatusReport, type OpsSurfaceState, type OpsWorkerLastRun } from '@/services/opsService';
@@ -125,6 +127,8 @@ export function OperationsDashboardPanel() {
   const [report, setReport] = useState<OpsStatusReport | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const asideContent = useMemo(() => <OperationsAsidePanel />, []);
+  useShellAsideContent(asideContent);
 
   const load = useCallback(() => {
     startTransition(async () => {

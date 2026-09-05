@@ -75,6 +75,7 @@ describe('PaymentEditSection', () => {
       </TestQueryProvider>,
     );
 
+    expect(screen.getByText(/Request payment correction/i)).toBeInTheDocument();
     expect(screen.getByText(/Immutable ledger/i)).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /Request Super Admin payment adjustment/i }),

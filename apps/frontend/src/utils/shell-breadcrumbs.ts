@@ -47,7 +47,7 @@ const NESTED_BREADCRUMB_PARENTS: Array<{
   },
   {
     test: (pathname) => pathname.startsWith('/collector/') && pathname !== '/collector/dashboard',
-    parent: { label: 'Dashboard', href: '/collector/dashboard' },
+    parent: { label: 'Field', href: '/collector/dashboard' },
   },
 ];
 
@@ -68,12 +68,17 @@ export function resolveShellBreadcrumbs(pathname: string, search = ''): ShellBre
   }
 
   if (pathname === '/collector/dashboard') {
-    return [{ label: 'Dashboard' }];
+    return [{ label: 'Field' }];
   }
 
   const nestedParent = NESTED_BREADCRUMB_PARENTS.find((entry) => entry.test(pathname));
 
   if (nestedParent) {
+    // Collector portal: Field > Page (no double Dashboard)
+    if (pathname.startsWith('/collector/')) {
+      return [nestedParent.parent, { label: resolveShellPageTitle(pathname, search) }];
+    }
+
     return [
       { label: 'Dashboard', href: '/dashboard' },
       nestedParent.parent,
