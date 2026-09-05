@@ -26,6 +26,6 @@ describe('resolveShellPageTitle', () => {
     expect(resolveShellPageTitle('/borrowers')).toBe('Borrowers');
     expect(resolveShellPageTitle('/borrowers', 'status=PENDING')).toBe('Applications');
     expect(resolveShellPageTitle('/records')).toBe('Borrower Records');
-    expect(resolveShellPageTitle('/borrower-updates')).toBe('Update Requests');
+    expect(resolveShellPageTitle('/borrower-updates')).toBe('Requests');
   });
 });
