@@ -4,7 +4,6 @@ import { ReportsIndexPanel } from '@/features/reports/components/ReportsIndexPan
 import { TestQueryProvider } from '@/tests/utils/test-query-client';
 
 const mockListAvailableReports = vi.hoisted(() => vi.fn());
-const mockGetDashboardSummary = vi.hoisted(() => vi.fn());
 const mockGetReportsHubMetadata = vi.hoisted(() => vi.fn());
 
 vi.mock('@/services', () => ({
@@ -12,25 +11,19 @@ vi.mock('@/services', () => ({
     listAvailableReports: mockListAvailableReports,
     getReportsHubMetadata: mockGetReportsHubMetadata,
   },
-  dashboardService: {
-    getDashboardSummary: mockGetDashboardSummary,
-  },
 }));
 
 import reportServiceMock from '@/services/mock/reportService.mock';
-import dashboardServiceMock from '@/services/mock/dashboardService.mock';
 
 describe('ReportsIndexPanel responsive layout', () => {
   beforeEach(() => {
     mockListAvailableReports.mockReset();
-    mockGetDashboardSummary.mockReset();
     mockGetReportsHubMetadata.mockReset();
     mockListAvailableReports.mockImplementation(() => reportServiceMock.listAvailableReports());
-    mockGetDashboardSummary.mockImplementation(() => dashboardServiceMock.getDashboardSummary());
     mockGetReportsHubMetadata.mockImplementation(() => reportServiceMock.getReportsHubMetadata());
   });
 
-  it('renders card grid for mobile-friendly report browsing', async () => {
+  it('renders the reports table without a mobile card grid', async () => {
     const { container } = render(
       <TestQueryProvider>
         <ReportsIndexPanel />
@@ -40,9 +33,8 @@ describe('ReportsIndexPanel responsive layout', () => {
     expect(await screen.findByRole('link', { name: 'Loan Portfolio Report' })).toBeInTheDocument();
 
     const table = container.querySelector('table');
-    expect(table?.closest('div')).toHaveClass('hidden');
-    expect(table?.closest('div')).toHaveClass('md:block');
-
-    expect(container.querySelector('ul')).toHaveClass('sm:grid-cols-2');
+    expect(table).toBeTruthy();
+    expect(table?.closest('div')).not.toHaveClass('hidden');
+    expect(container.querySelector('ul.sm\\:grid-cols-2')).toBeNull();
   });
 });
