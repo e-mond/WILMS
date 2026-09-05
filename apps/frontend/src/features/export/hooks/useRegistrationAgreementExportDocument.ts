@@ -66,6 +66,12 @@ export function useRegistrationAgreementExportDocument(
       officerName: officerName || detail.registeredByOfficerName,
       agreementMedia,
       generatedBy,
+      meta: {
+        registrationReference: detail.displayId,
+        applicationStatus: detail.status,
+        hasIdDocument: Boolean(detail.idDocumentUrl),
+        documentTitle: 'Borrower Registration Review',
+      },
     });
   }, [agreementMedia, detail, generatedBy, legalConfig, officerName]);
 }
