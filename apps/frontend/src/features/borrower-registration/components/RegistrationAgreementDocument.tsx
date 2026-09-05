@@ -12,11 +12,13 @@ export interface RegistrationAgreementDocumentProps {
 
 function FieldGrid({ rows }: { rows: { label: string; value: string }[] }) {
   return (
-    <dl className="grid gap-x-wilms-4 gap-y-wilms-2 sm:grid-cols-2">
+    <dl className="grid gap-x-wilms-6 gap-y-wilms-3 sm:grid-cols-2">
       {rows.map((row) => (
-        <div key={row.label} className="border-b border-border/60 pb-wilms-2">
+        <div key={row.label} className="rounded-sm border border-border/70 bg-background/40 px-wilms-3 py-wilms-2">
           <dt className="text-small font-semibold uppercase tracking-wide text-text-muted">{row.label}</dt>
-          <dd className="mt-wilms-1 text-body text-text-primary">{row.value}</dd>
+          <dd className="mt-wilms-1 whitespace-pre-wrap text-body leading-relaxed text-text-primary">
+            {row.value || '—'}
+          </dd>
         </div>
       ))}
     </dl>
@@ -25,7 +27,7 @@ function FieldGrid({ rows }: { rows: { label: string; value: string }[] }) {
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="border-b border-border pb-wilms-2 text-center text-heading-2 font-bold uppercase tracking-wide text-brand-primary">
+    <h2 className="border-b-2 border-brand-primary pb-wilms-2 text-left text-heading-3 font-bold uppercase tracking-wide text-brand-primary">
       {children}
     </h2>
   );
@@ -125,16 +127,21 @@ export function RegistrationAgreementDocument({
           isPrint && 'print:break-after-page',
         )}
       >
-        <header className="border-b-2 border-brand-primary pb-wilms-5 text-center">
+        <header className="border-b-2 border-brand-primary bg-[color-mix(in_srgb,var(--color-brand-primary)_6%,var(--color-card))] px-wilms-4 py-wilms-5 text-center sm:px-wilms-6">
           <p className="text-display font-bold tracking-[0.2em] text-brand-primary">WILMS</p>
-          <p className="mt-wilms-2 text-body font-semibold uppercase tracking-wide text-text-primary">
+          <p className="mt-wilms-1 text-small font-semibold uppercase tracking-wide text-text-muted">
+            Women&apos;s Interest-Free Loan Management System
+          </p>
+          <p className="mt-wilms-3 text-body font-semibold uppercase tracking-wide text-text-primary">
             {legal.programName}
           </p>
-          <h1 className="mt-wilms-3 text-heading-1 font-bold uppercase tracking-wide text-text-primary">
+          <h1 className="mt-wilms-3 text-heading-1 font-bold uppercase tracking-wide text-brand-primary">
             {legal.formTitle}
           </h1>
-          <p className="mx-auto mt-wilms-4 max-w-2xl text-body text-text-primary">{legal.instructionText}</p>
-          <p className="mx-auto mt-wilms-3 max-w-2xl text-small italic text-text-muted">
+          <p className="mx-auto mt-wilms-4 max-w-2xl text-body leading-relaxed text-text-primary">
+            {legal.instructionText}
+          </p>
+          <p className="mx-auto mt-wilms-3 max-w-2xl text-small italic leading-relaxed text-text-muted">
             {legal.programDeclaration}
           </p>
         </header>
@@ -186,11 +193,13 @@ export function RegistrationAgreementDocument({
           </div>
         </section>
 
-        <section className="rounded-sm border border-border bg-background px-wilms-4 py-wilms-4">
-          <h2 className="text-center text-body font-bold uppercase tracking-wide text-brand-primary">
+        <section className="rounded-sm border border-[color-mix(in_srgb,var(--color-brand-primary)_25%,transparent)] bg-[color-mix(in_srgb,var(--color-brand-primary)_6%,var(--color-background))] px-wilms-4 py-wilms-4">
+          <h2 className="text-left text-body font-bold uppercase tracking-wide text-brand-primary">
             Guarantor Declaration
           </h2>
-          <p className="mt-wilms-3 text-body text-text-primary">{legal.guarantorDeclaration}</p>
+          <p className="mt-wilms-3 whitespace-pre-wrap text-body leading-relaxed text-text-primary">
+            {legal.guarantorDeclaration}
+          </p>
           <div className="mt-wilms-4">
             <SignatureBlock
               label="Guarantor"
@@ -203,11 +212,13 @@ export function RegistrationAgreementDocument({
           </div>
         </section>
 
-        <section className="rounded-sm border border-border bg-background px-wilms-4 py-wilms-4">
-          <h2 className="text-center text-body font-bold uppercase tracking-wide text-brand-primary">
+        <section className="rounded-sm border border-[color-mix(in_srgb,var(--color-brand-primary)_25%,transparent)] bg-[color-mix(in_srgb,var(--color-brand-primary)_6%,var(--color-background))] px-wilms-4 py-wilms-4">
+          <h2 className="text-left text-body font-bold uppercase tracking-wide text-brand-primary">
             Borrower Declaration
           </h2>
-          <p className="mt-wilms-3 text-body text-text-primary">{legal.borrowerDeclaration}</p>
+          <p className="mt-wilms-3 whitespace-pre-wrap text-body leading-relaxed text-text-primary">
+            {legal.borrowerDeclaration}
+          </p>
           <div className="mt-wilms-4">
             <SignatureBlock
               label="Borrower"
@@ -229,12 +240,16 @@ export function RegistrationAgreementDocument({
       >
         <section>
           <SectionHeading>Key Terms &amp; Enforcement</SectionHeading>
-          <p className="mt-wilms-4 whitespace-pre-wrap text-body text-text-primary">{legal.keyTerms}</p>
+          <p className="mt-wilms-4 whitespace-pre-wrap text-body leading-relaxed text-text-primary">
+            {legal.keyTerms}
+          </p>
         </section>
 
         <section>
           <SectionHeading>Legal Notice</SectionHeading>
-          <p className="mt-wilms-4 whitespace-pre-wrap text-body text-text-primary">{legal.legalNotice}</p>
+          <p className="mt-wilms-4 whitespace-pre-wrap text-body leading-relaxed text-text-primary">
+            {legal.legalNotice}
+          </p>
         </section>
 
         <section className="border-t border-border pt-wilms-4">

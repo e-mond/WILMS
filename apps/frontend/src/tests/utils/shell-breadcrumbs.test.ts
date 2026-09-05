@@ -17,8 +17,8 @@ describe('resolveShellBreadcrumbs', () => {
     ]);
   });
 
-  it('returns a single dashboard crumb on collector dashboard', () => {
-    expect(resolveShellBreadcrumbs('/collector/dashboard')).toEqual([{ label: 'Dashboard' }]);
+  it('returns a single Field crumb on collector dashboard', () => {
+    expect(resolveShellBreadcrumbs('/collector/dashboard')).toEqual([{ label: 'Field' }]);
   });
 
   it('adds nested parents for report detail routes', () => {
@@ -29,10 +29,19 @@ describe('resolveShellBreadcrumbs', () => {
     ]);
   });
 
-  it('adds collector parent for field sub-routes', () => {
-    expect(resolveShellBreadcrumbs('/collector/security')[2]).toEqual({
-      label: 'Device Security',
-    });
+  it('uses Field parent for collector sub-routes without a double Dashboard crumb', () => {
+    expect(resolveShellBreadcrumbs('/collector/security')).toEqual([
+      { label: 'Field', href: '/collector/dashboard' },
+      { label: 'Device Security' },
+    ]);
+    expect(resolveShellBreadcrumbs('/collector/expenses')).toEqual([
+      { label: 'Field', href: '/collector/dashboard' },
+      { label: 'Expenses' },
+    ]);
+    expect(resolveShellBreadcrumbs('/collector/settings')).toEqual([
+      { label: 'Field', href: '/collector/dashboard' },
+      { label: 'Settings' },
+    ]);
   });
 
   it('returns dashboard and collectors crumbs on collectors management', () => {

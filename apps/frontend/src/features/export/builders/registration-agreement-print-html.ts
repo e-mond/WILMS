@@ -77,47 +77,208 @@ function renderSignatureBlock(
 }
 
 const REGISTRATION_PRINT_STYLES = `
-  @page { size: A4 portrait; margin: 10mm 12mm 14mm 12mm; }
+  @page { size: A4 portrait; margin: 12mm 14mm 16mm 14mm; }
   * { box-sizing: border-box; }
-  body { margin: 0; color: #1a1a1a; font-family: "DM Sans", Arial, sans-serif; font-size: 9pt; line-height: 1.4; }
+  body {
+    margin: 0;
+    color: #1a1a1a;
+    font-family: "DM Sans", "Segoe UI", Arial, sans-serif;
+    font-size: 10pt;
+    line-height: 1.55;
+    background: #fff;
+  }
+  .brand-bar {
+    height: 6px;
+    background: linear-gradient(90deg, #0f6e56 0%, #1a9a78 55%, #0f6e56 100%);
+    margin: 0 0 14px;
+  }
   .page { break-inside: avoid; }
   .page-break { break-after: page; page-break-after: always; }
-  .header { border-bottom: 2px solid #0f6e56; padding-bottom: 10px; text-align: center; }
-  .header .logo { font-family: Georgia, serif; font-size: 22pt; letter-spacing: 0.18em; color: #0f6e56; margin: 0; }
-  .header .program { margin: 6px 0 0; font-size: 10pt; font-weight: 700; text-transform: uppercase; }
-  .header h1 { margin: 8px 0 0; font-size: 13pt; font-weight: 700; text-transform: uppercase; }
-  .header .instruction { margin: 10px auto 0; max-width: 95%; font-size: 9pt; }
-  .header .declaration { margin: 8px auto 0; max-width: 95%; font-size: 8.5pt; font-style: italic; color: #5c5c5c; }
-  .section { margin-top: 12px; break-inside: avoid; }
-  .section-title { border-bottom: 1px solid #d3d1c7; padding-bottom: 4px; margin: 0 0 8px; text-align: center; font-size: 10.5pt; font-weight: 700; text-transform: uppercase; color: #0f6e56; }
+  .header {
+    border: 1px solid #d3d1c7;
+    border-top: 3px solid #0f6e56;
+    background: #f7faf8;
+    padding: 14px 16px 16px;
+    text-align: center;
+  }
+  .header .logo {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 26pt;
+    letter-spacing: 0.22em;
+    color: #0f6e56;
+    margin: 0;
+    font-weight: 700;
+  }
+  .header .system {
+    margin: 4px 0 0;
+    font-size: 8.5pt;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #5c5c5c;
+  }
+  .header .program {
+    margin: 10px 0 0;
+    font-size: 11pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #1a1a1a;
+  }
+  .header h1 {
+    margin: 8px 0 0;
+    font-size: 14pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #0f6e56;
+  }
+  .header .instruction {
+    margin: 12px auto 0;
+    max-width: 95%;
+    font-size: 9.5pt;
+    line-height: 1.5;
+  }
+  .header .declaration {
+    margin: 10px auto 0;
+    max-width: 95%;
+    font-size: 9pt;
+    font-style: italic;
+    color: #5c5c5c;
+    line-height: 1.5;
+  }
+  .section { margin-top: 16px; break-inside: avoid; }
+  .section-title {
+    border-bottom: 2px solid #0f6e56;
+    padding-bottom: 5px;
+    margin: 0 0 10px;
+    text-align: left;
+    font-size: 11pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #0f6e56;
+    letter-spacing: 0.03em;
+  }
   .field-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-  .field-cell { width: 50%; vertical-align: top; padding: 4px 8px 8px 0; border-bottom: 1px solid #eceae3; }
+  .field-cell {
+    width: 50%;
+    vertical-align: top;
+    padding: 6px 10px 10px 0;
+    border-bottom: 1px solid #eceae3;
+  }
   .field-cell-empty { border-bottom: none; }
-  .field-label { display: block; font-size: 7.5pt; font-weight: 700; text-transform: uppercase; color: #5c5c5c; margin-bottom: 2px; }
-  .field-value { display: block; font-size: 9pt; color: #1a1a1a; word-break: break-word; white-space: pre-wrap; }
-  .photo-row { text-align: center; margin: 8px 0; }
-  .photo-passport { width: 28mm; height: 36mm; object-fit: cover; border: 2px solid #0f6e56; }
-  .photo-guarantor { width: 24mm; height: 30mm; object-fit: cover; border: 1px solid #d3d1c7; }
-  .photo-placeholder { display: inline-flex; align-items: center; justify-content: center; width: 28mm; height: 36mm; border: 2px dashed #0f6e56; font-size: 8pt; color: #5c5c5c; }
+  .field-label {
+    display: block;
+    font-size: 8pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #5c5c5c;
+    margin-bottom: 3px;
+  }
+  .field-value {
+    display: block;
+    font-size: 10pt;
+    color: #1a1a1a;
+    word-break: break-word;
+    white-space: pre-wrap;
+    line-height: 1.45;
+  }
+  .photo-row { text-align: center; margin: 10px 0 4px; }
+  .photo-passport {
+    width: 30mm;
+    height: 38mm;
+    object-fit: cover;
+    border: 2px solid #0f6e56;
+    background: #fff;
+  }
+  .photo-guarantor {
+    width: 24mm;
+    height: 30mm;
+    object-fit: cover;
+    border: 1px solid #0f6e56;
+    background: #fff;
+  }
+  .photo-placeholder {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30mm;
+    height: 38mm;
+    border: 2px dashed #0f6e56;
+    font-size: 8pt;
+    color: #5c5c5c;
+  }
   .guarantor-layout { width: 100%; border-collapse: collapse; }
   .guarantor-layout td { vertical-align: top; }
-  .guarantor-photo-cell { width: 30mm; padding-right: 10px; }
-  .declaration-box { border: 1px solid #d3d1c7; background: #faf9f6; padding: 10px; margin-top: 10px; break-inside: avoid; }
-  .declaration-box h3 { margin: 0 0 6px; text-align: center; font-size: 9.5pt; text-transform: uppercase; color: #0f6e56; }
-  .signature-block { margin-top: 8px; }
-  .signature-label { text-align: center; font-size: 8pt; font-weight: 700; text-transform: uppercase; color: #5c5c5c; margin: 0 0 6px; }
+  .guarantor-photo-cell { width: 30mm; padding-right: 12px; }
+  .declaration-box {
+    border: 1px solid #c9e0d7;
+    background: #f7faf8;
+    padding: 12px 14px;
+    margin-top: 14px;
+    break-inside: avoid;
+  }
+  .declaration-box h3 {
+    margin: 0 0 8px;
+    text-align: left;
+    font-size: 10.5pt;
+    text-transform: uppercase;
+    color: #0f6e56;
+    letter-spacing: 0.03em;
+  }
+  .declaration-box p {
+    margin: 0;
+    font-size: 9.5pt;
+    line-height: 1.55;
+    white-space: pre-wrap;
+  }
+  .signature-block { margin-top: 12px; }
+  .signature-label {
+    text-align: left;
+    font-size: 8.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #5c5c5c;
+    margin: 0 0 8px;
+  }
   .signature-table { width: 100%; border-collapse: collapse; }
-  .signature-table td { width: 50%; vertical-align: top; padding: 0 6px; }
-  .signature-caption { margin: 0 0 4px; text-align: center; font-size: 8pt; color: #5c5c5c; }
-  .signature-line, .date-line, .thumbprint-note { min-height: 16mm; border-bottom: 2px dashed #5c5c5c; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 2px; font-size: 8pt; color: #5c5c5c; }
-  .signature-image { width: 100%; height: 16mm; object-fit: contain; border: 1px solid #d3d1c7; background: #fff; }
-  .metadata { border: 1px solid #d3d1c7; background: #faf9f6; padding: 10px; margin-top: 12px; }
+  .signature-table td { width: 50%; vertical-align: top; padding: 0 8px 0 0; }
+  .signature-caption { margin: 0 0 4px; text-align: left; font-size: 8pt; color: #5c5c5c; }
+  .signature-line, .date-line, .thumbprint-note {
+    min-height: 18mm;
+    border-bottom: 2px dashed #5c5c5c;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    padding-bottom: 2px;
+    font-size: 8pt;
+    color: #5c5c5c;
+  }
+  .signature-image {
+    width: 100%;
+    height: 18mm;
+    object-fit: contain;
+    border: 1px solid #d3d1c7;
+    background: #fff;
+  }
+  .metadata {
+    border: 1px solid #c9e0d7;
+    background: #f7faf8;
+    padding: 12px 14px;
+    margin-top: 16px;
+  }
   .metadata-table { width: 100%; border-collapse: collapse; }
-  .metadata-table td { padding: 4px 8px 4px 0; vertical-align: top; width: 50%; }
-  .metadata-label { font-weight: 700; color: #5c5c5c; display: block; font-size: 8pt; }
-  .metadata-value { display: block; margin-top: 2px; }
-  .footer { margin-top: 12px; padding-top: 8px; border-top: 1px solid #d3d1c7; text-align: center; font-size: 7.5pt; color: #5c5c5c; }
-  .legal-text { white-space: pre-wrap; margin: 6px 0 0; font-size: 9pt; }
+  .metadata-table td { padding: 6px 10px 6px 0; vertical-align: top; width: 50%; }
+  .metadata-label { font-weight: 700; color: #5c5c5c; display: block; font-size: 8pt; text-transform: uppercase; }
+  .metadata-value { display: block; margin-top: 2px; font-size: 10pt; }
+  .footer {
+    margin-top: 16px;
+    padding-top: 10px;
+    border-top: 2px solid #0f6e56;
+    text-align: center;
+    font-size: 8pt;
+    color: #5c5c5c;
+    letter-spacing: 0.02em;
+  }
+  .legal-text { white-space: pre-wrap; margin: 8px 0 0; font-size: 9.5pt; line-height: 1.55; }
 `;
 
 export function buildRegistrationAgreementPrintHtml(content: RegistrationAgreementContent): string {
@@ -125,8 +286,10 @@ export function buildRegistrationAgreementPrintHtml(content: RegistrationAgreeme
 
   const pageOne = `
     <div class="page page-break">
+      <div class="brand-bar" aria-hidden="true"></div>
       <header class="header">
         <p class="logo">WILMS</p>
+        <p class="system">Women's Interest-Free Loan Management System</p>
         <p class="program">${escapeHtml(legal.programName)}</p>
         <h1>${escapeHtml(legal.formTitle)}</h1>
         <p class="instruction">${escapeHtml(legal.instructionText)}</p>
@@ -173,11 +336,16 @@ export function buildRegistrationAgreementPrintHtml(content: RegistrationAgreeme
           dateLabel: content.signedDate,
         })}
       </section>
+
+      <footer class="footer">
+        WILMS · Women's Interest-Free Loan Management System · Registration Agreement · Page 1 of 2
+      </footer>
     </div>
   `;
 
   const pageTwo = `
     <div class="page">
+      <div class="brand-bar" aria-hidden="true"></div>
       <section class="section">
         <h2 class="section-title">Key Terms &amp; Enforcement</h2>
         <p class="legal-text">${escapeHtml(legal.keyTerms)}</p>
@@ -210,10 +378,10 @@ export function buildRegistrationAgreementPrintHtml(content: RegistrationAgreeme
       </section>
 
       <footer class="footer">
-        WILMS · Women&apos;s Interest-Free Loan Management System · Registration Agreement · Page 2 of 2
+        WILMS · Women's Interest-Free Loan Management System · Registration Agreement · Page 2 of 2
       </footer>
     </div>
   `;
 
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8" /><title>${escapeHtml(legal.formTitle)}</title><style>${REGISTRATION_PRINT_STYLES}</style></head><body>${pageOne}${pageTwo}</body></html>`;
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8" /><title>${escapeHtml(legal.formTitle)} · WILMS</title><style>${REGISTRATION_PRINT_STYLES}</style></head><body>${pageOne}${pageTwo}</body></html>`;
 }

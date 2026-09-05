@@ -373,86 +373,102 @@ export function PaymentEntryPanel({ borrowerId }: PaymentEntryPanelProps) {
               referenceDate={data.referenceDate}
             />
           ) : (
-            <PermissionGate permission={PERMISSION.RECORD_COLLECTIONS}>
-              <div className="space-y-wilms-3">
-                <Button
-                  type="button"
-                  variant="primary"
-                  className="w-full"
-                  disabled={!data.canAcceptPayment || maxWeeks < 1}
-                  onClick={() => openPayConfirm(1, 'Pay current week')}
-                >
-                  Pay current week (<CurrencyAmount value={weekly} />)
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="w-full"
-                  disabled={!data.canAcceptPayment || maxWeeks < 2}
-                  onClick={() => openPayConfirm(2, 'Double payment')}
-                >
-                  Pay current + last week (Double) (
-                  <CurrencyAmount value={weekly * 2} />)
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="w-full"
-                  disabled={!data.canAcceptPayment || maxWeeks < 1}
-                  onClick={() => openPayConfirm(maxWeeks, 'Pay all payable weeks')}
-                >
-                  Pay all missed / payable weeks (
-                  <CurrencyAmount
-                    value={
-                      data.totalPayableAmountPesewas ?? data.totalOutstandingObligationsPesewas
-                    }
-                  />
-                  )
-                </Button>
-                <div className="flex flex-col gap-wilms-2 sm:flex-row sm:items-end">
-                  <label className="block flex-1 space-y-wilms-1">
-                    <span className="text-small font-semibold text-text-primary">
-                      Custom weeks (1–{Math.max(maxWeeks, 1)})
-                    </span>
-                    <Input
-                      type="number"
-                      min={1}
-                      max={Math.max(maxWeeks, 1)}
-                      value={customWeeks}
-                      onChange={(event) => setCustomWeeks(event.target.value)}
-                    />
-                  </label>
+            <>
+              <PermissionGate permission={PERMISSION.RECORD_COLLECTIONS}>
+                <div className="space-y-wilms-3">
+                  <Button
+                    type="button"
+                    variant="primary"
+                    className="w-full"
+                    disabled={!data.canAcceptPayment || maxWeeks < 1}
+                    onClick={() => openPayConfirm(1, 'Pay current week')}
+                  >
+                    Pay current week (<CurrencyAmount value={weekly} />)
+                  </Button>
                   <Button
                     type="button"
                     variant="secondary"
-                    disabled={!data.canAcceptPayment || maxWeeks < 1}
-                    onClick={() =>
-                      openPayConfirm(customWeeksNumber, `Pay ${customWeeksNumber} week(s)`)
-                    }
+                    className="w-full"
+                    disabled={!data.canAcceptPayment || maxWeeks < 2}
+                    onClick={() => openPayConfirm(2, 'Double payment')}
                   >
-                    Pay custom (
-                    <CurrencyAmount value={weekly * customWeeksNumber} />)
+                    Pay current + last week (Double) (
+                    <CurrencyAmount value={weekly * 2} />)
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="w-full"
+                    disabled={!data.canAcceptPayment || maxWeeks < 1}
+                    onClick={() => openPayConfirm(maxWeeks, 'Pay all payable weeks')}
+                  >
+                    Pay all missed / payable weeks (
+                    <CurrencyAmount
+                      value={
+                        data.totalPayableAmountPesewas ?? data.totalOutstandingObligationsPesewas
+                      }
+                    />
+                    )
+                  </Button>
+                  <div className="flex flex-col gap-wilms-2 sm:flex-row sm:items-end">
+                    <label className="block flex-1 space-y-wilms-1">
+                      <span className="text-small font-semibold text-text-primary">
+                        Custom weeks (1–{Math.max(maxWeeks, 1)})
+                      </span>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={Math.max(maxWeeks, 1)}
+                        value={customWeeks}
+                        onChange={(event) => setCustomWeeks(event.target.value)}
+                      />
+                    </label>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      disabled={!data.canAcceptPayment || maxWeeks < 1}
+                      onClick={() =>
+                        openPayConfirm(customWeeksNumber, `Pay ${customWeeksNumber} week(s)`)
+                      }
+                    >
+                      Pay custom (
+                      <CurrencyAmount value={weekly * customWeeksNumber} />)
+                    </Button>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full"
+                    disabled={
+                      isOffline ||
+                      payableWeeks.length < 1 ||
+                      Boolean(data.recordedMissed) ||
+                      data.oldestObligation?.status === 'MISSED'
+                    }
+                    onClick={() => {
+                      setActionError(null);
+                      setPendingAction({ kind: 'miss', label: 'Mark this week as missed' });
+                    }}
+                  >
+                    Mark this week as missed
                   </Button>
                 </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="w-full"
-                  disabled={
-                    isOffline ||
-                    payableWeeks.length < 1 ||
-                    Boolean(data.recordedMissed) ||
-                    data.oldestObligation?.status === 'MISSED'
-                  }
-                  onClick={() => {
-                    setActionError(null);
-                    setPendingAction({ kind: 'miss', label: 'Mark this week as missed' });
+              </PermissionGate>
+
+              {data.lastPayment ? (
+                <PaymentEditSection
+                  payment={{
+                    id: data.lastPayment.id,
+                    borrowerId: data.borrowerId,
+                    amountPesewas: data.lastPayment.amountPesewas,
+                    paymentDate: data.lastPayment.paymentDate,
                   }}
-                >
-                  Mark this week as missed
-                </Button>
-              </div>
-            </PermissionGate>
+                  borrowerName={data.borrowerName}
+                  loanId={data.loanId}
+                  referenceDate={data.referenceDate}
+                />
+              ) : null}
+            </>
           )}
         </div>
       </ExecutiveDetailLayout>

@@ -1,7 +1,8 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { CurrencyAmount, KpiCard, VarianceAmount } from '@/components/data-display';
+import { useQuery } from '@tanstack/react-query';
+import { CurrencyAmount, DataTable, KpiCard, VarianceAmount } from '@/components/data-display';
 import { ExecutiveKpiGrid } from '@/components/layout/executive';
 import { Alert } from '@/components/feedback/Alert';
 import { EmptyState } from '@/components/feedback/EmptyState';
@@ -19,7 +20,9 @@ import { reconciliationLifecycleLabel } from '@/constants/reconciliation-status'
 import { useReconciliation } from '@/features/reconciliation/hooks/useReconciliation';
 import { useSubmitReconciliation } from '@/features/reconciliation/hooks/useSubmitReconciliation';
 import { useAuth } from '@/hooks/useAuth';
+import reconciliationService from '@/services/reconciliationService';
 import { ApiError } from '@/types/api';
+import type { ReconciliationSummary } from '@/types/services';
 import {
   calculatePrimaryVariancePesewas,
   isVarianceAboveThreshold,
@@ -49,6 +52,16 @@ export function ReconciliationForm() {
 
   const { data, isLoading, isError, error, refetch } = useReconciliation(user?.id, date);
   const submitMutation = useSubmitReconciliation(user?.id ?? '', date);
+  const pastQuery = useQuery({
+    queryKey: ['reconciliations', 'collector', user?.id] as const,
+    queryFn: () => reconciliationService.listReconciliations({ collectorId: user!.id }),
+    enabled: Boolean(user?.id),
+  });
+
+  const pastSubmissions = useMemo(() => {
+    const rows = (pastQuery.data ?? []).filter((row) => row.submitted);
+    return [...rows].sort((a, b) => b.date.localeCompare(a.date));
+  }, [pastQuery.data]);
 
   const formLocked = Boolean(
     data?.submitted && data.status !== 'REJECTED' && data.status !== 'REOPENED',
@@ -353,6 +366,77 @@ export function ReconciliationForm() {
           </PermissionGate>
         </form>
       ) : null}
+
+      <section className="space-y-wilms-3" aria-labelledby="past-reconciliations-heading">
+        <div>
+          <h2 id="past-reconciliations-heading" className="text-heading-3 font-semibold text-text-primary">
+            Past reconciliations
+          </h2>
+          <p className="mt-wilms-1 text-small text-text-muted">
+            Submissions you have already sent for review.
+          </p>
+        </div>
+        {pastQuery.isLoading ? (
+          <p className="text-small text-text-muted">Loading past reconciliations…</p>
+        ) : pastQuery.isError ? (
+          <p className="text-small text-danger" role="alert">
+            Unable to load past reconciliations.
+          </p>
+        ) : pastSubmissions.length === 0 ? (
+          <p className="text-small text-text-muted">No reconciliations submitted yet.</p>
+        ) : (
+          <DataTable<ReconciliationSummary>
+            variant="executive"
+            caption="Past reconciliations submitted"
+            data={pastSubmissions}
+            getRowId={(row) => row.id ?? `${row.collectorId}-${row.date}`}
+            columns={[
+              {
+                id: 'date',
+                header: 'Date',
+                cell: (row) => (
+                  <button
+                    type="button"
+                    className="font-semibold text-brand-primary hover:underline"
+                    onClick={() => {
+                      setDate(row.date);
+                      setSuccessMessage(null);
+                      setActionError(null);
+                    }}
+                  >
+                    {formatDisplayDate(row.date)}
+                  </button>
+                ),
+              },
+              {
+                id: 'expected',
+                header: 'Expected',
+                cell: (row) => <CurrencyAmount value={row.expectedPesewas} />,
+              },
+              {
+                id: 'physical',
+                header: 'Physical cash',
+                cell: (row) =>
+                  row.physicalCashPesewas != null ? (
+                    <CurrencyAmount value={row.physicalCashPesewas} />
+                  ) : (
+                    '—'
+                  ),
+              },
+              {
+                id: 'variance',
+                header: 'Variance',
+                cell: (row) => <VarianceAmount value={row.variancePesewas} />,
+              },
+              {
+                id: 'status',
+                header: 'Status',
+                cell: (row) => reconciliationLifecycleLabel(row.status, row.submitted),
+              },
+            ]}
+          />
+        )}
+      </section>
     </div>
   );
 }
