@@ -20,6 +20,13 @@ describe('buildBrandedExportFilename', () => {
   it('builds official borrower and loan document names', () => {
     expect(
       buildBrandedExportFilename(
+        ['Borrower_Registration_Review', 'Gloria Serwaa', 'BRW-2026-00417'],
+        'pdf',
+      ),
+    ).toBe('WILMS_Borrower_Registration_Review_Gloria_Serwaa_BRW-2026-00417.pdf');
+
+    expect(
+      buildBrandedExportFilename(
         ['Borrower_Profile', 'Gloria Serwaa', 'BRW-2026-00417'],
         'pdf',
       ),

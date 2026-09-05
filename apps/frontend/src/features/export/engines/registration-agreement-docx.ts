@@ -158,7 +158,18 @@ export async function downloadRegistrationAgreementDocx(
     new Paragraph({
       alignment: AlignmentType.CENTER,
       spacing: { after: 160 },
-      children: [new TextRun({ text: legal.formTitle, bold: true, size: 28, color: PRIMARY })],
+      children: [new TextRun({ text: content.documentTitle || legal.formTitle, bold: true, size: 28, color: PRIMARY })],
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 80 },
+      children: [
+        new TextRun({
+          text: `Reference: ${content.registrationReference ?? 'Pending assignment'} · ${content.applicationStatus ?? 'Pending review'}`,
+          size: 18,
+          color: MUTED,
+        }),
+      ],
     }),
     new Paragraph({
       alignment: AlignmentType.CENTER,
@@ -174,7 +185,11 @@ export async function downloadRegistrationAgreementDocx(
     new Paragraph({ spacing: { before: 240 } }),
     sectionTable('Work / Business Information', content.workRows),
     new Paragraph({ spacing: { before: 240 } }),
+    sectionTable('Application Information', content.applicationRows),
+    new Paragraph({ spacing: { before: 240 } }),
     sectionTable('Guarantor Information', content.guarantorRows),
+    new Paragraph({ spacing: { before: 240 } }),
+    sectionTable('Documents', content.documentRows),
     new Paragraph({ spacing: { before: 240 } }),
     ...declarationBlock('Guarantor Declaration', legal.guarantorDeclaration),
     new Paragraph({ spacing: { before: 200 } }),

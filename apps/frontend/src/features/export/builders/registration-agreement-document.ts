@@ -3,7 +3,11 @@ import type { RegistrationLegalConfig } from '@/types/registration-legal';
 import { WILMS_REPORT_TYPE, type WilmsExportDocument } from '@/features/export/types';
 import { generateReportId } from '@/features/export/utils/report-id';
 import { formatExportTimestamp } from '@/features/export/utils/formatters';
-import { buildRegistrationAgreementContent, type RegistrationAgreementMedia } from '@/utils/registration-agreement-fields';
+import {
+  buildRegistrationAgreementContent,
+  type RegistrationAgreementDocumentMeta,
+  type RegistrationAgreementMedia,
+} from '@/utils/registration-agreement-fields';
 
 export interface RegistrationAgreementExportInput {
   values: BorrowerRegistrationFormValues;
@@ -11,6 +15,7 @@ export interface RegistrationAgreementExportInput {
   officerName: string;
   agreementMedia: RegistrationAgreementMedia;
   generatedBy: string;
+  meta?: RegistrationAgreementDocumentMeta;
 }
 
 export function buildRegistrationAgreementExportDocument(
@@ -21,6 +26,10 @@ export function buildRegistrationAgreementExportDocument(
     input.legal,
     input.officerName,
     input.agreementMedia,
+    {
+      documentTitle: 'Borrower Registration Review',
+      ...input.meta,
+    },
   );
 
   const reportId = generateReportId(WILMS_REPORT_TYPE.BORROWER_PROFILE);
@@ -28,15 +37,23 @@ export function buildRegistrationAgreementExportDocument(
   return {
     metadata: {
       reportType: WILMS_REPORT_TYPE.BORROWER_PROFILE,
-      reportTitle: content.legal.formTitle,
+      reportTitle: content.documentTitle,
       reportId,
       generatedAt: formatExportTimestamp(),
       generatedBy: input.generatedBy,
       referencePrefix: 'WILMS-REG',
-      entityRef: input.values.fullName,
+      entityRef: content.registrationReference ?? input.values.fullName,
     },
     registrationAgreement: content,
     sections: [
+      {
+        title: 'Application Information',
+        type: 'summary',
+        summaryItems: content.applicationRows.map((row) => ({
+          label: row.label,
+          value: row.value,
+        })),
+      },
       {
         title: content.legal.programName,
         type: 'summary',
@@ -57,6 +74,14 @@ export function buildRegistrationAgreementExportDocument(
         title: 'Guarantor Information',
         type: 'summary',
         summaryItems: content.guarantorRows.map((row) => ({
+          label: row.label,
+          value: row.value,
+        })),
+      },
+      {
+        title: 'Documents',
+        type: 'summary',
+        summaryItems: content.documentRows.map((row) => ({
           label: row.label,
           value: row.value,
         })),

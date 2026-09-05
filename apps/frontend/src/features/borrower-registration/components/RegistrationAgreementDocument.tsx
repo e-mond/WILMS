@@ -136,8 +136,19 @@ export function RegistrationAgreementDocument({
             {legal.programName}
           </p>
           <h1 className="mt-wilms-3 text-heading-1 font-bold uppercase tracking-wide text-brand-primary">
-            {legal.formTitle}
+            {content.documentTitle || legal.formTitle}
           </h1>
+          {(content.registrationReference || content.applicationStatus) && (
+            <p className="mx-auto mt-wilms-3 max-w-2xl text-small text-text-muted">
+              {content.registrationReference ? (
+                <span className="font-semibold text-text-primary">{content.registrationReference}</span>
+              ) : null}
+              {content.registrationReference && content.applicationStatus ? ' · ' : null}
+              {content.applicationStatus ? <span>{content.applicationStatus}</span> : null}
+              {' · '}
+              Generated {content.generatedAt}
+            </p>
+          )}
           <p className="mx-auto mt-wilms-4 max-w-2xl text-body leading-relaxed text-text-primary">
             {legal.instructionText}
           </p>
@@ -175,6 +186,13 @@ export function RegistrationAgreementDocument({
         </section>
 
         <section>
+          <SectionHeading>Application Information</SectionHeading>
+          <div className="mt-wilms-4">
+            <FieldGrid rows={content.applicationRows} />
+          </div>
+        </section>
+
+        <section>
           <SectionHeading>Guarantor Information</SectionHeading>
           <div className="mt-wilms-4 flex flex-wrap items-start justify-center gap-wilms-4">
             {content.guarantorPhotoUrl ? (
@@ -190,6 +208,13 @@ export function RegistrationAgreementDocument({
             <div className="min-w-0 flex-1">
               <FieldGrid rows={content.guarantorRows} />
             </div>
+          </div>
+        </section>
+
+        <section>
+          <SectionHeading>Documents</SectionHeading>
+          <div className="mt-wilms-4">
+            <FieldGrid rows={content.documentRows} />
           </div>
         </section>
 

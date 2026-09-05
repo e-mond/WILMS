@@ -348,7 +348,7 @@ export function PendingApplicationReview({ borrowerId }: PendingApplicationRevie
           <WilmsExportActions
             document={exportDocument}
             filenameBase={buildBrandedExportFilenameBase([
-              'Borrower_Registration',
+              'Borrower_Registration_Review',
               data?.fullName,
               data?.displayId,
             ])}

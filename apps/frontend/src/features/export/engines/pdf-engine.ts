@@ -163,6 +163,24 @@ function drawFooters(doc: jsPDF, document: WilmsExportDocument): void {
   }
 }
 
+async function waitForDocumentImages(frameDocument: Document): Promise<void> {
+  const images = Array.from(frameDocument.images);
+  await Promise.all(
+    images.map(
+      (image) =>
+        new Promise<void>((resolve) => {
+          if (image.complete) {
+            resolve();
+            return;
+          }
+          image.addEventListener('load', () => resolve(), { once: true });
+          image.addEventListener('error', () => resolve(), { once: true });
+          window.setTimeout(resolve, 2000);
+        }),
+    ),
+  );
+}
+
 async function downloadRegistrationAgreementPdf(
   content: RegistrationAgreementContent,
   filename: string,
@@ -179,6 +197,8 @@ async function downloadRegistrationAgreementPdf(
   host.style.width = '794px';
   host.style.height = '1123px';
   host.style.border = '0';
+  host.style.background = '#ffffff';
+  host.style.colorScheme = 'light';
   host.title = 'Registration agreement PDF render';
   window.document.body.appendChild(host);
 
@@ -193,16 +213,42 @@ async function downloadRegistrationAgreementPdf(
   frameDocument.write(html);
   frameDocument.close();
 
+  try {
+    frameDocument.documentElement.style.colorScheme = 'light';
+    frameDocument.documentElement.style.background = '#ffffff';
+    if (frameDocument.body) {
+      frameDocument.body.style.background = '#ffffff';
+      frameDocument.body.style.color = '#1a1a1a';
+      frameDocument.body.style.colorScheme = 'light';
+    }
+  } catch {
+    // Some browsers restrict frame style writes; CSS in the HTML still applies.
+  }
+
   await new Promise<void>((resolve) => {
     host.addEventListener('load', () => resolve(), { once: true });
     window.setTimeout(resolve, 500);
   });
+
+  await waitForDocumentImages(frameDocument);
 
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
 
   await new Promise<void>((resolve, reject) => {
     doc.html(frameDocument.body, {
       callback: (savedDoc) => {
+        const pageCount = savedDoc.getNumberOfPages();
+        for (let page = 1; page <= pageCount; page += 1) {
+          savedDoc.setPage(page);
+          const pageWidth = savedDoc.internal.pageSize.getWidth();
+          const pageHeight = savedDoc.internal.pageSize.getHeight();
+          savedDoc.setFont('helvetica', 'normal');
+          savedDoc.setFontSize(8);
+          savedDoc.setTextColor(92, 92, 92);
+          savedDoc.text(`Page ${page} of ${pageCount}`, pageWidth / 2, pageHeight - 8, {
+            align: 'center',
+          });
+        }
         savedDoc.save(filename.endsWith('.pdf') ? filename : `${filename}.pdf`);
         host.remove();
         resolve();
@@ -212,7 +258,22 @@ async function downloadRegistrationAgreementPdf(
       width: 194,
       windowWidth: 794,
       autoPaging: 'text',
-      html2canvas: { scale: 1, useCORS: true, logging: false },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        // Force light rendering regardless of the parent page theme.
+        onclone: (clonedDoc) => {
+          clonedDoc.documentElement.style.colorScheme = 'light';
+          clonedDoc.documentElement.style.background = '#ffffff';
+          if (clonedDoc.body) {
+            clonedDoc.body.style.background = '#ffffff';
+            clonedDoc.body.style.color = '#1a1a1a';
+            clonedDoc.body.style.colorScheme = 'light';
+          }
+        },
+      },
     }).catch((error: unknown) => {
       host.remove();
       reject(error);
