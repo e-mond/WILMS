@@ -220,6 +220,57 @@ borrowersRouter.post(
 );
 
 borrowersRouter.get(
+  '/guarantors/search',
+  requirePermission(
+    PERMISSION.REGISTER_BORROWERS,
+    PERMISSION.EDIT_BORROWERS,
+    PERMISSION.ACCESS_ADMIN_PORTAL,
+    PERMISSION.APPROVE_BORROWERS,
+  ),
+  asyncHandler(async (req, res) => {
+    const q = String(req.query.q ?? '');
+    sendData(
+      res,
+      await borrowerService.searchGuarantors(q, {
+        borrowerPhone: req.query.borrowerPhone ? String(req.query.borrowerPhone) : undefined,
+        borrowerIdNumber: req.query.borrowerIdNumber
+          ? String(req.query.borrowerIdNumber)
+          : undefined,
+      }),
+    );
+  }),
+);
+
+borrowersRouter.get(
+  '/guarantors/lookup',
+  requirePermission(
+    PERMISSION.REGISTER_BORROWERS,
+    PERMISSION.EDIT_BORROWERS,
+    PERMISSION.ACCESS_ADMIN_PORTAL,
+    PERMISSION.APPROVE_BORROWERS,
+  ),
+  asyncHandler(async (req, res) => {
+    try {
+      sendData(
+        res,
+        await borrowerService.lookupGuarantorForRegistration({
+          phone: String(req.query.phone ?? ''),
+          borrowerPhone: req.query.borrowerPhone ? String(req.query.borrowerPhone) : undefined,
+          borrowerIdNumber: req.query.borrowerIdNumber
+            ? String(req.query.borrowerIdNumber)
+            : undefined,
+          excludeBorrowerId: req.query.excludeBorrowerId
+            ? String(req.query.excludeBorrowerId)
+            : undefined,
+        }),
+      );
+    } catch (error) {
+      mapError(error);
+    }
+  }),
+);
+
+borrowersRouter.get(
   '/borrowers/drafts',
   requirePermission(PERMISSION.REGISTER_BORROWERS),
   asyncHandler(async (req, res) => {

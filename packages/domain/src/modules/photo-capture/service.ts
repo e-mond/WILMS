@@ -19,7 +19,7 @@ export interface PhotoCaptureSession {
 export interface CreatePhotoCaptureSessionInput {
   registrationSessionId: string;
   officerId: string;
-  target: 'borrower' | 'guarantor';
+  target: 'borrower' | 'guarantor' | 'id_document';
 }
 
 const DEFAULT_APP_URL = 'https://wilms.vercel.app';

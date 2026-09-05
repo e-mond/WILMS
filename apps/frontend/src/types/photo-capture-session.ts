@@ -10,8 +10,10 @@ export interface PhotoCaptureSession {
   capturedDataUrl?: string;
 }
 
+export type PhotoCaptureTarget = 'borrower' | 'guarantor' | 'id_document';
+
 export interface CreatePhotoCaptureSessionInput {
   registrationSessionId: string;
   officerId: string;
-  target: 'borrower' | 'guarantor';
+  target: PhotoCaptureTarget;
 }
