@@ -34,7 +34,7 @@ import { Modal } from '@/components/ui/Modal';
 import { cn } from '@/utils/cn';
 
 const TABS = [
-  { id: 'compose', label: 'Compose' },
+  { id: 'compose', label: 'New message' },
   { id: 'outbox', label: 'Outbox' },
   { id: 'campaigns', label: 'Campaigns' },
   { id: 'templates', label: 'Templates' },
@@ -369,11 +369,14 @@ export function CommunicationCenterPanel() {
       ) : null}
 
       {activeTab === 'compose' ? (
-        <div className="grid gap-wilms-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.25fr)]">
+        <div className="mx-auto flex w-full max-w-3xl flex-col gap-wilms-4">
           <Card className="h-fit">
             <CardHeader>
+              <p className="text-small font-semibold uppercase tracking-wide text-brand-primary">
+                Step 1
+              </p>
               <CardTitle>Audience</CardTitle>
-              <CardDescription>Choose who should receive this message.</CardDescription>
+              <CardDescription>Choose who should receive this message before writing it.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-wilms-4">
               <AudienceComposer
@@ -403,8 +406,11 @@ export function CommunicationCenterPanel() {
 
           <Card>
             <CardHeader>
+              <p className="text-small font-semibold uppercase tracking-wide text-brand-primary">
+                Step 2
+              </p>
               <CardTitle>Compose</CardTitle>
-              <CardDescription>Write, preview, and send with validation intact.</CardDescription>
+              <CardDescription>Write, preview, and send after the audience is set.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-wilms-4">
               <div>

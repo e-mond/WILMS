@@ -43,7 +43,10 @@ const EXACT_TITLES: Record<string, string> = {
   '/collector/my-borrowers': 'My Borrowers',
   '/collector/admin-fee': 'Collector Fees',
   '/collector/reconciliation': 'Daily Reconciliation',
+  '/collector/expenses': 'Expenses',
+  '/collector/settings': 'Settings',
   '/collector/security': 'Device Security',
+  '/collector/borrowers': 'Borrower Profile',
 };
 
 const PREFIX_TITLES: Array<{ test: (pathname: string) => boolean; title: string }> = [
@@ -61,6 +64,7 @@ const PREFIX_TITLES: Array<{ test: (pathname: string) => boolean; title: string 
   { test: (pathname) => pathname.startsWith('/groups/'), title: 'Group Profile' },
   { test: (pathname) => pathname.startsWith('/approver/pending/'), title: 'Application Review' },
   { test: (pathname) => pathname.startsWith('/collector/payment/'), title: 'Record Payment' },
+  { test: (pathname) => pathname.startsWith('/collector/borrowers/'), title: 'Borrower Profile' },
   {
     test: (pathname) =>
       pathname.startsWith('/collector/admin-fee/') && pathname !== '/collector/admin-fee',

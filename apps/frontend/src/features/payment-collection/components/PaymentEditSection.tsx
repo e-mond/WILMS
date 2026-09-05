@@ -12,16 +12,22 @@ import { createAdjustmentSchema } from '@/features/adjustments/adjustment.schema
 import { useCreateAdjustment } from '@/features/adjustments/hooks/useCreateAdjustment';
 import { useAuth } from '@/hooks/useAuth';
 import { ADJUSTMENT_TYPE } from '@/types/adjustment';
-import type { PaymentTransaction } from '@/types/payment';
 import { ApiError } from '@/types/api';
 import { formatDisplayDate } from '@/utils/format-date';
 import { resolvePaymentDisplayId } from '@/utils/entity-display-id';
 
+export interface PaymentCorrectionTarget {
+  id: string;
+  borrowerId: string;
+  amountPesewas: number;
+  paymentDate: string;
+}
+
 export interface PaymentEditSectionProps {
-  payment: PaymentTransaction;
+  payment: PaymentCorrectionTarget;
   borrowerName: string;
   loanId: string;
-  referenceDate: string;
+  referenceDate?: string;
 }
 
 /**
@@ -79,11 +85,15 @@ export function PaymentEditSection({
   };
 
   return (
-    <section className="rounded-sm border border-border bg-card p-wilms-4">
-      <h2 className="text-heading-3 font-semibold text-text-primary">Payment corrections</h2>
+    <section
+      className="rounded-sm border border-border bg-card p-wilms-4"
+      data-testid="payment-correction-section"
+    >
+      <h2 className="text-heading-3 font-semibold text-text-primary">Request payment correction</h2>
       <p className="mt-wilms-2 text-body text-text-muted">
         Payment of <CurrencyAmount value={payment.amountPesewas} /> for {borrowerName} was recorded
-        on {formatDisplayDate(payment.paymentDate)}. Posted collections cannot be edited in place.
+        on {formatDisplayDate(payment.paymentDate)}. Posted collections cannot be edited in place —
+        submit a correction request for Super Admin review.
       </p>
 
       <div className="mt-wilms-4 space-y-wilms-4">

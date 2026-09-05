@@ -327,6 +327,19 @@ export function CollectorDashboardPanel() {
       <ExecutiveDetailLayout
         sidebar={
           <div className="space-y-wilms-3">
+            <DetailSidebarCard title="Payment corrections">
+              <p className="mt-wilms-2 text-small text-text-muted">
+                To fix a posted collection, open the borrower&apos;s payment page and use{' '}
+                <span className="font-semibold text-text-primary">Request Super Admin adjustment</span>.
+                Write-offs are Super Admin only.
+              </p>
+              <Link
+                href="/collector/my-borrowers"
+                className="mt-wilms-3 inline-flex text-small font-semibold text-brand-primary hover:underline"
+              >
+                Open borrowers →
+              </Link>
+            </DetailSidebarCard>
             <DetailSidebarCard title="Recent payments">
               <ul className="mt-wilms-2">
                 {recentPayments.length > 0 ? (

@@ -71,7 +71,12 @@ export function AdjustmentsPanel() {
 
   return (
     <div className="space-y-wilms-4">
-      <div className="flex justify-end">
+      <div className="flex flex-col items-end gap-wilms-2 sm:flex-row sm:items-center sm:justify-end">
+        <p className="max-w-md text-right text-small text-text-muted">
+          Write-off removes an uncollectible balance after approval, marks the loan written off, and
+          blacklists the borrower. Collectors request payment corrections from the payment page
+          instead.
+        </p>
         <PermissionGate permission={PERMISSION.ACCESS_ADMIN_PORTAL}>
           <Button type="button" variant="secondary" size="sm" onClick={() => setWriteOffOpen(true)}>
             Request write-off

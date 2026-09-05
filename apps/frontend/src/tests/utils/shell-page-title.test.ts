@@ -28,4 +28,9 @@ describe('resolveShellPageTitle', () => {
     expect(resolveShellPageTitle('/records')).toBe('Borrower Records');
     expect(resolveShellPageTitle('/borrower-updates')).toBe('Requests');
   });
+
+  it('resolves collector expenses and settings titles', () => {
+    expect(resolveShellPageTitle('/collector/expenses')).toBe('Expenses');
+    expect(resolveShellPageTitle('/collector/settings')).toBe('Settings');
+  });
 });
