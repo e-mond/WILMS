@@ -484,6 +484,129 @@ const borrowerServiceMock: IBorrowerService = {
     return evaluate(input);
   },
 
+  async searchGuarantors(query, context) {
+    await simulateDelay();
+    const q = query.trim().toLowerCase();
+    if (q.length < 2) return [];
+
+    const { getBorrowerRegistryEntries } = await import('@/services/mock/borrower-registry.store');
+    const { checkGuarantorEligibility: evaluate } = await import(
+      '@/services/mock/guarantor-eligibility'
+    );
+    const { resolveBorrowerDisplayId } = await import('@/utils/format-borrower-display-id');
+    const entries = getBorrowerRegistryEntries();
+    const hits: import('@/types/guarantor-search').GuarantorSearchHit[] = [];
+
+    for (const entry of entries) {
+      const nameMatch = entry.fullName.toLowerCase().includes(q);
+      const phoneMatch = entry.phone.replace(/\D/g, '').includes(q.replace(/\D/g, ''));
+      if (!nameMatch && !phoneMatch) continue;
+
+      const eligibility = evaluate({
+        guarantorPhone: entry.phone,
+        guarantorName: entry.fullName,
+        borrowerPhone: context?.borrowerPhone,
+        borrowerIdNumber: context?.borrowerIdNumber,
+      });
+
+      hits.push({
+        kind: 'borrower',
+        key: `borrower:${entry.id}`,
+        name: entry.fullName,
+        phone: entry.phone,
+        phoneDisplay: `${entry.phone.slice(0, 3)} XXX ${entry.phone.slice(-4)}`,
+        displayId: resolveBorrowerDisplayId(entry),
+        community: entry.community,
+        groupName: entry.groupName,
+        activeGuaranteeCount: eligibility.activeGuaranteeCount,
+        maxGuarantees: eligibility.maxGuarantees,
+        isEligiblePreview: eligibility.isEligible,
+      });
+    }
+
+    for (const entry of entries) {
+      const guarantorName = entry.profile.guarantorName?.trim();
+      const guarantorPhone = entry.profile.guarantorPhone?.trim();
+      if (!guarantorName || !guarantorPhone) continue;
+      if (
+        !guarantorName.toLowerCase().includes(q) &&
+        !guarantorPhone.replace(/\D/g, '').includes(q.replace(/\D/g, ''))
+      ) {
+        continue;
+      }
+      if (hits.some((hit) => hit.phone === guarantorPhone)) continue;
+
+      const eligibility = evaluate({
+        guarantorPhone,
+        guarantorName,
+        borrowerPhone: context?.borrowerPhone,
+        borrowerIdNumber: context?.borrowerIdNumber,
+      });
+
+      hits.push({
+        kind: 'guarantor',
+        key: `guarantor:${guarantorPhone}`,
+        name: guarantorName,
+        phone: guarantorPhone,
+        phoneDisplay: `${guarantorPhone.slice(0, 3)} XXX ${guarantorPhone.slice(-4)}`,
+        community: entry.community,
+        activeGuaranteeCount: eligibility.activeGuaranteeCount,
+        maxGuarantees: eligibility.maxGuarantees,
+        isEligiblePreview: eligibility.isEligible,
+      });
+    }
+
+    return hits.slice(0, 8);
+  },
+
+  async lookupGuarantor(phone, context) {
+    await simulateDelay();
+    const { getBorrowerRegistryEntries } = await import('@/services/mock/borrower-registry.store');
+    const { checkGuarantorEligibility: evaluate } = await import(
+      '@/services/mock/guarantor-eligibility'
+    );
+    const { resolveBorrowerDisplayId } = await import('@/utils/format-borrower-display-id');
+    const entries = getBorrowerRegistryEntries();
+    const asBorrower = entries.find((entry) => entry.phone === phone);
+    const linked = entries.filter((entry) => entry.profile.guarantorPhone === phone);
+    const sample = asBorrower ?? linked[0];
+    if (!sample && linked.length === 0) {
+      throw new Error('NOT_FOUND');
+    }
+
+    const name = asBorrower?.fullName ?? linked[0]?.profile.guarantorName ?? 'Guarantor';
+    const eligibility = evaluate({
+      guarantorPhone: phone,
+      guarantorName: name,
+      borrowerPhone: context?.borrowerPhone,
+      borrowerIdNumber: context?.borrowerIdNumber,
+      excludeBorrowerId: context?.excludeBorrowerId,
+    });
+
+    return {
+      name,
+      phone,
+      phoneDisplay: `${phone.slice(0, 3)} XXX ${phone.slice(-4)}`,
+      displayId: asBorrower ? resolveBorrowerDisplayId(asBorrower) : undefined,
+      community: asBorrower?.community ?? sample?.community,
+      groupName: asBorrower?.groupName,
+      idType: asBorrower?.idType,
+      idNumber: asBorrower?.idNumber,
+      photoUploadId: undefined,
+      photoUrl: null,
+      borrowerId: asBorrower?.id,
+      isGroupLeader: false,
+      isBlacklisted: asBorrower?.status === 'BLACKLISTED',
+      eligibility,
+      guaranteedBorrowers: linked.map((entry) => ({
+        displayId: resolveBorrowerDisplayId(entry),
+        fullName: entry.fullName,
+        community: entry.community,
+        status: entry.status,
+      })),
+    };
+  },
+
   async createRegistrationDraft(draftPayload: Record<string, unknown> = {}) {
     await simulateDelay();
     const now = new Date().toISOString();

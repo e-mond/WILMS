@@ -22,12 +22,14 @@ export interface RegistrationReviewPanelProps {
   values: BorrowerRegistrationFormValues;
   guarantorEligibility: GuarantorEligibilityResult | null;
   officerName: string;
+  selectedGuarantor?: import('@/types/guarantor-search').GuarantorLookupResult | null;
 }
 
 export function RegistrationReviewPanel({
   values,
   guarantorEligibility,
   officerName,
+  selectedGuarantor = null,
 }: RegistrationReviewPanelProps) {
   const generatedBy = useWilmsExportActor();
   const [legalConfig, setLegalConfig] = useState<RegistrationLegalConfig | null>(null);
@@ -106,6 +108,29 @@ export function RegistrationReviewPanel({
           formats={[...REGISTRATION_AGREEMENT_EXPORT_FORMATS]}
         />
       </div>
+
+      {selectedGuarantor ? (
+        <div className="rounded-sm border border-border bg-card px-wilms-3 py-wilms-2 text-small text-text-primary">
+          <p className="font-semibold">Existing guarantor selected</p>
+          <p>
+            {selectedGuarantor.name}
+            {selectedGuarantor.displayId ? ` · ${selectedGuarantor.displayId}` : ''}
+          </p>
+          <p className="text-text-muted">
+            Phone: {selectedGuarantor.phoneDisplay}
+            {selectedGuarantor.idType ? ` · ID: ${selectedGuarantor.idType.replace(/_/g, ' ')}` : ''}
+          </p>
+          {selectedGuarantor.guaranteedBorrowers.length > 0 ? (
+            <p className="text-text-muted">
+              Currently guaranteeing:{' '}
+              {selectedGuarantor.guaranteedBorrowers
+                .slice(0, 3)
+                .map((entry) => `${entry.fullName} (${entry.displayId})`)
+                .join('; ')}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
 
       {guarantorEligibility ? (
         <p className="text-small text-text-muted">

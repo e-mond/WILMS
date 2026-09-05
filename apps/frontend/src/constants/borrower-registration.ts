@@ -46,6 +46,7 @@ export const GUARANTOR_RELATIONSHIP_OPTIONS = [
   'Parent',
   'Friend',
   'Colleague',
+  'Group Leader',
   'Other',
 ] as const;
 

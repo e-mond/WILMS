@@ -204,6 +204,18 @@ export interface IBorrowerService {
   checkActiveLoan(phone: string): Promise<ActiveLoanCheckResult>;
   checkBlacklist(input: RegistrationConflictInput): Promise<BlacklistCheckResult>;
   checkGuarantorEligibility(input: GuarantorEligibilityInput): Promise<GuarantorEligibilityResult>;
+  searchGuarantors(
+    query: string,
+    context?: { borrowerPhone?: string; borrowerIdNumber?: string },
+  ): Promise<import('@/types/guarantor-search').GuarantorSearchHit[]>;
+  lookupGuarantor(
+    phone: string,
+    context?: {
+      borrowerPhone?: string;
+      borrowerIdNumber?: string;
+      excludeBorrowerId?: string;
+    },
+  ): Promise<import('@/types/guarantor-search').GuarantorLookupResult>;
   createRegistrationDraft(draftPayload?: Record<string, unknown>): Promise<import('@/services/borrowerService').RegistrationDraftRecord>;
   getRegistrationDraft(id: string): Promise<import('@/services/borrowerService').RegistrationDraftRecord>;
   updateRegistrationDraft(
