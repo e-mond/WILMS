@@ -71,3 +71,10 @@ describe('borrower ID validation', () => {
     expect(BORROWER_ID_PLACEHOLDERS.VOTER_ID).toBe('A01010');
   });
 });
+
+describe('guarantor relationship options', () => {
+  it('includes Group Leader', async () => {
+    const { GUARANTOR_RELATIONSHIP_OPTIONS } = await import('@/constants/borrower-registration');
+    expect(GUARANTOR_RELATIONSHIP_OPTIONS).toContain('Group Leader');
+  });
+});

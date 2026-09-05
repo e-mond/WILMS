@@ -11,7 +11,7 @@ import { cn } from '@/utils/cn';
 export interface PhoneCaptureSessionPanelProps {
   registrationSessionId: string;
   officerId: string;
-  target: 'borrower' | 'guarantor';
+  target: 'borrower' | 'guarantor' | 'id_document';
   onCaptured: (file: File) => void;
   className?: string;
 }

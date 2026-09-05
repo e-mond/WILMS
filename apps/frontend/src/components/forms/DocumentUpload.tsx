@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState, type ChangeEvent } from 'react';
 import { Button } from '@/components/ui/Button';
+import { PhoneCaptureSessionPanel } from '@/components/forms/PhoneCaptureSessionPanel';
 import { WebcamCapture } from '@/components/forms/WebcamCapture';
 import type { UploadPurpose, UploadRecord } from '@/types/upload';
 import {
@@ -38,6 +39,8 @@ export interface DocumentUploadProps {
   accept?: string;
   uploadPurpose?: UploadPurpose;
   entityId?: string;
+  registrationSessionId?: string;
+  officerId?: string;
   onUploadRecordChange?: (record: UploadRecord | null) => void;
 }
 
@@ -86,6 +89,8 @@ export function DocumentUpload({
   accept = DEFAULT_ACCEPT,
   uploadPurpose,
   entityId,
+  registrationSessionId,
+  officerId,
   onUploadRecordChange,
 }: DocumentUploadProps) {
   const helperId = useId();
@@ -97,9 +102,9 @@ export function DocumentUpload({
   const [localError, setLocalError] = useState<string | null>(null);
   const [uploadRecord, setUploadRecord] = useState<UploadRecord | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [mode, setMode] = useState<'idle' | 'scan'>('idle');
+  const [mode, setMode] = useState<'idle' | 'scan' | 'phone'>('idle');
   const isMobile = isMobileDevice();
-
+  const canUsePhoneCapture = Boolean(registrationSessionId && officerId);
   const displayFile = value ?? localPreviewFile;
 
   useEffect(() => {
@@ -267,6 +272,16 @@ export function DocumentUpload({
     setMode('scan');
   };
 
+  const openMobileCapture = () => {
+    if (!canUsePhoneCapture) {
+      setLocalError('Mobile capture requires an active registration session.');
+      return;
+    }
+
+    setLocalError(null);
+    setMode('phone');
+  };
+
   return (
     <div className={cn('space-y-wilms-3', className)}>
       <input
@@ -324,8 +339,8 @@ export function DocumentUpload({
         >
           <p className="text-body font-semibold text-text-primary">{label}</p>
           <p id={helperId} className="mt-wilms-1 text-small text-text-muted">
-            Upload a PDF or image, or scan the ID with your camera. Maximum size depends on server
-            policy.
+            Upload a PDF or image, scan with this device, or capture using mobile. Maximum size
+            depends on server policy.
           </p>
         </div>
       )}
@@ -346,6 +361,15 @@ export function DocumentUpload({
             setMode('idle');
             setLocalError(DOCUMENT_CAMERA_DENIED_MESSAGE);
           }}
+        />
+      ) : null}
+
+      {!displayFile && mode === 'phone' && canUsePhoneCapture ? (
+        <PhoneCaptureSessionPanel
+          registrationSessionId={registrationSessionId!}
+          officerId={officerId!}
+          target="id_document"
+          onCaptured={(file) => void handleFileSelection(file)}
         />
       ) : null}
 
@@ -373,6 +397,18 @@ export function DocumentUpload({
         >
           {displayFile ? 'Rescan document' : 'Scan document'}
         </Button>
+        {!isMobile ? (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="w-full sm:w-auto"
+            disabled={disabled || isUploading || !canUsePhoneCapture}
+            onClick={openMobileCapture}
+          >
+            Capture using mobile
+          </Button>
+        ) : null}
         {displayFile ? (
           <Button
             type="button"

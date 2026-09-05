@@ -828,17 +828,68 @@ export async function checkGuarantorEligibility(input: {
     }
   }
 
-  return evaluateGuarantorEligibility(
+  const result = evaluateGuarantorEligibility(
     {
       ...input,
       isGroupLeader: derivedIsGroupLeader,
     },
     borrowers,
     {
-    maxGuarantees: limits.maxGuarantorGuarantees,
-    maxLeaderGuarantees: limits.maxLeaderGuarantorGuarantees,
+      maxGuarantees: limits.maxGuarantorGuarantees,
+      maxLeaderGuarantees: limits.maxLeaderGuarantorGuarantees,
     },
   );
+
+  const guarantorIsBlacklisted = borrowers.some(
+    (record) =>
+      record.status === BORROWER_STATUS.BLACKLISTED &&
+      record.phone?.trim() &&
+      normalizeGhanaPhone(record.phone) === normalizeGhanaPhone(input.guarantorPhone),
+  );
+
+  if (guarantorIsBlacklisted) {
+    return {
+      ...result,
+      isEligible: false,
+      validationStatus: 'INVALID' as const,
+      message: 'This person is blacklisted and cannot act as a guarantor.',
+    };
+  }
+
+  return result;
+}
+
+export async function searchGuarantors(
+  query: string,
+  context?: { borrowerPhone?: string; borrowerIdNumber?: string },
+) {
+  const { searchGuarantors: search } = await import('./guarantor-search.js');
+  return search(query, context);
+}
+
+export async function lookupGuarantorForRegistration(input: {
+  phone: string;
+  borrowerPhone?: string;
+  borrowerIdNumber?: string;
+  excludeBorrowerId?: string;
+}) {
+  const { lookupGuarantorForRegistration: lookup } = await import('./guarantor-search.js');
+  const result = await lookup(input);
+
+  // Align leader detection with eligibility checks used at registration submit.
+  const eligibility = await checkGuarantorEligibility({
+    guarantorPhone: result.phone,
+    guarantorName: result.name,
+    borrowerPhone: input.borrowerPhone,
+    borrowerIdNumber: input.borrowerIdNumber,
+    excludeBorrowerId: input.excludeBorrowerId,
+  });
+
+  return {
+    ...result,
+    isGroupLeader: eligibility.validationStatus === 'EXEMPT',
+    eligibility,
+  };
 }
 
 export async function listRegistrationDraftsForOfficer(officerId: string) {

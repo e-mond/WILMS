@@ -150,6 +150,25 @@ const borrowerService: IBorrowerService = {
     );
   },
 
+  searchGuarantors(query, context) {
+    const params: Record<string, string> = { q: query };
+    if (context?.borrowerPhone) params.borrowerPhone = context.borrowerPhone;
+    if (context?.borrowerIdNumber) params.borrowerIdNumber = context.borrowerIdNumber;
+    return apiClient.get<import('@/types/guarantor-search').GuarantorSearchHit[]>(
+      buildQuery('/guarantors/search', params),
+    );
+  },
+
+  lookupGuarantor(phone, context) {
+    const params: Record<string, string> = { phone };
+    if (context?.borrowerPhone) params.borrowerPhone = context.borrowerPhone;
+    if (context?.borrowerIdNumber) params.borrowerIdNumber = context.borrowerIdNumber;
+    if (context?.excludeBorrowerId) params.excludeBorrowerId = context.excludeBorrowerId;
+    return apiClient.get<import('@/types/guarantor-search').GuarantorLookupResult>(
+      buildQuery('/guarantors/lookup', params),
+    );
+  },
+
   createRegistrationDraft(draftPayload: Record<string, unknown> = {}) {
     return apiClient.post<RegistrationDraftRecord>('/borrowers/drafts', { draftPayload });
   },

@@ -25,7 +25,7 @@ export interface PhotoUploadProps {
   className?: string;
   registrationSessionId?: string;
   officerId?: string;
-  captureTarget?: 'borrower' | 'guarantor';
+  captureTarget?: 'borrower' | 'guarantor' | 'id_document';
   uploadPurpose?: UploadPurpose;
   entityId?: string;
   onUploadRecordChange?: (record: UploadRecord | null) => void;
