@@ -74,6 +74,50 @@ describe('borrowerRegistrationSchema', () => {
     );
   });
 
+  it('accepts alphanumeric voter IDs such as A01010', () => {
+    const result = borrowerRegistrationSchema.safeParse(
+      createValidRegistration({
+        idType: BORROWER_ID_TYPE.VOTER_ID,
+        idNumber: 'A01010',
+      }),
+    );
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects invalid voter IDs with a field-level message', () => {
+    const result = borrowerRegistrationSchema.safeParse(
+      createValidRegistration({
+        idType: BORROWER_ID_TYPE.VOTER_ID,
+        idNumber: 'A01',
+      }),
+    );
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((issue) => issue.path[0] === 'idNumber')).toBe(true);
+  });
+
+  it('rejects an ID document file that was not persisted', () => {
+    const idDocument = new File(['scan'], 'id.jpg', { type: 'image/jpeg' });
+    const result = borrowerRegistrationSchema.safeParse(
+      createValidRegistration({
+        idDocument,
+        idDocumentUploadId: undefined,
+      }),
+    );
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((issue) => issue.path[0] === 'idDocument')).toBe(true);
+  });
+
+  it('accepts an ID document when the upload id is present', () => {
+    const idDocument = new File(['scan'], 'id.jpg', { type: 'image/jpeg' });
+    const result = borrowerRegistrationSchema.safeParse(
+      createValidRegistration({
+        idDocument,
+        idDocumentUploadId: 'upload-123',
+      }),
+    );
+    expect(result.success).toBe(true);
+  });
+
   it('rejects non-image photo uploads', () => {
     const photo = new File(['text'], 'notes.txt', { type: 'text/plain' });
     const result = borrowerRegistrationSchema.safeParse(createValidRegistration({ photo }));
