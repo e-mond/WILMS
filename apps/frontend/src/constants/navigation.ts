@@ -85,7 +85,7 @@ export const SUPER_ADMIN_NAV: ShellNavItem[] = [
   { href: '/records', label: 'Borrower Records', icon: 'audit', group: 'people' },
   {
     href: '/borrower-updates',
-    label: 'Update requests',
+    label: 'Requests',
     icon: 'queue',
     group: 'people',
   },
@@ -148,7 +148,7 @@ export const COLLECTOR_NAV: ShellNavItem[] = [
   { href: '/collector/my-borrowers', label: 'Borrowers', icon: 'borrowers', group: 'people' },
   {
     href: '/collector/borrower-updates',
-    label: 'Update requests',
+    label: 'Requests',
     icon: 'queue',
     group: 'people',
   },
@@ -179,7 +179,7 @@ export const REGISTRATION_OFFICER_NAV: ShellNavItem[] = [
   },
   {
     href: '/officer/borrower-updates',
-    label: 'Update requests',
+    label: 'Requests',
     icon: 'queue',
     group: 'operations',
   },
@@ -208,8 +208,8 @@ export const APPROVER_NAV: ShellNavItem[] = [
   },
   {
     href: '/approver/holidays',
-    label: 'Holidays',
-    icon: 'holidays',
+    label: 'Requests',
+    icon: 'queue',
     group: 'operations',
   },
   {

@@ -254,29 +254,6 @@ function OperationalDashboardContent({
         </ul>
       </section>
 
-      <section
-        aria-labelledby="ops-reassignment-heading"
-        className="rounded-2xl border border-border/80 bg-card p-wilms-4 shadow-[var(--shadow-card)] md:p-wilms-5"
-      >
-        <div className="flex flex-col gap-wilms-3 sm:flex-row sm:items-end sm:justify-between">
-          <div className="min-w-0">
-            <h2 id="ops-reassignment-heading" className="text-heading-3 font-semibold text-text-primary">
-              Reassignment controls
-            </h2>
-            <p className="mt-wilms-1 max-w-2xl text-small text-text-muted">
-              Transfer borrowers between groups, reassign collectors, and request payment-day changes
-              with preview, notifications, and audit logging.
-            </p>
-          </div>
-          <Link
-            href="/ops/reassignment"
-            className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-full border border-brand-primary px-wilms-4 text-small font-semibold text-brand-primary hover:bg-brand-primary-light"
-          >
-            Open reassignment tools
-          </Link>
-        </div>
-      </section>
-
       <div className="grid gap-wilms-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
         <DashboardReconciliationSummary compact />
         <Card aria-labelledby="ops-activity-heading">

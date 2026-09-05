@@ -5,10 +5,7 @@ import { DashboardShell } from '@/components/layout/shell/DashboardShell';
 import { SHELL_PROFILE } from '@/constants/shell-profiles';
 import type { ShellNavItem } from '@/constants/navigation';
 import type { ShellNavVariant } from '@/layouts/ShellNavLink';
-import {
-  OperationalBottomNavigation,
-  OperationalMobileHeader,
-} from '@/layouts/OperationalMobileNavigation';
+import { OperationalMobileHeader } from '@/layouts/OperationalMobileNavigation';
 import { useFilteredNavItems } from '@/hooks/useFilteredNavItems';
 import { useNavItemsWithBadges } from '@/hooks/useNavItemsWithBadges';
 import { getAppVersionLabel } from '@/lib/app-version';
@@ -46,7 +43,7 @@ export function OfficeShell({
   const badgedNavItems = useNavItemsWithBadges(filteredNavItems);
   const isExecutive = sidebarVariant === 'executive';
   const resolvedBrandTitle = brandTitle ?? 'WILMS';
-  const drawerEnabled = enableMobileNavDrawer ?? !operationalMobileNav;
+  const drawerEnabled = enableMobileNavDrawer ?? true;
 
   return (
     <DashboardShell
@@ -70,14 +67,7 @@ export function OfficeShell({
           />
         ) : undefined
       }
-      bottomNavigation={
-        operationalMobileNav && !drawerEnabled ? (
-          <OperationalBottomNavigation
-            navItems={badgedNavItems}
-            ariaLabel={`${navAriaLabel} bottom navigation`}
-          />
-        ) : undefined
-      }
+      bottomNavigation={undefined}
     >
       {children}
     </DashboardShell>

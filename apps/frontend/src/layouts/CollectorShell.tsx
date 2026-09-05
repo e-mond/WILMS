@@ -1,14 +1,9 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { DashboardShell } from '@/components/layout/shell/DashboardShell';
 import { BackgroundUploadProcessor } from '@/components/offline/BackgroundUploadProcessor';
 import { COLLECTOR_NAV } from '@/constants/navigation';
-import { SHELL_PROFILE } from '@/constants/shell-profiles';
-import {
-  OperationalBottomNavigation,
-  OperationalMobileHeader,
-} from '@/layouts/OperationalMobileNavigation';
+import { OfficeShell } from '@/layouts/OfficeShell';
 
 interface CollectorShellProps {
   children: ReactNode;
@@ -18,26 +13,20 @@ export function CollectorShell({ children }: CollectorShellProps) {
   return (
     <>
       <BackgroundUploadProcessor />
-      <DashboardShell
+      <OfficeShell
         shellId="collector"
-        profile={SHELL_PROFILE.FIELD}
         navItems={COLLECTOR_NAV}
         navAriaLabel="Collector Navigation"
+        mobileNavDrawerTitle="Collector navigation"
+        operationalMobileNav
+        enableMobileNavDrawer
+        brandTitle="WILMS Field"
         sidebarVariant="executive"
         navVariant="executive"
         showAppAside={false}
-        enableMobileNavDrawer={false}
-        mobileNavDrawerTitle="Collector navigation"
-        mobileHeader={<OperationalMobileHeader brandTitle="WILMS Field" isExecutive />}
-        bottomNavigation={
-          <OperationalBottomNavigation
-            navItems={COLLECTOR_NAV}
-            ariaLabel="Collector bottom navigation"
-          />
-        }
       >
         {children}
-      </DashboardShell>
+      </OfficeShell>
     </>
   );
 }

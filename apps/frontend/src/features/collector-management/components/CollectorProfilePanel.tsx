@@ -52,16 +52,30 @@ export function CollectorProfilePanel({ collectorId }: CollectorProfilePanelProp
   return (
     <div className="space-y-wilms-4">
       <div className="flex flex-wrap items-start gap-wilms-4 rounded-sm border border-border bg-card p-wilms-4">
-        <Avatar
-          label={data.displayName}
-          photoUrl={resolveEntityPhotoUrl({
-            name: data.displayName,
-            id: data.id,
-            photoUrl: data.photoUrl,
-          })}
-          size="xl"
-          className="rounded-sm border border-border object-cover"
-        />
+        <div className="shrink-0 overflow-hidden rounded-sm border border-border bg-background shadow-sm">
+          {/* Passport-style portrait: 3:4 aspect, live photo with initials fallback */}
+          <div className="relative h-40 w-[7.5rem] sm:h-48 sm:w-36">
+            {data.photoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={resolveEntityPhotoUrl({
+                  name: data.displayName,
+                  id: data.id,
+                  photoUrl: data.photoUrl,
+                })}
+                alt={`Passport photograph of ${data.displayName}`}
+                className="h-full w-full object-cover object-top"
+              />
+            ) : (
+              <Avatar
+                label={data.displayName}
+                photoUrl={null}
+                size="2xl"
+                className="h-full w-full rounded-none border-0"
+              />
+            )}
+          </div>
+        </div>
         <div className="min-w-0 flex-1">
           <h1 className="text-heading-1 font-semibold text-text-primary">{data.displayName}</h1>
           <p className="text-body text-text-muted">Collector · {data.zone}</p>
