@@ -112,91 +112,63 @@ function useSettingsSave() {
 }
 
 export function OrganisationSectionView({ settings }: { settings: SystemSettings }) {
-  const { save, isPending } = useSettingsSave();
-  const [organisationName, setOrganisationName] = useState(settings.organisationName);
-  const [systemName, setSystemName] = useState(settings.systemName);
-  const [primaryColour, setPrimaryColour] = useState(settings.primaryColour);
-  const [accentColour, setAccentColour] = useState(settings.accentColour);
-  const [logoAsset, setLogoAsset] = useState(settings.logoAsset);
-
-  useEffect(() => {
-    setOrganisationName(settings.organisationName);
-    setSystemName(settings.systemName);
-    setPrimaryColour(settings.primaryColour);
-    setAccentColour(settings.accentColour);
-    setLogoAsset(settings.logoAsset);
-  }, [settings]);
-
   return (
     <SettingsSectionCard
       title="Organisation"
-      description="Branding, identity, and system naming."
+      description="Identity reference values. Visual branding and export headers use the WILMS design system tokens and are not changed from this form."
       icon={<SettingsOrganisationIcon />}
     >
       <SettingsSettingRow
         title="Organisation Name"
-        description="Displayed across WILMS interfaces and exports."
+        description="Canonical short name (reference only)."
         control={
           <Input
-            value={organisationName}
-            onChange={(event) => setOrganisationName(event.target.value)}
+            value={settings.organisationName}
+            readOnly
             aria-label="Organisation name"
           />
         }
       />
       <SettingsSettingRow
         title="System Name"
-        description="Full legal product name."
+        description="Full product name (reference only)."
         control={
-          <Input value={systemName} onChange={(event) => setSystemName(event.target.value)} aria-label="System name" />
+          <Input value={settings.systemName} readOnly aria-label="System name" />
         }
       />
       <SettingsSettingRow
         title="Primary Colour"
-        description="Brand primary token."
+        description="Not applied to the live UI — theme tokens control brand colour."
         control={
           <Input
-            value={primaryColour}
-            onChange={(event) => setPrimaryColour(event.target.value)}
+            value={settings.primaryColour}
+            readOnly
             aria-label="Primary colour"
           />
         }
       />
       <SettingsSettingRow
         title="Accent Colour"
-        description="Executive gold accent."
+        description="Not applied to the live UI — theme tokens control accent colour."
         control={
           <Input
-            value={accentColour}
-            onChange={(event) => setAccentColour(event.target.value)}
+            value={settings.accentColour}
+            readOnly
             aria-label="Accent colour"
           />
         }
       />
       <SettingsSettingRow
         title="Logo"
-        description="Organisation logo asset."
+        description="Logo upload is not wired from this field. Shell branding uses the fixed WILMS mark."
         control={
-          <Input value={logoAsset} onChange={(event) => setLogoAsset(event.target.value)} aria-label="Logo asset" />
+          <Input value={settings.logoAsset} readOnly aria-label="Logo asset" />
         }
       />
-      <div className="flex justify-end pt-wilms-2">
-        <PermissionGate permission={PERMISSION.MANAGE_SYSTEM_SETTINGS}>
-          <Button
-            type="button"
-            size="sm"
-            disabled={isPending}
-            onClick={() =>
-              void save(
-                { organisationName, systemName, primaryColour, accentColour, logoAsset },
-                'Organisation settings updated',
-              )
-            }
-          >
-            Save organisation
-          </Button>
-        </PermissionGate>
-      </div>
+      <p className="pt-wilms-2 text-small text-text-muted">
+        These fields are read-only because changing them here does not update navigation, theme, or
+        export documents. Contact a platform engineer if organisation branding must change.
+      </p>
     </SettingsSectionCard>
   );
 }

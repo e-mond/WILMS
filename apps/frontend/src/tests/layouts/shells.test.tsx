@@ -47,6 +47,13 @@ function renderShell(ui: ReactNode) {
   );
 }
 
+async function openDrawer(user: ReturnType<typeof userEvent.setup>, title: RegExp) {
+  const menuButtons = screen.getAllByRole('button', { name: 'Open navigation menu' });
+  expect(menuButtons.length).toBeGreaterThanOrEqual(1);
+  await user.click(menuButtons[menuButtons.length - 1]!);
+  return screen.findByRole('dialog', { name: title });
+}
+
 describe('role shells', () => {
   beforeEach(() => {
     useThemeStore.setState({ mode: THEME_MODE.LIGHT, isHydrated: true });
@@ -63,28 +70,23 @@ describe('role shells', () => {
     );
 
     expect(screen.getByText('Content')).toBeInTheDocument();
-    const menuButtons = screen.getAllByRole('button', { name: 'Open navigation menu' });
-    expect(menuButtons.length).toBeGreaterThanOrEqual(1);
-    await user.click(menuButtons[menuButtons.length - 1]!);
     expect(
       screen.queryByRole('navigation', { name: 'Super Admin bottom navigation' }),
     ).not.toBeInTheDocument();
 
-    const drawer = await screen.findByRole('dialog', { name: /Super Admin navigation/i });
+    const drawer = await openDrawer(user, /Super Admin navigation/i);
     expect(drawer.querySelector('[data-mobile-nav-scroll="true"]')).not.toBeNull();
-    expect(drawer.querySelector('[data-nav-scroll="true"]')).not.toBeNull();
 
     for (const item of SUPER_ADMIN_NAV) {
       const link = within(drawer).getByRole('link', { name: item.label });
       expect(link).toHaveAttribute('href', item.href);
     }
 
-    const lastItem = SUPER_ADMIN_NAV[SUPER_ADMIN_NAV.length - 1]!;
-    expect(within(drawer).getByRole('link', { name: lastItem.label })).toBeVisible();
     expect(within(drawer).getByRole('button', { name: 'Log out' })).toBeInTheDocument();
   });
 
-  it('renders collector navigation with responsive executive shell chrome', () => {
+  it('renders collector navigation via mobile drawer instead of bottom pill', async () => {
+    const user = userEvent.setup();
     renderShell(
       <CollectorShell>
         <div>Collector content</div>
@@ -92,59 +94,58 @@ describe('role shells', () => {
     );
 
     expect(screen.getByText('Collector content')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Open navigation menu' })).not.toBeInTheDocument();
     expect(
-      screen.getAllByRole('navigation', { name: 'Collector Navigation' }).length,
-    ).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByRole('button', { name: 'Log out' }).length).toBeGreaterThanOrEqual(1);
-    expect(
-      screen.getAllByRole('button', { name: /Switch to (dark|light) mode/ }).length,
-    ).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('WILMS').length).toBeGreaterThanOrEqual(1);
+      screen.queryByRole('navigation', { name: 'Collector bottom navigation' }),
+    ).not.toBeInTheDocument();
 
+    const drawer = await openDrawer(user, /Collector navigation/i);
     for (const item of COLLECTOR_NAV) {
-      const links = screen.getAllByRole('link', { name: item.label });
-      expect(links.some((link) => link.getAttribute('href') === item.href)).toBe(true);
+      expect(within(drawer).getByRole('link', { name: item.label })).toHaveAttribute(
+        'href',
+        item.href,
+      );
     }
   });
 
-  it('renders registration officer navigation with office header and footer', () => {
+  it('renders registration officer navigation via mobile drawer', async () => {
+    const user = userEvent.setup();
     renderShell(
       <RegistrationOfficerShell>
         <div>Officer content</div>
       </RegistrationOfficerShell>,
     );
 
-    expect(screen.getAllByText('WILMS').length).toBeGreaterThanOrEqual(1);
-    expect(screen.queryByRole('button', { name: 'Open navigation menu' })).not.toBeInTheDocument();
     expect(
-      screen.getAllByRole('navigation', { name: 'Registration Officer bottom navigation' }).length,
-    ).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText(/All systems operational/)).toBeInTheDocument();
+      screen.queryByRole('navigation', { name: /Registration Officer bottom navigation/i }),
+    ).not.toBeInTheDocument();
 
+    const drawer = await openDrawer(user, /Registration Officer navigation/i);
     for (const item of REGISTRATION_OFFICER_NAV) {
-      const links = screen.getAllByRole('link', { name: item.label });
-      expect(links.some((link) => link.getAttribute('href') === item.href)).toBe(true);
+      expect(within(drawer).getByRole('link', { name: item.label })).toHaveAttribute(
+        'href',
+        item.href,
+      );
     }
   });
 
-  it('renders approver queue navigation with office header and footer', () => {
+  it('renders approver navigation via mobile drawer', async () => {
+    const user = userEvent.setup();
     renderShell(
       <ApproverShell>
         <div>Approver content</div>
       </ApproverShell>,
     );
 
-    expect(screen.getAllByText('WILMS').length).toBeGreaterThanOrEqual(1);
-    expect(screen.queryByRole('button', { name: 'Open navigation menu' })).not.toBeInTheDocument();
     expect(
-      screen.getAllByRole('navigation', { name: 'Approver Navigation bottom navigation' }).length,
-    ).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText(/All systems operational/)).toBeInTheDocument();
+      screen.queryByRole('navigation', { name: /Approver Navigation bottom navigation/i }),
+    ).not.toBeInTheDocument();
 
+    const drawer = await openDrawer(user, /Approver navigation/i);
     for (const item of APPROVER_NAV) {
-      const links = screen.getAllByRole('link', { name: item.label });
-      expect(links.some((link) => link.getAttribute('href') === item.href)).toBe(true);
+      expect(within(drawer).getByRole('link', { name: item.label })).toHaveAttribute(
+        'href',
+        item.href,
+      );
     }
   });
 

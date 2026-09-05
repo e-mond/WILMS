@@ -57,7 +57,7 @@ describe('resolveShellBreadcrumbs', () => {
     ]);
     expect(resolveShellBreadcrumbs('/borrower-updates').map((item) => item.label)).toEqual([
       'Dashboard',
-      'Update Requests',
+      'Requests',
     ]);
   });
 });
