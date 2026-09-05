@@ -1,3 +1,4 @@
+import { normalizeBorrowerId } from '@wilms/shared-validation';
 import type { BorrowerIdType } from '@/constants/borrower-registration';
 import { BORROWER_STATUS } from '@/types/borrower';
 import type {
@@ -19,8 +20,8 @@ export function normalizeBorrowerName(name: string): string {
   return name.trim().toLowerCase().replace(/\s+/g, ' ');
 }
 
-export function normalizeIdNumber(idNumber: string): string {
-  return idNumber.trim().toUpperCase();
+export function normalizeIdNumber(idType: BorrowerIdType | string, idNumber: string): string {
+  return normalizeBorrowerId(idType, idNumber);
 }
 
 function findEntryByPhone(phone: string, entries: BorrowerRegistryEntry[]): BorrowerRegistryEntry | undefined {
@@ -34,10 +35,10 @@ function findEntryById(
   idNumber: string,
   entries: BorrowerRegistryEntry[],
 ): BorrowerRegistryEntry | undefined {
-  const normalizedIdNumber = normalizeIdNumber(idNumber);
+  const normalizedIdNumber = normalizeIdNumber(idType, idNumber);
 
   return entries.find(
-    (entry) => entry.idType === idType && normalizeIdNumber(entry.idNumber) === normalizedIdNumber,
+    (entry) => entry.idType === idType && normalizeIdNumber(entry.idType, entry.idNumber) === normalizedIdNumber,
   );
 }
 
