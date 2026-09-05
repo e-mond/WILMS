@@ -77,3 +77,20 @@ Columns: Area | Test | Expected | Actual | Status | Severity | Evidence | Fix
 | type-check | npm run type-check | Pass | See final report | — | — | local/CI | — |
 | domain tests | npm run test -w @wilms/domain | Pass | See final report | — | — | local/CI | — |
 | build | npm run build | Pass | See final report | — | — | local/CI | — |
+
+---
+
+## Sprint 5 Sep 2026 — responsive nav and ops cleanup
+
+| Area | Test | Expected | Actual | Status | Severity | Evidence | Fix |
+|------|------|----------|--------|--------|----------|----------|-----|
+| Mobile nav | All roles use drawer; no clipped pill | Drawer with labels | Drawer for SA/Collector/Approver/Officer/Auditor; bottom pill removed when drawer on | FIXED | P0 | shells.test.tsx | V181-021 |
+| Help FAB | Never overlaps nav | FloatingActionStack clearance | Wired to FloatingActionStack | FIXED | P0 | FloatingShellControls.tsx | V181-021 |
+| SA mobile header | No duplicate Settings | Overflow menu only | Settings icon removed from bar | FIXED | P1 | OfficeShellMobileBar.tsx | V181-021 |
+| Ops page | No reassignment / deploy chrome | Clean ops UI | Sections removed | FIXED | P1 | OperationsDashboardPanel.tsx | V181-022 |
+| System Status | No README link | Operational status only | Documentation row removed | FIXED | P1 | SettingsAsidePanel.tsx | V181-023 |
+| Requests | Central inbox | Updates + holidays | RequestsCentrePanel | FIXED | P1 | /borrower-updates | V181-024 |
+| Org settings | No fake editors | Read-only if unused | Organisation fields read-only | FIXED | P1 | SettingsSectionViews.tsx | V181-025 |
+| Collector profile | Passport photo | Live photo + fallback | 3:4 portrait | FIXED | P2 | CollectorProfilePanel.tsx | V181-026 |
+| type-check | Pass | Pass | VERIFIED | — | local 5 Sep 2026 | — |
+

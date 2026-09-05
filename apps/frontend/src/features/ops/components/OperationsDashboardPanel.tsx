@@ -200,72 +200,8 @@ export function OperationsDashboardPanel() {
         </div>
       </section>
 
-      <section
-        aria-labelledby="ops-reassignment-heading"
-        className="rounded-sm border border-border bg-card p-wilms-4 md:p-wilms-5"
-      >
-        <div className="flex flex-col gap-wilms-3 sm:flex-row sm:items-end sm:justify-between">
-          <div className="min-w-0">
-            <h2 id="ops-reassignment-heading" className="text-heading-3 font-semibold text-text-primary">
-              Reassignment controls
-            </h2>
-            <p className="mt-wilms-1 max-w-2xl text-small text-text-muted">
-              Transfer borrowers between groups, reassign collectors, and request payment-day changes
-              with preview, notifications, and audit logging.
-            </p>
-          </div>
-          <Link
-            href="/ops/reassignment"
-            className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-sm border border-border bg-surface px-wilms-4 text-small font-semibold text-text-primary hover:bg-background"
-          >
-            Open reassignment tools
-          </Link>
-        </div>
-      </section>
-
       {report ? (
         <>
-          <section aria-labelledby="ops-deployment-heading" className="space-y-wilms-2">
-            <h2 id="ops-deployment-heading" className="text-heading-3 font-semibold text-text-primary">
-              Deployment
-            </h2>
-            <dl className="grid gap-wilms-2 text-small sm:grid-cols-2 lg:grid-cols-3">
-              <div>
-                <dt className="text-text-muted">Version</dt>
-                <dd className="font-medium text-text-primary">{report.deployment.version}</dd>
-              </div>
-              <div>
-                <dt className="text-text-muted">Environment</dt>
-                <dd className="font-medium text-text-primary">{report.deployment.environment}</dd>
-              </div>
-              <div>
-                <dt className="text-text-muted">Git commit</dt>
-                <dd className="font-mono text-xs text-text-primary">
-                  {report.deployment.gitCommit?.slice(0, 12) ?? '—'}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-text-muted">Node</dt>
-                <dd className="font-medium text-text-primary">{report.deployment.nodeVersion}</dd>
-              </div>
-              <div>
-                <dt className="text-text-muted">Health</dt>
-                <dd className="font-medium text-text-primary">{report.health.status}</dd>
-              </div>
-              <div>
-                <dt className="text-text-muted">Generated</dt>
-                <dd className="font-medium text-text-primary">
-                  {new Date(report.generatedAt).toLocaleString()}
-                </dd>
-              </div>
-            </dl>
-            {report.health.degradedReasons.length > 0 ? (
-              <p className="text-small text-warning">
-                Degraded: {report.health.degradedReasons.join('; ')}
-              </p>
-            ) : null}
-          </section>
-
           <section aria-labelledby="ops-surfaces-heading" className="space-y-wilms-3">
             <h2 id="ops-surfaces-heading" className="text-heading-3 font-semibold text-text-primary">
               System surfaces

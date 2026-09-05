@@ -95,3 +95,72 @@
 | V181-018 | P3 | Pool capital not reserved at loan create |
 | V181-019 | — | WCAG 2.2 AA certification |
 | V181-020 | — | GhanaPost GPS not in scope |
+
+---
+
+## Sprint 5 Sep 2026 — mobile nav / ops / requests (this sprint)
+
+### V181-021 — Mobile bottom pill nav clipped; Help FAB overlaps
+
+| Field | Value |
+|-------|-------|
+| Severity | P0 |
+| Role | Collector, Approver, Officer, Auditor (+ SA header crowding) |
+| Route | All role shells |
+| Repro | Viewport ≤430px; icons squeeze; Help overlays nav |
+| Root cause | OperationalBottomNavigation rendered every nav item; Help FAB fixed bottom-right z-90 |
+| Fix | Enable mobile drawer for all office/field shells; remove bottom pill when drawer on; Help via FloatingActionStack; drop duplicate Settings icon from mobile bar |
+| Regression test | shells.test.tsx, mobile-sidebar-expanded.test.tsx |
+| Status | Fixed |
+
+### V181-022 — Operations page showed Reassignment + Deployment engineering info
+
+| Field | Value |
+|-------|-------|
+| Severity | P1 |
+| Role | Super Admin |
+| Route | `/ops` |
+| Fix | Removed Reassignment controls and Deployment sections from OperationsDashboardPanel; reassignment remains at `/ops/reassignment` |
+| Status | Fixed |
+
+### V181-023 — System Status aside linked to GitHub README
+
+| Field | Value |
+|-------|-------|
+| Severity | P1 |
+| Role | Super Admin |
+| Route | Settings aside |
+| Fix | Removed Documentation / Project README from SettingsAsidePanel |
+| Status | Fixed |
+
+### V181-024 — Holiday request queue lived only under Settings
+
+| Field | Value |
+|-------|-------|
+| Severity | P1 |
+| Role | Super Admin |
+| Route | `/settings?section=holidays`, `/borrower-updates` |
+| Fix | Central Requests centre at `/borrower-updates` (tabs: borrower updates + holidays); Settings Holidays keeps calendar only; nav label → Requests |
+| Status | Fixed |
+
+### V181-025 — Organisation settings editable but not applied to UI/exports
+
+| Field | Value |
+|-------|-------|
+| Severity | P1 |
+| Role | Super Admin |
+| Route | Settings → Organisation |
+| Root cause | Values saved to DB; UI/theme/exports use design tokens + WILMS_ORG_* constants |
+| Fix | Made Organisation branding fields read-only with honest copy |
+| Status | Fixed |
+
+### V181-026 — Collector profile photo not passport-style
+
+| Field | Value |
+|-------|-------|
+| Severity | P2 |
+| Role | Super Admin |
+| Route | `/collectors/[id]` |
+| Fix | Passport-aspect portrait using live photoUrl with initials fallback |
+| Status | Fixed |
+

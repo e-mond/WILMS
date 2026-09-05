@@ -1,11 +1,10 @@
-import { PendingBorrowerUpdateQueue } from '@/features/borrower-updates/components/PendingBorrowerUpdateQueue';
 import { PageShell } from '@/components/layout/PageShell';
+import { RequestsCentrePanel } from '@/features/requests/components/RequestsCentrePanel';
 
-export default function AdminBorrowerUpdatesPage() {
+export default function AdminRequestsPage() {
   return (
-    <PageShell variant="executive" description="Review and apply collector borrower information requests.">
-      <h1 className="text-heading-1 font-semibold text-text-primary">Pending borrower update requests</h1>
-      <PendingBorrowerUpdateQueue />
+    <PageShell variant="executive">
+      <RequestsCentrePanel />
     </PageShell>
   );
 }
