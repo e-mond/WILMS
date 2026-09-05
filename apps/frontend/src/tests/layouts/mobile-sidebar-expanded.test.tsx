@@ -123,8 +123,9 @@ describe('super admin mobile navigation completeness', () => {
     expect(useUiStore.getState().isMobileNavOpen).toBe(false);
   });
 
-  it('does not expose Super Admin destinations to a collector', () => {
+  it('does not expose Super Admin destinations to a collector', async () => {
     authState.role = USER_ROLE.COLLECTOR;
+    const user = userEvent.setup();
     renderShell(
       <CollectorShell>
         <div>Collector content</div>
@@ -134,11 +135,14 @@ describe('super admin mobile navigation completeness', () => {
     expect(screen.queryByRole('link', { name: 'Operations' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Audit Log' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Loan Pools' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Open navigation menu' })).not.toBeInTheDocument();
+
+    const menuButtons = screen.getAllByRole('button', { name: 'Open navigation menu' });
+    await user.click(menuButtons[menuButtons.length - 1]!);
+    const drawer = await screen.findByRole('dialog', { name: /Collector navigation/i });
+
+    expect(within(drawer).queryByRole('link', { name: 'Operations' })).not.toBeInTheDocument();
     expect(
-      screen.getAllByRole('link', { name: 'Borrowers' }).some(
-        (link) => link.getAttribute('href') === '/collector/my-borrowers',
-      ),
-    ).toBe(true);
+      within(drawer).getByRole('link', { name: 'Borrowers' }),
+    ).toHaveAttribute('href', '/collector/my-borrowers');
   });
 });

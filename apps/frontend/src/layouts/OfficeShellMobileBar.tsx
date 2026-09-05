@@ -1,12 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import { ShellNavbarActions } from '@/components/layout/shell/navbar/ShellNavbarActions';
-import { useAuth } from '@/hooks/useAuth';
 import { useUiStore } from '@/state/uiStore';
-import { resolveSettingsHref } from '@/utils/settings-route';
 import { cn } from '@/utils/cn';
-import { Menu, Settings } from 'lucide-react';
+import { Menu } from 'lucide-react';
 
 export interface OfficeShellMobileBarProps {
   brandTitle?: string;
@@ -20,8 +17,6 @@ export function OfficeShellMobileBar({
   isExecutive = false,
   showNavTrigger = false,
 }: OfficeShellMobileBarProps) {
-  const { user } = useAuth();
-  const settingsHref = resolveSettingsHref(user?.role);
   const openMobileNav = useUiStore((state) => state.openMobileNav);
 
   return (
@@ -56,7 +51,7 @@ export function OfficeShellMobileBar({
 
           <p
             className={cn(
-              'truncate text-sm font-semibold tracking-tight',
+              'min-w-0 truncate text-sm font-semibold tracking-tight',
               isExecutive ? 'text-executive-gold' : 'text-brand-primary',
             )}
           >
@@ -64,16 +59,7 @@ export function OfficeShellMobileBar({
           </p>
         </div>
 
-        <div className="flex shrink-0 items-center gap-1">
-          {user ? (
-            <Link
-              href={settingsHref}
-              className="inline-flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-text-muted transition-colors hover:bg-background hover:text-text-primary"
-            >
-              <Settings className="h-5 w-5" aria-hidden="true" />
-              <span className="sr-only">Settings</span>
-            </Link>
-          ) : null}
+        <div className="flex shrink-0 items-center gap-0.5">
           <ShellNavbarActions compact showDateTime={false} mobileSimplified />
         </div>
       </div>
