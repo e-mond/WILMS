@@ -62,7 +62,7 @@ export async function exportWilmsDocument(
       await downloadWilmsExcel(document, filename);
       return;
     case 'pdf':
-      downloadWilmsPdf(document, filename);
+      await downloadWilmsPdf(document, filename);
       return;
     case 'word': {
       const { downloadWilmsDocx } = await import('@/features/export/engines/docx-engine');
@@ -73,7 +73,7 @@ export async function exportWilmsDocument(
       await printWilmsDocument(document);
       return;
     case 'print-preview':
-      openWilmsPrintPreview(document);
+      await openWilmsPrintPreview(document);
       return;
     default:
       throw new Error(`Unsupported export format: ${format satisfies never}`);
