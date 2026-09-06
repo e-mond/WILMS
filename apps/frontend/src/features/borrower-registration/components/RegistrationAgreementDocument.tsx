@@ -1,8 +1,10 @@
 'use client';
 
-import { Avatar } from '@/components/data-display/Avatar';
 import { WILMS_BRAND_LOGO_PATH } from '@/features/export/constants/branding';
-import type { RegistrationAgreementContent } from '@/utils/registration-agreement-fields';
+import type {
+  RegistrationAgreementContent,
+  SignatureCaptureMode,
+} from '@/utils/registration-agreement-fields';
 import { cn } from '@/utils/cn';
 
 export interface RegistrationAgreementDocumentProps {
@@ -34,39 +36,71 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
   );
 }
 
-function SignatureLine({
+function PassportPhoto({
+  src,
+  alt,
+  size = 'applicant',
+}: {
+  src: string | null;
+  alt: string;
+  size?: 'applicant' | 'guarantor';
+}) {
+  const frameClass =
+    size === 'applicant'
+      ? 'h-36 w-28'
+      : 'h-28 w-24';
+
+  if (src) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={src}
+        alt={alt}
+        className={cn(frameClass, 'rounded-sm border-2 border-brand-primary bg-card object-contain')}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        frameClass,
+        'flex items-center justify-center rounded-sm border-2 border-dashed border-brand-primary bg-card px-wilms-2 text-center text-small text-text-muted',
+      )}
+    >
+      No photograph available
+    </div>
+  );
+}
+
+function SignatureCapture({
   label,
-  imageDataUrl,
-  thumbprintDataUrl,
+  mode,
+  signatureUrl,
+  thumbprintUrl,
   dateLabel,
 }: {
   label: string;
-  imageDataUrl?: string | null;
-  thumbprintDataUrl?: string | null;
+  mode: SignatureCaptureMode;
+  signatureUrl?: string | null;
+  thumbprintUrl?: string | null;
   dateLabel: string;
 }) {
-  const hasMedia = Boolean(imageDataUrl || thumbprintDataUrl);
+  const imageUrl =
+    mode === 'digital' ? signatureUrl : mode === 'thumbprint' ? thumbprintUrl : null;
+  const hasMedia = Boolean(imageUrl);
 
   return (
     <div className="space-y-wilms-3">
       {hasMedia ? (
-        <div className="grid gap-wilms-3 sm:grid-cols-2">
-          {imageDataUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={imageDataUrl}
-              alt={label}
-              className="h-20 w-full rounded-sm border border-border bg-card object-contain"
-            />
-          ) : null}
-          {thumbprintDataUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={thumbprintDataUrl}
-              alt="Thumbprint"
-              className="h-20 w-full rounded-sm border border-border bg-card object-contain"
-            />
-          ) : null}
+        <div className="space-y-wilms-2">
+          <p className="text-small font-semibold text-text-primary">{label}</p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imageUrl!}
+            alt={label}
+            className="h-20 w-full max-w-md rounded-sm border border-border bg-card object-contain"
+          />
         </div>
       ) : (
         <div className="flex items-end gap-wilms-3">
@@ -114,14 +148,7 @@ export function RegistrationAgreementDocument({
             {content.documentTitle || legal.formTitle}
           </h1>
           <p className="mt-wilms-2 text-small text-text-muted">
-            {content.registrationReference ? (
-              <span className="font-semibold text-text-primary">{content.registrationReference}</span>
-            ) : (
-              <span>Reference pending assignment</span>
-            )}
-            {' · '}
             Generated {content.generatedAt}
-            {content.applicationStatus ? ` · ${content.applicationStatus}` : null}
           </p>
           <p className="mx-auto mt-wilms-3 max-w-3xl text-left text-small leading-relaxed text-text-primary">
             {legal.instructionText}
@@ -134,18 +161,7 @@ export function RegistrationAgreementDocument({
         <section>
           <SectionHeading>Applicant Passport Photograph</SectionHeading>
           <div className="mt-wilms-3 flex justify-center">
-            {content.borrowerPhotoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={content.borrowerPhotoUrl}
-                alt="Applicant passport photograph"
-                className="h-36 w-28 rounded-sm border-2 border-brand-primary bg-card object-contain"
-              />
-            ) : (
-              <div className="flex h-36 w-28 items-center justify-center rounded-sm border-2 border-dashed border-brand-primary bg-card px-wilms-2 text-center text-small text-text-muted">
-                Photograph not available
-              </div>
-            )}
+            <PassportPhoto src={content.borrowerPhotoUrl} alt="Applicant passport photograph" />
           </div>
         </section>
 
@@ -166,16 +182,11 @@ export function RegistrationAgreementDocument({
         <section>
           <SectionHeading>Guarantor Information</SectionHeading>
           <div className="mt-wilms-4 flex flex-wrap items-start justify-center gap-wilms-4">
-            {content.guarantorPhotoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={content.guarantorPhotoUrl}
-                alt="Guarantor photograph"
-                className="h-28 w-24 shrink-0 rounded-sm border border-border bg-card object-contain"
-              />
-            ) : (
-              <Avatar label={content.guarantorRows[0]?.value ?? 'Guarantor'} size="lg" />
-            )}
+            <PassportPhoto
+              src={content.guarantorPhotoUrl}
+              alt="Guarantor photograph"
+              size="guarantor"
+            />
             <div className="min-w-0 flex-1">
               <FieldGrid rows={content.guarantorRows} />
             </div>
@@ -188,10 +199,11 @@ export function RegistrationAgreementDocument({
             {legal.guarantorDeclaration}
           </p>
           <div className="mt-wilms-4">
-            <SignatureLine
+            <SignatureCapture
               label="Guarantor Signature / Thumbprint:"
-              imageDataUrl={content.guarantorSignature}
-              thumbprintDataUrl={content.guarantorThumbprint}
+              mode={content.guarantorSignatureMode}
+              signatureUrl={content.guarantorSignature}
+              thumbprintUrl={content.guarantorThumbprint}
               dateLabel={content.signedDate}
             />
           </div>
@@ -203,10 +215,11 @@ export function RegistrationAgreementDocument({
             {legal.borrowerDeclaration}
           </p>
           <div className="mt-wilms-4">
-            <SignatureLine
+            <SignatureCapture
               label="Applicant Signature / Thumbprint:"
-              imageDataUrl={content.borrowerSignature}
-              thumbprintDataUrl={content.borrowerThumbprint}
+              mode={content.borrowerSignatureMode}
+              signatureUrl={content.borrowerSignature}
+              thumbprintUrl={content.borrowerThumbprint}
               dateLabel={content.signedDate}
             />
           </div>
@@ -239,9 +252,10 @@ export function RegistrationAgreementDocument({
             </div>
           </dl>
           <div className="mt-wilms-4">
-            <SignatureLine
+            <SignatureCapture
               label="Officer Signature:"
-              imageDataUrl={content.officerSignature}
+              mode={content.officerSignature ? 'digital' : 'manual'}
+              signatureUrl={content.officerSignature}
               dateLabel={content.signedDate}
             />
           </div>

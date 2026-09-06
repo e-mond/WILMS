@@ -165,7 +165,7 @@ export async function downloadRegistrationAgreementDocx(
       spacing: { after: 80 },
       children: [
         new TextRun({
-          text: `Reference: ${content.registrationReference ?? 'Pending assignment'} · ${content.applicationStatus ?? 'Pending review'}`,
+          text: `Generated ${content.generatedAt}`,
           size: 18,
           color: MUTED,
         }),
