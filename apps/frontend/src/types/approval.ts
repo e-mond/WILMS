@@ -34,11 +34,23 @@ export interface BorrowerReviewDetail extends BorrowerDetail {
   guarantorName: string;
   guarantorPhone: string;
   guarantorRelationship: string;
+  guarantorIdType?: BorrowerIdType | '';
+  guarantorIdNumber?: string;
   photoFileName: string;
   photoMimeType: string;
   photoUrl?: string | null;
   guarantorPhotoUrl?: string | null;
   idDocumentUrl?: string | null;
+  photoUploadId?: string | null;
+  guarantorPhotoUploadId?: string | null;
+  idDocumentUploadId?: string | null;
+  borrowerSignatureUploadId?: string | null;
+  borrowerThumbprintUploadId?: string | null;
+  guarantorSignatureUploadId?: string | null;
+  guarantorThumbprintUploadId?: string | null;
+  officerSignatureUploadId?: string | null;
+  borrowerThumbprintManual?: boolean;
+  guarantorThumbprintManual?: boolean;
   registeredByOfficerName: string;
   registeredByOfficerId?: string;
 }

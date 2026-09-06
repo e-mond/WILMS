@@ -55,6 +55,54 @@ describe('registration edit helpers', () => {
     expect(values.guarantorPreviewUrl).toBe('https://cdn.example.com/guarantor.jpg');
   });
 
+  it('restores guarantor identity and signature capture state from review detail', () => {
+    const values = reviewDetailToFormValues({
+      id: 'borrower-1',
+      fullName: 'Ama Mensah',
+      phone: '0240000001',
+      status: 'PENDING',
+      groupName: '',
+      groupId: 'group-1',
+      nationalId: 'GHA-123',
+      community: 'Accra',
+      registeredAt: '2026-01-01T00:00:00.000Z',
+      dateOfBirth: '1990-01-01',
+      gender: 'FEMALE',
+      nationality: 'Ghanaian',
+      idType: 'GHANA_CARD',
+      idNumber: 'GHA-123456789-1',
+      houseAddress: '12 High St',
+      gpsAddress: 'GA-001',
+      city: 'Accra',
+      region: 'Greater Accra',
+      district: 'Accra Metro',
+      businessName: 'Ama Shop',
+      businessAddress: 'Market Rd',
+      typeOfWork: 'Trading',
+      guarantorName: 'Kofi Mensah',
+      guarantorPhone: '0240000002',
+      guarantorRelationship: 'Brother',
+      guarantorIdType: 'VOTER_ID',
+      guarantorIdNumber: 'B02020',
+      photoFileName: 'photo.jpg',
+      photoMimeType: 'image/jpeg',
+      photoUrl: 'https://cdn.example.com/photo.jpg',
+      guarantorPhotoUrl: 'https://cdn.example.com/guarantor.jpg',
+      photoUploadId: 'photo-1',
+      guarantorPhotoUploadId: 'guarantor-photo-1',
+      borrowerSignatureUploadId: 'sig-1',
+      guarantorThumbprintManual: true,
+      registeredByOfficerName: 'Officer One',
+    });
+
+    expect(values.guarantorIdType).toBe('VOTER_ID');
+    expect(values.guarantorIdNumber).toBe('B02020');
+    expect(values.guarantorPhone).toBe('0240000002');
+    expect(values.guarantorPhotoUploadId).toBe('guarantor-photo-1');
+    expect(values.borrowerSignatureUploadId).toBe('sig-1');
+    expect(values.guarantorThumbprintManualPlaceholder).toBe(true);
+  });
+
   it('strips invalid file objects from draft payloads', () => {
     const values = normalizeDraftFormValues({
       fullName: 'Draft User',

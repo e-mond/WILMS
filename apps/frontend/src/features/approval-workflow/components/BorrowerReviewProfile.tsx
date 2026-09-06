@@ -227,6 +227,8 @@ export function BorrowerReviewProfile({
           ['Name', formatField(borrower.guarantorName)],
           ['Phone', formatField(borrower.guarantorPhone)],
           ['Relationship', formatField(borrower.guarantorRelationship)],
+          ['ID type', formatField(borrower.guarantorIdType)],
+          ['ID number', formatField(borrower.guarantorIdNumber)],
         ]}
       />
 
