@@ -1194,6 +1194,7 @@ export function BorrowerRegistrationWizard() {
                   setValue('guarantorIdNumber', '', { shouldDirty: true });
                   setValue('guarantorPhoto', null, { shouldDirty: true });
                   setValue('guarantorPhotoUploadId', undefined, { shouldDirty: true });
+                  setValue('guarantorPreviewUrl', null, { shouldDirty: true });
                   return;
                 }
 
@@ -1214,9 +1215,13 @@ export function BorrowerRegistrationWizard() {
                     shouldValidate: true,
                   });
                 }
-                if (lookup.photoUploadId) {
+                if (lookup.photoUploadId || lookup.photoUrl) {
                   setValue('guarantorPhotoUploadId', lookup.photoUploadId, { shouldDirty: true });
                   setValue('guarantorPhoto', null, { shouldDirty: true });
+                  setValue('guarantorPreviewUrl', lookup.photoUrl ?? null, { shouldDirty: true });
+                } else {
+                  setValue('guarantorPhotoUploadId', undefined, { shouldDirty: true });
+                  setValue('guarantorPreviewUrl', null, { shouldDirty: true });
                 }
                 if (lookup.isGroupLeader) {
                   setValue('guarantorRelationship', 'Group Leader', {
@@ -1325,14 +1330,9 @@ export function BorrowerRegistrationWizard() {
           <FormField
             label="Guarantor passport photo"
             htmlFor="guarantorPhoto"
-            required={!selectedGuarantor?.photoUploadId}
+            required={!selectedGuarantor?.photoUploadId && !selectedGuarantor?.photoUrl}
             error={errors.guarantorPhoto?.message}
             className="md:col-span-2"
-            hint={
-              selectedGuarantor?.photoUploadId
-                ? 'Photo loaded from the existing WILMS record.'
-                : undefined
-            }
           >
             <Controller
               control={control}
@@ -1346,7 +1346,10 @@ export function BorrowerRegistrationWizard() {
                   error={errors.guarantorPhoto?.message}
                   onBlur={field.onBlur}
                   onChange={field.onChange}
-                  disabled={Boolean(selectedGuarantor?.photoUploadId)}
+                  disabled={Boolean(selectedGuarantor?.photoUploadId || selectedGuarantor?.photoUrl)}
+                  existingPreviewUrl={
+                    selectedGuarantor?.photoUrl ?? watch('guarantorPreviewUrl') ?? null
+                  }
                   registrationSessionId={registrationSessionId}
                   officerId={user?.id}
                   captureTarget="guarantor"
@@ -1401,6 +1404,7 @@ export function BorrowerRegistrationWizard() {
                   error={errors.photo?.message}
                   onBlur={field.onBlur}
                   onChange={field.onChange}
+                  existingPreviewUrl={watch('photoPreviewUrl') ?? null}
                   registrationSessionId={registrationSessionId}
                   officerId={user?.id}
                   captureTarget="borrower"

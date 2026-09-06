@@ -23,6 +23,8 @@ export interface PhotoUploadProps {
   error?: string;
   disabled?: boolean;
   className?: string;
+  /** Remote/existing passport photo URL when no local File is selected. */
+  existingPreviewUrl?: string | null;
   registrationSessionId?: string;
   officerId?: string;
   captureTarget?: 'borrower' | 'guarantor' | 'id_document';
@@ -48,6 +50,7 @@ export function PhotoUpload({
   error,
   disabled = false,
   className,
+  existingPreviewUrl = null,
   registrationSessionId,
   officerId,
   captureTarget = 'borrower',
@@ -73,13 +76,13 @@ export function PhotoUpload({
         URL.revokeObjectURL(blobUrlRef.current);
         blobUrlRef.current = null;
       }
-      setPreviewUrl(null);
+      setPreviewUrl(existingPreviewUrl?.trim() || null);
       return;
     }
 
     const objectUrl = resolveMediaPreviewUrl(value);
     if (!objectUrl) {
-      setPreviewUrl(null);
+      setPreviewUrl(existingPreviewUrl?.trim() || null);
       return;
     }
 
@@ -95,7 +98,7 @@ export function PhotoUpload({
         blobUrlRef.current = null;
       }
     };
-  }, [value]);
+  }, [existingPreviewUrl, value]);
 
   const displayError = error ?? localError;
   const showError = hasError || Boolean(displayError);

@@ -72,6 +72,7 @@ function recordToInsert(record: BorrowerRecord) {
     profile: record.profile,
     photoUploadId: record.profile.photoUploadId ?? null,
     guarantorPhotoUploadId: record.profile.guarantorPhotoUploadId ?? null,
+    idDocumentUploadId: record.profile.idDocumentUploadId ?? null,
   };
 }
 

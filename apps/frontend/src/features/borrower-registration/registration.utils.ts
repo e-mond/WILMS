@@ -2,6 +2,7 @@ import type { BorrowerRegistrationFormValues } from '@/types/borrower-registrati
 import type { RegisterBorrowerPayload } from '@/types/borrower-registration';
 import type { BorrowerRegistrationInput } from '@/features/borrower-registration/registration.schema';
 import type { BorrowerReviewDetail } from '@/types/approval';
+import type { BorrowerIdType } from '@/constants/borrower-registration';
 
 export const DEFAULT_REGISTRATION_VALUES: BorrowerRegistrationFormValues = {
   fullName: '',
@@ -67,10 +68,22 @@ export function reviewDetailToFormValues(detail: BorrowerReviewDetail): Borrower
     guarantorName: detail.guarantorName ?? '',
     guarantorPhone: detail.guarantorPhone ?? '',
     guarantorRelationship: detail.guarantorRelationship ?? '',
+    guarantorIdType: (detail.guarantorIdType as BorrowerIdType | '') || '',
+    guarantorIdNumber: detail.guarantorIdNumber ?? '',
     photo: null,
     guarantorPhoto: null,
     photoPreviewUrl: detail.photoUrl ?? null,
     guarantorPreviewUrl: detail.guarantorPhotoUrl ?? null,
+    photoUploadId: detail.photoUploadId ?? undefined,
+    guarantorPhotoUploadId: detail.guarantorPhotoUploadId ?? undefined,
+    idDocumentUploadId: detail.idDocumentUploadId ?? undefined,
+    borrowerSignatureUploadId: detail.borrowerSignatureUploadId ?? undefined,
+    borrowerThumbprintUploadId: detail.borrowerThumbprintUploadId ?? undefined,
+    guarantorSignatureUploadId: detail.guarantorSignatureUploadId ?? undefined,
+    guarantorThumbprintUploadId: detail.guarantorThumbprintUploadId ?? undefined,
+    officerSignatureUploadId: detail.officerSignatureUploadId ?? undefined,
+    borrowerThumbprintManualPlaceholder: Boolean(detail.borrowerThumbprintManual),
+    guarantorThumbprintManualPlaceholder: Boolean(detail.guarantorThumbprintManual),
   };
 }
 
@@ -141,6 +154,8 @@ export function toRegisterBorrowerPayload(
     guarantorName: input.guarantorName,
     guarantorPhone: input.guarantorPhone,
     guarantorRelationship: input.guarantorRelationship,
+    guarantorIdType: input.guarantorIdType || undefined,
+    guarantorIdNumber: input.guarantorIdNumber || undefined,
     photoFileName: input.photoUploadId ?? (input.photo instanceof File ? input.photo.name : 'photo'),
     photoMimeType: input.photo instanceof File ? input.photo.type : 'image/jpeg',
     photoUploadId: input.photoUploadId,
@@ -151,5 +166,7 @@ export function toRegisterBorrowerPayload(
     guarantorSignatureUploadId: input.guarantorSignatureUploadId,
     guarantorThumbprintUploadId: input.guarantorThumbprintUploadId,
     officerSignatureUploadId: input.officerSignatureUploadId,
+    borrowerThumbprintManualPlaceholder: Boolean(input.borrowerThumbprintManualPlaceholder),
+    guarantorThumbprintManualPlaceholder: Boolean(input.guarantorThumbprintManualPlaceholder),
   };
 }

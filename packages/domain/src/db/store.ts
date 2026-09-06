@@ -22,11 +22,20 @@ export interface BorrowerProfile {
   guarantorName: string;
   guarantorPhone: string;
   guarantorRelationship: string;
+  guarantorIdType?: string;
+  guarantorIdNumber?: string;
   photoFileName: string;
   photoMimeType: string;
   photoUploadId?: string;
   guarantorPhotoUploadId?: string;
   idDocumentUploadId?: string;
+  borrowerSignatureUploadId?: string;
+  borrowerThumbprintUploadId?: string;
+  guarantorSignatureUploadId?: string;
+  guarantorThumbprintUploadId?: string;
+  officerSignatureUploadId?: string;
+  borrowerThumbprintManual?: boolean;
+  guarantorThumbprintManual?: boolean;
 }
 
 export interface BorrowerRecord {

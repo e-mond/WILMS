@@ -118,6 +118,14 @@ function registryEntryToDetail(entry: BorrowerRegistryEntry): BorrowerDetail {
 }
 
 function registryEntryToReview(entry: BorrowerRegistryEntry): BorrowerReviewDetail {
+  const guarantorPhotoUrl = entry.profile.guarantorPhotoUploadId
+    ? resolveMockPhotoUrl({
+        name: entry.profile.guarantorName,
+        id: `${entry.id}-guarantor`,
+        photoUploadId: entry.profile.guarantorPhotoUploadId,
+      })
+    : null;
+
   return {
     ...registryEntryToDetail(entry),
     dateOfBirth: entry.profile.dateOfBirth,
@@ -139,14 +147,22 @@ function registryEntryToReview(entry: BorrowerRegistryEntry): BorrowerReviewDeta
     guarantorName: entry.profile.guarantorName,
     guarantorPhone: entry.profile.guarantorPhone,
     guarantorRelationship: entry.profile.guarantorRelationship,
+    guarantorIdType: entry.profile.guarantorIdType,
+    guarantorIdNumber: entry.profile.guarantorIdNumber,
     photoFileName: entry.profile.photoFileName,
     photoMimeType: entry.profile.photoMimeType,
     photoUrl: registryEntryPhotoUrl(entry),
-    guarantorPhotoUrl: resolveMockPhotoUrl({
-      name: entry.profile.guarantorName,
-      id: `${entry.id}-guarantor`,
-      photoUploadId: entry.profile.guarantorPhotoUploadId,
-    }),
+    guarantorPhotoUrl,
+    photoUploadId: entry.profile.photoUploadId ?? null,
+    guarantorPhotoUploadId: entry.profile.guarantorPhotoUploadId ?? null,
+    idDocumentUploadId: entry.profile.idDocumentUploadId ?? null,
+    borrowerSignatureUploadId: entry.profile.borrowerSignatureUploadId ?? null,
+    borrowerThumbprintUploadId: entry.profile.borrowerThumbprintUploadId ?? null,
+    guarantorSignatureUploadId: entry.profile.guarantorSignatureUploadId ?? null,
+    guarantorThumbprintUploadId: entry.profile.guarantorThumbprintUploadId ?? null,
+    officerSignatureUploadId: entry.profile.officerSignatureUploadId ?? null,
+    borrowerThumbprintManual: Boolean(entry.profile.borrowerThumbprintManual),
+    guarantorThumbprintManual: Boolean(entry.profile.guarantorThumbprintManual),
     registeredByOfficerName: getOfficerDisplayName(entry.registeredByOfficerId),
   };
 }
@@ -583,6 +599,17 @@ const borrowerServiceMock: IBorrowerService = {
       excludeBorrowerId: context?.excludeBorrowerId,
     });
 
+    const photoUploadId =
+      asBorrower?.profile.photoUploadId ?? linked[0]?.profile.guarantorPhotoUploadId;
+    const photoUrl = photoUploadId
+      ? resolveMockPhotoUrl({
+          name,
+          id: asBorrower?.id ?? `${linked[0]?.id}-guarantor`,
+          photoFileName: asBorrower?.profile.photoFileName,
+          photoUploadId,
+        })
+      : null;
+
     return {
       name,
       phone,
@@ -592,8 +619,8 @@ const borrowerServiceMock: IBorrowerService = {
       groupName: asBorrower?.groupName,
       idType: asBorrower?.idType,
       idNumber: asBorrower?.idNumber,
-      photoUploadId: undefined,
-      photoUrl: null,
+      photoUploadId,
+      photoUrl,
       borrowerId: asBorrower?.id,
       isGroupLeader: false,
       isBlacklisted: asBorrower?.status === 'BLACKLISTED',
