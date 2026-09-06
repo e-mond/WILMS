@@ -1,4 +1,5 @@
 import { buildRegistrationAgreementPrintHtml } from '@/features/export/builders/registration-agreement-print-html';
+import { prepareRegistrationAgreementForExport } from '@/features/export/utils/prepare-registration-agreement-export';
 import {
   WILMS_CONFIDENTIALITY_NOTICE,
   WILMS_EXPORT_COLORS,
@@ -111,9 +112,10 @@ function renderSection(section: WilmsExportSection): string {
   }
 }
 
-export function buildWilmsPrintHtml(document: WilmsExportDocument): string {
+export async function buildWilmsPrintHtml(document: WilmsExportDocument): Promise<string> {
   if (document.registrationAgreement) {
-    return buildRegistrationAgreementPrintHtml(document.registrationAgreement);
+    const prepared = await prepareRegistrationAgreementForExport(document.registrationAgreement);
+    return buildRegistrationAgreementPrintHtml(prepared);
   }
 
   const sections = document.sections.map(renderSection).join('');
@@ -464,7 +466,7 @@ export async function printWilmsDocument(exportDocument: WilmsExportDocument): P
   }
 
   try {
-    const html = buildWilmsPrintHtml(exportDocument);
+    const html = await buildWilmsPrintHtml(exportDocument);
     const frame = createPrintFrame(html);
 
     if (!frame) {
@@ -478,13 +480,13 @@ export async function printWilmsDocument(exportDocument: WilmsExportDocument): P
   }
 }
 
-export function openWilmsPrintPreview(exportDocument: WilmsExportDocument): WilmsPrintResult {
+export async function openWilmsPrintPreview(exportDocument: WilmsExportDocument): Promise<WilmsPrintResult> {
   if (typeof window === 'undefined') {
     return { ok: false, reason: 'iframe_unavailable' };
   }
 
   try {
-    const html = buildWilmsPrintHtml(exportDocument);
+    const html = await buildWilmsPrintHtml(exportDocument);
     let root = window.document.getElementById(PREVIEW_ROOT_ID);
 
     if (!root) {

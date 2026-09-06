@@ -26,10 +26,7 @@ export function buildRegistrationAgreementExportDocument(
     input.legal,
     input.officerName,
     input.agreementMedia,
-    {
-      documentTitle: 'Borrower Registration Review',
-      ...input.meta,
-    },
+    input.meta,
   );
 
   const reportId = generateReportId(WILMS_REPORT_TYPE.BORROWER_PROFILE);
@@ -46,14 +43,6 @@ export function buildRegistrationAgreementExportDocument(
     },
     registrationAgreement: content,
     sections: [
-      {
-        title: 'Application Information',
-        type: 'summary',
-        summaryItems: content.applicationRows.map((row) => ({
-          label: row.label,
-          value: row.value,
-        })),
-      },
       {
         title: content.legal.programName,
         type: 'summary',
@@ -74,14 +63,6 @@ export function buildRegistrationAgreementExportDocument(
         title: 'Guarantor Information',
         type: 'summary',
         summaryItems: content.guarantorRows.map((row) => ({
-          label: row.label,
-          value: row.value,
-        })),
-      },
-      {
-        title: 'Documents',
-        type: 'summary',
-        summaryItems: content.documentRows.map((row) => ({
           label: row.label,
           value: row.value,
         })),

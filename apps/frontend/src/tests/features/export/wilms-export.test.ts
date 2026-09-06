@@ -40,7 +40,7 @@ describe('WILMS export framework', () => {
     expect(csv).toContain('Executive Summary');
   });
 
-  it('builds dedicated print HTML without shell navigation', () => {
+  it('builds dedicated print HTML without shell navigation', async () => {
     const document = buildTabularExportDocument({
       reportType: WILMS_REPORT_TYPE.LOAN_POOL,
       reportTitle: 'Loan Pools Export',
@@ -50,7 +50,7 @@ describe('WILMS export framework', () => {
       reportId: 'WILMS-POL-2026-000045',
     });
 
-    const html = buildWilmsPrintHtml(document);
+    const html = await buildWilmsPrintHtml(document);
 
     expect(html).toContain('WILMS');
     expect(html).toContain("Women's Interest-Free Loan Management System");
@@ -168,12 +168,11 @@ describe('printWilmsDocument', () => {
     expect(result).toEqual({ ok: false, reason: 'print_blocked' });
   });
 
-  it('openWilmsPrintPreview returns a result object and never throws', () => {
-    expect(() => openWilmsPrintPreview(sampleDocument)).not.toThrow();
+  it('openWilmsPrintPreview returns a result object and never throws', async () => {
+    await expect(openWilmsPrintPreview(sampleDocument)).resolves.toEqual(
+      expect.objectContaining({ ok: expect.any(Boolean) }),
+    );
 
-    const result = openWilmsPrintPreview(sampleDocument);
-
-    expect(result).toEqual(expect.objectContaining({ ok: expect.any(Boolean) }));
     document.getElementById('wilms-print-preview-root')?.remove();
   });
 });
