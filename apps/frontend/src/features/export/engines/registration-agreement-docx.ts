@@ -185,11 +185,7 @@ export async function downloadRegistrationAgreementDocx(
     new Paragraph({ spacing: { before: 240 } }),
     sectionTable('Work / Business Information', content.workRows),
     new Paragraph({ spacing: { before: 240 } }),
-    sectionTable('Application Information', content.applicationRows),
-    new Paragraph({ spacing: { before: 240 } }),
     sectionTable('Guarantor Information', content.guarantorRows),
-    new Paragraph({ spacing: { before: 240 } }),
-    sectionTable('Documents', content.documentRows),
     new Paragraph({ spacing: { before: 240 } }),
     ...declarationBlock('Guarantor Declaration', legal.guarantorDeclaration),
     new Paragraph({ spacing: { before: 200 } }),
@@ -214,7 +210,7 @@ export async function downloadRegistrationAgreementDocx(
       spacing: { before: 160, after: 80 },
       children: [
         new TextRun({
-          text: `Officer Verification — ${content.officerName}`,
+          text: `Officer Verification — ${content.officerName}${content.officerId ? ` (${content.officerId})` : ''}`,
           bold: true,
           size: 22,
           color: PRIMARY,

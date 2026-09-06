@@ -60,7 +60,7 @@ export default function OfficerRegistrationDetailPage() {
                   <WilmsExportActions
                     document={exportDocument}
                     filenameBase={buildBrandedExportFilenameBase([
-                      'Borrower_Registration_Review',
+                      'Borrower_Registration',
                       data.fullName,
                       data.displayId,
                     ])}

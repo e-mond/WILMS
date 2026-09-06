@@ -1,4 +1,5 @@
 import { buildLocationHierarchyRows, deriveCityTown } from '@/utils/location-hierarchy';
+import { resolveUserDisplayId } from '@/utils/entity-display-id';
 import type { BorrowerRegistrationFormValues } from '@/types/borrower-registration';
 import type { RegistrationLegalConfig } from '@/types/registration-legal';
 
@@ -25,6 +26,10 @@ export interface RegistrationAgreementDocumentMeta {
   applicationStatus?: string | null;
   hasIdDocument?: boolean;
   documentTitle?: string;
+  /** Human-readable officer staff ID when available. */
+  officerId?: string | null;
+  /** Optional embedded brand logo data URL for deterministic PDF/print rendering. */
+  logoDataUrl?: string | null;
 }
 
 export interface RegistrationAgreementContent {
@@ -34,11 +39,10 @@ export interface RegistrationAgreementContent {
   applicationStatus: string | null;
   hasIdDocument: boolean;
   generatedAt: string;
+  logoDataUrl: string | null;
   applicantRows: AgreementFieldRow[];
   workRows: AgreementFieldRow[];
   guarantorRows: AgreementFieldRow[];
-  applicationRows: AgreementFieldRow[];
-  documentRows: AgreementFieldRow[];
   borrowerPhotoUrl: string | null;
   guarantorPhotoUrl: string | null;
   borrowerSignature: string | null;
@@ -47,12 +51,26 @@ export interface RegistrationAgreementContent {
   guarantorThumbprint: string | null;
   officerSignature: string | null;
   officerName: string;
+  officerId: string | null;
   signedDate: string;
 }
 
 function display(value: string | null | undefined, fallback = 'Not provided'): string {
   const trimmed = value?.trim();
   return trimmed ? trimmed : fallback;
+}
+
+function humanizeToken(value: string | null | undefined): string {
+  const trimmed = value?.trim();
+  if (!trimmed) {
+    return 'Not provided';
+  }
+
+  return trimmed
+    .replace(/_/g, ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+    .replace(/\bId\b/g, 'ID');
 }
 
 function looksLikeUuid(value: string | null | undefined): boolean {
@@ -71,6 +89,19 @@ export function resolveReadableRegistrationReference(
   return trimmed;
 }
 
+function resolveReadableOfficerId(officerId: string | null | undefined): string | null {
+  const trimmed = officerId?.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  if (looksLikeUuid(trimmed)) {
+    return resolveUserDisplayId(trimmed);
+  }
+
+  return trimmed;
+}
+
 export function buildRegistrationAgreementContent(
   values: BorrowerRegistrationFormValues,
   legal: RegistrationLegalConfig,
@@ -80,7 +111,8 @@ export function buildRegistrationAgreementContent(
 ): RegistrationAgreementContent {
   const registrationReference = resolveReadableRegistrationReference(meta.registrationReference);
   const applicationStatus = meta.applicationStatus?.trim() || null;
-  const hasIdDocument = Boolean(meta.hasIdDocument);
+  const hasIdDocument = Boolean(meta.hasIdDocument) || Boolean(values.idDocumentUploadId);
+  const officerId = resolveReadableOfficerId(meta.officerId);
   const generatedAt = new Date().toLocaleString('en-GB', {
     day: 'numeric',
     month: 'long',
@@ -97,14 +129,14 @@ export function buildRegistrationAgreementContent(
   const applicantRows: AgreementFieldRow[] = [
     { label: 'Full Name', value: display(values.fullName) },
     { label: 'Date of Birth', value: display(values.dateOfBirth) },
-    { label: 'Gender', value: display(values.gender) },
-    { label: 'Phone', value: display(values.phone) },
+    { label: 'Gender', value: humanizeToken(values.gender) },
+    { label: 'Phone Number', value: display(values.phone) },
     { label: 'Email', value: display(values.email) },
     { label: 'Nationality', value: display(values.nationality) },
-    { label: 'ID Type', value: display(values.idType?.replace(/_/g, ' ')) },
-    { label: 'ID Number', value: display(values.idNumber) },
-    { label: 'Home Address', value: display(values.houseAddress) },
-    { label: 'Ghana Digital Address / GPS', value: display(values.gpsAddress) },
+    { label: 'Identification Type', value: humanizeToken(values.idType) },
+    { label: 'Identification Number', value: display(values.idNumber) },
+    { label: 'Residential Address', value: display(values.houseAddress) },
+    { label: 'Ghana Digital Address', value: display(values.gpsAddress) },
     ...buildLocationHierarchyRows({
       region: values.region,
       district: values.district,
@@ -113,61 +145,44 @@ export function buildRegistrationAgreementContent(
       community: values.city,
       city: deriveCityTown(values.district, values.city),
     }).map(([label, value]) => ({ label, value })),
+    {
+      label: 'Registration / Application Reference',
+      value: registrationReference ?? 'Assigned after submission',
+    },
+    { label: 'Borrower ID', value: registrationReference ?? 'Assigned after submission' },
+    { label: 'Application Status', value: display(applicationStatus, 'Pending review') },
   ];
+
+  const workType =
+    values.typeOfWork === 'Other' && values.typeOfWorkOther?.trim()
+      ? values.typeOfWorkOther.trim()
+      : values.typeOfWork;
 
   const workRows: AgreementFieldRow[] = [
     { label: 'Business Name', value: display(values.businessName) },
-    { label: 'Type of Work', value: display(values.typeOfWork) },
+    { label: 'Business Type / Occupation', value: display(workType) },
     { label: 'Business Address', value: display(values.businessAddress) },
   ];
 
   const guarantorRows: AgreementFieldRow[] = [
     { label: 'Full Name', value: display(values.guarantorName) },
-    { label: 'Relationship', value: display(values.guarantorRelationship) },
     { label: 'Contact', value: display(values.guarantorPhone) },
-    { label: 'ID Type', value: display(values.guarantorIdType?.replace(/_/g, ' ')) },
+    { label: 'Relationship', value: display(values.guarantorRelationship) },
+    { label: 'ID Type', value: humanizeToken(values.guarantorIdType) },
     { label: 'ID Number', value: display(values.guarantorIdNumber) },
-  ];
-
-  const applicationRows: AgreementFieldRow[] = [
-    {
-      label: 'Registration Reference',
-      value: registrationReference ?? 'Assigned after submission',
-    },
-    { label: 'Application Status', value: display(applicationStatus, 'Pending review') },
-    { label: 'Registration Officer', value: display(officerName) },
-    { label: 'Document Date', value: signedDate },
-  ];
-
-  const documentRows: AgreementFieldRow[] = [
-    {
-      label: 'Borrower Passport Photo',
-      value: media.borrowerPhotoUrl ? 'Attached' : 'Not attached',
-    },
-    {
-      label: 'Guarantor Passport Photo',
-      value: media.guarantorPhotoUrl ? 'Attached' : 'Not attached',
-    },
-    {
-      label: 'ID Document Attachment',
-      value: hasIdDocument || Boolean(values.idDocumentUploadId)
-        ? 'Attached'
-        : 'Not attached',
-    },
   ];
 
   return {
     legal,
-    documentTitle: meta.documentTitle?.trim() || 'Borrower Registration Review',
+    documentTitle: meta.documentTitle?.trim() || legal.formTitle || 'LOAN APPLICATION & AGREEMENT FORM',
     registrationReference,
     applicationStatus,
-    hasIdDocument: hasIdDocument || Boolean(values.idDocumentUploadId),
+    hasIdDocument,
     generatedAt,
+    logoDataUrl: meta.logoDataUrl?.trim() || null,
     applicantRows,
     workRows,
     guarantorRows,
-    applicationRows,
-    documentRows,
     borrowerPhotoUrl: media.borrowerPhotoUrl,
     guarantorPhotoUrl: media.guarantorPhotoUrl,
     borrowerSignature: media.borrowerSignatureUrl ?? null,
@@ -176,6 +191,7 @@ export function buildRegistrationAgreementContent(
     guarantorThumbprint: media.guarantorThumbprintManual ? null : media.guarantorThumbprintUrl ?? null,
     officerSignature: media.officerSignatureUrl ?? null,
     officerName,
+    officerId,
     signedDate,
   };
 }

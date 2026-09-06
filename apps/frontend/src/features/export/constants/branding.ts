@@ -2,6 +2,9 @@ export const WILMS_ORG_NAME = 'WILMS';
 export const WILMS_ORG_FULL_NAME = "Women's Interest-Free Loan Management System";
 export const WILMS_ORG_IDENTIFIER = 'WILMS-GH-001';
 
+/** Existing generated brand logo used across auth, splash, and official documents. */
+export const WILMS_BRAND_LOGO_PATH = '/icons/icon-192.png';
+
 export const WILMS_EXPORT_COLORS = {
   primary: '#0F6E56',
   accent: '#BA7517',
