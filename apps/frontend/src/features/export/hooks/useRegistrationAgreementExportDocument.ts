@@ -70,7 +70,7 @@ export function useRegistrationAgreementExportDocument(
         registrationReference: detail.displayId,
         applicationStatus: detail.status,
         hasIdDocument: Boolean(detail.idDocumentUrl),
-        documentTitle: 'Borrower Registration Review',
+        officerId: detail.registeredByOfficerId,
       },
     });
   }, [agreementMedia, detail, generatedBy, legalConfig, officerName]);

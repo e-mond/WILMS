@@ -8,6 +8,7 @@ import {
   WILMS_ORG_NAME,
 } from '@/features/export/constants/branding';
 import { buildRegistrationAgreementPrintHtml } from '@/features/export/builders/registration-agreement-print-html';
+import { prepareRegistrationAgreementForExport } from '@/features/export/utils/prepare-registration-agreement-export';
 import type { WilmsExportDocument, WilmsExportSection } from '@/features/export/types';
 import type { RegistrationAgreementContent } from '@/utils/registration-agreement-fields';
 
@@ -189,7 +190,8 @@ async function downloadRegistrationAgreementPdf(
     throw new Error('PDF export is only available in the browser.');
   }
 
-  const html = buildRegistrationAgreementPrintHtml(content);
+  const prepared = await prepareRegistrationAgreementForExport(content);
+  const html = buildRegistrationAgreementPrintHtml(prepared);
   const host = window.document.createElement('iframe');
   host.style.position = 'fixed';
   host.style.left = '-10000px';
@@ -232,10 +234,16 @@ async function downloadRegistrationAgreementPdf(
 
   await waitForDocumentImages(frameDocument);
 
+  const root = (frameDocument.querySelector('.document') ?? frameDocument.body) as HTMLElement;
+  // Expand the off-screen frame to the full document height so html2canvas
+  // captures continuous content; A4 pages are sliced below.
+  const contentHeight = Math.max(root.scrollHeight, root.clientHeight, 1123);
+  host.style.height = `${contentHeight + 48}px`;
+
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
 
   await new Promise<void>((resolve, reject) => {
-    doc.html(frameDocument.body, {
+    doc.html(root, {
       callback: (savedDoc) => {
         const pageCount = savedDoc.getNumberOfPages();
         for (let page = 1; page <= pageCount; page += 1) {
@@ -253,17 +261,22 @@ async function downloadRegistrationAgreementPdf(
         host.remove();
         resolve();
       },
-      x: 8,
-      y: 8,
-      width: 194,
-      windowWidth: 794,
-      autoPaging: 'text',
+      // Match print CSS page margins (12/12/16/12 mm) for consistent A4 geometry.
+      margin: [12, 12, 16, 12],
+      // Slice the rendered canvas into A4 pages so Export PDF follows the same
+      // continuous document layout as Print (avoids html2canvas text-reflow gaps).
+      autoPaging: 'slice',
+      width: 186,
+      windowWidth: 700,
       html2canvas: {
-        scale: 2,
+        scale: 1.8,
         useCORS: true,
+        allowTaint: true,
         logging: false,
         backgroundColor: '#ffffff',
-        // Force light rendering regardless of the parent page theme.
+        imageTimeout: 5000,
+        scrollY: 0,
+        windowHeight: contentHeight + 48,
         onclone: (clonedDoc) => {
           clonedDoc.documentElement.style.colorScheme = 'light';
           clonedDoc.documentElement.style.background = '#ffffff';
@@ -271,6 +284,8 @@ async function downloadRegistrationAgreementPdf(
             clonedDoc.body.style.background = '#ffffff';
             clonedDoc.body.style.color = '#1a1a1a';
             clonedDoc.body.style.colorScheme = 'light';
+            clonedDoc.body.style.width = '700px';
+            clonedDoc.body.style.maxWidth = '700px';
           }
         },
       },
