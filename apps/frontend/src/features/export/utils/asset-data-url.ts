@@ -24,7 +24,21 @@ export async function resolveAssetDataUrl(url: string | null | undefined): Promi
         ? trimmed
         : new URL(trimmed, window.location.origin).toString();
 
-    const response = await fetch(absolute, { credentials: 'same-origin' });
+    let isCrossOrigin = false;
+    try {
+      isCrossOrigin =
+        absolute.startsWith('http://') || absolute.startsWith('https://')
+          ? new URL(absolute).origin !== window.location.origin
+          : false;
+    } catch {
+      isCrossOrigin = false;
+    }
+
+    // Cloudinary/CDN URLs require anonymous CORS; same-origin credentials break them.
+    const response = await fetch(absolute, {
+      credentials: isCrossOrigin ? 'omit' : 'same-origin',
+      mode: 'cors',
+    });
     if (!response.ok) {
       return null;
     }

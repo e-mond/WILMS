@@ -14,6 +14,7 @@ export interface PhotoUploadFieldProps {
   error?: string;
   className?: string;
   disabled?: boolean;
+  existingPreviewUrl?: string | null;
   registrationSessionId?: string;
   officerId?: string;
   captureTarget?: 'borrower' | 'guarantor' | 'id_document';
@@ -34,6 +35,7 @@ export const PhotoUploadField = forwardRef<HTMLInputElement, PhotoUploadFieldPro
       error,
       className,
       disabled,
+      existingPreviewUrl,
       registrationSessionId,
       officerId,
       captureTarget,
@@ -51,6 +53,7 @@ export const PhotoUploadField = forwardRef<HTMLInputElement, PhotoUploadFieldPro
           hasError={hasError}
           error={error}
           disabled={disabled}
+          existingPreviewUrl={existingPreviewUrl}
           onBlur={onBlur}
           onChange={onChange}
           registrationSessionId={registrationSessionId}

@@ -64,10 +64,20 @@ export interface BorrowerRegistrationProfile {
   guarantorName: string;
   guarantorPhone: string;
   guarantorRelationship: string;
+  guarantorIdType?: BorrowerIdType | '';
+  guarantorIdNumber?: string;
   photoFileName: string;
   photoMimeType: string;
   photoUploadId?: string;
   guarantorPhotoUploadId?: string;
+  idDocumentUploadId?: string;
+  borrowerSignatureUploadId?: string;
+  borrowerThumbprintUploadId?: string;
+  guarantorSignatureUploadId?: string;
+  guarantorThumbprintUploadId?: string;
+  officerSignatureUploadId?: string;
+  borrowerThumbprintManual?: boolean;
+  guarantorThumbprintManual?: boolean;
 }
 
 export interface RegisterBorrowerPayload {
@@ -93,6 +103,8 @@ export interface RegisterBorrowerPayload {
   guarantorName: string;
   guarantorPhone: string;
   guarantorRelationship: string;
+  guarantorIdType?: BorrowerIdType;
+  guarantorIdNumber?: string;
   photoFileName: string;
   photoMimeType: string;
   photoUploadId?: string;
@@ -103,4 +115,6 @@ export interface RegisterBorrowerPayload {
   guarantorSignatureUploadId?: string;
   guarantorThumbprintUploadId?: string;
   officerSignatureUploadId?: string;
+  borrowerThumbprintManualPlaceholder?: boolean;
+  guarantorThumbprintManualPlaceholder?: boolean;
 }

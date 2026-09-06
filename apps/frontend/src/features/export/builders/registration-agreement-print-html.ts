@@ -39,7 +39,7 @@ function renderApplicantPhoto(src: string | null): string {
     return `<img src="${src}" alt="Applicant passport photograph" class="photo-passport" />`;
   }
 
-  return `<div class="photo-placeholder">Photograph not available</div>`;
+  return `<div class="photo-placeholder">No photograph available</div>`;
 }
 
 function renderGuarantorPhoto(src: string | null): string {
@@ -47,8 +47,44 @@ function renderGuarantorPhoto(src: string | null): string {
     return `<img src="${src}" alt="Guarantor photograph" class="photo-guarantor" />`;
   }
 
-  return `<div class="photo-placeholder photo-placeholder-sm">Photograph not available</div>`;
+  return `<div class="photo-placeholder photo-placeholder-sm">No photograph available</div>`;
 }
+
+function renderSignatureCapture(
+  label: string,
+  mode: import('@/utils/registration-agreement-fields').SignatureCaptureMode,
+  signatureUrl: string | null | undefined,
+  thumbprintUrl: string | null | undefined,
+  dateLabel: string,
+): string {
+  if (mode === 'digital' && signatureUrl) {
+    return `
+      <div class="sig-media keep-together">
+        <p class="sig-caption">${escapeHtml(label)}</p>
+        <img src="${signatureUrl}" alt="${escapeHtml(label)}" class="signature-image" />
+        ${renderDateLine(dateLabel, true)}
+      </div>
+    `;
+  }
+
+  if (mode === 'thumbprint' && thumbprintUrl) {
+    return `
+      <div class="sig-media keep-together">
+        <p class="sig-caption">${escapeHtml(label)}</p>
+        <img src="${thumbprintUrl}" alt="${escapeHtml(label)}" class="signature-image" />
+        ${renderDateLine(dateLabel, true)}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="sig-block keep-together">
+      ${renderSignatureLine(label, null)}
+      ${renderDateLine(dateLabel, false)}
+    </div>
+  `;
+}
+
 
 function renderSignatureLine(
   label: string,
@@ -484,10 +520,8 @@ export const REGISTRATION_PRINT_STYLES = `
 export function buildRegistrationAgreementPrintHtml(content: RegistrationAgreementContent): string {
   const { legal } = content;
   const title = content.documentTitle || legal.formTitle;
-  const reference = content.registrationReference ?? 'Pending assignment';
   const logoSrc = content.logoDataUrl || WILMS_BRAND_LOGO_PATH;
-  const hasGuarantorElectronic = Boolean(content.guarantorSignature || content.guarantorThumbprint);
-  const hasBorrowerElectronic = Boolean(content.borrowerSignature || content.borrowerThumbprint);
+  const generatedMeta = `Generated: <strong>${escapeHtml(content.generatedAt)}</strong>`;
 
   const body = `
     <div class="document">
@@ -499,11 +533,7 @@ export function buildRegistrationAgreementPrintHtml(content: RegistrationAgreeme
         </div>
         <p class="program-name">${escapeHtml(legal.programName.toUpperCase())}</p>
         <h1 class="doc-title">${escapeHtml(title)}</h1>
-        <p class="header-meta">
-          Reference: <strong>${escapeHtml(reference)}</strong>
-          · Generated: <strong>${escapeHtml(content.generatedAt)}</strong>
-          · Status: <strong>${escapeHtml(content.applicationStatus ?? 'Pending review')}</strong>
-        </p>
+        <p class="header-meta">${generatedMeta}</p>
         <div class="intro">
           <p>${escapeHtml(legal.instructionText)}</p>
           <p>${escapeHtml(legal.programDeclaration)}</p>
@@ -538,27 +568,25 @@ export function buildRegistrationAgreementPrintHtml(content: RegistrationAgreeme
       <section class="declaration">
         <h2 class="section-title">Guarantor Declaration</h2>
         <p class="declaration-text">${escapeHtml(legal.guarantorDeclaration)}</p>
-        <div class="sig-block">
-          ${renderSignatureLine(
-            'Guarantor Signature / Thumbprint:',
-            content.guarantorSignature,
-            content.guarantorThumbprint,
-          )}
-          ${renderDateLine(content.signedDate, hasGuarantorElectronic)}
-        </div>
+        ${renderSignatureCapture(
+          'Guarantor Signature / Thumbprint:',
+          content.guarantorSignatureMode,
+          content.guarantorSignature,
+          content.guarantorThumbprint,
+          content.signedDate,
+        )}
       </section>
 
       <section class="declaration">
         <h2 class="section-title">Borrower Declaration</h2>
         <p class="declaration-text">${escapeHtml(legal.borrowerDeclaration)}</p>
-        <div class="sig-block">
-          ${renderSignatureLine(
-            'Applicant Signature / Thumbprint:',
-            content.borrowerSignature,
-            content.borrowerThumbprint,
-          )}
-          ${renderDateLine(content.signedDate, hasBorrowerElectronic)}
-        </div>
+        ${renderSignatureCapture(
+          'Applicant Signature / Thumbprint:',
+          content.borrowerSignatureMode,
+          content.borrowerSignature,
+          content.borrowerThumbprint,
+          content.signedDate,
+        )}
       </section>
 
       <section class="section">

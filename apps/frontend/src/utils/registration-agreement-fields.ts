@@ -8,6 +8,8 @@ export interface AgreementFieldRow {
   value: string;
 }
 
+export type SignatureCaptureMode = 'digital' | 'thumbprint' | 'manual';
+
 export interface RegistrationAgreementMedia {
   borrowerPhotoUrl: string | null;
   guarantorPhotoUrl: string | null;
@@ -50,6 +52,8 @@ export interface RegistrationAgreementContent {
   guarantorSignature: string | null;
   guarantorThumbprint: string | null;
   officerSignature: string | null;
+  borrowerSignatureMode: SignatureCaptureMode;
+  guarantorSignatureMode: SignatureCaptureMode;
   officerName: string;
   officerId: string | null;
   signedDate: string;
@@ -102,6 +106,23 @@ function resolveReadableOfficerId(officerId: string | null | undefined): string 
   return trimmed;
 }
 
+export function resolveSignatureCaptureMode(input: {
+  signatureUrl?: string | null;
+  thumbprintUrl?: string | null;
+  manual?: boolean;
+}): SignatureCaptureMode {
+  if (input.manual) {
+    return 'manual';
+  }
+  if (input.signatureUrl?.trim()) {
+    return 'digital';
+  }
+  if (input.thumbprintUrl?.trim()) {
+    return 'thumbprint';
+  }
+  return 'manual';
+}
+
 export function buildRegistrationAgreementContent(
   values: BorrowerRegistrationFormValues,
   legal: RegistrationLegalConfig,
@@ -145,12 +166,6 @@ export function buildRegistrationAgreementContent(
       community: values.city,
       city: deriveCityTown(values.district, values.city),
     }).map(([label, value]) => ({ label, value })),
-    {
-      label: 'Registration / Application Reference',
-      value: registrationReference ?? 'Assigned after submission',
-    },
-    { label: 'Borrower ID', value: registrationReference ?? 'Assigned after submission' },
-    { label: 'Application Status', value: display(applicationStatus, 'Pending review') },
   ];
 
   const workType =
@@ -172,6 +187,21 @@ export function buildRegistrationAgreementContent(
     { label: 'ID Number', value: display(values.guarantorIdNumber) },
   ];
 
+  const borrowerSignatureMode = resolveSignatureCaptureMode({
+    signatureUrl: media.borrowerSignatureUrl,
+    thumbprintUrl: media.borrowerThumbprintManual ? null : media.borrowerThumbprintUrl,
+    manual:
+      Boolean(media.borrowerThumbprintManual) ||
+      (!media.borrowerSignatureUrl && !media.borrowerThumbprintUrl),
+  });
+  const guarantorSignatureMode = resolveSignatureCaptureMode({
+    signatureUrl: media.guarantorSignatureUrl,
+    thumbprintUrl: media.guarantorThumbprintManual ? null : media.guarantorThumbprintUrl,
+    manual:
+      Boolean(media.guarantorThumbprintManual) ||
+      (!media.guarantorSignatureUrl && !media.guarantorThumbprintUrl),
+  });
+
   return {
     legal,
     documentTitle: meta.documentTitle?.trim() || legal.formTitle || 'LOAN APPLICATION & AGREEMENT FORM',
@@ -185,11 +215,17 @@ export function buildRegistrationAgreementContent(
     guarantorRows,
     borrowerPhotoUrl: media.borrowerPhotoUrl,
     guarantorPhotoUrl: media.guarantorPhotoUrl,
-    borrowerSignature: media.borrowerSignatureUrl ?? null,
-    borrowerThumbprint: media.borrowerThumbprintManual ? null : media.borrowerThumbprintUrl ?? null,
-    guarantorSignature: media.guarantorSignatureUrl ?? null,
-    guarantorThumbprint: media.guarantorThumbprintManual ? null : media.guarantorThumbprintUrl ?? null,
+    borrowerSignature:
+      borrowerSignatureMode === 'digital' ? media.borrowerSignatureUrl ?? null : null,
+    borrowerThumbprint:
+      borrowerSignatureMode === 'thumbprint' ? media.borrowerThumbprintUrl ?? null : null,
+    guarantorSignature:
+      guarantorSignatureMode === 'digital' ? media.guarantorSignatureUrl ?? null : null,
+    guarantorThumbprint:
+      guarantorSignatureMode === 'thumbprint' ? media.guarantorThumbprintUrl ?? null : null,
     officerSignature: media.officerSignatureUrl ?? null,
+    borrowerSignatureMode,
+    guarantorSignatureMode,
     officerName,
     officerId,
     signedDate,

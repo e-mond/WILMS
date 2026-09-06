@@ -221,11 +221,23 @@ async function toReview(record: BorrowerRecord, officerDisplayName: string, sequ
     guarantorName: record.profile.guarantorName ?? '',
     guarantorPhone: record.profile.guarantorPhone ?? '',
     guarantorRelationship: record.profile.guarantorRelationship ?? '',
+    guarantorIdType: record.profile.guarantorIdType ?? '',
+    guarantorIdNumber: record.profile.guarantorIdNumber ?? '',
     photoFileName: record.profile.photoFileName ?? '',
     photoMimeType: record.profile.photoMimeType ?? '',
     photoUrl,
     guarantorPhotoUrl,
     idDocumentUrl,
+    photoUploadId: record.profile.photoUploadId ?? null,
+    guarantorPhotoUploadId: record.profile.guarantorPhotoUploadId ?? null,
+    idDocumentUploadId: record.profile.idDocumentUploadId ?? null,
+    borrowerSignatureUploadId: record.profile.borrowerSignatureUploadId ?? null,
+    borrowerThumbprintUploadId: record.profile.borrowerThumbprintUploadId ?? null,
+    guarantorSignatureUploadId: record.profile.guarantorSignatureUploadId ?? null,
+    guarantorThumbprintUploadId: record.profile.guarantorThumbprintUploadId ?? null,
+    officerSignatureUploadId: record.profile.officerSignatureUploadId ?? null,
+    borrowerThumbprintManual: Boolean(record.profile.borrowerThumbprintManual),
+    guarantorThumbprintManual: Boolean(record.profile.guarantorThumbprintManual),
     registeredByOfficerId: record.registeredByOfficerId,
     registeredByOfficerName: officerDisplayName,
     status: record.status,
@@ -542,12 +554,34 @@ export async function registerBorrower(payload: Record<string, unknown>, actorId
       guarantorName: String(payload.guarantorName ?? ''),
       guarantorPhone: String(payload.guarantorPhone ?? ''),
       guarantorRelationship: String(payload.guarantorRelationship ?? ''),
+      guarantorIdType: payload.guarantorIdType ? String(payload.guarantorIdType) : undefined,
+      guarantorIdNumber: payload.guarantorIdNumber ? String(payload.guarantorIdNumber) : undefined,
       photoFileName: String(payload.photoFileName ?? 'photo.jpg'),
       photoMimeType: String(payload.photoMimeType ?? 'image/jpeg'),
       photoUploadId: payload.photoUploadId ? String(payload.photoUploadId) : undefined,
       guarantorPhotoUploadId: payload.guarantorPhotoUploadId
         ? String(payload.guarantorPhotoUploadId)
         : undefined,
+      idDocumentUploadId: payload.idDocumentUploadId
+        ? String(payload.idDocumentUploadId)
+        : undefined,
+      borrowerSignatureUploadId: payload.borrowerSignatureUploadId
+        ? String(payload.borrowerSignatureUploadId)
+        : undefined,
+      borrowerThumbprintUploadId: payload.borrowerThumbprintUploadId
+        ? String(payload.borrowerThumbprintUploadId)
+        : undefined,
+      guarantorSignatureUploadId: payload.guarantorSignatureUploadId
+        ? String(payload.guarantorSignatureUploadId)
+        : undefined,
+      guarantorThumbprintUploadId: payload.guarantorThumbprintUploadId
+        ? String(payload.guarantorThumbprintUploadId)
+        : undefined,
+      officerSignatureUploadId: payload.officerSignatureUploadId
+        ? String(payload.officerSignatureUploadId)
+        : undefined,
+      borrowerThumbprintManual: Boolean(payload.borrowerThumbprintManualPlaceholder),
+      guarantorThumbprintManual: Boolean(payload.guarantorThumbprintManualPlaceholder),
     },
   };
 
