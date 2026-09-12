@@ -168,8 +168,13 @@ export function GuarantorSearchField({
           {selected.displayId ? <p className="text-small text-text-muted">{selected.displayId}</p> : null}
           <p className="text-small">Phone: {selected.phoneDisplay}</p>
           {selected.idType ? (
-            <p className="text-small">ID: {selected.idType.replace(/_/g, ' ')}</p>
-          ) : null}
+            <p className="text-small">
+              ID: {selected.idType.replace(/_/g, ' ')}
+              {selected.idNumber ? ` · ${selected.idNumber}` : ''}
+            </p>
+          ) : (
+            <p className="text-small text-text-muted">ID not on the existing record — enter it below.</p>
+          )}
           {selected.community ? (
             <p className="text-small">Community: {selected.community}</p>
           ) : null}
@@ -180,8 +185,9 @@ export function GuarantorSearchField({
           </p>
         </div>
         <p className="text-small text-text-muted">
-          Details are loaded from the existing WILMS record and cannot be edited here. Use a
-          borrower update request if corrections are needed.
+          {selected.idType && selected.idNumber
+            ? 'Loaded identity details come from the existing WILMS record. Relationship can still be set below.'
+            : 'Some details were not on the existing record. Complete the empty fields below — do not leave them blank.'}
         </p>
         <Button type="button" variant="ghost" size="sm" onClick={clearSelection} disabled={disabled}>
           Clear selection
