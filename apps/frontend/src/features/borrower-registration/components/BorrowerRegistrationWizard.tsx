@@ -42,6 +42,7 @@ import {
 } from '@/features/borrower-registration/registration-conflicts';
 import {
   DEFAULT_REGISTRATION_VALUES,
+  guarantorFormFieldsFromLookup,
   normalizeDraftFormValues,
   reviewDetailToFormValues,
   toRegisterBorrowerPayload,
@@ -1185,52 +1186,20 @@ export function BorrowerRegistrationWizard() {
               }}
               onBlur={() => void trigger('guarantorName')}
               onSelected={(lookup) => {
-                if (!lookup) {
-                  setSelectedGuarantor(null);
-                  setIsManualGuarantorEntry(false);
-                  setGuarantorEligibility(null);
-                  setValue('guarantorPhone', '', { shouldDirty: true });
-                  setValue('guarantorIdType', '', { shouldDirty: true });
-                  setValue('guarantorIdNumber', '', { shouldDirty: true });
-                  setValue('guarantorPhoto', null, { shouldDirty: true });
-                  setValue('guarantorPhotoUploadId', undefined, { shouldDirty: true });
-                  setValue('guarantorPreviewUrl', null, { shouldDirty: true });
-                  return;
-                }
-
-                setIsManualGuarantorEntry(false);
+                const fields = guarantorFormFieldsFromLookup(lookup);
                 setSelectedGuarantor(lookup);
-                setGuarantorEligibility(lookup.eligibility);
-                setValue('guarantorName', lookup.name, { shouldDirty: true, shouldValidate: true });
-                setValue('guarantorPhone', lookup.phone, { shouldDirty: true, shouldValidate: true });
-                if (lookup.idType) {
-                  setValue('guarantorIdType', lookup.idType as typeof BORROWER_ID_TYPE[keyof typeof BORROWER_ID_TYPE], {
-                    shouldDirty: true,
-                    shouldValidate: true,
-                  });
-                }
-                if (lookup.idNumber) {
-                  setValue('guarantorIdNumber', lookup.idNumber, {
-                    shouldDirty: true,
-                    shouldValidate: true,
-                  });
-                }
-                if (lookup.photoUploadId || lookup.photoUrl) {
-                  setValue('guarantorPhotoUploadId', lookup.photoUploadId, { shouldDirty: true });
-                  setValue('guarantorPhoto', null, { shouldDirty: true });
-                  setValue('guarantorPreviewUrl', lookup.photoUrl ?? null, { shouldDirty: true });
-                } else {
-                  setValue('guarantorPhotoUploadId', undefined, { shouldDirty: true });
-                  setValue('guarantorPreviewUrl', null, { shouldDirty: true });
-                }
-                if (lookup.isGroupLeader) {
-                  setValue('guarantorRelationship', 'Group Leader', {
-                    shouldDirty: true,
-                    shouldValidate: true,
-                  });
-                }
-                clearErrors(['guarantorPhone', 'guarantorName', 'guarantorIdNumber']);
-                if (!lookup.eligibility.isEligible) {
+                setIsManualGuarantorEntry(false);
+                setGuarantorEligibility(lookup?.eligibility ?? null);
+                setValue('guarantorName', fields.guarantorName, { shouldDirty: true, shouldValidate: Boolean(lookup) });
+                setValue('guarantorPhone', fields.guarantorPhone, { shouldDirty: true, shouldValidate: Boolean(lookup) });
+                setValue('guarantorIdType', fields.guarantorIdType, { shouldDirty: true, shouldValidate: fields.idFetched });
+                setValue('guarantorIdNumber', fields.guarantorIdNumber, { shouldDirty: true, shouldValidate: fields.idFetched });
+                setValue('guarantorPhoto', null, { shouldDirty: true });
+                setValue('guarantorPhotoUploadId', fields.guarantorPhotoUploadId, { shouldDirty: true });
+                setValue('guarantorPreviewUrl', fields.guarantorPreviewUrl, { shouldDirty: true });
+                setValue('guarantorRelationship', fields.guarantorRelationship, { shouldDirty: true, shouldValidate: Boolean(fields.guarantorRelationship) });
+                clearErrors(['guarantorPhone', 'guarantorName', 'guarantorIdNumber', 'guarantorIdType', 'guarantorPhoto']);
+                if (lookup && !lookup.eligibility.isEligible) {
                   setError('guarantorPhone', {
                     type: 'manual',
                     message: lookup.eligibility.message ?? 'Guarantor is not eligible.',
@@ -1238,9 +1207,18 @@ export function BorrowerRegistrationWizard() {
                 }
               }}
               onManualEntry={() => {
+                const fields = guarantorFormFieldsFromLookup(null);
                 setSelectedGuarantor(null);
                 setIsManualGuarantorEntry(true);
                 setGuarantorEligibility(null);
+                setValue('guarantorPhone', fields.guarantorPhone, { shouldDirty: true });
+                setValue('guarantorIdType', fields.guarantorIdType, { shouldDirty: true });
+                setValue('guarantorIdNumber', fields.guarantorIdNumber, { shouldDirty: true });
+                setValue('guarantorPhoto', null, { shouldDirty: true });
+                setValue('guarantorPhotoUploadId', undefined, { shouldDirty: true });
+                setValue('guarantorPreviewUrl', null, { shouldDirty: true });
+                setValue('guarantorRelationship', '', { shouldDirty: true });
+                clearErrors(['guarantorPhone', 'guarantorName', 'guarantorIdNumber', 'guarantorIdType', 'guarantorPhoto']);
               }}
             />
           </FormField>
@@ -1263,11 +1241,16 @@ export function BorrowerRegistrationWizard() {
             htmlFor="guarantorIdType"
             required
             error={errors.guarantorIdType?.message}
+            hint={
+              selectedGuarantor && !selectedGuarantor.idType
+                ? 'Not available on the existing record. Enter it manually.'
+                : undefined
+            }
           >
             <Select
               id="guarantorIdType"
               hasError={Boolean(errors.guarantorIdType)}
-              disabled={Boolean(selectedGuarantor)}
+              disabled={Boolean(selectedGuarantor?.idType)}
               {...register('guarantorIdType')}
             >
               <option value="">Select ID type</option>
@@ -1283,11 +1266,16 @@ export function BorrowerRegistrationWizard() {
             htmlFor="guarantorIdNumber"
             required
             error={errors.guarantorIdNumber?.message}
+            hint={
+              selectedGuarantor && !selectedGuarantor.idNumber
+                ? 'Not available on the existing record. Enter it manually.'
+                : undefined
+            }
           >
             <Input
               id="guarantorIdNumber"
               hasError={Boolean(errors.guarantorIdNumber)}
-              readOnly={Boolean(selectedGuarantor)}
+              readOnly={Boolean(selectedGuarantor?.idNumber)}
               placeholder={
                 watchedGuarantorIdType
                   ? BORROWER_ID_PLACEHOLDERS[
@@ -1297,7 +1285,7 @@ export function BorrowerRegistrationWizard() {
               }
               {...register('guarantorIdNumber', {
                 onBlur: (event) => {
-                  if (selectedGuarantor) return;
+                  if (selectedGuarantor?.idNumber) return;
                   if (getValues('guarantorIdType') === BORROWER_ID_TYPE.GHANA_CARD) {
                     setValue('guarantorIdNumber', formatGhanaCardInput(event.target.value), {
                       shouldDirty: true,
@@ -1332,6 +1320,11 @@ export function BorrowerRegistrationWizard() {
             htmlFor="guarantorPhoto"
             required={!selectedGuarantor?.photoUploadId && !selectedGuarantor?.photoUrl}
             error={errors.guarantorPhoto?.message}
+            hint={
+              selectedGuarantor && !selectedGuarantor.photoUploadId && !selectedGuarantor.photoUrl
+                ? 'No photograph on the existing record. Capture or upload one.'
+                : undefined
+            }
             className="md:col-span-2"
           >
             <Controller
