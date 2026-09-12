@@ -121,7 +121,9 @@ export function RegistrationReviewPanel({
           </p>
           <p className="text-text-muted">
             Phone: {selectedGuarantor.phoneDisplay}
-            {selectedGuarantor.idType ? ` · ID: ${selectedGuarantor.idType.replace(/_/g, ' ')}` : ''}
+            {selectedGuarantor.idType
+              ? ` · ID: ${selectedGuarantor.idType.replace(/_/g, ' ')}${selectedGuarantor.idNumber ? ` ${selectedGuarantor.idNumber}` : ''}`
+              : ' · ID not on the existing record'}
           </p>
           {selectedGuarantor.guaranteedBorrowers.length > 0 ? (
             <p className="text-text-muted">

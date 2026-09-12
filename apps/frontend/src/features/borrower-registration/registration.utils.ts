@@ -2,7 +2,8 @@ import type { BorrowerRegistrationFormValues } from '@/types/borrower-registrati
 import type { RegisterBorrowerPayload } from '@/types/borrower-registration';
 import type { BorrowerRegistrationInput } from '@/features/borrower-registration/registration.schema';
 import type { BorrowerReviewDetail } from '@/types/approval';
-import type { BorrowerIdType } from '@/constants/borrower-registration';
+import type { GuarantorLookupResult } from '@/types/guarantor-search';
+import { BORROWER_ID_TYPE, type BorrowerIdType } from '@/constants/borrower-registration';
 
 export const DEFAULT_REGISTRATION_VALUES: BorrowerRegistrationFormValues = {
   fullName: '',
@@ -121,6 +122,64 @@ export function normalizeDraftFormValues(
       typeof payload.guarantorPreviewUrl === 'string'
         ? payload.guarantorPreviewUrl
         : merged.guarantorPreviewUrl ?? null,
+  };
+}
+
+function knownGuarantorIdType(value: string | undefined): BorrowerIdType | '' {
+  if (!value) {
+    return '';
+  }
+
+  return Object.values(BORROWER_ID_TYPE).includes(value as BorrowerIdType)
+    ? (value as BorrowerIdType)
+    : '';
+}
+
+export interface GuarantorFormPopulation {
+  guarantorName: string;
+  guarantorPhone: string;
+  guarantorIdType: BorrowerIdType | '';
+  guarantorIdNumber: string;
+  guarantorPhotoUploadId?: string;
+  guarantorPreviewUrl: string | null;
+  guarantorRelationship: string;
+  idFetched: boolean;
+  photoFetched: boolean;
+}
+
+/** Authoritative form fields after selecting or clearing an existing guarantor. */
+export function guarantorFormFieldsFromLookup(
+  lookup: GuarantorLookupResult | null,
+): GuarantorFormPopulation {
+  if (!lookup) {
+    return {
+      guarantorName: '',
+      guarantorPhone: '',
+      guarantorIdType: '',
+      guarantorIdNumber: '',
+      guarantorPhotoUploadId: undefined,
+      guarantorPreviewUrl: null,
+      guarantorRelationship: '',
+      idFetched: false,
+      photoFetched: false,
+    };
+  }
+
+  const idType = knownGuarantorIdType(lookup.idType);
+  const idNumber = lookup.idNumber?.trim() ?? '';
+  const idFetched = Boolean(idType && idNumber);
+  const photoFetched = Boolean(lookup.photoUploadId?.trim() || lookup.photoUrl?.trim());
+
+  return {
+    guarantorName: lookup.name,
+    guarantorPhone: lookup.phone,
+    guarantorIdType: idFetched ? idType : '',
+    guarantorIdNumber: idFetched ? idNumber : '',
+    guarantorPhotoUploadId: lookup.photoUploadId?.trim() || undefined,
+    guarantorPreviewUrl: lookup.photoUrl?.trim() || null,
+    guarantorRelationship: lookup.isGroupLeader ? 'Group Leader' : '',
+    idFetched,
+    photoFetched,
   };
 }
 

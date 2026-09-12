@@ -97,6 +97,97 @@ function isBlacklistedBorrower(record: BorrowerRecord): boolean {
   return record.status === BORROWER_STATUS.BLACKLISTED;
 }
 
+interface StoredGuarantorLink {
+  record: BorrowerRecord;
+  name: string;
+  phone: string;
+  idType?: string;
+  idNumber?: string;
+  photoUploadId?: string;
+}
+
+function trimmed(value: string | undefined | null): string | undefined {
+  const next = value?.trim();
+  return next ? next : undefined;
+}
+
+function storedGuarantorLinks(
+  borrowers: BorrowerRecord[],
+  normalizedPhone: string,
+): StoredGuarantorLink[] {
+  return borrowers.flatMap((record) => {
+    const phone = trimmed(record.profile?.guarantorPhone);
+    if (!phone || normalizeGhanaPhone(phone) !== normalizedPhone) {
+      return [];
+    }
+
+    const name = trimmed(record.profile?.guarantorName);
+    if (!name) {
+      return [];
+    }
+
+    return [
+      {
+        record,
+        name,
+        phone,
+        idType: trimmed(record.profile?.guarantorIdType),
+        idNumber: trimmed(record.profile?.guarantorIdNumber),
+        photoUploadId: trimmed(record.profile?.guarantorPhotoUploadId),
+      },
+    ];
+  });
+}
+
+/**
+ * Prefer one complete historical guarantor record for the same phone.
+ * ID type and number always come from the same record. A photo may fill a gap
+ * from another record of that same person, but never overrides a complete ID.
+ */
+function pickStoredGuarantorIdentity(links: StoredGuarantorLink[]): {
+  name: string;
+  phone: string;
+  idType?: string;
+  idNumber?: string;
+  photoUploadId?: string;
+} | undefined {
+  if (links.length === 0) {
+    return undefined;
+  }
+
+  const ranked = [...links].sort((left, right) => {
+    const leftComplete = Boolean(left.idType && left.idNumber);
+    const rightComplete = Boolean(right.idType && right.idNumber);
+    if (leftComplete !== rightComplete) {
+      return leftComplete ? -1 : 1;
+    }
+
+    const leftPhoto = Boolean(left.photoUploadId);
+    const rightPhoto = Boolean(right.photoUploadId);
+    if (leftComplete && leftPhoto !== rightPhoto) {
+      return leftPhoto ? -1 : 1;
+    }
+
+    return right.record.registeredAt.localeCompare(left.record.registeredAt);
+  });
+
+  const identity = ranked[0]!;
+  const photoUploadId =
+    identity.photoUploadId ??
+    [...links]
+      .filter((link) => link.photoUploadId)
+      .sort((left, right) => right.record.registeredAt.localeCompare(left.record.registeredAt))[0]
+      ?.photoUploadId;
+
+  return {
+    name: identity.name,
+    phone: identity.phone,
+    idType: identity.idType && identity.idNumber ? identity.idType : undefined,
+    idNumber: identity.idType && identity.idNumber ? identity.idNumber : undefined,
+    photoUploadId,
+  };
+}
+
 export async function searchGuarantors(
   query: string,
   context?: { borrowerPhone?: string; borrowerIdNumber?: string },
@@ -231,20 +322,15 @@ export async function lookupGuarantorForRegistration(input: {
   const asBorrower = borrowers.find(
     (entry) => normalizeGhanaPhone(entry.phone) === normalizedPhone,
   );
-  const sampleGuarantorLink = borrowers.find(
-    (entry) =>
-      entry.profile?.guarantorPhone &&
-      normalizeGhanaPhone(entry.profile.guarantorPhone) === normalizedPhone,
+  const storedGuarantor = pickStoredGuarantorIdentity(
+    storedGuarantorLinks(borrowers, normalizedPhone),
   );
 
-  if (!asBorrower && !sampleGuarantorLink) {
+  if (!asBorrower && !storedGuarantor) {
     throw new Error('NOT_FOUND');
   }
 
-  const name =
-    asBorrower?.fullName ??
-    sampleGuarantorLink?.profile?.guarantorName ??
-    'Guarantor';
+  const name = asBorrower?.fullName?.trim() || storedGuarantor?.name || 'Guarantor';
 
   const baseEligibility = evaluateGuarantorEligibility(
     {
@@ -271,10 +357,10 @@ export async function lookupGuarantorForRegistration(input: {
       }
     : baseEligibility;
 
-  const photoUploadId =
-    asBorrower?.profile?.photoUploadId ??
-    sampleGuarantorLink?.profile?.guarantorPhotoUploadId;
+  const photoUploadId = trimmed(asBorrower?.profile?.photoUploadId) ?? storedGuarantor?.photoUploadId;
   const photoUrl = photoUploadId ? await resolveUploadAccessUrlById(photoUploadId) : null;
+  const idType = trimmed(asBorrower?.idType) ?? storedGuarantor?.idType;
+  const idNumber = trimmed(asBorrower?.idNumber) ?? storedGuarantor?.idNumber;
 
   const guaranteed = borrowers.filter(
     (entry) =>
@@ -286,15 +372,15 @@ export async function lookupGuarantorForRegistration(input: {
 
   return {
     name,
-    phone: asBorrower?.phone ?? sampleGuarantorLink?.profile?.guarantorPhone ?? phone,
+    phone: asBorrower?.phone ?? storedGuarantor?.phone ?? phone,
     phoneDisplay: maskGhanaPhone(normalizedPhone),
     displayId: asBorrower
       ? buildDisplayId(asBorrower, sequenceById.get(asBorrower.id) ?? 1)
       : undefined,
-    community: asBorrower?.community ?? sampleGuarantorLink?.community,
-    groupName: asBorrower?.groupName || sampleGuarantorLink?.groupName || undefined,
-    idType: asBorrower?.idType,
-    idNumber: asBorrower?.idNumber,
+    community: asBorrower?.community,
+    groupName: asBorrower?.groupName || undefined,
+    idType,
+    idNumber,
     photoUploadId,
     photoUrl,
     borrowerId: asBorrower?.id,

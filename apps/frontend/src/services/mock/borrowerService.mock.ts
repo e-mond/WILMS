@@ -58,6 +58,42 @@ function registryEntryPhotoUrl(entry: BorrowerRegistryEntry): string {
   });
 }
 
+function pickStoredGuarantorIdentity(entries: BorrowerRegistryEntry[], phone: string) {
+  const links = entries.filter((entry) => entry.profile.guarantorPhone === phone && entry.profile.guarantorName);
+  if (links.length === 0) {
+    return undefined;
+  }
+
+  const ranked = [...links].sort((left, right) => {
+    const leftComplete = Boolean(left.profile.guarantorIdType && left.profile.guarantorIdNumber);
+    const rightComplete = Boolean(right.profile.guarantorIdType && right.profile.guarantorIdNumber);
+    if (leftComplete !== rightComplete) {
+      return leftComplete ? -1 : 1;
+    }
+    return right.registeredAt.localeCompare(left.registeredAt);
+  });
+  const identity = ranked[0]!;
+  const photoUploadId =
+    identity.profile.guarantorPhotoUploadId ??
+    [...links]
+      .filter((entry) => entry.profile.guarantorPhotoUploadId)
+      .sort((left, right) => right.registeredAt.localeCompare(left.registeredAt))[0]
+      ?.profile.guarantorPhotoUploadId;
+
+  return {
+    name: identity.profile.guarantorName,
+    phone: identity.profile.guarantorPhone,
+    idType: identity.profile.guarantorIdType && identity.profile.guarantorIdNumber
+      ? identity.profile.guarantorIdType
+      : undefined,
+    idNumber: identity.profile.guarantorIdType && identity.profile.guarantorIdNumber
+      ? identity.profile.guarantorIdNumber
+      : undefined,
+    photoUploadId,
+    photoSourceId: identity.id,
+  };
+}
+
 function registryEntryToSummary(entry: BorrowerRegistryEntry): BorrowerSummary {
   return {
     id: entry.id,
@@ -585,12 +621,12 @@ const borrowerServiceMock: IBorrowerService = {
     const entries = getBorrowerRegistryEntries();
     const asBorrower = entries.find((entry) => entry.phone === phone);
     const linked = entries.filter((entry) => entry.profile.guarantorPhone === phone);
-    const sample = asBorrower ?? linked[0];
-    if (!sample && linked.length === 0) {
+    const storedGuarantor = pickStoredGuarantorIdentity(entries, phone);
+    if (!asBorrower && !storedGuarantor) {
       throw new Error('NOT_FOUND');
     }
 
-    const name = asBorrower?.fullName ?? linked[0]?.profile.guarantorName ?? 'Guarantor';
+    const name = asBorrower?.fullName ?? storedGuarantor?.name ?? 'Guarantor';
     const eligibility = evaluate({
       guarantorPhone: phone,
       guarantorName: name,
@@ -599,12 +635,11 @@ const borrowerServiceMock: IBorrowerService = {
       excludeBorrowerId: context?.excludeBorrowerId,
     });
 
-    const photoUploadId =
-      asBorrower?.profile.photoUploadId ?? linked[0]?.profile.guarantorPhotoUploadId;
+    const photoUploadId = asBorrower?.profile.photoUploadId ?? storedGuarantor?.photoUploadId;
     const photoUrl = photoUploadId
       ? resolveMockPhotoUrl({
           name,
-          id: asBorrower?.id ?? `${linked[0]?.id}-guarantor`,
+          id: asBorrower?.id ?? `${storedGuarantor?.photoSourceId ?? 'guarantor'}-guarantor`,
           photoFileName: asBorrower?.profile.photoFileName,
           photoUploadId,
         })
@@ -612,13 +647,13 @@ const borrowerServiceMock: IBorrowerService = {
 
     return {
       name,
-      phone,
+      phone: asBorrower?.phone ?? storedGuarantor?.phone ?? phone,
       phoneDisplay: `${phone.slice(0, 3)} XXX ${phone.slice(-4)}`,
       displayId: asBorrower ? resolveBorrowerDisplayId(asBorrower) : undefined,
-      community: asBorrower?.community ?? sample?.community,
+      community: asBorrower?.community,
       groupName: asBorrower?.groupName,
-      idType: asBorrower?.idType,
-      idNumber: asBorrower?.idNumber,
+      idType: asBorrower?.idType ?? storedGuarantor?.idType,
+      idNumber: asBorrower?.idNumber ?? storedGuarantor?.idNumber,
       photoUploadId,
       photoUrl,
       borrowerId: asBorrower?.id,
