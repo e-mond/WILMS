@@ -407,6 +407,7 @@ Each row represents one scoped, verifiable unit of work.
 | 2026-08-06 | Product excellence UI | Enterprise polish gap after v1.6 | Visual/UX debt across dashboards/nav/inbox | v1.6.1 UI polish — tokens, KPI sparklines, nav/search/inbox/comms UX; no financial/RBAC changes |
 | 2026-09-14 | Shell UX / Persistent Layout | Right sidebar premature vertical cut-off; non-sticky footer | AppAside used `self-start` and lacked full-height container; footer scrolled off viewport | Removed `self-start`, set sticky top offset and full viewport height for AppAside with inner scroll; docked OfficeShellFooter with `sticky bottom-0`; padded main landmark |
 | 2026-09-14 | Light Theme & UI Modernization | Light theme color inconsistency and unaligned layout | Muddy khaki/grey light theme tokens and legacy dashboard structure | Overhauled light theme tokens to crisp slate palette with indigo brand accents; added Hero Welcome Banner, pastel category cards, right sidebar Portfolio Insights mini bar chart, and refined sidebar navigation group buttons |
+| 2026-09-14 | Green Accents & Black/White Dark Theme | Blue color accents present across UI; Brown and Yellow dark theme | User request to standardize on brand green accents and high-contrast Black, White and Green Dark theme | Removed all blue/sky color accents across light and dark themes; transitioned Light theme brand accents to vibrant Ghanaian microfinance green (#059669); overhauled Dark theme to pure black (#000000), crisp white (#ffffff), and luminous emerald green (#10b981) |
 | — | — | — | — | — |
 
 ---
