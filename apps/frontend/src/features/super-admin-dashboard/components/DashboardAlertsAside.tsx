@@ -128,15 +128,6 @@ export function DashboardAlertsAside({ alerts }: DashboardAlertsAsideProps) {
         </div>
       </div>
 
-      {/* ─── Quote / Mission Card (matching bottom inspo card) ─── */}
-      <div className="rounded-2xl border border-zinc-800 bg-gradient-to-br from-black via-zinc-950 to-zinc-900 p-4 text-white shadow-xs">
-        <p className="text-xs italic leading-relaxed text-zinc-300">
-          &ldquo;Empowering women through interest-free community capital.&rdquo;
-        </p>
-        <p className="mt-2 text-[11px] font-semibold text-emerald-400">
-          — WILMS Ghana Mission
-        </p>
-      </div>
     </div>
   );
 }

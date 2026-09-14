@@ -171,28 +171,28 @@ function OperationalDashboardContent({
 
   return (
     <div className="space-y-wilms-6" data-testid="operational-dashboard">
-      {/* ─── Hero Banner (Inspired by Arman dashboard header) ─── */}
-      <div className="relative overflow-hidden rounded-3xl border border-zinc-800 bg-gradient-to-r from-black via-zinc-950 to-zinc-900 p-6 text-white shadow-md sm:p-8">
+      {/* ─── Hero Banner (Responsive Light / Dark Themes) ─── */}
+      <div className="relative overflow-hidden rounded-3xl border border-emerald-100/90 bg-gradient-to-br from-emerald-50/80 via-white to-emerald-50/40 p-6 text-text-primary shadow-xs transition-colors dark:border-zinc-800 dark:bg-gradient-to-r dark:from-black dark:via-zinc-950 dark:to-zinc-900 dark:text-white sm:p-8">
         <div
-          className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-emerald-500/15 blur-3xl"
+          className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-emerald-400/15 blur-3xl dark:bg-emerald-500/15"
           aria-hidden="true"
         />
         <div
-          className="pointer-events-none absolute bottom-0 right-1/4 h-32 w-32 rounded-full bg-emerald-600/10 blur-2xl"
+          className="pointer-events-none absolute bottom-0 right-1/4 h-32 w-32 rounded-full bg-emerald-500/10 blur-2xl dark:bg-emerald-600/10"
           aria-hidden="true"
         />
 
         <div className="relative z-10 max-w-2xl">
-          <p className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
+          <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
             {timeGreeting}, {user?.displayName ?? 'Admin'} 👋
           </p>
-          <h1 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl lg:text-4xl">
+          <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-text-primary dark:text-white sm:text-3xl lg:text-4xl">
             Empowering Women.{' '}
-            <span className="bg-gradient-to-r from-white via-emerald-200 to-emerald-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-emerald-700 to-teal-600 bg-clip-text text-transparent dark:from-white dark:via-emerald-200 dark:to-emerald-400">
               Building Futures.
             </span>
           </h1>
-          <p className="mt-2 text-xs leading-relaxed text-zinc-300 sm:text-sm">
+          <p className="mt-2 text-xs leading-relaxed text-text-muted dark:text-zinc-300 sm:text-sm">
             Manage microloans, field collections, and community borrower health — all in one place.
           </p>
 
@@ -200,17 +200,17 @@ function OperationalDashboardContent({
             <button
               type="button"
               onClick={openGlobalSearch}
-              className="flex h-11 w-full max-w-md items-center justify-between gap-3 rounded-full bg-white/10 px-4 text-xs text-slate-300 backdrop-blur-md transition-all hover:bg-white/20 hover:text-white sm:text-sm"
+              className="flex h-11 w-full max-w-md items-center justify-between gap-3 rounded-full border border-emerald-200/80 bg-white/95 px-4 text-xs text-text-secondary shadow-xs backdrop-blur-md transition-all hover:border-brand-primary/40 hover:bg-white hover:text-text-primary dark:border-zinc-800 dark:bg-white/10 dark:text-zinc-300 dark:hover:bg-white/20 dark:hover:text-white sm:text-sm"
             >
               <div className="flex items-center gap-2.5">
-                <Search className="h-4 w-4 text-emerald-400" aria-hidden="true" />
+                <Search className="h-4 w-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
                 <span>Search borrowers, loans, groups, or records…</span>
               </div>
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-primary text-white shadow-xs">
                 <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
               </span>
             </button>
-            <span className="hidden text-xs italic text-emerald-200/70 lg:inline">
+            <span className="hidden text-xs italic text-emerald-800/70 dark:text-emerald-200/70 lg:inline">
               Interest-free impact. Everyday focus.
             </span>
           </div>
