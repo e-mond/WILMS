@@ -15,7 +15,7 @@ export function HighlightedText({ text, query, className }: HighlightedTextProps
         part.match ? (
           <mark
             key={`${part.text}-${index}`}
-            className="rounded-sm bg-brand-primary/15 px-0.5 text-inherit"
+            className="rounded-xs bg-emerald-500/15 px-0.5 font-semibold text-emerald-700 dark:bg-emerald-500/25 dark:text-emerald-400"
           >
             {part.text}
           </mark>

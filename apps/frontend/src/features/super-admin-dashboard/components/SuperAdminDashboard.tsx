@@ -172,27 +172,27 @@ function OperationalDashboardContent({
   return (
     <div className="space-y-wilms-6" data-testid="operational-dashboard">
       {/* ─── Hero Banner (Inspired by Arman dashboard header) ─── */}
-      <div className="relative overflow-hidden rounded-3xl border border-slate-800/80 bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 p-6 text-white shadow-md sm:p-8">
+      <div className="relative overflow-hidden rounded-3xl border border-zinc-800 bg-gradient-to-r from-black via-zinc-950 to-zinc-900 p-6 text-white shadow-md sm:p-8">
         <div
-          className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-indigo-500/20 blur-3xl"
+          className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-emerald-500/15 blur-3xl"
           aria-hidden="true"
         />
         <div
-          className="pointer-events-none absolute bottom-0 right-1/4 h-32 w-32 rounded-full bg-purple-500/15 blur-2xl"
+          className="pointer-events-none absolute bottom-0 right-1/4 h-32 w-32 rounded-full bg-emerald-600/10 blur-2xl"
           aria-hidden="true"
         />
 
         <div className="relative z-10 max-w-2xl">
-          <p className="text-xs font-semibold uppercase tracking-wider text-indigo-300">
+          <p className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
             {timeGreeting}, {user?.displayName ?? 'Admin'} 👋
           </p>
           <h1 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl lg:text-4xl">
             Empowering Women.{' '}
-            <span className="bg-gradient-to-r from-indigo-300 via-purple-300 to-pink-300 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-white via-emerald-200 to-emerald-400 bg-clip-text text-transparent">
               Building Futures.
             </span>
           </h1>
-          <p className="mt-2 text-xs leading-relaxed text-slate-300 sm:text-sm">
+          <p className="mt-2 text-xs leading-relaxed text-zinc-300 sm:text-sm">
             Manage microloans, field collections, and community borrower health — all in one place.
           </p>
 
@@ -203,14 +203,14 @@ function OperationalDashboardContent({
               className="flex h-11 w-full max-w-md items-center justify-between gap-3 rounded-full bg-white/10 px-4 text-xs text-slate-300 backdrop-blur-md transition-all hover:bg-white/20 hover:text-white sm:text-sm"
             >
               <div className="flex items-center gap-2.5">
-                <Search className="h-4 w-4 text-indigo-300" aria-hidden="true" />
+                <Search className="h-4 w-4 text-emerald-400" aria-hidden="true" />
                 <span>Search borrowers, loans, groups, or records…</span>
               </div>
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-primary text-white shadow-xs">
                 <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
               </span>
             </button>
-            <span className="hidden text-xs italic text-indigo-200/70 lg:inline">
+            <span className="hidden text-xs italic text-emerald-200/70 lg:inline">
               Interest-free impact. Everyday focus.
             </span>
           </div>
@@ -288,7 +288,7 @@ function OperationalDashboardContent({
           >
             <div>
               <span
-                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-100 bg-indigo-50 text-brand-primary dark:border-indigo-900/40 dark:bg-indigo-950/40 dark:text-indigo-400"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-brand-primary dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-400"
                 aria-hidden="true"
               >
                 <Banknote className="h-5 w-5" />
