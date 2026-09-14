@@ -14,7 +14,7 @@ export function OfficeShellFooter() {
   const versionLabel = getAppVersionLabel();
 
   return (
-    <footer className="border-t border-border px-wilms-6 py-wilms-4">
+    <footer className="border-t border-border bg-card px-wilms-6 py-wilms-4">
       <div className="flex flex-wrap items-center justify-between gap-wilms-3 text-small text-text-muted">
         <p>
           WILMS — Women&apos;s Interest-Free Loan Management System — Ghana

@@ -405,6 +405,7 @@ Each row represents one scoped, verifiable unit of work.
 | 2026-08-06 | Prod invite / locations / expected | Accept-invitation 403; locations 500; recon Expected GH₵0; group add-member 403 | CSRF missing on invite accept; Ghana locations FS read on Vercel; stale `expected_due_pesewas` snapshot; Approver lacked add-member permission | CSRF on accept-invitation; bundled Ghana JSON imports + slug/UUID fallthrough; live expected enrichment + migration `0032_recon_expected_backfill`; Approvers can add group members |
 | 2026-08-06 | Communication Center audiences | Borrowers/groups missing from compose; SMS used email | Audience resolver staff-only; send path bug | v1.6 unit — borrowers/groups/leaders audiences, preview/segments, due-today + ops alerts, quiet hours, migration `0033` |
 | 2026-08-06 | Product excellence UI | Enterprise polish gap after v1.6 | Visual/UX debt across dashboards/nav/inbox | v1.6.1 UI polish — tokens, KPI sparklines, nav/search/inbox/comms UX; no financial/RBAC changes |
+| 2026-09-14 | Shell UX / Persistent Layout | Right sidebar premature vertical cut-off; non-sticky footer | AppAside used `self-start` and lacked full-height container; footer scrolled off viewport | Removed `self-start`, set sticky top offset and full viewport height for AppAside with inner scroll; docked OfficeShellFooter with `sticky bottom-0`; padded main landmark |
 | — | — | — | — | — |
 
 ---
@@ -421,11 +422,11 @@ Each row represents one scoped, verifiable unit of work.
 
 | Command | Status | Last Run |
 |---|---|---|
-| `npm run lint` | ✅ Pass | 2026-06-07 |
-| `npm run type-check` | ✅ Pass | 2026-06-07 |
-| `npm run test` | ✅ Pass (308 tests) | 2026-06-08 |
+| `npm run lint` | ✅ Pass | 2026-09-14 |
+| `npm run type-check` | ✅ Pass | 2026-09-14 |
+| `npm run test` | ✅ Pass (334 tests) | 2026-09-14 |
 | `npm run test:coverage` | ✅ Pass (80/75/80/80 thresholds) | 2026-06-08 |
-| `npm run build` | ✅ Pass | 2026-06-07 |
+| `npm run build` | ✅ Pass | 2026-09-14 |
 | `npm run test:e2e` | ✅ Pass (86 tests) | 2026-06-08 |
 | `npm audit` | ⚠️ 14 vulns (3 critical) — fixes need major upgrades | 2026-06-08 |
 | `npm audit` | — Not Run — | — |
