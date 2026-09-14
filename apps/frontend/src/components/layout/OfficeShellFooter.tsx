@@ -14,14 +14,14 @@ export function OfficeShellFooter() {
   const versionLabel = getAppVersionLabel();
 
   return (
-    <footer className="border-t border-border bg-card px-wilms-6 py-wilms-4">
-      <div className="flex flex-wrap items-center justify-between gap-wilms-3 text-small text-text-muted">
+    <footer className="border-t border-border/80 bg-card px-6 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-text-muted">
         <p>
           WILMS — Women&apos;s Interest-Free Loan Management System — Ghana
           {versionLabel ? ` · ${versionLabel}` : null}
         </p>
-        <p className="inline-flex items-center gap-wilms-2">
-          <span className="h-2 w-2 rounded-full bg-status-active" aria-hidden="true" />
+        <p className="inline-flex items-center gap-2 font-medium">
+          <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-xs" aria-hidden="true" />
           Last sync: {formatSyncTime(now)} — All systems operational
         </p>
       </div>
