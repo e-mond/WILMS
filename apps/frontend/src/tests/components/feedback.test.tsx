@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { Alert } from '@/components/feedback/Alert';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
+import { HighlightedText } from '@/components/feedback/HighlightedText';
 
 describe('feedback components', () => {
   it('renders Alert with alert role', () => {
@@ -24,5 +25,12 @@ describe('feedback components', () => {
     );
     expect(screen.getByRole('heading', { name: 'No borrowers found' })).toBeInTheDocument();
     expect(screen.getByText('Try adjusting your filters.')).toBeInTheDocument();
+  });
+
+  it('renders HighlightedText with mark tag for matches', () => {
+    const { container } = render(<HighlightedText text="Ama Mensah" query="Mens" />);
+    const mark = container.querySelector('mark');
+    expect(mark).toBeInTheDocument();
+    expect(mark).toHaveTextContent('Mens');
   });
 });

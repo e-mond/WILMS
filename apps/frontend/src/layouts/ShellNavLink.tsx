@@ -140,7 +140,7 @@ export function ShellNavLink({
   // ─── Variant colour maps ──────────────────────────────────────────────────
 
   /**
-   * Executive active: soft indigo pill background with bold primary text — matches modern inspiration layout.
+   * Executive active: soft emerald pill background with bold primary text — matches modern inspiration layout.
    */
   const executiveActive = cn(
     'border-transparent bg-brand-primary-light text-brand-primary font-semibold',
