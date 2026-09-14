@@ -33,22 +33,26 @@ export function AppAside({ profile, fallback, className }: AppAsideProps) {
       tabIndex={0}
       style={{
         width: SHELL_ASIDE_WIDTH,
-        maxHeight: `calc(100vh - ${SHELL_NAVBAR_HEIGHT} - ${SHELL_FOOTER_HEIGHT})`,
+        height: `calc(100dvh - ${SHELL_NAVBAR_HEIGHT} - ${SHELL_FOOTER_HEIGHT})`,
+        top: SHELL_NAVBAR_HEIGHT,
       }}
       className={cn(
-        'sticky top-0 hidden shrink-0 self-start overflow-y-auto border-l border-border bg-card xl:block',
+        'sticky hidden shrink-0 flex-col border-l border-border bg-card xl:flex',
         className,
       )}
     >
-      <div className="space-y-wilms-4 p-wilms-4">{asideContent}</div>
+      <div className="flex-1 overflow-y-auto space-y-wilms-4 p-wilms-4">{asideContent}</div>
     </aside>
   );
 }
 
 export function AppAsidePlaceholder() {
   return (
-    <p className="text-body text-text-muted">
-      Select a record in the main table to view contextual details here.
-    </p>
+    <div className="flex h-full flex-col items-center justify-center rounded-lg border border-dashed border-border/80 p-wilms-6 text-center text-text-muted">
+      <p className="text-small font-semibold text-text-secondary">Context Panel</p>
+      <p className="mt-wilms-1 text-small text-text-muted">
+        Select a record in the main table to view contextual details here.
+      </p>
+    </div>
   );
 }
