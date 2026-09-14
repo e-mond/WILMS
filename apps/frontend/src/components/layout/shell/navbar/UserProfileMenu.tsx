@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { ROLE_LABELS, USER_ROLE } from '@/constants/roles';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/utils/cn';
+import { ChevronDown } from 'lucide-react';
 
 export interface UserProfileMenuProps {
   roleLabel?: string;
@@ -53,10 +54,10 @@ export function UserProfileMenu({ roleLabel, compact = false }: UserProfileMenuP
       <button
         type="button"
         className={cn(
-          'flex shrink-0 items-center',
+          'flex shrink-0 items-center transition-colors',
           compact
-            ? 'h-11 w-11 min-h-[44px] min-w-[44px] justify-center'
-            : 'min-h-[44px] min-w-[44px] gap-wilms-2 border-l border-border pl-wilms-3 sm:pl-wilms-4',
+            ? 'h-10 w-10 min-h-[40px] min-w-[40px] justify-center rounded-full hover:bg-slate-100 dark:hover:bg-white/5'
+            : 'min-h-[40px] gap-2.5 rounded-full px-2 py-1 hover:bg-slate-100/80 dark:hover:bg-white/5 sm:border sm:border-border/60 sm:bg-card/60 sm:pr-3',
         )}
         aria-expanded={isOpen}
         aria-haspopup="menu"
@@ -67,16 +68,19 @@ export function UserProfileMenu({ roleLabel, compact = false }: UserProfileMenuP
         onClick={() => setIsOpen((open) => !open)}
       >
         <div
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-brand-primary bg-brand-primary-light text-small font-bold text-brand-primary sm:h-10 sm:w-10"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-brand-primary to-indigo-500 text-xs font-bold text-white shadow-xs"
           aria-hidden="true"
         >
           {initials}
         </div>
         {!compact ? (
           <div className="hidden min-w-0 text-left sm:block">
-            <p className="truncate text-body font-semibold text-text-primary">{displayName}</p>
-            <p className="truncate text-small text-text-muted">{resolvedRoleLabel}</p>
+            <p className="truncate text-xs font-semibold text-text-primary">{displayName}</p>
+            <p className="truncate text-[10px] font-medium text-text-muted">{resolvedRoleLabel}</p>
           </div>
+        ) : null}
+        {!compact ? (
+          <ChevronDown className="hidden h-3.5 w-3.5 text-text-muted sm:block" aria-hidden="true" />
         ) : null}
       </button>
 

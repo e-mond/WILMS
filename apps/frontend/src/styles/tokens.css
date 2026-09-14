@@ -10,49 +10,46 @@
   --shell-sidebar-width: 15.5rem;
   --shell-sidebar-collapsed-width: 4.25rem;
 
-  /* Elevation & density (v1.8 iOS-inspired enterprise) */
-  --shadow-navbar: 0 1px 0 color-mix(in srgb, var(--color-border) 70%, transparent),
-    0 12px 32px -20px rgb(0 0 0 / 0.22);
-  --shadow-card: 0 1px 0 color-mix(in srgb, var(--color-border) 55%, transparent),
-    0 10px 28px -22px rgb(0 0 0 / 0.18);
-  --shadow-card-hover: 0 1px 0 color-mix(in srgb, var(--color-border) 55%, transparent),
-    0 14px 32px -20px rgb(0 0 0 / 0.22);
-  --glass-surface: color-mix(in srgb, var(--color-card) 92%, transparent);
+  /* Elevation & density (modern SaaS with soft elevation) */
+  --shadow-navbar: 0 1px 0 #e2e8f0, 0 8px 24px -16px rgb(15 23 42 / 0.08);
+  --shadow-card: 0 1px 3px 0 rgb(15 23 42 / 0.04), 0 4px 16px -2px rgb(15 23 42 / 0.04);
+  --shadow-card-hover: 0 4px 6px -1px rgb(15 23 42 / 0.06), 0 12px 24px -3px rgb(15 23 42 / 0.08);
+  --glass-surface: rgba(255, 255, 255, 0.9);
   --glass-blur: 14px;
-  --density-kpi-padding: 0.875rem;
-  --density-table-cell-y: 0.625rem;
+  --density-kpi-padding: 1rem;
+  --density-table-cell-y: 0.75rem;
   --focus-ring: 2px solid var(--color-brand-primary);
 
-  --color-brand-primary: #0f6e56;
-  --color-brand-primary-light: #e1f5ee;
-  --color-status-active: #3b6d11;
-  --color-status-active-light: #eaf3de;
-  --color-status-at-risk: #8B5A14;
-  --color-status-at-risk-light: #faeeda;
-  --color-status-defaulted: #993c1d;
-  --color-status-defaulted-light: #faece7;
-  --color-status-blacklisted: #6b2c1a;
-  --color-status-blacklisted-light: #f0e0db;
-  --color-status-pending: #5f5e5a;
-  --color-status-pending-light: #f1efe8;
-  --color-status-info: #1D4ED8;
-  --color-status-info-light: #dbeafe;
-  --color-warning: #8B5A14;
-  --color-warning-light: #faeeda;
-  --color-danger: #993c1d;
-  --color-danger-light: #faece7;
-  --color-success: #3b6d11;
-  --color-success-light: #eaf3de;
-  --color-background: #f1efe8;
+  --color-brand-primary: #4f46e5;
+  --color-brand-primary-light: #eef2ff;
+  --color-status-active: #059669;
+  --color-status-active-light: #ecfdf5;
+  --color-status-at-risk: #d97706;
+  --color-status-at-risk-light: #fffbeb;
+  --color-status-defaulted: #e11d48;
+  --color-status-defaulted-light: #fff1f2;
+  --color-status-blacklisted: #475569;
+  --color-status-blacklisted-light: #f1f5f9;
+  --color-status-pending: #64748b;
+  --color-status-pending-light: #f1f5f9;
+  --color-status-info: #2563eb;
+  --color-status-info-light: #eff6ff;
+  --color-warning: #d97706;
+  --color-warning-light: #fffbeb;
+  --color-danger: #e11d48;
+  --color-danger-light: #fff1f2;
+  --color-success: #059669;
+  --color-success-light: #ecfdf5;
+  --color-background: #f8fafc;
   --color-card: #ffffff;
-  --color-border: #d3d1c7;
-  --color-text-primary: #2c2c2a;
-  --color-text-muted: #5f5e5a;
-  --color-text-secondary: #5f5e5a;
-  --color-text-tertiary: #6b6a66;
+  --color-border: #e2e8f0;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #334155;
+  --color-text-muted: #64748b;
+  --color-text-tertiary: #94a3b8;
   --color-executive-sidebar: #ffffff;
-  --color-executive-gold: #0f6e56;
-  --color-executive-gold-muted: #5f5e5a;
+  --color-executive-gold: #4f46e5;
+  --color-executive-gold-muted: #64748b;
 }
 
 .dark,
