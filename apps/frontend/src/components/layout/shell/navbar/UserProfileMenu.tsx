@@ -68,7 +68,7 @@ export function UserProfileMenu({ roleLabel, compact = false }: UserProfileMenuP
         onClick={() => setIsOpen((open) => !open)}
       >
         <div
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-brand-primary to-indigo-500 text-xs font-bold text-white shadow-xs"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-brand-primary to-emerald-400 text-xs font-bold text-white shadow-xs"
           aria-hidden="true"
         >
           {initials}

@@ -112,7 +112,7 @@ export function AppSidebar({
         {!isSidebarCollapsed ? (
           <div className="space-y-wilms-3 px-3 py-3">
             {!forceExpanded ? (
-              <div className="rounded-2xl border border-indigo-100/80 bg-gradient-to-br from-indigo-50/70 via-white to-blue-50/40 p-3 shadow-xs dark:border-indigo-900/40 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/40">
+              <div className="rounded-2xl border border-emerald-100/80 bg-gradient-to-br from-emerald-50/70 via-white to-teal-50/40 p-3 shadow-xs dark:border-zinc-800 dark:from-zinc-950 dark:via-zinc-900 dark:to-black">
                 <div className="flex items-center gap-1.5 text-brand-primary">
                   <span className="text-xs">✦</span>
                   <p className="text-[12px] font-bold text-text-primary">Small steps build big results</p>
@@ -122,7 +122,7 @@ export function AppSidebar({
                 </p>
                 <Link
                   href="/documentation"
-                  className="mt-2.5 inline-flex w-full items-center justify-center gap-1 rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-slate-900"
+                  className="mt-2.5 inline-flex w-full items-center justify-center gap-1 rounded-xl bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 dark:bg-emerald-500 dark:font-bold dark:text-black"
                 >
                   <span>Get Started</span>
                   <span aria-hidden="true">→</span>

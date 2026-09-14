@@ -17,6 +17,11 @@
   :focus:not(:focus-visible) {
     outline: none;
   }
+
+  mark {
+    background-color: transparent;
+    color: inherit;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

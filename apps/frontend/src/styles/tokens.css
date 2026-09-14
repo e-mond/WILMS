@@ -20,8 +20,9 @@
   --density-table-cell-y: 0.75rem;
   --focus-ring: 2px solid var(--color-brand-primary);
 
-  --color-brand-primary: #4f46e5;
-  --color-brand-primary-light: #eef2ff;
+  /* Light Theme (Green Accents, Pure White & Slate) */
+  --color-brand-primary: #059669;
+  --color-brand-primary-light: #ecfdf5;
   --color-status-active: #059669;
   --color-status-active-light: #ecfdf5;
   --color-status-at-risk: #d97706;
@@ -32,8 +33,8 @@
   --color-status-blacklisted-light: #f1f5f9;
   --color-status-pending: #64748b;
   --color-status-pending-light: #f1f5f9;
-  --color-status-info: #2563eb;
-  --color-status-info-light: #eff6ff;
+  --color-status-info: #059669;
+  --color-status-info-light: #ecfdf5;
   --color-warning: #d97706;
   --color-warning-light: #fffbeb;
   --color-danger: #e11d48;
@@ -43,63 +44,69 @@
   --color-background: #f8fafc;
   --color-card: #ffffff;
   --color-border: #e2e8f0;
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #334155;
-  --color-text-muted: #64748b;
-  --color-text-tertiary: #94a3b8;
+  --color-text-primary: #09090b;
+  --color-text-secondary: #27272a;
+  --color-text-muted: #71717a;
+  --color-text-tertiary: #a1a1aa;
   --color-executive-sidebar: #ffffff;
-  --color-executive-gold: #4f46e5;
-  --color-executive-gold-muted: #64748b;
+  --color-executive-gold: #059669;
+  --color-executive-gold-muted: #047857;
 }
 
 .dark,
 [data-theme='dark'] {
-  --color-brand-primary: #d4af37;
-  --color-brand-primary-light: #3d3420;
-  --color-status-active: #4caf50;
-  --color-status-active-light: #1a3320;
-  --color-status-at-risk: #d4af37;
-  --color-status-at-risk-light: #3d3420;
-  --color-status-defaulted: #e57373;
-  --color-status-defaulted-light: #3d2020;
-  --color-status-blacklisted: #9e9e9e;
-  --color-status-blacklisted-light: #2a2a2a;
-  --color-status-pending: #b0b0b0;
-  --color-status-pending-light: #2a2a2a;
-  --color-status-info: #64b5f6;
-  --color-status-info-light: #1a2a3d;
-  --color-warning: #d4af37;
-  --color-warning-light: #3d3420;
-  --color-danger: #ef5350;
-  --color-danger-light: #3d2020;
-  --color-success: #4caf50;
-  --color-success-light: #1a3320;
-  --color-background: #121212;
-  --color-card: #1e1e1e;
-  --color-border: #333333;
-  --color-text-primary: #f5f5f5;
-  --color-text-muted: #a0a0a0;
-  --color-text-secondary: #c8c8c8;
-  --color-text-tertiary: #8a8a8a;
-  --color-executive-sidebar: #161616;
-  --color-executive-gold: #d4af37;
-  --color-executive-gold-muted: #9a7b1a;
+  --shadow-navbar: 0 1px 0 #1f1f23, 0 8px 24px -16px rgb(0 0 0 / 0.8);
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.6), 0 4px 16px -2px rgb(0 0 0 / 0.7);
+  --shadow-card-hover: 0 4px 6px -1px rgb(0 0 0 / 0.8), 0 12px 24px -3px rgb(0 0 0 / 0.9);
+  --glass-surface: rgba(12, 12, 14, 0.95);
+
+  /* Dark theme: Green accents, Black and White */
+  --color-brand-primary: #10b981;
+  --color-brand-primary-light: #064e3b;
+  --color-status-active: #10b981;
+  --color-status-active-light: #064e3b;
+  --color-status-at-risk: #f59e0b;
+  --color-status-at-risk-light: #451a03;
+  --color-status-defaulted: #f43f5e;
+  --color-status-defaulted-light: #4c0519;
+  --color-status-blacklisted: #71717a;
+  --color-status-blacklisted-light: #18181b;
+  --color-status-pending: #a1a1aa;
+  --color-status-pending-light: #18181b;
+  --color-status-info: #10b981;
+  --color-status-info-light: #064e3b;
+  --color-warning: #f59e0b;
+  --color-warning-light: #451a03;
+  --color-danger: #f43f5e;
+  --color-danger-light: #4c0519;
+  --color-success: #10b981;
+  --color-success-light: #064e3b;
+  --color-background: #000000;
+  --color-card: #0c0c0e;
+  --color-border: #222226;
+  --color-text-primary: #ffffff;
+  --color-text-muted: #a1a1aa;
+  --color-text-secondary: #e4e4e7;
+  --color-text-tertiary: #71717a;
+  --color-executive-sidebar: #000000;
+  --color-executive-gold: #10b981;
+  --color-executive-gold-muted: #059669;
 }
 
 .dark [data-sidebar='executive'],
 [data-theme='dark'] [data-sidebar='executive'] {
-  --color-text-primary: #f5f5f5;
-  --color-text-muted: #a0a0a0;
-  --color-text-secondary: #c8c8c8;
-  --color-text-tertiary: #8a8a8a;
-  --color-card: #2a2a2a;
-  --color-background: #161616;
-  --color-border: #333333;
-  --color-brand-primary: #d4af37;
-  --color-brand-primary-light: #3d3420;
-  --color-executive-sidebar: #161616;
-  --color-executive-gold: #d4af37;
-  --color-executive-gold-muted: #9a7b1a;
+  --color-text-primary: #ffffff;
+  --color-text-muted: #a1a1aa;
+  --color-text-secondary: #e4e4e7;
+  --color-text-tertiary: #71717a;
+  --color-card: #0c0c0e;
+  --color-background: #000000;
+  --color-border: #222226;
+  --color-brand-primary: #10b981;
+  --color-brand-primary-light: #064e3b;
+  --color-executive-sidebar: #000000;
+  --color-executive-gold: #10b981;
+  --color-executive-gold-muted: #059669;
   color-scheme: dark;
 }
 
@@ -116,11 +123,11 @@ aside[data-sidebar='executive'] {
 [data-theme='dark'] [data-shell='approver'] [data-executive-content='true'],
 .dark [data-shell='collector'] [data-executive-content='true'],
 [data-theme='dark'] [data-shell='collector'] [data-executive-content='true'] {
-  --color-background: #121212;
-  --color-card: #262626;
-  --color-border: #3d3d3d;
-  --color-text-primary: #f5f5f5;
-  --color-text-muted: #a0a0a0;
-  --color-brand-primary: #d4af37;
-  --color-brand-primary-light: #3d3420;
+  --color-background: #000000;
+  --color-card: #0c0c0e;
+  --color-border: #222226;
+  --color-text-primary: #ffffff;
+  --color-text-muted: #a1a1aa;
+  --color-brand-primary: #10b981;
+  --color-brand-primary-light: #064e3b;
 }

@@ -86,7 +86,7 @@ export function DashboardAlertsAside({ alerts }: DashboardAlertsAsideProps) {
       <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-xs">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-indigo-50 text-brand-primary dark:bg-indigo-950/40">
+            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-50 text-brand-primary dark:bg-emerald-950/40">
               <TrendingUp className="h-3.5 w-3.5" />
             </span>
             <h3 className="text-xs font-bold text-text-primary">Weekly Velocity</h3>
@@ -113,8 +113,8 @@ export function DashboardAlertsAside({ alerts }: DashboardAlertsAsideProps) {
                 className={cn(
                   'w-full rounded-t-sm transition-all group-hover:opacity-80',
                   index === BAR_HEIGHTS.length - 1
-                    ? 'bg-gradient-to-t from-brand-primary to-indigo-500'
-                    : 'bg-indigo-200/80 dark:bg-indigo-900/60',
+                    ? 'bg-gradient-to-t from-brand-primary to-emerald-400'
+                    : 'bg-emerald-100 dark:bg-emerald-950/60',
                 )}
               />
             </div>
@@ -129,11 +129,11 @@ export function DashboardAlertsAside({ alerts }: DashboardAlertsAsideProps) {
       </div>
 
       {/* ─── Quote / Mission Card (matching bottom inspo card) ─── */}
-      <div className="rounded-2xl border border-indigo-950 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 p-4 text-white shadow-xs">
-        <p className="text-xs italic leading-relaxed text-indigo-100">
+      <div className="rounded-2xl border border-zinc-800 bg-gradient-to-br from-black via-zinc-950 to-zinc-900 p-4 text-white shadow-xs">
+        <p className="text-xs italic leading-relaxed text-zinc-300">
           &ldquo;Empowering women through interest-free community capital.&rdquo;
         </p>
-        <p className="mt-2 text-[11px] font-semibold text-indigo-300">
+        <p className="mt-2 text-[11px] font-semibold text-emerald-400">
           — WILMS Ghana Mission
         </p>
       </div>
