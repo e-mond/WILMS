@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import Link from 'next/link';
 import { LogoutButton } from '@/components/auth/LogoutButton';
 import { WilmsBrandMark } from '@/components/icons/WilmsBrandMark';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,6 +14,7 @@ import { cn } from '@/utils/cn';
 import { getAppVersionLabel } from '@/lib/app-version';
 import { Button } from '@/components/ui/Button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+
 
 export interface AppSidebarProps {
   navItems: ShellNavItem[];
@@ -101,18 +103,36 @@ export function AppSidebar({
           ariaLabel={navAriaLabel}
           variant={navVariant}
           collapsed={isSidebarCollapsed}
-          className="h-full"
+          className="w-full"
           linkClassName={isSidebarCollapsed ? 'justify-center px-2' : undefined}
         />
       </div>
 
       <div className="mt-auto shrink-0 border-t border-border">
         {!isSidebarCollapsed ? (
-          <div className="space-y-wilms-3 px-4 py-4">
+          <div className="space-y-wilms-3 px-3 py-3">
+            {!forceExpanded ? (
+              <div className="rounded-2xl border border-indigo-100/80 bg-gradient-to-br from-indigo-50/70 via-white to-blue-50/40 p-3 shadow-xs dark:border-indigo-900/40 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/40">
+                <div className="flex items-center gap-1.5 text-brand-primary">
+                  <span className="text-xs">✦</span>
+                  <p className="text-[12px] font-bold text-text-primary">Small steps build big results</p>
+                </div>
+                <p className="mt-1 text-[11px] leading-relaxed text-text-muted">
+                  WILMS v1.8 · Ghana Microfinance Operations
+                </p>
+                <Link
+                  href="/documentation"
+                  className="mt-2.5 inline-flex w-full items-center justify-center gap-1 rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-slate-900"
+                >
+                  <span>Get Started</span>
+                  <span aria-hidden="true">→</span>
+                </Link>
+              </div>
+            ) : null}
             {footer}
             <LogoutButton collapsed={false} />
             {versionLabel ? (
-              <p className="text-center text-xs text-text-muted">{versionLabel}</p>
+              <p className="text-center text-[11px] text-text-muted">{versionLabel}</p>
             ) : null}
           </div>
         ) : (

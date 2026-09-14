@@ -121,7 +121,7 @@ function GroupLabel({
     return (
       <p
         aria-hidden="true"
-        className="px-3.5 pb-1 pt-3 text-[10.5px] font-medium uppercase tracking-[0.09em] text-text-tertiary first:pt-1"
+        className="px-3 pb-1 pt-2.5 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-text-muted"
       >
         {label}
       </p>
@@ -131,16 +131,16 @@ function GroupLabel({
   return (
     <button
       type="button"
-      className="flex w-full items-center justify-between px-3.5 pb-1 pt-3 text-left first:pt-1"
+      className="group flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-1.5 text-left transition-colors hover:bg-slate-100/70 dark:hover:bg-white/5"
       onClick={onToggle}
       aria-expanded={isOpen}
     >
-      <span className="text-[10.5px] font-medium uppercase tracking-[0.09em] text-text-tertiary">
+      <span className="text-[10.5px] font-semibold uppercase tracking-[0.08em] text-text-muted transition-colors group-hover:text-text-primary">
         {label}
       </span>
       <ChevronDown
         className={cn(
-          'h-3.5 w-3.5 text-text-tertiary motion-safe:transition-transform motion-safe:duration-200',
+          'h-3.5 w-3.5 text-text-muted transition-transform duration-200 group-hover:text-text-primary',
           !isOpen && '-rotate-90',
         )}
         aria-hidden="true"
