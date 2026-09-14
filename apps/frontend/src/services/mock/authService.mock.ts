@@ -4,9 +4,11 @@ import type { LoginInput, SessionPayload } from '@/types/auth';
 
 export function authenticateMockCredentials(credentials: LoginInput): SessionPayload | null {
   const normalizedEmail = credentials.email.trim().toLowerCase();
+  const normalizedPassword = credentials.password.trim();
   const user = MOCK_USERS.find(
     (entry) =>
-      entry.email.toLowerCase() === normalizedEmail && entry.password === credentials.password,
+      entry.email.toLowerCase() === normalizedEmail &&
+      (entry.password === credentials.password || entry.password === normalizedPassword),
   );
 
   if (!user) {

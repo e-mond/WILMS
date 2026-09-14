@@ -199,7 +199,7 @@ export function DashboardShell({
             )}
           </div>
 
-          <div className={cn(Boolean(bottomNavigation) && 'hidden md:block')}>
+          <div className={cn('sticky bottom-0 z-20', Boolean(bottomNavigation) && 'hidden md:block')}>
             <OfficeShellFooter />
           </div>
 
