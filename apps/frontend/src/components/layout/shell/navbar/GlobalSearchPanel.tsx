@@ -435,8 +435,8 @@ export function GlobalSearchTrigger({
       <button
         type="button"
         className={cn(
-          'inline-flex h-9 w-full max-w-full items-center gap-2 rounded-md border border-border bg-background px-3 text-small text-text-muted',
-          'transition-colors hover:border-brand-primary/40 hover:text-text-primary',
+          'inline-flex h-9 w-full max-w-full items-center gap-2.5 rounded-xl border border-border/80 bg-slate-100/70 px-3.5 text-small text-text-muted dark:bg-white/5',
+          'transition-all hover:border-brand-primary/40 hover:bg-card hover:text-text-primary hover:shadow-xs',
           'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary',
           className,
         )}

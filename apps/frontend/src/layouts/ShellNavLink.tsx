@@ -140,34 +140,35 @@ export function ShellNavLink({
   // ─── Variant colour maps ──────────────────────────────────────────────────
 
   /**
-   * Executive active: gold accent surface — matches Settings category nav.
+   * Executive active: soft indigo pill background with bold primary text — matches modern inspiration layout.
    */
   const executiveActive = cn(
-    'border-executive-gold bg-brand-primary-light text-executive-gold',
-    '[&_.nav-badge]:bg-executive-gold [&_.nav-badge]:text-background',
+    'border-transparent bg-brand-primary-light text-brand-primary font-semibold',
+    '[&_.nav-badge]:bg-brand-primary [&_.nav-badge]:text-white',
   );
 
   /**
-   * Executive inactive: no background; lifted card + border on hover.
+   * Executive inactive: ghost state with subtle soft hover background.
    */
   const executiveInactive = cn(
-    'border-transparent text-text-secondary',
-    'hover:border-border/40 hover:bg-background hover:text-text-primary',
+    'border-transparent text-text-secondary font-medium',
+    'hover:bg-slate-100/80 hover:text-text-primary dark:hover:bg-white/5',
   );
 
   /**
-   * Default active: white card surface with slim left indicator bar.
+   * Default active: soft primary tint with bold text.
    */
   const defaultActive = cn(
-    'bg-background text-text-primary border-border/50',
+    'border-transparent bg-brand-primary-light text-brand-primary font-semibold',
+    '[&_.nav-badge]:bg-brand-primary [&_.nav-badge]:text-white',
   );
 
   /**
-   * Default inactive: ghost — only shows card on hover.
+   * Default inactive: ghost with soft hover state.
    */
   const defaultInactive = cn(
-    'text-text-secondary border-transparent',
-    'hover:bg-background hover:border-border/30 hover:text-text-primary',
+    'border-transparent text-text-secondary font-medium',
+    'hover:bg-slate-100/80 hover:text-text-primary dark:hover:bg-white/5',
   );
 
   const tourNavPath = splitNavHref(href).pathname;
@@ -291,7 +292,7 @@ export function ShellNavLink({
         collapsed
           ? 'justify-center px-3 py-[9px]'
           : 'px-3 py-[9px] pl-3.5',
-        'rounded-lg border',
+        'rounded-xl border',
         'text-[13.5px] font-medium tracking-[0.01em]',
         baseInteraction,
         'active:scale-[0.985]',

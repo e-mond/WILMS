@@ -30,9 +30,12 @@ import { useDashboardSummary } from '@/features/super-admin-dashboard/hooks/useD
 import { useReconciliationList } from '@/features/reconciliation/hooks/useReconciliationReview';
 import { useShellAsideContent } from '@/hooks/useShellAsideContent';
 import { useQueryLoadingPolicy } from '@/hooks/useQueryLoadingPolicy';
+import { useAuth } from '@/hooks/useAuth';
+import { useUiStore } from '@/state/uiStore';
 import { DashboardRecentActivity } from '@/features/super-admin-dashboard/components/DashboardRecentActivity';
 import { needsReconciliationReview } from '@/utils/reconciliation-review';
 import { cn } from '@/utils/cn';
+import { ArrowRight, Banknote, HandCoins, ListChecks, Search, ShieldAlert } from 'lucide-react';
 
 const KPI_ICON_NAMES: Record<string, DashboardKpiIconName> = {
   pool: 'pool',
@@ -154,16 +157,185 @@ function OperationalDashboardContent({
       item.id === 'reconciliation' ? pendingReconciliationCount : item.resolveCount(data),
   })).sort((a, b) => b.count - a.count);
 
+  const { user } = useAuth();
+  const openGlobalSearch = useUiStore((state) => state.openGlobalSearch);
+
+  const hour = new Date().getHours();
+  const timeGreeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+
+  const pendingApplicationsCount =
+    data.borrowerSegments.find((segment) => segment.id === 'pending')?.count ?? 0;
+  const riskFlagsCount = data.groupRisk
+    .filter((segment) => segment.tone === 'flagged' || segment.tone === 'atRisk')
+    .reduce((sum, segment) => sum + segment.count, 0);
+
   return (
     <div className="space-y-wilms-6" data-testid="operational-dashboard">
+      {/* ─── Hero Banner (Inspired by Arman dashboard header) ─── */}
+      <div className="relative overflow-hidden rounded-3xl border border-slate-800/80 bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 p-6 text-white shadow-md sm:p-8">
+        <div
+          className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-indigo-500/20 blur-3xl"
+          aria-hidden="true"
+        />
+        <div
+          className="pointer-events-none absolute bottom-0 right-1/4 h-32 w-32 rounded-full bg-purple-500/15 blur-2xl"
+          aria-hidden="true"
+        />
+
+        <div className="relative z-10 max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-wider text-indigo-300">
+            {timeGreeting}, {user?.displayName ?? 'Admin'} 👋
+          </p>
+          <h1 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl lg:text-4xl">
+            Empowering Women.{' '}
+            <span className="bg-gradient-to-r from-indigo-300 via-purple-300 to-pink-300 bg-clip-text text-transparent">
+              Building Futures.
+            </span>
+          </h1>
+          <p className="mt-2 text-xs leading-relaxed text-slate-300 sm:text-sm">
+            Manage microloans, field collections, and community borrower health — all in one place.
+          </p>
+
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={openGlobalSearch}
+              className="flex h-11 w-full max-w-md items-center justify-between gap-3 rounded-full bg-white/10 px-4 text-xs text-slate-300 backdrop-blur-md transition-all hover:bg-white/20 hover:text-white sm:text-sm"
+            >
+              <div className="flex items-center gap-2.5">
+                <Search className="h-4 w-4 text-indigo-300" aria-hidden="true" />
+                <span>Search borrowers, loans, groups, or records…</span>
+              </div>
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-primary text-white shadow-xs">
+                <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+              </span>
+            </button>
+            <span className="hidden text-xs italic text-indigo-200/70 lg:inline">
+              Interest-free impact. Everyday focus.
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Core Operations Overview (4 Pastel Category Cards) ─── */}
+      <section aria-labelledby="operations-overview-heading" className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 id="operations-overview-heading" className="text-heading-3 font-bold text-text-primary">
+              Operations Overview
+            </h2>
+            <p className="text-xs text-text-muted">Explore portfolio health, loan queues, and collections.</p>
+          </div>
+          <Link
+            href="/loans"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-brand-primary hover:underline"
+          >
+            <span>View all</span>
+            <span aria-hidden="true">→</span>
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <Link
+            href="/loans"
+            className="group flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-5 shadow-xs transition-all hover:border-brand-primary/40 hover:shadow-sm motion-card-lift"
+          >
+            <div>
+              <span
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-600 dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-400"
+                aria-hidden="true"
+              >
+                <HandCoins className="h-5 w-5" />
+              </span>
+              <h3 className="mt-4 font-bold text-text-primary">Active Portfolio</h3>
+              <p className="mt-1 text-xs text-text-muted">
+                {borrowerTotal.toLocaleString()} registered borrowers
+              </p>
+            </div>
+            <div className="mt-4 flex justify-end">
+              <span className="text-sm font-semibold text-text-muted transition-transform group-hover:translate-x-1 group-hover:text-brand-primary">
+                →
+              </span>
+            </div>
+          </Link>
+
+          <Link
+            href="/borrowers?status=PENDING"
+            className="group flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-5 shadow-xs transition-all hover:border-brand-primary/40 hover:shadow-sm motion-card-lift"
+          >
+            <div>
+              <span
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-amber-100 bg-amber-50 text-amber-600 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-400"
+                aria-hidden="true"
+              >
+                <ListChecks className="h-5 w-5" />
+              </span>
+              <h3 className="mt-4 font-bold text-text-primary">Applications Queue</h3>
+              <p className="mt-1 text-xs text-text-muted">
+                {pendingApplicationsCount} pending review
+              </p>
+            </div>
+            <div className="mt-4 flex justify-end">
+              <span className="text-sm font-semibold text-text-muted transition-transform group-hover:translate-x-1 group-hover:text-brand-primary">
+                →
+              </span>
+            </div>
+          </Link>
+
+          <Link
+            href="/reports/daily-collection"
+            className="group flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-5 shadow-xs transition-all hover:border-brand-primary/40 hover:shadow-sm motion-card-lift"
+          >
+            <div>
+              <span
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-100 bg-indigo-50 text-brand-primary dark:border-indigo-900/40 dark:bg-indigo-950/40 dark:text-indigo-400"
+                aria-hidden="true"
+              >
+                <Banknote className="h-5 w-5" />
+              </span>
+              <h3 className="mt-4 font-bold text-text-primary">Daily Collections</h3>
+              <p className="mt-1 text-xs text-text-muted">Reconciliation & field entries</p>
+            </div>
+            <div className="mt-4 flex justify-end">
+              <span className="text-sm font-semibold text-text-muted transition-transform group-hover:translate-x-1 group-hover:text-brand-primary">
+                →
+              </span>
+            </div>
+          </Link>
+
+          <Link
+            href="/risk-flags"
+            className="group flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-5 shadow-xs transition-all hover:border-brand-primary/40 hover:shadow-sm motion-card-lift"
+          >
+            <div>
+              <span
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-rose-100 bg-rose-50 text-rose-600 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-400"
+                aria-hidden="true"
+              >
+                <ShieldAlert className="h-5 w-5" />
+              </span>
+              <h3 className="mt-4 font-bold text-text-primary">Risk & Flags</h3>
+              <p className="mt-1 text-xs text-text-muted">
+                {riskFlagsCount} flagged segments
+              </p>
+            </div>
+            <div className="mt-4 flex justify-end">
+              <span className="text-sm font-semibold text-text-muted transition-transform group-hover:translate-x-1 group-hover:text-brand-primary">
+                →
+              </span>
+            </div>
+          </Link>
+        </div>
+      </section>
+
       <header className="flex flex-col gap-wilms-3 border-b border-border/80 pb-wilms-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <p className="text-small font-semibold uppercase tracking-wide text-brand-primary">
-            Operations
+            Metrics & Reporting
           </p>
           <h1 className="text-heading-2 font-semibold text-text-primary">Financial operations</h1>
           <p className="mt-wilms-1 max-w-xl text-small text-text-muted">
-            Portfolio state, reconciliation, and work that needs attention.{' '}
+            Live aggregates, capital rotation, and collection velocity.{' '}
             <Link href="/executive" className="font-semibold text-brand-primary hover:underline">
               Executive intelligence
             </Link>
@@ -232,17 +404,17 @@ function OperationalDashboardContent({
             <li key={item.id}>
               <Link
                 href={item.href}
-                className="flex min-h-[88px] flex-col justify-between rounded-2xl border border-border/80 bg-card p-wilms-4 shadow-[var(--shadow-card)] transition-colors hover:border-brand-primary/40"
+                className="flex min-h-[88px] flex-col justify-between rounded-2xl border border-border/80 bg-card p-wilms-4 shadow-xs transition-all hover:border-brand-primary/40 hover:shadow-sm motion-card-lift"
               >
                 <div className="flex items-start justify-between gap-wilms-2">
                   <p className="font-semibold text-text-primary">{item.label}</p>
-                  <span className="rounded-md bg-background p-1.5 text-text-muted" aria-hidden="true">
+                  <span className="rounded-xl border border-border/60 bg-slate-50 p-2 text-text-muted dark:bg-slate-800" aria-hidden="true">
                     {resolveKpiIcon(item.label)}
                   </span>
                 </div>
                 <p
                   className={cn(
-                    'mt-wilms-3 text-heading-3 font-semibold tabular-nums',
+                    'mt-wilms-3 text-heading-3 font-bold tabular-nums',
                     item.count > 0 ? 'text-brand-primary' : 'text-text-muted',
                   )}
                 >
