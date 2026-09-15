@@ -251,23 +251,25 @@ export function AuditLogReportPanel() {
           />
         }
         filters={
-          <FilterDropdownRow>
-            <label className="flex min-w-[9rem] flex-col gap-wilms-1">
+          <FilterDropdownRow className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <label className="flex min-w-0 w-full flex-col gap-wilms-1">
               <span className="text-small font-semibold text-text-muted">From date</span>
               <Input
                 type="date"
                 aria-label="Filter from date"
                 value={fromDate}
                 onChange={(event) => setFromDate(event.target.value)}
+                className="min-h-[44px] w-full"
               />
             </label>
-            <label className="flex min-w-[9rem] flex-col gap-wilms-1">
+            <label className="flex min-w-0 w-full flex-col gap-wilms-1">
               <span className="text-small font-semibold text-text-muted">To date</span>
               <Input
                 type="date"
                 aria-label="Filter to date"
                 value={toDate}
                 onChange={(event) => setToDate(event.target.value)}
+                className="min-h-[44px] w-full"
               />
             </label>
             <FilterDropdown
@@ -313,7 +315,7 @@ export function AuditLogReportPanel() {
               <section key={group.key} className="overflow-hidden rounded-2xl border border-border/80 bg-card">
                 <button
                   type="button"
-                  className="flex w-full items-center justify-between gap-wilms-3 px-wilms-4 py-wilms-3.5 text-left transition-colors hover:bg-background/70"
+                  className="flex w-full min-h-[44px] items-center justify-between gap-wilms-3 px-wilms-4 py-wilms-3.5 text-left transition-colors hover:bg-background/70"
                   aria-expanded={!collapsed}
                   onClick={() =>
                     setCollapsedGroups((current) => ({
@@ -322,10 +324,10 @@ export function AuditLogReportPanel() {
                     }))
                   }
                 >
-                  <span className="text-heading-3 font-semibold text-text-primary">
+                  <span className="min-w-0 break-words text-heading-3 font-semibold text-text-primary">
                     {group.label}
                   </span>
-                  <span className="inline-flex items-center gap-2 text-small text-text-muted">
+                  <span className="inline-flex shrink-0 items-center gap-2 text-small text-text-muted">
                     {group.entries.length} entries
                     <ChevronDown
                       className={cn(
@@ -337,10 +339,11 @@ export function AuditLogReportPanel() {
                   </span>
                 </button>
                 {!collapsed ? (
-                  <div className="border-t border-border/70 p-wilms-3">
+                  <div className="min-w-0 border-t border-border/70 p-wilms-2 sm:p-wilms-3">
                     <DataTable<AuditEntry>
                       variant="executive"
                       layout="auto"
+                      mobileLayout="stack"
                       caption={`${group.label} audit entries`}
                       data={group.entries}
                       getRowId={(entry) => entry.id}

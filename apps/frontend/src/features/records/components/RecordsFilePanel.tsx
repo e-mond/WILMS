@@ -109,7 +109,7 @@ export function RecordsFilePanel({ borrowerId }: { borrowerId: string }) {
       <div className="overflow-hidden rounded-2xl border border-border/80 bg-card">
         <div className="bg-gradient-to-br from-brand-primary/[0.09] via-transparent to-sky-500/[0.05] px-wilms-5 py-wilms-5 sm:px-wilms-6">
           <div className="flex flex-col gap-wilms-4 lg:flex-row lg:items-start lg:justify-between">
-            <div className="flex min-w-0 items-start gap-wilms-4">
+            <div className="flex min-w-0 flex-col items-start gap-wilms-4 sm:flex-row">
               <Avatar
                 label={borrower.fullName}
                 photoUrl={resolveEntityPhotoUrl({
@@ -120,40 +120,43 @@ export function RecordsFilePanel({ borrowerId }: { borrowerId: string }) {
                 size="2xl"
                 className="rounded-2xl border border-border/80 object-cover shadow-sm"
               />
-              <div className="min-w-0">
+              <div className="min-w-0 w-full">
                 <p className="inline-flex items-center gap-1.5 text-small font-semibold uppercase tracking-wide text-brand-primary">
                   <FolderOpen className="h-3.5 w-3.5" aria-hidden="true" />
                   Borrower file
                 </p>
-                <h1 className="mt-wilms-1 text-heading-1 font-semibold text-text-primary">
+                <h1 className="mt-wilms-1 break-words text-heading-1 font-semibold text-text-primary">
                   {borrower.fullName}
                 </h1>
-                <p className="mt-0.5 font-mono text-small text-text-muted">
+                <p className="mt-0.5 break-all font-mono text-small text-text-muted">
                   {borrower.displayId ?? borrower.id}
                 </p>
                 <div className="mt-wilms-3 flex flex-wrap items-center gap-2">
                   <Badge variant="default">{borrower.status}</Badge>
                   <span className="text-small text-text-muted">{borrower.phone}</span>
-                  <span className="text-small text-text-muted">·</span>
+                  <span className="hidden text-small text-text-muted sm:inline">·</span>
                   <span className="text-small text-text-muted">{borrower.community}</span>
                 </div>
-                <p className="mt-wilms-2 text-small text-text-muted">
+                <p className="mt-wilms-2 break-words text-small text-text-muted">
                   Group: {borrower.groupName || 'Unassigned'}
                   {borrower.groupRole ? ` (${borrower.groupRole})` : ''}
                   {borrower.collectorLabel ? ` · Collector: ${borrower.collectorLabel}` : ''}
                 </p>
               </div>
             </div>
-            <WilmsExportActions
-              document={exportDocument}
-              filenameBase={`borrower-record-${borrower.displayId ?? borrower.id}`}
-              formats={['pdf', 'word', 'print']}
-            />
+            <div className="w-full shrink-0 lg:w-auto">
+              <WilmsExportActions
+                document={exportDocument}
+                filenameBase={`borrower-record-${borrower.displayId ?? borrower.id}`}
+                formats={['pdf', 'word', 'print']}
+                className="flex w-full flex-wrap gap-2 [&_button]:min-h-[44px] [&_button]:flex-1 sm:[&_button]:flex-none"
+              />
+            </div>
           </div>
         </div>
       </div>
 
-      <section className="grid gap-wilms-3 md:grid-cols-3">
+      <section className="grid grid-cols-1 gap-wilms-3 lg:grid-cols-3">
         <RecordCard title="Repayment status">
           <Row label="Missed weeks" value={String(missedWeeks)} />
           <Row label="Weeks completed" value={String(borrower.progress?.weeksCompleted ?? '—')} />
@@ -217,6 +220,7 @@ export function RecordsFilePanel({ borrowerId }: { borrowerId: string }) {
         <RecordCard title="Loans">
           <DataTable
             variant="executive"
+            mobileLayout="stack"
             caption="Borrower loans"
             data={borrower.loans}
             getRowId={(row) => row.id}
@@ -258,6 +262,7 @@ export function RecordsFilePanel({ borrowerId }: { borrowerId: string }) {
         <RecordCard title="Payment history">
           <DataTable
             variant="executive"
+            mobileLayout="stack"
             caption="Payment log"
             data={file.paymentLog}
             getRowId={(row) => row.id}
@@ -338,11 +343,11 @@ export function RecordsFilePanel({ borrowerId }: { borrowerId: string }) {
 
 function RecordCard({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-border/80 bg-card">
-      <div className="border-b border-border/70 px-wilms-4 py-wilms-3">
+    <section className="min-w-0 overflow-hidden rounded-2xl border border-border/80 bg-card">
+      <div className="border-b border-border/70 px-wilms-3 py-wilms-3 sm:px-wilms-4">
         <h2 className="text-heading-3 font-semibold text-text-primary">{title}</h2>
       </div>
-      <div className="space-y-wilms-2 px-wilms-4 py-wilms-4">{children}</div>
+      <div className="min-w-0 space-y-wilms-2 px-wilms-3 py-wilms-4 sm:px-wilms-4">{children}</div>
     </section>
   );
 }
@@ -350,8 +355,10 @@ function RecordCard({ title, children }: { title: string; children: ReactNode })
 function Row({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="flex flex-col gap-0.5 border-b border-border/50 py-2 last:border-b-0 sm:flex-row sm:items-baseline sm:justify-between sm:gap-wilms-3">
-      <span className="text-small font-semibold text-text-primary">{label}</span>
-      <span className="text-small text-text-muted sm:text-right">{value?.trim() || 'Not recorded'}</span>
+      <span className="shrink-0 text-small font-semibold text-text-primary">{label}</span>
+      <span className="break-words text-small text-text-muted sm:text-right">
+        {value?.trim() || 'Not recorded'}
+      </span>
     </div>
   );
 }

@@ -260,23 +260,23 @@ function OperationalDashboardContent({
               Explore portfolio health, loan queues, and collections.
             </p>
           </div>
-          <div className="flex w-full max-w-md flex-col gap-2 sm:w-auto">
+          <div className="flex w-full max-w-md flex-col gap-2 sm:ml-auto sm:w-auto sm:min-w-[16rem]">
             <button
               type="button"
               onClick={openGlobalSearch}
-              className="inline-flex h-11 w-full items-center justify-between gap-3 rounded-full border border-border bg-background px-4 text-small text-text-muted transition-colors hover:border-brand-primary/40 hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary"
+              className="inline-flex h-11 w-full min-h-[44px] items-center justify-between gap-3 rounded-full border border-border bg-background px-4 text-small text-text-muted transition-colors hover:border-brand-primary/40 hover:text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary"
             >
-              <span className="flex items-center gap-2.5">
-                <Search className="h-4 w-4 text-brand-primary" aria-hidden="true" />
-                <span>Search borrowers, loans, groups…</span>
+              <span className="flex min-w-0 items-center gap-2.5">
+                <Search className="h-4 w-4 shrink-0 text-brand-primary" aria-hidden="true" />
+                <span className="truncate">Search borrowers, loans, groups…</span>
               </span>
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-primary text-white">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-primary text-white">
                 <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
               </span>
             </button>
             <Link
               href="/settings?section=loan-rules"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-amber-500 px-5 text-small font-bold text-white shadow-[0_8px_20px_-6px_rgba(245,158,11,0.65)] transition-all hover:bg-amber-400 hover:shadow-[0_10px_24px_-6px_rgba(245,158,11,0.75)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500 motion-safe:hover:-translate-y-0.5"
+              className="inline-flex h-11 w-full min-h-[44px] items-center justify-center gap-2 rounded-full bg-amber-500 px-5 text-small font-bold text-white shadow-[0_8px_20px_-6px_rgba(245,158,11,0.65)] transition-all hover:bg-amber-400 hover:shadow-[0_10px_24px_-6px_rgba(245,158,11,0.75)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500 motion-safe:hover:-translate-y-0.5 sm:w-auto"
             >
               <Ruler className="h-4 w-4" aria-hidden="true" />
               Loan rules

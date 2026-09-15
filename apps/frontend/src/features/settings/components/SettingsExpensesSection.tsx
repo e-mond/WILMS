@@ -95,8 +95,8 @@ export function SettingsExpensesSection() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-end justify-between gap-wilms-3">
-        <ExecutiveKpiGrid className="min-w-0 flex-1 sm:grid-cols-3">
+      <div className="flex flex-col gap-wilms-3">
+        <ExecutiveKpiGrid className="min-w-0 w-full grid-cols-1 sm:grid-cols-3 2xl:grid-cols-3">
           <KpiCard variant="executive" label="Pending review" value={data.summary.pendingCount} />
           <KpiCard
             variant="executive"
@@ -110,30 +110,32 @@ export function SettingsExpensesSection() {
             value={<CurrencyAmount value={data.summary.pendingTotalPesewas} />}
           />
         </ExecutiveKpiGrid>
-        <ExportCsvButton
-          label="Export expenses"
-          filename={`WILMS_Expense_Report_${new Date().toISOString().slice(0, 10)}.csv`}
-          reportType={WILMS_REPORT_TYPE.GENERIC_REPORT}
-          reportTitle="Expense Report"
-          executiveSummary={`Pending ${data.summary.pendingCount}; approved total ${formatPesewasForCsv(data.summary.approvedTotalPesewas)} GHS.`}
-          headers={['Expense ID', 'Category', 'Amount (GHS)', 'Date', 'Status', 'Reason']}
-          rows={expenseExportRows}
-        />
+        <div className="flex w-full justify-stretch sm:justify-end">
+          <ExportCsvButton
+            label="Export expenses"
+            filename={`WILMS_Expense_Report_${new Date().toISOString().slice(0, 10)}.csv`}
+            reportType={WILMS_REPORT_TYPE.GENERIC_REPORT}
+            reportTitle="Expense Report"
+            executiveSummary={`Pending ${data.summary.pendingCount}; approved total ${formatPesewasForCsv(data.summary.approvedTotalPesewas)} GHS.`}
+            headers={['Expense ID', 'Category', 'Amount (GHS)', 'Date', 'Status', 'Reason']}
+            rows={expenseExportRows}
+          />
+        </div>
       </div>
 
       <section className="overflow-hidden rounded-2xl border border-border/80 bg-card">
-        <div className="flex items-start gap-wilms-3 border-b border-border/70 px-wilms-5 py-wilms-4">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-brand-primary/20 bg-brand-primary/10 text-brand-primary">
+        <div className="flex items-start gap-wilms-3 border-b border-border/70 px-wilms-4 py-wilms-4 sm:px-wilms-5">
+          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-brand-primary/20 bg-brand-primary/10 text-brand-primary">
             <Receipt className="h-4 w-4" aria-hidden="true" />
           </span>
-          <div>
+          <div className="min-w-0">
             <h2 className="text-heading-3 font-semibold text-text-primary">Expense records</h2>
             <p className="text-small text-text-muted">
               Submitted expenses need a different reviewer before they affect operating cash.
             </p>
           </div>
         </div>
-        <div className="p-wilms-3 sm:p-wilms-4">
+        <div className="min-w-0 p-wilms-2 sm:p-wilms-4">
           <DataTable<ExpenseRecord>
             mobileLayout="stack"
             variant="executive"
@@ -214,10 +216,11 @@ export function SettingsExpensesSection() {
                   }
                   const busy = busyId === row.id || reviewMutation.isPending;
                   return (
-                    <div className="flex gap-wilms-2">
+                    <div className="flex w-full flex-col gap-wilms-2 sm:w-auto sm:flex-row">
                       <Button
                         size="sm"
                         variant="primary"
+                        className="min-h-[44px] w-full sm:min-h-8 sm:w-auto"
                         disabled={busy}
                         onClick={() => {
                           setBusyId(row.id);
@@ -229,6 +232,7 @@ export function SettingsExpensesSection() {
                       <Button
                         size="sm"
                         variant="danger"
+                        className="min-h-[44px] w-full sm:min-h-8 sm:w-auto"
                         disabled={busy}
                         onClick={() => {
                           const reason = window.prompt('Rejection reason');

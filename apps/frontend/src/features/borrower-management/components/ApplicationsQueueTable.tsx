@@ -18,19 +18,19 @@ export function ApplicationsQueueTable({
 }: ApplicationsQueueTableProps) {
   return (
     <div className="space-y-wilms-3" data-testid="applications-queue-table">
-      <div className="flex items-center justify-between gap-wilms-3">
-        <div className="flex items-center gap-wilms-2">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-amber-100 bg-amber-50 text-amber-600 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-400">
+      <div className="flex flex-col gap-wilms-2 sm:flex-row sm:items-center sm:justify-between sm:gap-wilms-3">
+        <div className="flex min-w-0 items-start gap-wilms-2 sm:items-center">
+          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-amber-100 bg-amber-50 text-amber-600 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-400">
             <ClipboardList className="h-4 w-4" aria-hidden="true" />
           </span>
-          <div>
+          <div className="min-w-0">
             <h2 className="text-heading-3 font-semibold text-text-primary">Pending applications</h2>
             <p className="text-small text-text-muted">
               Review KYC, group assignment, and readiness for loan creation
             </p>
           </div>
         </div>
-        <p className="shrink-0 text-small text-text-muted">
+        <p className="shrink-0 text-small text-text-muted sm:text-right">
           {applications.length} of {totalCount}
         </p>
       </div>
@@ -64,13 +64,13 @@ export function ApplicationsQueueTable({
                       {resolveBorrowerDisplayId(row)}
                     </dd>
                   </div>
-                  <div className="flex gap-1.5">
-                    <dt className="text-text-muted">Group</dt>
-                    <dd className="font-semibold text-text-primary">
+                  <div className="flex min-w-0 gap-1.5">
+                    <dt className="shrink-0 text-text-muted">Group</dt>
+                    <dd className="min-w-0 font-semibold text-text-primary">
                       {row.groupId ? (
                         <Link
                           href={`/groups/${row.groupId}`}
-                          className="text-brand-primary hover:underline"
+                          className="break-words text-brand-primary hover:underline"
                         >
                           {row.groupName}
                         </Link>
@@ -89,10 +89,10 @@ export function ApplicationsQueueTable({
               </div>
             </div>
 
-            <div className="flex shrink-0 items-center gap-wilms-2 sm:pl-wilms-4">
+            <div className="flex w-full shrink-0 items-center sm:w-auto sm:pl-wilms-4">
               <Link
                 href={`/borrowers/${row.id}`}
-                className="inline-flex h-9 min-w-[7.5rem] items-center justify-center rounded-lg border border-brand-primary bg-brand-primary px-wilms-3 text-small font-semibold text-card hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary"
+                className="inline-flex h-11 w-full min-h-[44px] items-center justify-center rounded-lg border border-brand-primary bg-brand-primary px-wilms-3 text-small font-semibold text-card hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary sm:h-9 sm:w-auto sm:min-w-[7.5rem]"
               >
                 Review
                 <ArrowRight className="ml-1.5 h-3.5 w-3.5" aria-hidden="true" />

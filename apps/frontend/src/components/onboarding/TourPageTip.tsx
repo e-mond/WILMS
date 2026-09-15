@@ -45,7 +45,7 @@ export function TourPageTip({
         type="button"
         size="sm"
         variant="secondary"
-        className="shrink-0"
+        className="min-h-[44px] w-full shrink-0 sm:w-auto"
         onClick={() => replayTour(tip.trackId || TOUR_TRACK_CORE)}
       >
         Start tour here

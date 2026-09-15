@@ -213,16 +213,16 @@ export function ReportsIndexPanel({ categoryFilterMode = 'default' }: ReportsInd
           description="Try another category or search term."
         />
       ) : (
-        <ul className="grid gap-wilms-3 sm:grid-cols-2 xl:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-wilms-3 sm:grid-cols-2 xl:grid-cols-3">
           {reports.map((report) => {
             const selected = selectedReport?.id === report.id;
             return (
-              <li key={report.id}>
+              <li key={report.id} className="min-w-0">
                 <button
                   type="button"
                   onClick={() => setSelectedReportId(report.id)}
                   className={cn(
-                    'flex h-full w-full flex-col rounded-2xl border bg-card p-wilms-4 text-left transition-all',
+                    'flex h-full min-h-[11rem] w-full flex-col rounded-2xl border bg-card p-wilms-4 text-left transition-all',
                     selected
                       ? 'border-brand-primary/50 shadow-[0_0_0_1px_color-mix(in_srgb,var(--color-brand-primary)_25%,transparent)]'
                       : 'border-border/80 hover:border-brand-primary/35',
@@ -231,17 +231,17 @@ export function ReportsIndexPanel({ categoryFilterMode = 'default' }: ReportsInd
                   <div className="flex items-start justify-between gap-wilms-3">
                     <span
                       className={cn(
-                        'inline-flex rounded-full border px-2 py-0.5 text-[11px] font-semibold',
+                        'inline-flex max-w-[70%] truncate rounded-full border px-2 py-0.5 text-[11px] font-semibold',
                         CATEGORY_TONE[report.category] ?? CATEGORY_TONE.operations,
                       )}
                     >
                       {REPORT_CATEGORY_LABELS[report.category]}
                     </span>
-                    <span className="text-small tabular-nums text-text-muted">
+                    <span className="shrink-0 text-small tabular-nums text-text-muted">
                       {report.recordCount.toLocaleString()}
                     </span>
                   </div>
-                  <p className="mt-wilms-3 text-body font-semibold text-text-primary">
+                  <p className="mt-wilms-3 break-words text-body font-semibold text-text-primary">
                     <Link href={report.route} className="hover:text-brand-primary hover:underline">
                       {report.title}
                     </Link>
@@ -249,13 +249,13 @@ export function ReportsIndexPanel({ categoryFilterMode = 'default' }: ReportsInd
                   <p className="mt-wilms-1 line-clamp-2 text-small text-text-muted">
                     {report.description}
                   </p>
-                  <div className="mt-auto flex items-center justify-between gap-wilms-2 pt-wilms-4">
+                  <div className="mt-auto flex flex-wrap items-center justify-between gap-wilms-2 pt-wilms-4">
                     <span className="text-[11px] text-text-muted">
                       Updated {formatDisplayDate(report.generatedAt.slice(0, 10))}
                     </span>
                     <Link
                       href={report.route}
-                      className="inline-flex items-center gap-1 text-small font-semibold text-brand-primary hover:underline"
+                      className="inline-flex min-h-[44px] items-center gap-1 text-small font-semibold text-brand-primary hover:underline sm:min-h-0"
                       onClick={(event) => event.stopPropagation()}
                       aria-label={`Open ${report.title}`}
                     >
