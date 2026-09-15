@@ -2,59 +2,22 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { HelpCircle, Map, BookOpen, Keyboard, Settings } from 'lucide-react';
+import { HelpCircle, Map, BookOpen, Keyboard, Settings, Layers } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { useAuth } from '@/hooks/useAuth';
 import { useReplayProductTour } from '@/components/onboarding/ProductTourOverlay';
-import { USER_ROLE, ROLE_LABELS } from '@/constants/roles';
+import {
+  TOUR_TRACK_CORE,
+  getRoleStarterSteps,
+  getTourChapters,
+} from '@/components/onboarding/tour-catalog';
+import { ROLE_LABELS, USER_ROLE, type UserRole } from '@/constants/roles';
 import { useUiStore } from '@/state/uiStore';
 import { resolveSettingsHref } from '@/utils/settings-route';
 import { cn } from '@/utils/cn';
 
-type HelpPane = 'menu' | 'role-guide' | 'shortcuts' | 'starter';
-
-function roleStarterSteps(role: string | undefined): Array<{ label: string; href: string }> {
-  switch (role) {
-    case USER_ROLE.SUPER_ADMIN:
-      return [
-        { label: 'Open Operations Overview', href: '/dashboard' },
-        { label: 'Review Portfolio Health', href: '/executive' },
-        { label: 'Configure Loan rules', href: '/settings?section=loan-rules' },
-        { label: 'Browse Documentation Centre', href: '/documentation' },
-      ];
-    case USER_ROLE.COLLECTOR:
-      return [
-        { label: 'Open field dashboard', href: '/collector/dashboard' },
-        { label: 'Record a collection', href: '/collector/my-borrowers' },
-        { label: 'Submit reconciliation', href: '/collector/reconciliation' },
-        { label: 'Review account settings', href: '/collector/settings' },
-      ];
-    case USER_ROLE.REGISTRATION_OFFICER:
-      return [
-        { label: 'Register a borrower', href: '/officer/register' },
-        { label: 'Review my registrations', href: '/officer/my-registrations' },
-        { label: 'Search borrower records', href: '/officer/records' },
-        { label: 'Open settings', href: '/officer/settings' },
-      ];
-    case USER_ROLE.APPROVER:
-      return [
-        { label: 'Open pending queue', href: '/approver/pending' },
-        { label: 'Review payment-day changes', href: '/approver/schedule-changes' },
-        { label: 'Review offline sync', href: '/approver/sync-conflicts' },
-        { label: 'Open settings', href: '/approver/settings' },
-      ];
-    case USER_ROLE.AUDITOR:
-      return [
-        { label: 'Open reports', href: '/auditor/reports' },
-        { label: 'Open audit log', href: '/auditor/audit-log' },
-        { label: 'Search borrower records', href: '/auditor/records' },
-        { label: 'Open settings', href: '/auditor/settings' },
-      ];
-    default:
-      return [{ label: 'Open settings', href: '/settings' }];
-  }
-}
+type HelpPane = 'menu' | 'role-guide' | 'shortcuts' | 'starter' | 'chapters';
 
 function roleGuideCopy(role: string | undefined): { title: string; body: string[] } {
   switch (role) {
@@ -62,10 +25,11 @@ function roleGuideCopy(role: string | undefined): { title: string; body: string[
       return {
         title: 'Super Admin guide',
         body: [
-          'Dashboard shows portfolio KPIs. Operations shows platform health (queues, workers, runtime) — they are different pages.',
+          'Operations Overview is day-to-day HQ work. Portfolio Health is board KPIs. Platform Operations (/ops) is system health — three different pages.',
           'Use Settings → Users to invite staff, and Settings → Roles to change what each role can do.',
           'Grant a single-user exception under a user’s profile → Permission overrides (does not change the whole role).',
           'Communication Center is for broadcasts (SMS/email/in-app), not 1:1 chat.',
+          'Deep-dive tour chapters cover people, lending, and platform pages after the short core loop.',
         ],
       };
     case USER_ROLE.COLLECTOR:
@@ -93,7 +57,7 @@ function roleGuideCopy(role: string | undefined): { title: string; body: string[
         title: 'Approver guide',
         body: [
           'Pending Queue lists applications waiting for your decision.',
-          'Offline Sync resolves conflicts from collector devices.',
+          'Payment day changes and Offline Sync are separate queues from borrower KYC.',
           'Reviewed shows past approve/reject decisions.',
           'Use Settings for profile and notification preferences.',
         ],
@@ -110,7 +74,10 @@ function roleGuideCopy(role: string | undefined): { title: string; body: string[
     default:
       return {
         title: 'WILMS guide',
-        body: ['Use the sidebar to move between your assigned pages.', 'Open Settings from the header for your profile preferences.'],
+        body: [
+          'Use the sidebar to move between your assigned pages.',
+          'Open Settings from the header for your profile preferences.',
+        ],
       };
   }
 }
@@ -122,6 +89,7 @@ export function HelpFabButton({ className }: { className?: string }) {
     <button
       type="button"
       aria-label="Quick help"
+      data-tour="quick-help"
       className={cn(
         'inline-flex h-12 w-12 items-center justify-center rounded-full',
         'border border-border bg-card text-brand-primary shadow-md transition-colors hover:bg-background',
@@ -157,7 +125,11 @@ export function HelpMenuModal() {
   }, [isOpen]);
 
   const guide = useMemo(() => roleGuideCopy(user?.role), [user?.role]);
-  const starterSteps = useMemo(() => roleStarterSteps(user?.role), [user?.role]);
+  const starterSteps = useMemo(() => getRoleStarterSteps(user?.role), [user?.role]);
+  const chapters = useMemo(
+    () => (user?.role ? getTourChapters(user.role as UserRole) : []),
+    [user?.role],
+  );
   const settingsHref = resolveSettingsHref(user?.role);
   const roleLabel = user?.role ? ROLE_LABELS[user.role] : 'your role';
   const starterKey = `wilms-guided-starter-completed:${user?.role ?? 'unknown'}`;
@@ -179,14 +151,12 @@ export function HelpMenuModal() {
         ? 'Keyboard shortcuts'
         : pane === 'starter'
           ? 'Guided starter'
-          : 'Help';
+          : pane === 'chapters'
+            ? 'Tour chapters'
+            : 'Help';
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={closeHelpMenu}
-      title={title}
-    >
+    <Modal isOpen={isOpen} onClose={closeHelpMenu} title={title}>
       {pane === 'menu' ? (
         <div className="space-y-wilms-3">
           <p className="text-small text-text-muted">
@@ -198,12 +168,23 @@ export function HelpMenuModal() {
             className="w-full justify-start gap-wilms-2"
             onClick={() => {
               closeHelpMenu();
-              replayTour();
+              replayTour(TOUR_TRACK_CORE);
             }}
           >
             <Map className="h-4 w-4" aria-hidden="true" />
-            Restart guided tour
+            Restart core tour
           </Button>
+          {chapters.length > 1 ? (
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-full justify-start gap-wilms-2"
+              onClick={() => setPane('chapters')}
+            >
+              <Layers className="h-4 w-4" aria-hidden="true" />
+              Tour chapters / deep-dives
+            </Button>
+          ) : null}
           <Button
             type="button"
             variant="secondary"
@@ -246,6 +227,37 @@ export function HelpMenuModal() {
         </div>
       ) : null}
 
+      {pane === 'chapters' ? (
+        <div className="space-y-wilms-3">
+          <p className="text-small text-text-muted">
+            Start a short section without replaying the whole tour. Progress pauses separately per
+            chapter.
+          </p>
+          <ul className="space-y-wilms-2">
+            {chapters.map((chapter) => (
+              <li key={chapter.id}>
+                <button
+                  type="button"
+                  className="flex w-full flex-col gap-0.5 rounded-sm border border-border px-wilms-3 py-wilms-2 text-left hover:border-brand-primary"
+                  onClick={() => {
+                    closeHelpMenu();
+                    replayTour(chapter.id);
+                  }}
+                >
+                  <span className="text-small font-semibold text-text-primary">{chapter.label}</span>
+                  <span className="text-[12px] text-text-muted">{chapter.description}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <div className="flex justify-end">
+            <Button type="button" variant="ghost" onClick={() => setPane('menu')}>
+              Back
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
       {pane === 'role-guide' ? (
         <div className="space-y-wilms-3">
           <ul className="list-disc space-y-2 pl-5 text-body text-text-muted">
@@ -261,10 +273,10 @@ export function HelpMenuModal() {
               type="button"
               onClick={() => {
                 closeHelpMenu();
-                replayTour();
+                replayTour(TOUR_TRACK_CORE);
               }}
             >
-              Start guided tour
+              Start core tour
             </Button>
           </div>
         </div>

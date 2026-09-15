@@ -24,6 +24,7 @@ import type { SystemSettings, UpdateSystemSettingsInput } from '@/types/settings
 import { CurrencyAmount } from '@/components/data-display';
 import { LOAN_DURATION_WEEK_OPTIONS, formatLoanDurationLabel } from '@/constants/loan-duration';
 import { AppLockSetupPanel } from '@/features/app-lock/components/AppLockSetupPanel';
+import { TourPageTip } from '@/components/onboarding/TourPageTip';
 import { NotificationPreferencesSection } from '@/features/settings/components/NotificationPreferencesSection';
 import {
   SettingsAuditIcon,
@@ -391,7 +392,9 @@ export function LoanRulesSectionView({ settings }: { settings: SystemSettings })
   }, [settings]);
 
   return (
-    <SettingsSectionCard
+    <div className="space-y-wilms-4" data-tour="loan-rules-section">
+      <TourPageTip pageKey="loan-rules" />
+      <SettingsSectionCard
       title="Loan Rules"
       description="Default caps and calculation parameters."
       icon={<LoanRulesIcon />}
@@ -578,6 +581,7 @@ export function LoanRulesSectionView({ settings }: { settings: SystemSettings })
         </div>
       ) : null}
     </SettingsSectionCard>
+    </div>
   );
 }
 

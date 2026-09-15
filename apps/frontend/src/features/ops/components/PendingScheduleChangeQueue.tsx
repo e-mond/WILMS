@@ -6,6 +6,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { DataTable } from '@/components/data-display';
 import { QueryErrorState } from '@/components/feedback/QueryErrorState';
 import { InlinePanelSkeleton } from '@/components/feedback/PageSkeletons';
+import { EmptyState } from '@/components/feedback/EmptyState';
+import { TourPageTip } from '@/components/onboarding/TourPageTip';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { Button } from '@/components/ui/Button';
 import { PERMISSION } from '@/constants/permissions';
@@ -123,7 +125,8 @@ export function PendingScheduleChangeQueue() {
   const rows = changes ?? [];
 
   return (
-    <div className="space-y-wilms-3">
+    <div className="space-y-wilms-3" data-tour="schedule-changes-queue">
+      <TourPageTip pageKey="schedule-changes" />
       <div>
         <h3 className="text-heading-3 font-semibold text-text-primary">Pending payment day changes</h3>
         <p className="text-small text-text-muted">
@@ -132,7 +135,10 @@ export function PendingScheduleChangeQueue() {
         </p>
       </div>
       {rows.length === 0 ? (
-        <p className="text-small text-text-muted">No pending payment day changes awaiting action.</p>
+        <EmptyState
+          title="No pending payment day changes"
+          description="When collectors or officers request a new repayment day, those items appear here for review and approval."
+        />
       ) : (
         <DataTable<LoanScheduleChangeRecord>
           variant="executive"

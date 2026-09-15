@@ -516,6 +516,7 @@ export function GlobalSearchTrigger({
     return (
       <button
         type="button"
+        data-tour="global-search"
         className={cn(
           'inline-flex h-10 w-full max-w-full items-center gap-2.5 rounded-2xl border border-border/70 bg-background/80 px-3.5 text-small text-text-muted',
           'transition-all hover:border-brand-primary/40 hover:bg-card hover:text-text-primary hover:shadow-xs',
@@ -536,6 +537,7 @@ export function GlobalSearchTrigger({
   return (
     <button
       type="button"
+      data-tour="global-search"
       className={cn(
         'inline-flex h-9 min-w-9 items-center justify-center rounded-md border border-border bg-background text-text-muted',
         'transition-colors hover:text-text-primary px-2 md:gap-2 md:px-3',

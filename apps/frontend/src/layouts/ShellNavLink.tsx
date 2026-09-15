@@ -176,7 +176,8 @@ export function ShellNavLink({
     '[&_.nav-icon-tile]:text-text-muted group-hover:[&_.nav-icon-tile]:text-brand-primary',
   );
 
-  const tourNavPath = splitNavHref(href).pathname;
+  // Prefer full href (incl. query) so tour selectors can target Applications vs Borrowers.
+  const tourNavPath = href;
 
   // ─── PILL MODE (Instagram-style floating nav) ────────────────────────────
   if (pillMode) {

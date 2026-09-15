@@ -13,6 +13,7 @@ import {
   X,
 } from 'lucide-react';
 import { EmptyState } from '@/components/feedback/EmptyState';
+import { TourPageTip } from '@/components/onboarding/TourPageTip';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { apiClient } from '@/utils/apiClient';
@@ -101,7 +102,8 @@ export function RecordsSearchPanel() {
   const hits = useMemo(() => searchQuery.data ?? [], [searchQuery.data]);
 
   return (
-    <div className="space-y-wilms-5" data-testid="records-search-panel">
+    <div className="space-y-wilms-5" data-testid="records-search-panel" data-tour="records-search">
+      <TourPageTip pageKey="records" />
       <div className="overflow-hidden rounded-2xl border border-border/80 bg-card">
         <div className="bg-gradient-to-br from-brand-primary/[0.07] via-transparent to-transparent px-wilms-5 py-wilms-5 sm:px-wilms-6">
           <div className="flex flex-col gap-wilms-4 lg:flex-row lg:items-end lg:justify-between">
