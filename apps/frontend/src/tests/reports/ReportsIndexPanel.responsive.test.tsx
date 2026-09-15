@@ -23,7 +23,7 @@ describe('ReportsIndexPanel responsive layout', () => {
     mockGetReportsHubMetadata.mockImplementation(() => reportServiceMock.getReportsHubMetadata());
   });
 
-  it('renders the reports table without a mobile card grid', async () => {
+  it('renders a responsive report card grid', async () => {
     const { container } = render(
       <TestQueryProvider>
         <ReportsIndexPanel />
@@ -32,9 +32,7 @@ describe('ReportsIndexPanel responsive layout', () => {
 
     expect(await screen.findByRole('link', { name: 'Loan Portfolio Report' })).toBeInTheDocument();
 
-    const table = container.querySelector('table');
-    expect(table).toBeTruthy();
-    expect(table?.closest('div')).not.toHaveClass('hidden');
-    expect(container.querySelector('ul.sm\\:grid-cols-2')).toBeNull();
+    expect(container.querySelector('table')).toBeNull();
+    expect(container.querySelector('ul.sm\\:grid-cols-2')).toBeTruthy();
   });
 });
