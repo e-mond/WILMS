@@ -18,31 +18,38 @@ function roleStarterSteps(role: string | undefined): Array<{ label: string; href
   switch (role) {
     case USER_ROLE.SUPER_ADMIN:
       return [
-        { label: 'Open Operational Dashboard', href: '/dashboard' },
-        { label: 'Review Executive Intelligence', href: '/executive' },
-        { label: 'Export from Reports', href: '/reports' },
-        { label: 'Check Operations health', href: '/ops' },
+        { label: 'Open Operations Overview', href: '/dashboard' },
+        { label: 'Review Portfolio Health', href: '/executive' },
+        { label: 'Configure Loan rules', href: '/settings?section=loan-rules' },
+        { label: 'Browse Documentation Centre', href: '/documentation' },
       ];
     case USER_ROLE.COLLECTOR:
       return [
-        { label: 'Open collector dashboard', href: '/collector/dashboard' },
+        { label: 'Open field dashboard', href: '/collector/dashboard' },
         { label: 'Record a collection', href: '/collector/my-borrowers' },
         { label: 'Submit reconciliation', href: '/collector/reconciliation' },
+        { label: 'Review account settings', href: '/collector/settings' },
       ];
     case USER_ROLE.REGISTRATION_OFFICER:
       return [
         { label: 'Register a borrower', href: '/officer/register' },
         { label: 'Review my registrations', href: '/officer/my-registrations' },
+        { label: 'Search borrower records', href: '/officer/records' },
+        { label: 'Open settings', href: '/officer/settings' },
       ];
     case USER_ROLE.APPROVER:
       return [
         { label: 'Open pending queue', href: '/approver/pending' },
-        { label: 'Review offline sync', href: '/approver/offline-sync' },
+        { label: 'Review payment-day changes', href: '/approver/schedule-changes' },
+        { label: 'Review offline sync', href: '/approver/sync-conflicts' },
+        { label: 'Open settings', href: '/approver/settings' },
       ];
     case USER_ROLE.AUDITOR:
       return [
         { label: 'Open reports', href: '/auditor/reports' },
-        { label: 'Open audit log', href: '/reports/audit-log' },
+        { label: 'Open audit log', href: '/auditor/audit-log' },
+        { label: 'Search borrower records', href: '/auditor/records' },
+        { label: 'Open settings', href: '/auditor/settings' },
       ];
     default:
       return [{ label: 'Open settings', href: '/settings' }];
