@@ -20,6 +20,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
+import { Select } from '@/components/ui/Select';
 import {
   buildSettingsExportDocument,
   useWilmsExportActor,
@@ -164,44 +165,76 @@ export function SettingsPanel() {
           </div>
 
           <div className="grid gap-wilms-4 xl:grid-cols-[240px_minmax(0,1fr)]">
-            <nav
-              aria-label="Settings categories"
-              className="rounded-xl border border-border/80 bg-card p-wilms-2 xl:self-start"
-            >
-              <p className="hidden px-wilms-3 pb-wilms-2 pt-wilms-1 text-[11px] font-semibold uppercase tracking-wide text-text-muted xl:block">
-                Configuration
-              </p>
-              <div className="flex gap-wilms-1 overflow-x-auto pb-wilms-1 xl:block xl:space-y-0.5 xl:overflow-visible xl:pb-0">
-                {SETTINGS_SECTIONS.map((section) => {
-                  const Icon = SECTION_ICONS[section.id];
-                  const active = activeSection === section.id;
-                  return (
-                    <button
-                      key={section.id}
-                      type="button"
-                      className={cn(
-                        'inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-lg px-wilms-3 py-wilms-2 text-left text-small font-semibold transition-colors xl:min-h-0 xl:w-full',
-                        active
-                          ? 'bg-brand-primary/10 text-brand-primary'
-                          : 'text-text-muted hover:bg-background hover:text-text-primary',
-                      )}
-                      aria-current={active ? 'page' : undefined}
-                      onClick={() => selectSection(section.id)}
-                    >
-                      {Icon ? (
-                        <Icon
-                          className={cn('h-4 w-4 shrink-0', active ? 'text-brand-primary' : '')}
-                          aria-hidden="true"
-                        />
-                      ) : null}
-                      <span className="whitespace-nowrap">{section.label}</span>
-                    </button>
-                  );
-                })}
+            <div className="xl:self-start">
+              <div className="rounded-xl border border-border/80 bg-card p-wilms-3 xl:hidden">
+                <label
+                  htmlFor="settings-configuration-section"
+                  className="mb-wilms-2 block text-[11px] font-semibold uppercase tracking-wide text-text-muted"
+                >
+                  Configuration
+                </label>
+                <Select
+                  id="settings-configuration-section"
+                  aria-label="Settings configuration section"
+                  value={activeSection}
+                  className="min-h-[44px] h-11 rounded-lg"
+                  onChange={(event) =>
+                    selectSection(resolveSettingsSection(event.target.value))
+                  }
+                >
+                  {SETTINGS_SECTIONS.map((section) => (
+                    <option key={section.id} value={section.id}>
+                      {section.label}
+                    </option>
+                  ))}
+                </Select>
               </div>
-            </nav>
 
-            <div className="min-w-0 space-y-wilms-4">
+              <nav
+                aria-label="Settings categories"
+                className="hidden rounded-xl border border-border/80 bg-card p-wilms-2 xl:block"
+              >
+                <p className="px-wilms-3 pb-wilms-2 pt-wilms-1 text-[11px] font-semibold uppercase tracking-wide text-text-muted">
+                  Configuration
+                </p>
+                <ul className="space-y-0.5">
+                  {SETTINGS_SECTIONS.map((section) => {
+                    const Icon = SECTION_ICONS[section.id];
+                    const active = activeSection === section.id;
+                    return (
+                      <li key={section.id}>
+                        <button
+                          type="button"
+                          className={cn(
+                            'inline-flex w-full min-h-[40px] items-center gap-2 rounded-lg px-wilms-3 py-wilms-2 text-left text-small font-semibold transition-colors',
+                            'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary',
+                            active
+                              ? 'bg-brand-primary/10 text-brand-primary'
+                              : 'text-text-muted hover:bg-background hover:text-text-primary',
+                          )}
+                          aria-current={active ? 'page' : undefined}
+                          onClick={() => selectSection(section.id)}
+                        >
+                          {Icon ? (
+                            <Icon
+                              className={cn('h-4 w-4 shrink-0', active ? 'text-brand-primary' : '')}
+                              aria-hidden="true"
+                            />
+                          ) : null}
+                          <span>{section.label}</span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </nav>
+            </div>
+
+            <div
+              role="region"
+              aria-label={`${activeSectionLabel} settings`}
+              className="min-w-0 space-y-wilms-4"
+            >
               {activeSection === SETTINGS_SECTION.ORGANISATION ? (
                 <OrganisationSectionView settings={data} />
               ) : null}

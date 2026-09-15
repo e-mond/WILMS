@@ -80,7 +80,7 @@ export function SettingsAutomationSection() {
         title="Automation engine"
         description="Scheduled payment reminders, overdue escalations, collector follow-ups, and executive report cadences."
       >
-        <div className="mb-wilms-3 flex flex-wrap items-center justify-between gap-wilms-2">
+        <div className="mb-wilms-3 flex flex-col gap-wilms-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <p className="text-small text-text-muted">
             Default rules seed on first load. Cron can also call the scheduler automation endpoint.
           </p>
@@ -88,6 +88,7 @@ export function SettingsAutomationSection() {
             type="button"
             size="sm"
             variant="secondary"
+            className="min-h-[44px] w-full sm:min-h-8 sm:w-auto"
             disabled={runMutation.isPending}
             onClick={() => void runMutation.mutateAsync()}
           >
@@ -95,8 +96,12 @@ export function SettingsAutomationSection() {
           </Button>
         </div>
         <DataTable
+          mobileLayout="stack"
+          variant="executive"
+          layout="auto"
+          caption="Automation rules"
           columns={[
-            { id: 'name', header: 'Rule', cell: (row) => row.name },
+            { id: 'name', priority: 'primary', header: 'Rule', cell: (row) => row.name },
             {
               id: 'category',
               header: 'Category',
@@ -116,11 +121,13 @@ export function SettingsAutomationSection() {
             {
               id: 'actions',
               header: 'Actions',
+              priority: 'meta',
               cell: (row) => (
                 <Button
                   type="button"
                   size="sm"
                   variant="secondary"
+                  className="min-h-[44px] w-full sm:min-h-8 sm:w-auto"
                   disabled={toggleMutation.isPending || row.id.startsWith('memory-')}
                   onClick={() =>
                     void toggleMutation.mutateAsync({
@@ -154,8 +161,12 @@ export function SettingsAutomationSection() {
           />
         ) : (
           <DataTable
+            mobileLayout="stack"
+            variant="executive"
+            layout="auto"
+            caption="Open automation tasks"
             columns={[
-              { id: 'title', header: 'Task', cell: (row) => row.title },
+              { id: 'title', priority: 'primary', header: 'Task', cell: (row) => row.title },
               {
                 id: 'category',
                 header: 'Category',
@@ -165,6 +176,7 @@ export function SettingsAutomationSection() {
               {
                 id: 'entity',
                 header: 'Related',
+                priority: 'meta',
                 cell: (row) =>
                   row.relatedEntityType
                     ? `${row.relatedEntityType}${row.relatedEntityId ? ` · ${row.relatedEntityId}` : ''}`

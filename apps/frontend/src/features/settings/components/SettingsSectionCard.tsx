@@ -66,19 +66,19 @@ export function SettingsSectionCard({
         className,
       )}
     >
-      <div className="flex flex-wrap items-start justify-between gap-wilms-3">
+      <div className="flex flex-col gap-wilms-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
         <div className="flex min-w-0 items-start gap-wilms-3">
           {icon ? (
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-brand-primary/15 bg-brand-primary-light text-brand-primary">
               {icon}
             </div>
           ) : null}
-          <div>
+          <div className="min-w-0">
             <h2 className="text-heading-2 font-semibold text-text-primary">{title}</h2>
             <p className="mt-wilms-1 text-small text-text-muted">{description}</p>
           </div>
         </div>
-        {actions}
+        {actions ? <div className="w-full shrink-0 sm:w-auto">{actions}</div> : null}
       </div>
       <div className="mt-wilms-2">{children}</div>
     </section>

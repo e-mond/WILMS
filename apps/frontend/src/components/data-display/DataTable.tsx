@@ -146,7 +146,8 @@ export function DataTable<T>({
                           key={column.id}
                           className={cn(
                             'min-w-0',
-                            column.priority === 'meta' && 'col-span-2 sm:col-span-1',
+                            (column.priority === 'meta' || column.id === 'actions' || column.id === 'action') &&
+                              'col-span-2',
                           )}
                         >
                           <dt className="text-small font-medium uppercase tracking-wide text-text-muted">
