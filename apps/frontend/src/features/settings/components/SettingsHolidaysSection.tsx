@@ -92,6 +92,7 @@ export function SettingsHolidaysSection() {
               type="button"
               size="sm"
               variant="secondary"
+              className="min-h-[44px] w-full sm:min-h-8 sm:w-auto"
               disabled={syncMutation.isPending}
               onClick={() => void syncMutation.mutateAsync()}
             >
@@ -113,15 +114,17 @@ export function SettingsHolidaysSection() {
               aria-label="Holiday name"
               placeholder="Holiday name"
               value={name}
+              className="min-h-[44px]"
               onChange={(event) => setName(event.target.value)}
             />
             <Input
               aria-label="Holiday date"
               type="date"
               value={holidayDate}
+              className="min-h-[44px]"
               onChange={(event) => setHolidayDate(event.target.value)}
             />
-            <Button type="submit" size="sm" disabled={createMutation.isPending}>
+            <Button type="submit" size="sm" className="min-h-[44px] sm:min-h-8" disabled={createMutation.isPending}>
               {createMutation.isPending ? 'Adding…' : 'Add holiday'}
             </Button>
           </form>
@@ -131,13 +134,14 @@ export function SettingsHolidaysSection() {
           <p className="text-small text-text-muted">No organisation holidays configured yet.</p>
         ) : (
           <DataTable<OrganizationHoliday>
+            mobileLayout="stack"
             variant="executive"
             layout="auto"
             caption="Organisation holidays"
             data={holidays}
             getRowId={(row) => row.id}
             columns={[
-              { id: 'name', header: 'Name', cell: (row) => row.name },
+              { id: 'name', priority: 'primary', header: 'Name', cell: (row) => row.name },
               {
                 id: 'date',
                 header: 'Date',

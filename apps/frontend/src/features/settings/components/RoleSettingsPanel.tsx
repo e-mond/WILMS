@@ -512,32 +512,69 @@ export function RoleSettingsPanel({ role: roleOverride }: RoleSettingsPanelProps
 
   return (
     <div className="grid gap-wilms-4 lg:grid-cols-[200px_minmax(0,1fr)]">
-      <nav
-        aria-label="Settings categories"
-        className="flex gap-2 overflow-x-auto pb-1 lg:block lg:space-y-1 lg:overflow-visible lg:pb-0"
-      >
-        <p className="hidden px-3 pb-2 text-small font-semibold uppercase tracking-wide text-text-muted lg:block">
-          Settings
-        </p>
-        {sections.map((section) => (
-          <button
-            key={section.id}
-            type="button"
-            className={cn(
-              'shrink-0 rounded-md border px-3 py-2 text-left text-body font-semibold transition-colors lg:flex lg:w-full lg:items-center lg:rounded-none lg:border-0 lg:border-l-2',
-              activeSection === section.id
-                ? 'border-brand-primary/40 bg-brand-primary-light text-brand-primary lg:border-executive-gold lg:text-executive-gold'
-                : 'border-border text-text-muted hover:bg-background hover:text-text-primary lg:border-transparent',
-            )}
-            aria-current={activeSection === section.id ? 'page' : undefined}
-            onClick={() => setActiveSection(section.id)}
+      <div className="lg:self-start">
+        <div className="rounded-xl border border-border/80 bg-card p-wilms-3 lg:hidden">
+          <label
+            htmlFor="role-settings-section"
+            className="mb-wilms-2 block text-[11px] font-semibold uppercase tracking-wide text-text-muted"
           >
-            {section.label}
-          </button>
-        ))}
-      </nav>
+            Settings
+          </label>
+          <Select
+            id="role-settings-section"
+            aria-label="Settings section"
+            value={activeSection}
+            className="min-h-[44px] h-11 rounded-lg"
+            onChange={(event) => setActiveSection(event.target.value as RoleSettingsSection)}
+          >
+            {sections.map((section) => (
+              <option key={section.id} value={section.id}>
+                {section.label}
+              </option>
+            ))}
+          </Select>
+        </div>
 
-      <div className="min-w-0 space-y-wilms-4">{activeContent}</div>
+        <nav
+          aria-label="Settings categories"
+          className="hidden rounded-xl border border-border/80 bg-card p-wilms-2 lg:block"
+        >
+          <p className="px-3 pb-2 text-small font-semibold uppercase tracking-wide text-text-muted">
+            Settings
+          </p>
+          <ul className="space-y-1">
+            {sections.map((section) => {
+              const active = activeSection === section.id;
+              return (
+                <li key={section.id}>
+                  <button
+                    type="button"
+                    className={cn(
+                      'flex w-full min-h-[40px] items-center rounded-md border-l-2 px-3 py-2 text-left text-body font-semibold transition-colors',
+                      'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary',
+                      active
+                        ? 'border-executive-gold bg-brand-primary-light text-executive-gold'
+                        : 'border-transparent text-text-muted hover:bg-background hover:text-text-primary',
+                    )}
+                    aria-current={active ? 'page' : undefined}
+                    onClick={() => setActiveSection(section.id)}
+                  >
+                    {section.label}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      </div>
+
+      <div
+        role="region"
+        aria-label={`${sections.find((section) => section.id === activeSection)?.label ?? 'Settings'} panel`}
+        className="min-w-0 space-y-wilms-4"
+      >
+        {activeContent}
+      </div>
     </div>
   );
 }

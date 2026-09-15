@@ -74,6 +74,7 @@ export function SettingsRolesSection() {
         icon={<SettingsRolesIcon />}
       >
         <DataTable<RoleDefinition>
+          mobileLayout="stack"
           variant="executive"
           layout="auto"
           caption="Role definitions"
@@ -82,6 +83,7 @@ export function SettingsRolesSection() {
           columns={[
             {
               id: 'name',
+              priority: 'primary',
               header: 'Role',
               className: cn(TABLE_CELL, 'min-w-[10rem]'),
               cell: (row) => (
@@ -120,14 +122,16 @@ export function SettingsRolesSection() {
             {
               id: 'actions',
               header: 'Actions',
+              priority: 'meta',
               className: cn(TABLE_CELL, 'min-w-[10rem]'),
               cell: (row) => (
-                <div className="flex items-center gap-wilms-2">
+                <div className="flex flex-col gap-wilms-2 sm:flex-row sm:items-center sm:gap-wilms-2">
                   <PermissionGate permission={PERMISSION.MANAGE_ROLES}>
                     <Button
                       type="button"
                       size="sm"
                       variant="secondary"
+                      className="min-h-[44px] w-full sm:min-h-8 sm:w-auto"
                       onClick={() => cloneRole.mutate(row.id)}
                     >
                       Clone
@@ -137,6 +141,7 @@ export function SettingsRolesSection() {
                         type="button"
                         size="sm"
                         variant="ghost"
+                        className="min-h-[44px] w-full sm:min-h-8 sm:w-auto"
                         onClick={() => handleDeleteRole(row)}
                       >
                         Delete

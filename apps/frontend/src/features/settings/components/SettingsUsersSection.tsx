@@ -174,7 +174,7 @@ export function SettingsUsersSection() {
             <Button
               type="button"
               size="sm"
-              className="bg-executive-gold text-white hover:opacity-90"
+              className="min-h-[44px] w-full bg-executive-gold text-white hover:opacity-90 sm:w-auto sm:min-h-8"
               onClick={() => {
                 setSelectedUser(null);
                 setModalMode('invite');
@@ -270,12 +270,13 @@ export function SettingsUsersSection() {
               {
                 id: 'action',
                 header: 'Actions',
+                priority: 'meta',
                 className: cn(TABLE_CELL, 'min-w-[12rem]'),
                 cell: (row) => (
-                  <div className="flex items-center gap-wilms-3">
+                  <div className="flex flex-col gap-wilms-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-wilms-3">
                     <button
                       type="button"
-                      className="whitespace-nowrap text-small font-semibold text-brand-primary hover:underline"
+                      className="inline-flex min-h-[44px] items-center whitespace-nowrap text-small font-semibold text-brand-primary hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary sm:min-h-0"
                       onClick={() => setProfileUserId(row.id)}
                     >
                       View profile
@@ -284,7 +285,7 @@ export function SettingsUsersSection() {
                       <PermissionGate permission={PERMISSION.MANAGE_USERS}>
                         <button
                           type="button"
-                          className="whitespace-nowrap text-small font-semibold text-brand-primary hover:underline disabled:opacity-50"
+                          className="inline-flex min-h-[44px] items-center whitespace-nowrap text-small font-semibold text-brand-primary hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary disabled:opacity-50 sm:min-h-0"
                           disabled={resendInvitation.isPending}
                           onClick={() => void handleResendInvitation(row)}
                         >
@@ -294,7 +295,7 @@ export function SettingsUsersSection() {
                     ) : null}
                     <button
                       type="button"
-                      className="whitespace-nowrap text-small font-semibold text-executive-gold hover:underline"
+                      className="inline-flex min-h-[44px] items-center whitespace-nowrap text-small font-semibold text-executive-gold hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-executive-gold sm:min-h-0"
                       onClick={() => {
                         setSelectedUser(row);
                         setModalMode('edit');
