@@ -188,7 +188,31 @@ export function MyRegistrationsList() {
   }
 
   return (
-    <div className="space-y-wilms-4">
+    <div className="space-y-wilms-5" data-testid="my-registrations-dashboard">
+      <div className="overflow-hidden rounded-2xl border border-border/80 bg-card">
+        <div className="bg-gradient-to-br from-brand-primary/[0.07] via-transparent to-transparent px-wilms-5 py-wilms-5 sm:px-wilms-6">
+          <div className="flex flex-col gap-wilms-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-small font-semibold uppercase tracking-wide text-brand-primary">
+                Registration officer
+              </p>
+              <h1 className="mt-wilms-1 text-heading-1 font-semibold text-text-primary">
+                My registrations
+              </h1>
+              <p className="mt-wilms-1 max-w-2xl text-small text-text-muted">
+                Track drafts, submissions, and approval outcomes for borrowers you registered.
+              </p>
+            </div>
+            <Link
+              href="/officer/register"
+              className="inline-flex h-10 items-center justify-center rounded-xl border border-brand-primary bg-brand-primary px-wilms-4 text-small font-semibold text-card hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary"
+            >
+              Register borrower
+            </Link>
+          </div>
+        </div>
+      </div>
+
       <ExecutiveKpiGrid>
         <KpiCard variant="executive" label="Total Registered" value={data.length} />
         <KpiCard

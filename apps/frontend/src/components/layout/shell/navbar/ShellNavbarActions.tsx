@@ -35,8 +35,8 @@ function NavbarIconButton({
   children: ReactNode;
 }) {
   const className = cn(
-    'inline-flex h-9 w-9 items-center justify-center rounded-md text-text-muted',
-    'transition-colors hover:bg-background hover:text-text-primary',
+    'inline-flex h-9 w-9 items-center justify-center rounded-xl text-text-muted',
+    'transition-colors hover:bg-card hover:text-brand-primary',
     'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary',
   );
 
@@ -58,7 +58,7 @@ function NavbarIconButton({
 }
 
 function NavbarDivider() {
-  return <span aria-hidden="true" className="mx-0.5 hidden h-5 w-px bg-border sm:block" />;
+  return <span aria-hidden="true" className="mx-0.5 hidden h-5 w-px bg-border/80 sm:block" />;
 }
 
 export function ShellNavbarActions({
@@ -121,7 +121,7 @@ export function ShellNavbarActions({
       {!compact ? <AppLockNavbarButton /> : null}
 
       {showDateTime && !compact ? (
-        <p className="hidden text-xs text-text-muted 2xl:block">
+        <p className="hidden rounded-xl px-2.5 py-1.5 text-[11px] font-medium tabular-nums text-text-muted 2xl:block">
           {new Intl.DateTimeFormat('en-GB', {
             weekday: 'short',
             day: 'numeric',

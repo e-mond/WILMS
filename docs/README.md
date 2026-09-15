@@ -1,7 +1,7 @@
 # WILMS documentation hub
 
 **Audience:** engineers, operators, security reviewers, auditors  
-**Current product version:** `1.7.0`  
+**Current product version:** `1.8.1`  
 **Architecture:** Next.js full-stack on Vercel + Neon (+ Redis for rate limits)
 
 This hub is the entry point for **current** documentation. Historical certification packs and phase notes live under [`archive/`](archive/README.md) and [`certification/`](certification/) and are frozen evidence—not day-to-day runbooks.
@@ -30,10 +30,24 @@ This hub is the entry point for **current** documentation. Historical certificat
 
 | Pack | Path |
 |---|---|
-| v1.7.0 finance & intelligence | [`v1.7/`](v1.7/) |
-| v1.6.2 enterprise readiness | [`v1.6.2/`](v1.6.2/) |
-| v1.6 communication center | [`v1.6/`](v1.6/) |
-| v1.5 platform consolidation | [`v1.5/`](v1.5/) |
+| v1.8.0 production certification | [`v1.8.0/`](v1.8.0/) |
+| v1.7.5 / v1.7.3 maintenance notes | [`v1.7.5/`](v1.7.5/), [`v1.7.3/`](v1.7.3/) |
+| Earlier packs | See [`archive/`](archive/README.md) for frozen evidence |
+
+---
+
+## Product UI surfaces
+
+| Surface | In-app route | Notes |
+|---|---|---|
+| Operations Overview | `/dashboard` | Day-to-day HQ queues and portfolio strip |
+| Portfolio Health | `/executive` | Board KPIs + aside charts |
+| Daily collections | `/reports/daily-collection` | Variance callout + reconciliation |
+| Communication Center | `/communication-center` | Broadcast compose / outbox / templates |
+| Documentation Centre | `/documentation` | Official product library |
+| Settings / Loan rules | `/settings?section=loan-rules` | Configurable lending rules |
+| Collector dashboard | `/collector/dashboard` | Field collection progress |
+| Officer registrations | `/officer/my-registrations` | Registration queue |
 
 ---
 
@@ -58,6 +72,4 @@ This hub is the entry point for **current** documentation. Historical certificat
 
 ---
 
-## Agent / environment notes
-
-Root [`AGENTS.md`](../AGENTS.md) describes monorepo commands for automated development environments. It is operational configuration, not product marketing.
+For the in-app library index see [`../documentation/DOCUMENTATION_LIBRARY_INDEX.md`](../documentation/DOCUMENTATION_LIBRARY_INDEX.md).

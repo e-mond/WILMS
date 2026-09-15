@@ -511,17 +511,20 @@ flowchart LR
 | Surface | Behaviour |
 | --- | --- |
 | **Role portals** | Super Admin, Collector, Officer, Approver, Auditor shells with grouped navigation |
-| **Dashboards** | Programme dashboard + Executive Intelligence (`/executive`) + Collector field dashboard |
-| **Command palette** | Global search (`↑` `↓` Enter Esc) for navigation and entity lookup |
+| **System navbar** | Sticky blurred app bar with breadcrumbs, global search (`⌘K`), and a compact action cluster (notifications, settings, theme, profile) |
+| **Dashboards** | Operations Overview (`/dashboard`), Portfolio Health (`/executive`), Collector field dashboard, Registration officer queue |
+| **Command palette** | Global search for navigation and entity lookup |
 | **Inbox** | In-app notifications with unread state |
-| **Communication center** | Compose, audiences, templates, analytics |
+| **Communication center** | Compose, audiences, templates, analytics with section tabs |
+| **Collections** | Daily collection report with variance callout and reconciliation queue |
+| **Borrower records** | Archive search with recent-query history |
 | **Product tour** | Guided first-run orientation for key admin surfaces |
 | **Responsive design** | Mobile-first collector flows; selective `DataTable` stack layout on ops lists; dense financial reports keep horizontal scroll |
 | **Offline UX** | Contextual offline banner + sync progress (not permanent navbar Online chrome) |
 | **Loading / empty / error** | Skeletons, empty states, retryable query error presentations |
 | **Accessibility** | Focus management, ARIA on dialogs/listboxes, keyboard navigation |
 
-Design system tokens and layout primitives live under `apps/frontend/src/components` and executive layout helpers.
+Design system tokens and layout primitives live under `apps/frontend/src/components` and executive layout helpers. Recent UI work prefers rounded heroes, live KPI strips, and side-panel charts on executive/operations surfaces.
 
 ---
 

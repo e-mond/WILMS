@@ -97,7 +97,7 @@ function TodayGroupCard({ group }: { group: CollectorTodayGroup }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <article className="flex h-full min-w-0 flex-col rounded-sm border border-border/70 bg-card p-wilms-4">
+    <article className="flex h-full min-w-0 flex-col rounded-xl border border-border/80 bg-card p-wilms-4 transition-colors hover:border-brand-primary/30">
       <div className="flex items-start gap-wilms-3">
         <Avatar label={group.groupName} photoUrl={group.groupPhotoUrl} size="md" />
         <div className="min-w-0 flex-1">
@@ -109,7 +109,7 @@ function TodayGroupCard({ group }: { group: CollectorTodayGroup }) {
               </p>
               <p className="mt-wilms-1 text-small text-text-muted">Leader: {group.leaderName}</p>
             </div>
-            <span className="shrink-0 rounded-sm border border-border px-wilms-2 py-wilms-1 text-small font-semibold text-text-primary">
+            <span className="shrink-0 rounded-full border border-border px-wilms-2 py-wilms-1 text-[11px] font-semibold text-text-primary">
               {group.status}
             </span>
           </div>
@@ -121,10 +121,10 @@ function TodayGroupCard({ group }: { group: CollectorTodayGroup }) {
           <span>
             {group.collectedCount}/{group.expectedCount} paid · {group.pendingCount} pending
           </span>
-          <span>{group.progressPercent}%</span>
+          <span className="font-semibold text-text-primary">{group.progressPercent}%</span>
         </div>
-        <div className="h-2 overflow-hidden rounded-sm bg-background">
-          <div className="h-full bg-brand-primary" style={{ width: `${group.progressPercent}%` }} />
+        <div className="h-2 overflow-hidden rounded-full bg-background">
+          <div className="h-full rounded-full bg-brand-primary" style={{ width: `${group.progressPercent}%` }} />
         </div>
       </div>
 
@@ -150,7 +150,7 @@ function TodayGroupCard({ group }: { group: CollectorTodayGroup }) {
       <div className={cn('mt-wilms-3 flex flex-wrap gap-wilms-2', !expanded && 'hidden md:flex')}>
         <Link
           href={`/collector/groups/${group.groupId}/collection-sheet`}
-          className="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-sm border border-brand-primary px-wilms-3 py-wilms-2 text-small font-semibold text-brand-primary hover:bg-brand-primary-light"
+          className="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-xl border border-brand-primary bg-brand-primary px-wilms-3 py-wilms-2 text-small font-semibold text-card hover:opacity-90"
         >
           Open collection
         </Link>
@@ -226,7 +226,8 @@ export function CollectorDashboardPanel() {
 
   return (
     <div className="min-w-0 space-y-wilms-5" data-testid="collector-field-dashboard">
-      <section className="overflow-hidden rounded-2xl border border-border/80 bg-card p-wilms-4 shadow-[var(--shadow-card)] sm:p-wilms-5">
+      <section className="overflow-hidden rounded-2xl border border-border/80 bg-card">
+        <div className="bg-gradient-to-br from-brand-primary/[0.08] via-transparent to-transparent p-wilms-4 sm:p-wilms-5">
         <div className="flex flex-col gap-wilms-4">
           <div className="min-w-0">
             <p className="text-small font-semibold uppercase tracking-wide text-brand-primary">
@@ -243,7 +244,7 @@ export function CollectorDashboardPanel() {
                 : null}
             </p>
             <div
-              className="mt-wilms-3 h-2 max-w-md overflow-hidden rounded-full bg-background"
+              className="mt-wilms-3 h-2.5 max-w-md overflow-hidden rounded-full bg-background"
               role="progressbar"
               aria-valuenow={hero.progressPercent}
               aria-valuemin={0}
@@ -283,6 +284,7 @@ export function CollectorDashboardPanel() {
               valueClassName={hero.weeklyTrendPercent >= 0 ? 'text-status-active' : 'text-danger'}
             />
           </div>
+        </div>
         </div>
       </section>
 

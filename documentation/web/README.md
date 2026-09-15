@@ -1,13 +1,13 @@
 # WILMS Documentation Web Portal
 
-**Version:** 1.7.3  
-**Status:** Structure defined — deployment pending
+**Version:** 1.8.1  
+**Status:** In-app Documentation Centre is live at `/documentation`; this static portal scaffold remains optional
 
 ---
 
 ## Purpose
 
-This directory defines the structure for a future static documentation portal browsable by programme staff, partners, and evaluators. Content sources live in `documentation/` markdown files; this portal provides navigation, versioning, and search scaffolding.
+This directory defines the structure for a future static documentation portal browsable by programme staff, partners, and evaluators. Content sources live in `documentation/` markdown files; the primary staff experience is the in-app **Documentation Centre**.
 
 ---
 
@@ -16,7 +16,7 @@ This directory defines the structure for a future static documentation portal br
 | Feature | Description |
 |---------|-------------|
 | Sidebar navigation | Hierarchical nav from `nav.json` |
-| Version selector | Switch between v1.7.2, v1.7.3, etc. |
+| Version selector | Switch between documented release versions |
 | Full-text search | Client-side search index |
 | FAQ section | Common questions per role |
 | Glossary | Terms from Product Book appendix |
