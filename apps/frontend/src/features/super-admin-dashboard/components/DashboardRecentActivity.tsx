@@ -158,12 +158,12 @@ function ActivityRow({ item }: { item: ActivityItem }) {
     <div className="flex items-start gap-wilms-3">
       <span
         className={cn(
-          'mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border',
+          'mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border',
           STATUS_CLASS[item.status],
         )}
         aria-hidden="true"
       >
-        <StatusIcon className="h-3.5 w-3.5" />
+        <StatusIcon className="h-3 w-3" />
       </span>
       <div className="min-w-0 flex-1">
         <p className="truncate text-body font-semibold text-text-primary">{item.title}</p>
@@ -190,14 +190,14 @@ function ActivityRow({ item }: { item: ActivityItem }) {
     return (
       <Link
         href={item.href}
-        className="block rounded-sm border border-border bg-background px-wilms-3 py-wilms-3 transition-colors hover:border-brand-primary/40"
+        className="block py-wilms-2 transition-colors hover:bg-background/60"
       >
         {body}
       </Link>
     );
   }
 
-  return <div className="rounded-sm border border-border bg-background px-wilms-3 py-wilms-3">{body}</div>;
+  return <div className="py-wilms-2">{body}</div>;
 }
 
 export function DashboardRecentActivity({
@@ -279,7 +279,7 @@ export function DashboardRecentActivity({
 
   return (
     <div className="space-y-wilms-3" data-testid="dashboard-recent-activity">
-      <ol className="space-y-wilms-2">
+      <ol className="divide-y divide-border">
         {preview.map((item) => (
           <li key={item.id}>
             <ActivityRow item={item} />
@@ -288,9 +288,9 @@ export function DashboardRecentActivity({
       </ol>
 
       {showViewAll ? (
-        <div className="flex flex-wrap items-center justify-between gap-wilms-2 pt-wilms-1">
+        <div className="flex flex-wrap items-center justify-between gap-wilms-2 border-t border-border pt-wilms-3">
           <p className="text-small text-text-muted">Showing {preview.length} latest events</p>
-          <div className="flex flex-wrap gap-wilms-2">
+          <div className="flex flex-wrap gap-wilms-3">
             <Button type="button" variant="secondary" size="sm" onClick={() => setDrawerOpen(true)}>
               View all activity
             </Button>
@@ -298,7 +298,7 @@ export function DashboardRecentActivity({
               href="/reports/audit-log"
               className="inline-flex min-h-[36px] items-center text-small font-semibold text-brand-primary hover:underline"
             >
-              Full audit log
+              Full audit log →
             </Link>
           </div>
         </div>

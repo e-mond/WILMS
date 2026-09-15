@@ -22,15 +22,15 @@ describe('product tour routes', () => {
 
   it('supports resume-later progress and analytics keys', () => {
     expect(tourSource).toContain('wilms-product-tour-progress');
-    expect(tourSource).toContain('Resume later');
+    expect(tourSource).toContain('Pause saves progress');
     expect(tourSource).toContain('tour_paused');
   });
 
   it('offers welcome actions including do-not-show-again', () => {
     expect(tourSource).toContain('Welcome to WILMS');
-    expect(tourSource).toContain('Don&apos;t Show This Again');
-    expect(tourSource).toContain('Not Now');
-    expect(tourSource).toContain('Start Tour');
+    expect(tourSource).toContain("Don&apos;t show again");
+    expect(tourSource).toContain('Not now');
+    expect(tourSource).toContain('Start tour');
     expect(tourSource).toContain('neverShowAgain: true');
   });
 

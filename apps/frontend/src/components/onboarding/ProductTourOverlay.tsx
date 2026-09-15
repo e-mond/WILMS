@@ -11,7 +11,7 @@ import {
 } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Award, CheckCircle2 } from 'lucide-react';
+import { Award, CheckCircle2, Compass, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/hooks/useAuth';
@@ -742,7 +742,7 @@ function TourSpotlight({ rect }: { rect: SpotlightRect | null }) {
         style={{ top, height, left: left + width }}
       />
       <div
-        className="tour-highlight-pulse absolute rounded-sm ring-2 ring-brand-primary ring-offset-2 ring-offset-transparent"
+        className="tour-highlight-pulse absolute rounded-lg ring-2 ring-brand-primary ring-offset-2 ring-offset-transparent"
         style={{ top, left, width, height }}
       />
       {/* Block clicks through the cut-out without covering the visual hole */}
@@ -759,6 +759,7 @@ function TourDialogShell({
   showSpotlight,
   spotlight,
   compact,
+  eyebrow,
 }: {
   title: string;
   children: ReactNode;
@@ -767,6 +768,7 @@ function TourDialogShell({
   showSpotlight?: boolean;
   spotlight?: SpotlightRect | null;
   compact?: boolean;
+  eyebrow?: string;
 }) {
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -818,25 +820,49 @@ function TourDialogShell({
       ref={dialogRef}
       className={cn(
         'fixed inset-0 z-[120] flex p-wilms-4',
-        showSpotlight ? 'items-end justify-center sm:items-end sm:justify-end' : 'items-end justify-center sm:items-center',
+        showSpotlight
+          ? 'items-end justify-center sm:items-end sm:justify-end sm:p-wilms-6'
+          : 'items-end justify-center sm:items-center',
       )}
       role="dialog"
       aria-modal="true"
       aria-labelledby="product-tour-title"
       onKeyDown={onKeyDown}
     >
-      {showSpotlight ? <TourSpotlight rect={spotlight ?? null} /> : (
-        <div className="fixed inset-0 z-[119] bg-black/45 backdrop-blur-[2px]" aria-hidden="true" />
+      {showSpotlight ? (
+        <TourSpotlight rect={spotlight ?? null} />
+      ) : (
+        <div className="fixed inset-0 z-[119] bg-black/50 backdrop-blur-[2px]" aria-hidden="true" />
       )}
       <div
         className={cn(
-          'tour-dialog-panel relative z-[122] w-full overflow-hidden rounded-sm border border-border bg-card shadow-lg',
+          'tour-dialog-panel relative z-[122] w-full overflow-hidden rounded-2xl border border-border bg-card shadow-2xl',
           compact ? 'max-w-md' : 'max-w-lg',
         )}
       >
+        <div className="bg-gradient-to-br from-brand-primary/[0.12] via-brand-primary/[0.04] to-transparent px-wilms-5 pb-wilms-3 pt-wilms-5">
+          <div className="flex items-start gap-wilms-3">
+            <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-brand-primary/20 bg-card text-brand-primary shadow-sm">
+              <Compass className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <div className="min-w-0">
+              {eyebrow ? (
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-primary">
+                  {eyebrow}
+                </p>
+              ) : null}
+              <h2
+                id="product-tour-title"
+                className="text-heading-2 font-semibold tracking-tight text-text-primary"
+              >
+                {title}
+              </h2>
+            </div>
+          </div>
+        </div>
         {typeof progressPercent === 'number' ? (
           <div
-            className="h-1 bg-border"
+            className="h-1.5 bg-border/80"
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={100}
@@ -844,17 +870,14 @@ function TourDialogShell({
             aria-label="Tour progress"
           >
             <div
-              className="h-full bg-brand-primary transition-[width] duration-300 ease-out"
+              className="h-full rounded-r-full bg-brand-primary transition-[width] duration-300 ease-out"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
-        ) : null}
-        <div className="p-wilms-5">
-          <h2 id="product-tour-title" className="text-heading-2 font-semibold text-text-primary">
-            {title}
-          </h2>
-          {children}
-        </div>
+        ) : (
+          <div className="h-px bg-border/70" aria-hidden="true" />
+        )}
+        <div className="px-wilms-5 py-wilms-5">{children}</div>
       </div>
     </div>
   );
@@ -873,36 +896,40 @@ export function ProductTourOverlay() {
 
   if (tour.phase === 'welcome') {
     return (
-      <TourDialogShell title="Welcome to WILMS">
+      <TourDialogShell title="Welcome to WILMS" eyebrow="Guided product tour">
+        <div className="inline-flex items-center gap-1.5 rounded-full border border-brand-primary/20 bg-brand-primary-light px-2.5 py-1 text-[11px] font-semibold text-brand-primary">
+          <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+          About 3–5 minutes
+        </div>
         <p className="mt-wilms-3 text-body text-text-muted">
           WILMS is the Women&apos;s Interest-Free Loan Management System — your workspace for pools,
           registrations, collections, approvals, and reporting.
         </p>
         <p className="mt-wilms-2 text-body text-text-muted">
-          This guided tour highlights the menus and pages you will use most often for your role.
+          This tour highlights the menus and pages you will use most often for your role. You can
+          pause anytime and resume later from Help.
         </p>
-        <p className="mt-wilms-2 text-small text-text-muted">
-          Estimated time: about 3–5 minutes. You can pause and resume later, or restart anytime from
-          Help.
-        </p>
-        <div className="mt-wilms-5 flex flex-wrap justify-end gap-wilms-2">
+        <div className="mt-wilms-5 flex flex-wrap items-center justify-between gap-wilms-2 border-t border-border pt-wilms-4">
           <Button
             type="button"
             variant="ghost"
+            size="sm"
             onClick={() => tour.closeTour({ neverShowAgain: true })}
           >
-            Don&apos;t Show This Again
+            Don&apos;t show again
           </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => tour.closeTour({ neverShowAgain: false })}
-          >
-            Not Now
-          </Button>
-          <Button type="button" onClick={tour.startTour}>
-            {tour.hasSavedProgress ? 'Resume Tour' : 'Start Tour'}
-          </Button>
+          <div className="flex flex-wrap gap-wilms-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => tour.closeTour({ neverShowAgain: false })}
+            >
+              Not now
+            </Button>
+            <Button type="button" onClick={tour.startTour}>
+              {tour.hasSavedProgress ? 'Resume tour' : 'Start tour'}
+            </Button>
+          </div>
         </div>
       </TourDialogShell>
     );
@@ -910,18 +937,17 @@ export function ProductTourOverlay() {
 
   if (tour.phase === 'complete' && tour.completion) {
     return (
-      <TourDialogShell title="Tour complete" compact>
-        <div className="mt-wilms-3 flex flex-wrap items-center gap-wilms-2">
+      <TourDialogShell title="You're ready" eyebrow="Tour complete" compact>
+        <div className="flex flex-wrap items-center gap-wilms-2">
           <Badge variant="success" className="gap-1.5">
             <Award className="h-3.5 w-3.5" aria-hidden="true" />
             Tour completed
           </Badge>
         </div>
         <p className="mt-wilms-3 text-body text-text-muted">
-          You&apos;re ready to work in WILMS. Start with the recommended next step, then use the
-          quick-start checklist below.
+          Start with the recommended next step, then work through the quick-start checklist.
         </p>
-        <div className="mt-wilms-4 rounded-sm border border-border bg-background p-wilms-3">
+        <div className="mt-wilms-4 rounded-xl border border-brand-primary/20 bg-brand-primary-light/40 p-wilms-3">
           <p className="text-small font-semibold text-text-primary">Next recommended action</p>
           <Link
             href={tour.completion.nextAction.href}
@@ -945,7 +971,7 @@ export function ProductTourOverlay() {
             ))}
           </ul>
         </div>
-        <div className="mt-wilms-5 flex flex-wrap justify-end gap-wilms-2">
+        <div className="mt-wilms-5 flex flex-wrap justify-end gap-wilms-2 border-t border-border pt-wilms-4">
           <Button type="button" onClick={tour.dismissCompletion}>
             Done
           </Button>
@@ -957,24 +983,24 @@ export function ProductTourOverlay() {
   if (tour.phase === 'exit-confirm') {
     return (
       <TourDialogShell
-        title="Exit guided tour?"
+        title="Leave the tour?"
+        eyebrow="Exit confirmation"
         progressPercent={tour.progressPercent}
         showSpotlight
         spotlight={tour.spotlight}
       >
-        <p className="mt-wilms-3 text-body text-text-muted">
-          You are leaving the guided tour. Progress will not be saved unless you pause instead. You
-          can open the tour again anytime using Help.
+        <p className="text-body text-text-muted">
+          Progress is only saved if you pause. You can restart anytime from Help.
         </p>
-        <div className="mt-wilms-5 flex flex-wrap justify-end gap-wilms-2">
-          <Button type="button" variant="secondary" onClick={tour.resumeTour}>
-            Continue Tour
+        <div className="mt-wilms-5 flex flex-wrap justify-end gap-wilms-2 border-t border-border pt-wilms-4">
+          <Button type="button" variant="ghost" onClick={() => tour.closeTour()}>
+            Exit
           </Button>
-          <Button type="button" variant="ghost" onClick={tour.pauseTourForLater}>
+          <Button type="button" variant="secondary" onClick={tour.pauseTourForLater}>
             Pause
           </Button>
-          <Button type="button" variant="ghost" onClick={() => tour.closeTour()}>
-            Exit Tour
+          <Button type="button" onClick={tour.resumeTour}>
+            Continue
           </Button>
         </div>
       </TourDialogShell>
@@ -988,6 +1014,7 @@ export function ProductTourOverlay() {
   return (
     <TourDialogShell
       title={tour.step.title}
+      eyebrow={`Step ${tour.stepIndex + 1} of ${tour.steps.length}`}
       progressPercent={tour.progressPercent}
       showSpotlight
       spotlight={tour.spotlight}
@@ -1003,46 +1030,51 @@ export function ProductTourOverlay() {
         }
       }}
     >
-      <div className="mt-wilms-2 flex items-center justify-between gap-wilms-3">
-        <p className="text-small font-semibold text-brand-primary">
-          Step {tour.stepIndex + 1} of {tour.steps.length}
-        </p>
+      <div className="flex items-center justify-between gap-wilms-3">
+        <div className="flex flex-wrap gap-1" aria-hidden="true">
+          {tour.steps.map((entry, index) => (
+            <span
+              key={entry.id}
+              className={cn(
+                'h-1.5 rounded-full transition-all',
+                index === tour.stepIndex
+                  ? 'w-5 bg-brand-primary'
+                  : index < tour.stepIndex
+                    ? 'w-1.5 bg-brand-primary/60'
+                    : 'w-1.5 bg-border',
+              )}
+            />
+          ))}
+        </div>
         {tour.isNavigating ? (
           <p className="text-small text-text-muted" aria-live="polite">
             Opening page…
           </p>
         ) : null}
       </div>
-      <div className="mt-wilms-2 flex flex-wrap gap-1" aria-hidden="true">
-        {tour.steps.map((entry, index) => (
-          <span
-            key={entry.id}
-            className={cn(
-              'h-1.5 w-1.5 rounded-full transition-colors',
-              index <= tour.stepIndex ? 'bg-brand-primary' : 'bg-border',
-            )}
-          />
-        ))}
-      </div>
-      <p className="mt-wilms-3 text-body text-text-muted">{tour.step.body}</p>
-      <p className="mt-wilms-2 text-small text-text-muted">
-        Tip: use ← → keys to move, Esc to exit. Pause saves progress (Resume later from welcome or Help).
+      <p className="mt-wilms-3 text-body leading-relaxed text-text-muted">{tour.step.body}</p>
+      <p className="mt-wilms-2 text-[11px] text-text-muted">
+        ← → to move · Esc to exit · Pause saves progress
       </p>
-      <div className="mt-wilms-5 flex flex-wrap justify-end gap-wilms-2">
-        <Button type="button" variant="ghost" onClick={tour.requestExit}>
-          Skip
-        </Button>
-        <Button type="button" variant="ghost" onClick={tour.pauseTourForLater}>
-          Pause
-        </Button>
-        {tour.stepIndex > 0 ? (
-          <Button type="button" variant="secondary" onClick={tour.previousStep}>
-            Back
+      <div className="mt-wilms-5 flex flex-wrap items-center justify-between gap-wilms-2 border-t border-border pt-wilms-4">
+        <div className="flex flex-wrap gap-wilms-1">
+          <Button type="button" variant="ghost" size="sm" onClick={tour.requestExit}>
+            Skip
           </Button>
-        ) : null}
-        <Button type="button" className={cn('min-w-[6rem]')} onClick={tour.nextStep}>
-          {tour.stepIndex >= tour.steps.length - 1 ? 'Finish' : 'Next'}
-        </Button>
+          <Button type="button" variant="ghost" size="sm" onClick={tour.pauseTourForLater}>
+            Pause
+          </Button>
+        </div>
+        <div className="flex flex-wrap gap-wilms-2">
+          {tour.stepIndex > 0 ? (
+            <Button type="button" variant="secondary" onClick={tour.previousStep}>
+              Back
+            </Button>
+          ) : null}
+          <Button type="button" className="min-w-[6.5rem]" onClick={tour.nextStep}>
+            {tour.stepIndex >= tour.steps.length - 1 ? 'Finish' : 'Next'}
+          </Button>
+        </div>
       </div>
     </TourDialogShell>
   );

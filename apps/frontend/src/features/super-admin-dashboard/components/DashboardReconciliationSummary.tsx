@@ -2,18 +2,14 @@
 
 import Link from 'next/link';
 import { useMemo } from 'react';
-import { Clock3 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { CurrencyAmount, KpiCard } from '@/components/data-display';
+import { CurrencyAmount } from '@/components/data-display';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
-import { ExecutiveKpiGrid } from '@/components/layout/executive';
 import { useReconciliationList } from '@/features/reconciliation/hooks/useReconciliationReview';
 import { reconciliationService } from '@/services';
 import { needsReconciliationReview } from '@/utils/reconciliation-review';
 import { cn } from '@/utils/cn';
 import { RECONCILIATION_STATUS_LABELS } from '@/constants/reconciliation-status';
-
-const PENDING_AGING_ICON = <Clock3 className="h-4 w-4" aria-hidden="true" />;
 
 function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -29,6 +25,10 @@ function ageDays(iso: string | undefined, now: Date): number {
 function isSameDay(iso: string | undefined, now: Date): boolean {
   if (!iso) return false;
   return ageDays(iso, now) === 0;
+}
+
+function pluralizeCollectors(count: number): string {
+  return count === 1 ? '1 collector' : `${count} collectors`;
 }
 
 export function DashboardReconciliationSummary({ compact = false }: { compact?: boolean }) {
@@ -99,48 +99,40 @@ export function DashboardReconciliationSummary({ compact = false }: { compact?: 
     {
       label: 'Pending review',
       value: summary.pendingTotal,
-      trend: summary.pendingTotal === 0 ? 'Clear' : 'Needs review',
       tone: summary.pendingTotal > 0 ? 'warn' : 'ok',
-      icon: PENDING_AGING_ICON,
     },
     {
       label: `Missing (${summary.windowDays}d)`,
       value: summary.missingRecent,
-      trend: summary.missingRecent === 0 ? 'All submitted' : 'No cash submit',
       tone: summary.missingRecent > 0 ? 'danger' : 'ok',
-      icon: PENDING_AGING_ICON,
     },
     {
       label: 'Approved today',
       value: summary.approvedToday,
-      trend: summary.approvedToday > 0 ? 'Reviewed' : 'None yet',
       tone: 'ok',
-      icon: PENDING_AGING_ICON,
     },
     {
       label: 'Rejected today',
       value: summary.rejectedToday,
-      trend: summary.rejectedToday > 0 ? 'Actioned' : 'None yet',
       tone: summary.rejectedToday > 0 ? 'danger' : 'ok',
-      icon: PENDING_AGING_ICON,
     },
   ] as const;
 
   return (
     <section
       className={cn(
-        'space-y-wilms-5 rounded-sm border border-[color-mix(in_srgb,var(--color-status-info)_35%,transparent)] bg-[color-mix(in_srgb,var(--color-status-info)_8%,var(--color-card))] p-wilms-5',
+        'space-y-wilms-4 rounded-sm border border-border bg-card p-wilms-5',
         !compact && 'p-wilms-6',
       )}
       data-testid="dashboard-reconciliation-summary"
       data-financial-tone="reconciliation"
+      aria-labelledby="reconciliation-heading"
     >
       <div className="flex flex-wrap items-end justify-between gap-wilms-3">
         <div className="min-w-0">
-          <p className="text-small font-semibold uppercase tracking-wide text-status-info">
+          <h3 id="reconciliation-heading" className="text-heading-3 font-semibold text-text-primary">
             Reconciliation
-          </p>
-          <h3 className="text-heading-3 font-semibold text-text-primary">Cash control queue</h3>
+          </h3>
           <p className="mt-wilms-1 text-small text-text-muted">
             Submitted reconciliations awaiting review, plus collectors with no submission in the
             last {summary.windowDays} days. Age is days since the cash sheet was submitted.
@@ -148,82 +140,90 @@ export function DashboardReconciliationSummary({ compact = false }: { compact?: 
         </div>
         <Link
           href="/reports/daily-collection"
-          className="shrink-0 whitespace-nowrap text-small font-semibold text-status-info hover:underline"
+          className="shrink-0 whitespace-nowrap text-small font-semibold text-brand-primary hover:underline"
         >
-          View all reconciliations
+          View all reconciliations →
         </Link>
       </div>
 
-      <ExecutiveKpiGrid
-        className={cn(
-          compact
-            ? 'sm:grid-cols-2 lg:!grid-cols-2 2xl:!grid-cols-2'
-            : 'sm:grid-cols-2 xl:grid-cols-4',
-        )}
-      >
+      <dl className="grid grid-cols-2 gap-wilms-3 sm:grid-cols-4">
         {metrics.map((metric) => (
-          <KpiCard
+          <div
             key={metric.label}
-            variant="executive"
-            label={metric.label}
-            icon={metric.icon}
-            value={metric.value}
-            trend={metric.trend}
-            valueClassName={cn(
-              metric.tone === 'ok' && 'text-status-active',
-              metric.tone === 'warn' && 'text-status-at-risk',
-              metric.tone === 'danger' && 'text-danger',
-            )}
-          />
+            className="rounded-sm border border-border bg-background p-wilms-3"
+          >
+            <dt className="text-small font-medium text-text-muted">{metric.label}</dt>
+            <dd
+              className={cn(
+                'mt-wilms-1 text-heading-2 font-semibold tabular-nums',
+                metric.tone === 'ok' && 'text-status-active',
+                metric.tone === 'warn' && 'text-status-at-risk',
+                metric.tone === 'danger' && 'text-danger',
+              )}
+            >
+              {metric.value.toLocaleString()}
+            </dd>
+          </div>
         ))}
-      </ExecutiveKpiGrid>
+      </dl>
 
-      <div className="overflow-x-auto rounded-sm border border-border bg-card">
-        <table className="min-w-full text-left text-small">
-          <caption className="sr-only">Latest pending reconciliations</caption>
-          <thead className="border-b border-border bg-background/60 text-text-muted">
-            <tr>
-              <th className="whitespace-nowrap px-wilms-3 py-wilms-2 font-semibold">Collector</th>
-              <th className="whitespace-nowrap px-wilms-3 py-wilms-2 font-semibold">Date</th>
-              <th className="whitespace-nowrap px-wilms-3 py-wilms-2 font-semibold">Amount</th>
-              <th className="whitespace-nowrap px-wilms-3 py-wilms-2 font-semibold">Age</th>
-              <th className="whitespace-nowrap px-wilms-3 py-wilms-2 font-semibold">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {summary.latestPending.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-wilms-3 py-wilms-4 text-text-muted">
-                  {summary.missingRecent > 0
-                    ? `No submitted sheets waiting for review. ${summary.missingRecent} collector(s) have not submitted in the last ${summary.windowDays} days — see Missing above.`
-                    : 'No pending review items — all submitted cash reconciliations are clear.'}
-                </td>
-              </tr>
-            ) : (
-              summary.latestPending.map((row) => (
-                <tr key={row.id} className="border-b border-border last:border-0">
-                  <td className="whitespace-nowrap px-wilms-3 py-wilms-2 font-medium text-text-primary">
-                    {row.collectorLabel}
-                  </td>
-                  <td className="whitespace-nowrap px-wilms-3 py-wilms-2 text-text-muted">
-                    {row.date}
-                  </td>
-                  <td className="whitespace-nowrap px-wilms-3 py-wilms-2 tabular-nums text-text-primary">
-                    <CurrencyAmount value={row.amountPesewas} />
-                  </td>
-                  <td className="whitespace-nowrap px-wilms-3 py-wilms-2 text-text-muted">
-                    {row.age === 0 ? 'Today' : `${row.age}d`}
-                  </td>
-                  <td className="whitespace-nowrap px-wilms-3 py-wilms-2 text-text-muted">
-                    {RECONCILIATION_STATUS_LABELS[
-                      row.status as keyof typeof RECONCILIATION_STATUS_LABELS
-                    ] ?? row.status}
-                  </td>
+      <div>
+        <h4 className="mb-wilms-2 text-small font-semibold uppercase tracking-wide text-text-muted">
+          Latest pending reconciliations
+        </h4>
+        {summary.latestPending.length === 0 ? (
+          <div className="rounded-sm border border-dashed border-border px-wilms-4 py-wilms-5 text-center">
+            <p className="text-body font-medium text-text-primary">No pending reconciliations</p>
+            <p className="mt-wilms-1 text-small text-text-muted">
+              All submitted cash sheets have been reviewed.
+            </p>
+            {summary.missingRecent > 0 ? (
+              <p className="mt-wilms-2 text-small text-text-muted">
+                {pluralizeCollectors(summary.missingRecent)}{' '}
+                {summary.missingRecent === 1 ? 'has' : 'have'} not submitted in the last{' '}
+                {summary.windowDays} days. Review Missing ({summary.windowDays}d) above.
+              </p>
+            ) : null}
+          </div>
+        ) : (
+          <div className="overflow-x-auto rounded-sm border border-border">
+            <table className="min-w-full text-left text-small">
+              <caption className="sr-only">Latest pending reconciliations</caption>
+              <thead className="border-b border-border bg-background/60 text-text-muted">
+                <tr>
+                  <th className="whitespace-nowrap px-wilms-3 py-wilms-2 font-semibold">Collector</th>
+                  <th className="whitespace-nowrap px-wilms-3 py-wilms-2 font-semibold">Date</th>
+                  <th className="whitespace-nowrap px-wilms-3 py-wilms-2 font-semibold">Amount</th>
+                  <th className="whitespace-nowrap px-wilms-3 py-wilms-2 font-semibold">Age</th>
+                  <th className="whitespace-nowrap px-wilms-3 py-wilms-2 font-semibold">Status</th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              </thead>
+              <tbody>
+                {summary.latestPending.map((row) => (
+                  <tr key={row.id} className="border-b border-border last:border-0">
+                    <td className="whitespace-nowrap px-wilms-3 py-wilms-2 font-medium text-text-primary">
+                      {row.collectorLabel}
+                    </td>
+                    <td className="whitespace-nowrap px-wilms-3 py-wilms-2 text-text-muted">
+                      {row.date}
+                    </td>
+                    <td className="whitespace-nowrap px-wilms-3 py-wilms-2 tabular-nums text-text-primary">
+                      <CurrencyAmount value={row.amountPesewas} />
+                    </td>
+                    <td className="whitespace-nowrap px-wilms-3 py-wilms-2 text-text-muted">
+                      {row.age === 0 ? 'Today' : `${row.age}d`}
+                    </td>
+                    <td className="whitespace-nowrap px-wilms-3 py-wilms-2 text-text-muted">
+                      {RECONCILIATION_STATUS_LABELS[
+                        row.status as keyof typeof RECONCILIATION_STATUS_LABELS
+                      ] ?? row.status}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </section>
   );

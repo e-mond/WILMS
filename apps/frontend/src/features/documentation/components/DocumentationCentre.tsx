@@ -108,19 +108,21 @@ export function DocumentationCentre({ initialBookId }: { initialBookId?: string 
     if (presentation || !book) return null;
     return (
       <div className="space-y-wilms-4" data-testid="documentation-aside-toc">
-        <div>
-          <p className="text-small font-semibold uppercase tracking-wide text-text-muted">
+        <div className="rounded-xl border border-border/80 bg-card p-wilms-4">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-primary">
             On this page
           </p>
-          <p className="mt-wilms-1 text-small text-text-primary">{book.shortTitle}</p>
-          <TocList
-            headings={headings}
-            activeHeading={activeHeading}
-            bookmarks={bookmarks}
-            onToggleBookmark={toggleBookmark}
-          />
+          <p className="mt-wilms-1 text-body font-semibold text-text-primary">{book.shortTitle}</p>
+          <div className="mt-wilms-3">
+            <TocList
+              headings={headings}
+              activeHeading={activeHeading}
+              bookmarks={bookmarks}
+              onToggleBookmark={toggleBookmark}
+            />
+          </div>
         </div>
-        <div className="border-t border-border pt-wilms-4">
+        <div className="rounded-xl border border-border/80 bg-card p-wilms-4">
           <p className="text-small font-semibold text-text-primary">Quick actions</p>
           <ul className="mt-wilms-2 space-y-2 text-small text-text-muted">
             <li>Download PDF or Word from the toolbar</li>
@@ -245,86 +247,88 @@ export function DocumentationCentre({ initialBookId }: { initialBookId?: string 
       data-testid="documentation-centre"
     >
       {!presentation ? (
-        <header className="mb-wilms-5 w-full overflow-hidden rounded-sm border border-[color-mix(in_srgb,var(--color-brand-primary)_35%,transparent)] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--color-brand-primary)_18%,var(--color-card)),var(--color-card)_55%)] p-wilms-5 md:p-wilms-6">
-          <p className="text-small font-semibold uppercase tracking-[0.14em] text-brand-primary">
-            Documentation Centre · v{DOCUMENTATION_STATS.libraryVersion}
-          </p>
-          <h1 className="font-doc-display mt-wilms-2 text-heading-1 font-semibold tracking-tight text-text-primary md:text-[2.25rem]">
-            WILMS Documentation Centre
-          </h1>
-          <p className="mt-wilms-3 max-w-3xl text-body text-text-muted">
-            Official product, technical, operational, and administrative documentation for the
-            Women’s Interest-Free Loan Management System.
-          </p>
-          <dl className="mt-wilms-5 grid gap-wilms-3 sm:grid-cols-2 lg:grid-cols-5">
-            <Stat label="Version" value={DOCUMENTATION_STATS.libraryVersion} />
-            <Stat label="Platform baseline" value={DOCUMENTATION_STATS.platformBaseline} />
-            <Stat label="Books" value={String(DOCUMENTATION_STATS.bookCount)} />
-            <Stat label="Est. pages" value={String(DOCUMENTATION_STATS.estimatedPages)} />
-            <Stat label="Status" value={DOCUMENTATION_STATS.status} />
-          </dl>
-          <div className="mt-wilms-5 flex flex-col gap-wilms-3 sm:flex-row sm:flex-wrap sm:items-end">
-            <div className="relative min-w-0 flex-1">
-              <Search
-                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted"
-                aria-hidden
-              />
-              <Input
-                className="min-h-[44px] pl-10"
-                placeholder="Search titles, headings, glossary, API names…"
-                value={query}
-                onChange={(event) => void runSearch(event.target.value)}
-                aria-label="Search documentation"
-              />
+        <header className="mb-wilms-5 w-full overflow-hidden rounded-2xl border border-border/80 bg-card">
+          <div className="bg-gradient-to-br from-brand-primary/[0.09] via-transparent to-transparent p-wilms-5 md:p-wilms-6">
+            <p className="text-small font-semibold uppercase tracking-wide text-brand-primary">
+              Documentation Centre · v{DOCUMENTATION_STATS.libraryVersion}
+            </p>
+            <h1 className="mt-wilms-2 text-heading-1 font-semibold tracking-tight text-text-primary">
+              WILMS Documentation
+            </h1>
+            <p className="mt-wilms-2 max-w-3xl text-body text-text-muted">
+              Official product, technical, operational, and administrative documentation for the
+              Women&apos;s Interest-Free Loan Management System.
+            </p>
+            <dl className="mt-wilms-5 grid gap-wilms-3 sm:grid-cols-2 lg:grid-cols-5">
+              <Stat label="Version" value={DOCUMENTATION_STATS.libraryVersion} />
+              <Stat label="Platform baseline" value={DOCUMENTATION_STATS.platformBaseline} />
+              <Stat label="Books" value={String(DOCUMENTATION_STATS.bookCount)} />
+              <Stat label="Est. pages" value={String(DOCUMENTATION_STATS.estimatedPages)} />
+              <Stat label="Status" value={DOCUMENTATION_STATS.status} />
+            </dl>
+            <div className="mt-wilms-5 flex flex-col gap-wilms-3 sm:flex-row sm:flex-wrap sm:items-end">
+              <div className="relative min-w-0 flex-1">
+                <Search
+                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-primary"
+                  aria-hidden
+                />
+                <Input
+                  className="min-h-[44px] rounded-xl pl-10"
+                  placeholder="Search titles, headings, glossary, API names…"
+                  value={query}
+                  onChange={(event) => void runSearch(event.target.value)}
+                  aria-label="Search documentation"
+                />
+              </div>
+              <label className="block shrink-0 text-small text-text-muted">
+                Documentation version
+                <Select
+                  className="mt-1 min-h-[44px] w-full rounded-xl sm:w-40"
+                  value={version}
+                  onChange={(event) => setVersion(event.target.value as typeof version)}
+                  aria-label="Documentation version"
+                >
+                  {DOC_VERSIONS.map((entry) => (
+                    <option key={entry} value={entry}>
+                      {entry === CURRENT_DOC_VERSION ? `${entry} (latest)` : entry}
+                    </option>
+                  ))}
+                </Select>
+              </label>
             </div>
-            <label className="block shrink-0 text-small text-text-muted">
-              Documentation version
-              <Select
-                className="mt-1 min-h-[44px] w-full sm:w-40"
-                value={version}
-                onChange={(event) => setVersion(event.target.value as typeof version)}
-                aria-label="Documentation version"
+            {query.trim().length >= 2 ? (
+              <div
+                className="mt-wilms-4 rounded-xl border border-border/80 bg-card/90 p-wilms-3"
+                role="region"
+                aria-live="polite"
+                aria-label="Search results"
               >
-                {DOC_VERSIONS.map((entry) => (
-                  <option key={entry} value={entry}>
-                    {entry === CURRENT_DOC_VERSION ? `${entry} (latest)` : entry}
-                  </option>
-                ))}
-              </Select>
-            </label>
+                <p className="text-small font-semibold text-text-primary">
+                  {isSearching ? 'Searching…' : `${searchHits.length} results`}
+                </p>
+                <ul className="mt-wilms-2 max-h-56 space-y-2 overflow-y-auto">
+                  {searchHits.map((hit, index) => (
+                    <li key={`${hit.bookId}-${hit.heading}-${index}`}>
+                      <button
+                        type="button"
+                        className="min-h-[44px] w-full rounded-lg px-wilms-2 py-wilms-2 text-left hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-primary"
+                        onClick={() => {
+                          setSelectedId(hit.bookId);
+                          setQuery('');
+                          setSearchHits([]);
+                          setLibraryOpen(false);
+                        }}
+                      >
+                        <p className="text-small font-semibold text-brand-primary">{hit.bookTitle}</p>
+                        <p className="text-small text-text-primary">{hit.heading}</p>
+                        <p className="text-small text-text-muted">{hit.snippet}</p>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </div>
-          {query.trim().length >= 2 ? (
-            <div
-              className="mt-wilms-4 rounded-sm border border-border bg-card/90 p-wilms-3"
-              role="region"
-              aria-live="polite"
-              aria-label="Search results"
-            >
-              <p className="text-small font-semibold text-text-primary">
-                {isSearching ? 'Searching…' : `${searchHits.length} results`}
-              </p>
-              <ul className="mt-wilms-2 max-h-56 space-y-2 overflow-y-auto">
-                {searchHits.map((hit, index) => (
-                  <li key={`${hit.bookId}-${hit.heading}-${index}`}>
-                    <button
-                      type="button"
-                      className="min-h-[44px] w-full rounded-sm px-wilms-2 py-wilms-2 text-left hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-primary"
-                      onClick={() => {
-                        setSelectedId(hit.bookId);
-                        setQuery('');
-                        setSearchHits([]);
-                        setLibraryOpen(false);
-                      }}
-                    >
-                      <p className="text-small font-semibold text-brand-primary">{hit.bookTitle}</p>
-                      <p className="text-small text-text-primary">{hit.heading}</p>
-                      <p className="text-small text-text-muted">{hit.snippet}</p>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
         </header>
       ) : (
         <div className="mb-wilms-4 flex items-center justify-between print:hidden">
@@ -348,7 +352,7 @@ export function DocumentationCentre({ initialBookId }: { initialBookId?: string 
           <aside
             id="documentation-library-nav"
             className={cn(
-              'min-w-0 rounded-sm border border-border bg-card p-wilms-3 print:hidden lg:sticky lg:top-wilms-4 lg:self-start',
+              'min-w-0 rounded-xl border border-border/80 bg-card p-wilms-3 print:hidden lg:sticky lg:top-wilms-4 lg:self-start',
               libraryOpen ? 'block' : 'hidden lg:block',
             )}
           >
@@ -388,7 +392,7 @@ export function DocumentationCentre({ initialBookId }: { initialBookId?: string 
                             }}
                             aria-current={active ? 'page' : undefined}
                             className={cn(
-                              'flex min-h-[44px] w-full items-start gap-2 rounded-sm px-wilms-2 py-wilms-2 text-left text-small transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-primary',
+                              'flex min-h-[44px] w-full items-start gap-2 rounded-lg px-wilms-2 py-wilms-2 text-left text-small transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-primary',
                               active
                                 ? 'bg-brand-primary/10 font-semibold text-brand-primary'
                                 : 'text-text-primary hover:bg-background',
@@ -443,7 +447,7 @@ export function DocumentationCentre({ initialBookId }: { initialBookId?: string 
 
           {!presentation ? (
             <div
-              className="mb-wilms-4 flex flex-wrap items-center gap-wilms-2 rounded-sm border border-border bg-card px-wilms-3 py-wilms-3 print:hidden"
+              className="mb-wilms-4 flex flex-wrap items-center gap-wilms-2 rounded-xl border border-border/80 bg-card px-wilms-3 py-wilms-3 print:hidden"
               role="toolbar"
               aria-label="Document actions"
             >
@@ -497,7 +501,7 @@ export function DocumentationCentre({ initialBookId }: { initialBookId?: string 
             </div>
           ) : null}
 
-          <article className="w-full rounded-sm border border-border bg-card px-wilms-4 py-wilms-5 sm:px-wilms-6 sm:py-wilms-6 md:px-wilms-8 md:py-wilms-8 print:border-0">
+          <article className="w-full rounded-xl border border-border/80 bg-card px-wilms-4 py-wilms-5 sm:px-wilms-6 sm:py-wilms-6 md:px-wilms-8 md:py-wilms-8 print:border-0">
             <DocCover book={book} version={version} />
             <QueryStatePanel
               isLoading={isLoading}
@@ -552,8 +556,8 @@ export function DocumentationCentre({ initialBookId }: { initialBookId?: string 
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-sm border border-border/70 bg-card/70 px-wilms-3 py-wilms-3">
-      <dt className="text-small text-text-muted">{label}</dt>
+    <div className="rounded-xl border border-border/70 bg-card/80 px-wilms-3 py-wilms-3">
+      <dt className="text-[11px] font-semibold uppercase tracking-wide text-text-muted">{label}</dt>
       <dd className="mt-1 text-body font-semibold text-text-primary">{value}</dd>
     </div>
   );
@@ -561,7 +565,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 function DocCover({ book, version }: { book: DocumentationBook; version: string }) {
   return (
-    <header className="mb-wilms-8 overflow-hidden rounded-sm border border-brand-primary/30 bg-[linear-gradient(160deg,#0F6E56_0%,#0b3d31_55%,#082820_100%)] px-wilms-6 py-wilms-8 text-white print:break-after-page">
+    <header className="mb-wilms-8 overflow-hidden rounded-xl border border-brand-primary/30 bg-[linear-gradient(160deg,#0F6E56_0%,#0b3d31_55%,#082820_100%)] px-wilms-6 py-wilms-8 text-white print:break-after-page">
       <p className="text-small font-semibold uppercase tracking-[0.18em] text-emerald-100/90">
         WILMS
       </p>

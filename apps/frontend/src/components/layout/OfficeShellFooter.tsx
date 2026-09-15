@@ -1,4 +1,7 @@
-import { getAppVersionLabel } from '@/lib/app-version';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useIsFetching } from '@tanstack/react-query';
 
 function formatSyncTime(date: Date): string {
   return new Intl.DateTimeFormat('en-GB', {
@@ -10,19 +13,40 @@ function formatSyncTime(date: Date): string {
 }
 
 export function OfficeShellFooter() {
-  const now = new Date();
-  const versionLabel = getAppVersionLabel();
+  const activeFetches = useIsFetching();
+  const isSyncing = activeFetches > 0;
+  const [lastSyncAt, setLastSyncAt] = useState<Date | null>(null);
+
+  useEffect(() => {
+    if (!isSyncing) {
+      setLastSyncAt(new Date());
+    }
+  }, [isSyncing]);
 
   return (
     <footer className="border-t border-border/80 bg-card px-6 py-3">
-      <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-text-muted">
-        <p>
-          WILMS — Women&apos;s Interest-Free Loan Management System — Ghana
-          {versionLabel ? ` · ${versionLabel}` : null}
-        </p>
-        <p className="inline-flex items-center gap-2 font-medium">
-          <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-xs" aria-hidden="true" />
-          Last sync: {formatSyncTime(now)} — All systems operational
+      <div className="flex items-center justify-center">
+        <p
+          className="inline-flex items-center gap-2 text-xs font-medium text-text-muted"
+          role="status"
+          aria-live="polite"
+        >
+          {isSyncing ? (
+            <>
+              <span
+                className="h-2.5 w-2.5 shrink-0 animate-spin rounded-full border-2 border-current border-t-transparent"
+                aria-hidden="true"
+              />
+              <span>Last sync: Syncing…</span>
+            </>
+          ) : (
+            <>
+              <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" aria-hidden="true" />
+              <span>
+                Last sync: {lastSyncAt ? formatSyncTime(lastSyncAt) : '—'} — All systems operational
+              </span>
+            </>
+          )}
         </p>
       </div>
     </footer>
