@@ -4,8 +4,9 @@ This folder contains frontend-oriented architecture context (UI shell, code stan
 
 For **current system architecture** (API + DB + auth + financial flow), use:
 
-- [`docs/certification/v1.3.8/enterprise-architecture/SYSTEM_ARCHITECTURE.md`](../certification/v1.3.8/enterprise-architecture/SYSTEM_ARCHITECTURE.md)
-- Phase 17 recommendations: [`../certification/v1.3.8/enterprise-architecture/INDEX.md`](../certification/v1.3.8/enterprise-architecture/INDEX.md)
+- [`docs/ARCHITECTURE.md`](../ARCHITECTURE.md)
+- Product overview: [`../../README.md`](../../README.md) (v1.8.1)
+- Documentation hub: [`../README.md`](../README.md)
 
 ## Field operations docs (repository `docs/`)
 
@@ -27,6 +28,12 @@ Supporting product docs in this folder:
 - `requirements-traceability.md` — requirement-to-implementation mapping
 - `architecture.md` — UI/dashboard shell architecture
 - `ui-context.md`, `code-standards.md`, `ai-workflow-rules.md`
+
+## UI shell notes (current)
+
+- Sticky app navbar with blurred backdrop, breadcrumbs, and action cluster
+- Role portals share `DashboardShell` / `OfficeShell` patterns
+- Executive and operations pages use rounded heroes + live KPI strips
 
 ## ADRs
 

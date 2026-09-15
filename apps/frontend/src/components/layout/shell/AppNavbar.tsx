@@ -52,31 +52,27 @@ export function AppNavbar({
       data-sidebar-collapsed={isSidebarCollapsed ? 'true' : 'false'}
       data-elevated={elevated ? 'true' : 'false'}
       className={cn(
-        'sticky top-0 z-30 hidden border-b border-border/80 bg-card/95 px-3 backdrop-blur-md md:block lg:px-4',
-        'supports-[backdrop-filter]:bg-card/90',
-        'motion-safe:transition-[box-shadow] motion-safe:duration-[var(--motion-base)]',
+        'sticky top-0 z-30 hidden border-b border-border/70 bg-card/95 px-3 backdrop-blur-xl md:block lg:px-5',
+        'supports-[backdrop-filter]:bg-card/85',
+        'motion-safe:transition-[box-shadow,background-color] motion-safe:duration-[var(--motion-base)]',
         elevated && 'navbar-elevated',
         className,
       )}
     >
-      {/*
-        Use remaining-column flex widths (not viewport vw) so the search field
-        does not overflow when the sidebar is expanded.
-      */}
-      <div className="flex h-12 w-full min-w-0 items-center gap-2 lg:gap-3">
-        <div className="flex min-w-0 flex-[1_1_10rem] items-center gap-2 overflow-hidden">
+      <div className="flex h-14 w-full min-w-0 items-center gap-3 lg:gap-4">
+        <div className="flex min-w-0 flex-[1_1_12rem] items-center gap-2.5 overflow-hidden">
           {showMobileNavTrigger ? (
             <button
               type="button"
               onClick={openMobileNav}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-text-primary transition-colors hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary md:hidden"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-background/70 text-text-primary transition-colors hover:border-brand-primary/30 hover:bg-brand-primary/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary md:hidden"
               aria-label="Open navigation menu"
             >
               <Menu className="h-5 w-5" />
             </button>
           ) : null}
 
-          <div className="min-w-0 flex-1 overflow-hidden">
+          <div className="min-w-0 flex-1 overflow-hidden rounded-xl px-1 py-1">
             {isExecutive ? (
               <PageBreadcrumbs items={breadcrumbs} />
             ) : (
@@ -87,12 +83,14 @@ export function AppNavbar({
           </div>
         </div>
 
-        <div className="hidden min-w-0 flex-[1_1_14rem] max-w-md md:block">
+        <div className="hidden min-w-0 flex-[1_1_16rem] max-w-lg md:block">
           {user ? <GlobalSearchTrigger variant="desktop" className="w-full max-w-full" /> : null}
         </div>
 
         <div className="flex shrink-0 items-center justify-end">
-          <ShellNavbarActions hideSearch showDateTime />
+          <div className="inline-flex items-center gap-0.5 rounded-2xl border border-border/70 bg-background/60 p-1 shadow-xs dark:bg-white/[0.03]">
+            <ShellNavbarActions hideSearch showDateTime />
+          </div>
         </div>
       </div>
     </header>

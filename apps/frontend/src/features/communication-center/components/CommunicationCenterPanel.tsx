@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { DataTable, KpiCard } from '@/components/data-display';
 import { QueryStatePanel } from '@/components/feedback/QueryStatePanel';
-import { ExecutiveKpiGrid, FilterDropdown, FilterDropdownRow, ManagementToolbar } from '@/components/layout/executive';
+import { ExecutiveKpiGrid, ManagementToolbar } from '@/components/layout/executive';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -32,6 +32,7 @@ import {
 } from '@/features/communication-center/components/AudienceComposer';
 import { Modal } from '@/components/ui/Modal';
 import { cn } from '@/utils/cn';
+import { Mail, Megaphone } from 'lucide-react';
 
 const TABS = [
   { id: 'compose', label: 'New message' },
@@ -185,37 +186,89 @@ export function CommunicationCenterPanel() {
   }
 
   return (
-    <div className="space-y-wilms-6">
+    <div className="space-y-wilms-5" data-testid="communication-center">
+      <div className="overflow-hidden rounded-2xl border border-border/80 bg-card">
+        <div className="bg-gradient-to-br from-brand-primary/[0.07] via-transparent to-transparent px-wilms-5 py-wilms-5 sm:px-wilms-6">
+          <div className="flex flex-col gap-wilms-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="min-w-0">
+              <p className="text-small font-semibold uppercase tracking-wide text-brand-primary">
+                Staff broadcasts
+              </p>
+              <h1 className="mt-wilms-1 text-heading-1 font-semibold text-text-primary">
+                Communication Center
+              </h1>
+              <p className="mt-wilms-1 max-w-2xl text-small text-text-muted">
+                Compose SMS, email, and in-app messages for collectors, officers, and programme
+                audiences.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-wilms-2">
+              <PermissionGate permission={PERMISSION.MANAGE_COMMUNICATIONS}>
+                <Button type="button" variant="secondary" onClick={() => setShowTemplateBuilder(true)}>
+                  New template
+                </Button>
+                <Button type="button" onClick={() => setActiveTab('compose')}>
+                  <Mail className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                  Compose
+                </Button>
+              </PermissionGate>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <ExecutiveKpiGrid>
         {kpis.map((kpi) => (
-          <KpiCard key={kpi.label} label={kpi.label} value={kpi.value} />
+          <KpiCard key={kpi.label} variant="executive" label={kpi.label} value={kpi.value} />
         ))}
       </ExecutiveKpiGrid>
 
+      <div
+        className="flex gap-1 overflow-x-auto rounded-xl border border-border/80 bg-card p-1"
+        role="tablist"
+        aria-label="Communication sections"
+      >
+        {TABS.map((tab) => {
+          const active = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              className={cn(
+                'inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-small font-semibold transition-colors',
+                active
+                  ? 'bg-brand-primary/10 text-brand-primary'
+                  : 'text-text-muted hover:bg-background hover:text-text-primary',
+              )}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.id === 'compose' ? (
+                <Megaphone className="h-3.5 w-3.5" aria-hidden="true" />
+              ) : null}
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
       <ManagementToolbar
-        filters={
-          <FilterDropdownRow>
-            <FilterDropdown
-              label="Section"
-              ariaLabel="Communication center sections"
-              options={TABS.map((tab) => ({ value: tab.id, label: tab.label }))}
-              value={activeTab}
-              onChange={(value) => setActiveTab(value as TabId)}
-            />
-          </FilterDropdownRow>
-        }
         search={<Input placeholder="Search messages…" aria-label="Search messages" disabled />}
         actions={
-          <div className="flex flex-wrap gap-wilms-2">
-            <PermissionGate permission={PERMISSION.MANAGE_COMMUNICATIONS}>
-              <Button type="button" variant="secondary" onClick={() => setShowTemplateBuilder(true)}>
-                New Template
-              </Button>
-              <Button type="button" onClick={() => setActiveTab('compose')}>
-                Compose Message
-              </Button>
-            </PermissionGate>
-          </div>
+          activeTab === 'outbox' || activeTab === 'campaigns' ? (
+            <Select
+              aria-label="Filter by status"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="">All statuses</option>
+              <option value="DRAFT">Draft</option>
+              <option value="SCHEDULED">Scheduled</option>
+              <option value="SENT">Sent</option>
+              <option value="FAILED">Failed</option>
+            </Select>
+          ) : null
         }
       />
 
@@ -227,15 +280,6 @@ export function CommunicationCenterPanel() {
           error={messagesQuery.error}
           onRetry={() => void messagesQuery.refetch()}
         >
-          <div className="mb-wilms-4 flex gap-wilms-2">
-            <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-              <option value="">All statuses</option>
-              <option value="DRAFT">Draft</option>
-              <option value="SCHEDULED">Scheduled</option>
-              <option value="SENT">Sent</option>
-              <option value="FAILED">Failed</option>
-            </Select>
-          </div>
           <DataTable<import('@/types/communication').CommunicationMessage>
             mobileLayout="stack"
             variant="executive"

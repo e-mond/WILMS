@@ -517,16 +517,16 @@ export function GlobalSearchTrigger({
       <button
         type="button"
         className={cn(
-          'inline-flex h-9 w-full max-w-full items-center gap-2.5 rounded-xl border border-border/80 bg-slate-100/70 px-3.5 text-small text-text-muted dark:bg-white/5',
+          'inline-flex h-10 w-full max-w-full items-center gap-2.5 rounded-2xl border border-border/70 bg-background/80 px-3.5 text-small text-text-muted',
           'transition-all hover:border-brand-primary/40 hover:bg-card hover:text-text-primary hover:shadow-xs',
           'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary',
           className,
         )}
         onClick={openGlobalSearch}
       >
-        <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
+        <Search className="h-4 w-4 shrink-0 text-brand-primary" aria-hidden="true" />
         <span className="min-w-0 flex-1 truncate text-left">Search WILMS…</span>
-        <kbd className="hidden shrink-0 rounded border border-border bg-card px-1.5 py-0.5 text-[10px] font-medium text-text-tertiary xl:inline">
+        <kbd className="hidden shrink-0 rounded-lg border border-border bg-card px-1.5 py-0.5 text-[10px] font-medium text-text-muted xl:inline">
           ⌘K
         </kbd>
       </button>

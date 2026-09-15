@@ -22,6 +22,7 @@ import type { DailyCollectionReportRow } from '@/types/reports';
 import { formatDisplayDate } from '@/utils/format-date';
 import { formatPesewasForCsv } from '@/utils/export-csv';
 import { summarizeReconciliationsForDate } from '@/utils/reconciliation-review';
+import { cn } from '@/utils/cn';
 
 const CSV_HEADERS = [
   'Borrower',
@@ -115,7 +116,44 @@ export function DailyCollectionReportPanel() {
       variant="table"
     >
       {data ? (
-    <div className="space-y-wilms-4">
+    <div className="space-y-wilms-5" data-testid="daily-collection-report">
+      <div className="overflow-hidden rounded-2xl border border-border/80 bg-card">
+        <div className="bg-gradient-to-br from-brand-primary/[0.07] via-transparent to-transparent px-wilms-5 py-wilms-5 sm:px-wilms-6">
+          <div className="flex flex-col gap-wilms-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-small font-semibold uppercase tracking-wide text-brand-primary">
+                Field collections
+              </p>
+              <h1 className="mt-wilms-1 text-heading-1 font-semibold text-text-primary">
+                Daily collection
+              </h1>
+              <p className="mt-wilms-1 text-small text-text-muted">
+                {formatDisplayDate(data.summary.date)} · {data.summary.paymentDayLabel} ·{' '}
+                {data.rows.length} rows
+              </p>
+            </div>
+            <div
+              className={cn(
+                'rounded-xl border px-3 py-2 text-small font-semibold',
+                data.summary.variancePesewas === 0
+                  ? 'border-status-active/30 bg-status-active/10 text-status-active'
+                  : 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300',
+              )}
+            >
+              {data.summary.variancePesewas === 0 ? (
+                'Collections match expected totals'
+              ) : (
+                <>
+                  Variance{' '}
+                  <CurrencyAmount value={Math.abs(data.summary.variancePesewas)} className="text-small" />
+                  {data.summary.variancePesewas < 0 ? ' below' : ' above'} expected
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div data-tour="collection-kpis">
       <ExecutiveKpiGrid>
         <KpiCard variant="executive" label="Borrowers Due" value={data.summary.borrowersDueCount} />
@@ -173,22 +211,6 @@ export function DailyCollectionReportPanel() {
           />
         }
       />
-
-      <p className="text-small text-text-muted">
-        {formatDisplayDate(data.summary.date)} · {data.summary.paymentDayLabel} · {data.rows.length}{' '}
-        rows
-      </p>
-
-      {data.summary.variancePesewas !== 0 ? (
-        <p className="text-body text-text-muted">
-          Variance: <CurrencyAmount value={Math.abs(data.summary.variancePesewas)} />
-          {data.summary.variancePesewas < 0 ? ' below expected' : ' above expected'}
-        </p>
-      ) : (
-        <p className="text-body font-semibold text-status-active">
-          Collections match expected totals for due borrowers.
-        </p>
-      )}
 
       <ReconciliationReviewQueue />
 
