@@ -111,7 +111,7 @@ function GroupLabel({
     return (
       <div
         aria-hidden="true"
-        className="mx-auto my-2 h-px w-6 bg-border/50 first:mt-0"
+        className="mx-auto my-2.5 h-px w-7 rounded-full bg-border/60 first:mt-0"
         title={label}
       />
     );
@@ -121,7 +121,7 @@ function GroupLabel({
     return (
       <p
         aria-hidden="true"
-        className="px-3 pb-1 pt-2.5 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-text-muted"
+        className="px-2.5 pb-1 pt-3 text-[10px] font-semibold uppercase tracking-[0.1em] text-text-muted first:pt-1"
       >
         {label}
       </p>
@@ -131,16 +131,16 @@ function GroupLabel({
   return (
     <button
       type="button"
-      className="group flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-1.5 text-left transition-colors hover:bg-slate-100/70 dark:hover:bg-white/5"
+      className="group flex w-full cursor-pointer items-center justify-between rounded-xl px-2.5 py-1.5 text-left transition-colors hover:bg-background"
       onClick={onToggle}
       aria-expanded={isOpen}
     >
-      <span className="text-[10.5px] font-semibold uppercase tracking-[0.08em] text-text-muted transition-colors group-hover:text-text-primary">
+      <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-text-muted transition-colors group-hover:text-text-primary">
         {label}
       </span>
       <ChevronDown
         className={cn(
-          'h-3.5 w-3.5 text-text-muted transition-transform duration-200 group-hover:text-text-primary',
+          'h-3.5 w-3.5 text-text-muted transition-transform duration-200 group-hover:text-brand-primary',
           !isOpen && '-rotate-90',
         )}
         aria-hidden="true"

@@ -140,11 +140,13 @@ export function ShellNavLink({
   // ─── Variant colour maps ──────────────────────────────────────────────────
 
   /**
-   * Executive active: soft emerald pill background with bold primary text — matches modern inspiration layout.
+   * Executive active: soft emerald pill with icon tile — matches modern shell chrome.
    */
   const executiveActive = cn(
-    'border-transparent bg-brand-primary-light text-brand-primary font-semibold',
+    'border-brand-primary/15 bg-brand-primary/10 text-brand-primary font-semibold',
+    'shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--color-brand-primary)_12%,transparent)]',
     '[&_.nav-badge]:bg-brand-primary [&_.nav-badge]:text-white',
+    '[&_.nav-icon-tile]:border-brand-primary/20 [&_.nav-icon-tile]:bg-brand-primary/15 [&_.nav-icon-tile]:text-brand-primary',
   );
 
   /**
@@ -152,15 +154,17 @@ export function ShellNavLink({
    */
   const executiveInactive = cn(
     'border-transparent text-text-secondary font-medium',
-    'hover:bg-slate-100/80 hover:text-text-primary dark:hover:bg-white/5',
+    'hover:bg-background hover:text-text-primary',
+    '[&_.nav-icon-tile]:text-text-muted group-hover:[&_.nav-icon-tile]:text-brand-primary',
   );
 
   /**
    * Default active: soft primary tint with bold text.
    */
   const defaultActive = cn(
-    'border-transparent bg-brand-primary-light text-brand-primary font-semibold',
+    'border-brand-primary/15 bg-brand-primary/10 text-brand-primary font-semibold',
     '[&_.nav-badge]:bg-brand-primary [&_.nav-badge]:text-white',
+    '[&_.nav-icon-tile]:border-brand-primary/20 [&_.nav-icon-tile]:bg-brand-primary/15 [&_.nav-icon-tile]:text-brand-primary',
   );
 
   /**
@@ -168,7 +172,8 @@ export function ShellNavLink({
    */
   const defaultInactive = cn(
     'border-transparent text-text-secondary font-medium',
-    'hover:bg-slate-100/80 hover:text-text-primary dark:hover:bg-white/5',
+    'hover:bg-background hover:text-text-primary',
+    '[&_.nav-icon-tile]:text-text-muted group-hover:[&_.nav-icon-tile]:text-brand-primary',
   );
 
   const tourNavPath = splitNavHref(href).pathname;
@@ -286,55 +291,45 @@ export function ShellNavLink({
       }
       title={collapsed ? label : undefined}
       className={cn(
-        'group relative flex items-center gap-[11px]',
-        // WCAG 2.5.5: minimum 44 px touch target on all interactive elements
+        'group relative flex items-center gap-2.5',
         'min-h-[44px]',
-        collapsed
-          ? 'justify-center px-3 py-[9px]'
-          : 'px-3 py-[9px] pl-3.5',
+        collapsed ? 'justify-center px-2.5 py-2' : 'px-2.5 py-2',
         'rounded-xl border',
-        'text-[13.5px] font-medium tracking-[0.01em]',
+        'text-[13px] font-medium tracking-[0.01em]',
         baseInteraction,
         'active:scale-[0.985]',
         isActive
-          ? cn(
-              variant === 'executive' ? executiveActive : defaultActive,
-              activeClassName,
-            )
-          : cn(
-              variant === 'executive' ? executiveInactive : defaultInactive,
-              inactiveClassName,
-            ),
+          ? cn(variant === 'executive' ? executiveActive : defaultActive, activeClassName)
+          : cn(variant === 'executive' ? executiveInactive : defaultInactive, inactiveClassName),
         className,
       )}
     >
-      {/* Slim left indicator — active, expanded only */}
       {showIndicator && isActive && !collapsed && (
         <span
           aria-hidden="true"
-          className={cn(
-            'absolute left-0 top-1/2 h-[18px] w-[3px] -translate-y-1/2 rounded-r-[2px] opacity-85',
-            variant === 'executive' ? 'bg-executive-gold' : 'bg-text-primary',
-          )}
+          className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-brand-primary opacity-90"
         />
       )}
 
       {icon && (
-        <ShellNavIcon
-          name={icon}
-          aria-hidden="true"
+        <span
           className={cn(
-            'h-[18px] w-[18px] flex-shrink-0 transition-transform duration-[130ms]',
-            // Directional nudge — more intentional than scale
-            animated && !collapsed && 'group-hover:translate-x-px',
+            'nav-icon-tile inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-transparent bg-background/70',
+            'transition-colors duration-[130ms]',
           )}
-        />
+          aria-hidden="true"
+        >
+          <ShellNavIcon
+            name={icon}
+            className={cn(
+              'h-[17px] w-[17px] transition-transform duration-[130ms]',
+              animated && !collapsed && 'group-hover:translate-x-px',
+            )}
+          />
+        </span>
       )}
 
-      {/* Label: visually hidden when collapsed; still in DOM for a11y via aria-label */}
-      <span className={cn('flex-1 truncate', collapsed && 'sr-only')}>
-        {label}
-      </span>
+      <span className={cn('flex-1 truncate', collapsed && 'sr-only')}>{label}</span>
 
       {badge !== undefined && !collapsed && (
         <span
@@ -342,10 +337,7 @@ export function ShellNavLink({
           className={cn(
             'nav-badge ml-auto min-w-[20px] rounded-full px-2 py-px',
             'text-center text-[11px] font-semibold leading-[16px]',
-            // Invert badge on executive active so it stays readable
-            isActive && variant === 'executive'
-              ? 'bg-executive-gold text-background'
-              : 'bg-text-primary text-background',
+            isActive ? 'bg-brand-primary text-card' : 'bg-text-primary text-background',
           )}
         >
           {badge}

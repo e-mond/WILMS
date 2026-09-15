@@ -129,10 +129,12 @@ export function DashboardShell({
           data-sidebar-collapsed={isSidebarCollapsed ? 'true' : undefined}
           aria-hidden={isMobileNavOpen}
           className={cn(
-            'sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-border transition-[width] duration-200 md:flex',
+            'sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-border/70 transition-[width] duration-200 md:flex',
             'motion-reduce:transition-none',
-            isExecutive ? 'bg-executive-sidebar' : 'bg-card',
-            isSidebarCollapsed ? 'w-16' : 'w-60',
+            isExecutive
+              ? 'bg-executive-sidebar shadow-[1px_0_0_0_color-mix(in_srgb,var(--color-border)_55%,transparent)]'
+              : 'bg-card',
+            isSidebarCollapsed ? 'w-[4.25rem]' : 'w-64',
           )}
         >
           {desktopSidebarContent}
