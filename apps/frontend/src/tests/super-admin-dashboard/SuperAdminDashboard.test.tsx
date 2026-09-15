@@ -44,6 +44,23 @@ vi.mock('@/services', () => ({
   dashboardService: {
     getDashboardSummary: mockGetDashboardSummary,
   },
+  collectionMetricsService: {
+    getMetrics: vi.fn(async () => ({
+      metrics: [],
+      organisationTotal: {
+        period: 'DAILY',
+        scope: 'ORGANISATION',
+        scopeId: 'wilms-org',
+        scopeLabel: 'WILMS Organisation',
+        expectedPesewas: 0,
+        collectedPesewas: 0,
+        collectionRatePercent: 0,
+        transactionCount: 0,
+        periodStart: new Date().toISOString(),
+        periodEnd: new Date().toISOString(),
+      },
+    })),
+  },
 }));
 
 import { SuperAdminDashboard } from '@/features/super-admin-dashboard/components/SuperAdminDashboard';
@@ -72,11 +89,26 @@ describe('SuperAdminDashboard', () => {
       },
       { timeout: 15_000 },
     );
-    expect(screen.getByText('Financial operations')).toBeInTheDocument();
-    expect(screen.getByText('Needs attention')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /^executive view$/i })).toHaveAttribute(
+    expect(screen.getByText('Operations Overview')).toBeInTheDocument();
+    expect(
+      screen.getByText('Explore portfolio health, loan queues, and collections.'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Portfolio')).toBeInTheDocument();
+    expect(screen.getByText('Action centre')).toBeInTheDocument();
+    expect(screen.getByText('Metrics & reporting')).toBeInTheDocument();
+    expect(screen.getByText('Borrower status')).toBeInTheDocument();
+    expect(screen.getByText('Recent activity')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /portfolio health/i })).toHaveAttribute(
       'href',
       '/executive',
+    );
+    expect(screen.getByRole('link', { name: /active portfolio/i })).toHaveAttribute(
+      'href',
+      '/loans',
+    );
+    expect(screen.getByRole('link', { name: /^loan rules$/i })).toHaveAttribute(
+      'href',
+      '/settings?section=loan-rules',
     );
     expect(screen.getByTestId('dashboard-reconciliation-summary')).toBeInTheDocument();
     expect(screen.getByTestId('dashboard-recent-activity')).toBeInTheDocument();

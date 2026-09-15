@@ -21,6 +21,7 @@ import { ExportCsvButton } from '@/features/reports/components/ExportCsvButton';
 import { WILMS_REPORT_TYPE } from '@/features/export';
 import { BorrowersAsidePanel } from '@/features/borrower-management/components/BorrowersAsidePanel';
 import { ApplicationsAsidePanel } from '@/features/borrower-management/components/ApplicationsAsidePanel';
+import { ApplicationsQueueTable } from '@/features/borrower-management/components/ApplicationsQueueTable';
 import { BORROWER_STATUS_FILTER_OPTIONS } from '@/constants/borrower-status';
 import { filterBorrowerSummaries } from '@/features/borrower-management/borrower-list.utils';
 import { summarizeBorrowerList } from '@/features/borrower-management/borrower-list-summary';
@@ -228,8 +229,17 @@ export function BorrowerList() {
 
       {filteredBorrowers.length === 0 ? (
         <EmptyState
-          title="No borrowers match your filters"
+          title={
+            isApplicationsView
+              ? 'No pending applications match your filters'
+              : 'No borrowers match your filters'
+          }
           description="Try a different status or search term."
+        />
+      ) : isApplicationsView ? (
+        <ApplicationsQueueTable
+          applications={filteredBorrowers}
+          totalCount={data.length}
         />
       ) : (
         <>

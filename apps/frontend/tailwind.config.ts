@@ -7,6 +7,7 @@ const config: Config = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
     './src/features/**/*.{js,ts,jsx,tsx,mdx}',
     './src/layouts/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/constants/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   darkMode: ['class', '[data-theme="dark"]'],
   theme: {

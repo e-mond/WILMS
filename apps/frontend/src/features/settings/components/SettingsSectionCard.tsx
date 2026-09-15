@@ -60,11 +60,16 @@ export function SettingsSectionCard({
   className,
 }: SettingsSectionCardProps) {
   return (
-    <section className={cn('rounded-sm border border-border bg-card p-wilms-4', className)}>
+    <section
+      className={cn(
+        'rounded-xl border border-border/80 bg-card p-wilms-4 sm:p-wilms-5',
+        className,
+      )}
+    >
       <div className="flex flex-wrap items-start justify-between gap-wilms-3">
         <div className="flex min-w-0 items-start gap-wilms-3">
           {icon ? (
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-brand-primary-light text-executive-gold">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-brand-primary/15 bg-brand-primary-light text-brand-primary">
               {icon}
             </div>
           ) : null}
