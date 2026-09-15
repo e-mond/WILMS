@@ -154,7 +154,7 @@ function ProfileSection() {
           title="Product tour"
           description="Replay the guided walkthrough for your role."
           control={
-            <Button type="button" size="sm" variant="secondary" onClick={replayTour}>
+            <Button type="button" size="sm" variant="secondary" onClick={() => replayTour()}>
               Replay tour
             </Button>
           }

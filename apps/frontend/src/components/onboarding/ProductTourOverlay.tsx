@@ -15,24 +15,28 @@ import { Award, CheckCircle2, Compass, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/hooks/useAuth';
-import { USER_ROLE, type UserRole } from '@/constants/roles';
+import { type UserRole } from '@/constants/roles';
+import { useUiStore } from '@/state/uiStore';
 import { cn } from '@/utils/cn';
+import {
+  TOUR_TRACK_CORE,
+  getTourChapters,
+  getTourCompletion,
+  getTourStepsForTrack,
+  shouldOpenMobileNavForStep,
+  type ProductTourStep,
+  type TourChapter,
+} from '@/components/onboarding/tour-catalog';
 
 const TOUR_COMPLETED_PREFIX = 'wilms-product-tour-completed';
 const TOUR_WELCOME_PREFIX = 'wilms-product-tour-welcome';
 const TOUR_NEVER_SHOW_KEY = 'wilms-product-tour-never-show';
 const TOUR_PROGRESS_PREFIX = 'wilms-product-tour-progress';
 const TOUR_ANALYTICS_PREFIX = 'wilms-product-tour-analytics';
+export const TOUR_START_EVENT = 'wilms-product-tour-start';
 
 const SPOTLIGHT_PAD = 10;
-
-export interface ProductTourStep {
-  id: string;
-  title: string;
-  body: string;
-  href?: string;
-  targetSelector?: string;
-}
+const MOBILE_NAV_MQ = '(max-width: 767px)';
 
 interface SpotlightRect {
   top: number;
@@ -41,368 +45,17 @@ interface SpotlightRect {
   height: number;
 }
 
-interface TourCompletionContent {
-  nextAction: { label: string; href: string };
-  checklist: [string, string, string];
+interface TourProgressState {
+  trackId: string;
+  stepIndex: number;
 }
 
-const TOUR_STEPS_BY_ROLE: Partial<Record<UserRole, ProductTourStep[]>> = {
-  [USER_ROLE.SUPER_ADMIN]: [
-    {
-      id: 'intro',
-      title: 'Quick Tour',
-      body: 'This tour walks the Super Admin workspace — operations, portfolio health, people, lending, and settings.',
-    },
-    {
-      id: 'dashboard',
-      title: 'Operations Overview',
-      body: 'Start on Operations Overview for work queues, portfolio strip, and the Loan rules shortcut. Day-to-day HQ work begins here.',
-      href: '/dashboard',
-      targetSelector: '[data-testid="operational-dashboard"], [data-tour-nav="/dashboard"]',
-    },
-    {
-      id: 'executive',
-      title: 'Portfolio Health',
-      body: 'Open Executive for board-ready portfolio, PAR, cash, and forecast charts in the side panel.',
-      href: '/executive',
-      targetSelector: '[data-testid="executive-intelligence"], [data-tour-nav="/executive"]',
-    },
-    {
-      id: 'applications',
-      title: 'Applications',
-      body: 'Review pending KYC applications from the Applications queue before borrowers can receive loans.',
-      href: '/borrowers?status=PENDING',
-      targetSelector: '[data-tour-nav="/borrowers?status=PENDING"], [data-testid="applications-queue-table"]',
-    },
-    {
-      id: 'borrowers',
-      title: 'Borrowers',
-      body: 'Browse the borrower directory, open profiles, and manage statuses across communities and groups.',
-      href: '/borrowers',
-      targetSelector: '[data-tour-nav="/borrowers"]',
-    },
-    {
-      id: 'records',
-      title: 'Borrower Records',
-      body: 'Search the loan file archive by name, ID, phone, or guarantor. Recent searches are saved on this device.',
-      href: '/records',
-      targetSelector: '[data-testid="records-search-panel"], [data-tour-nav="/records"]',
-    },
-    {
-      id: 'loan-pools',
-      title: 'Loan Pools',
-      body: 'Monitor capital utilisation, disbursements, and repayment rates for each regional pool.',
-      href: '/loan-pools',
-      targetSelector: '[data-tour="loan-pool-kpis"], [data-tour-nav="/loan-pools"]',
-    },
-    {
-      id: 'loans',
-      title: 'Disbursements',
-      body: 'Create, approve, and disburse loans. Track lifecycle from draft through active repayment.',
-      href: '/loans',
-      targetSelector: '[data-tour-nav="/loans"]',
-    },
-    {
-      id: 'collections',
-      title: 'Collections',
-      body: 'Review daily collection performance, variance callouts, and the reconciliation queue.',
-      href: '/reports/daily-collection',
-      targetSelector: '[data-tour="collection-kpis"], [data-tour-nav="/reports/daily-collection"]',
-    },
-    {
-      id: 'adjustments',
-      title: 'Adjustments',
-      body: 'Request write-offs and payment corrections. Select borrowers and loans by name — approved write-offs blacklist the borrower.',
-      href: '/adjustments',
-      targetSelector: '[data-tour-nav="/adjustments"]',
-    },
-    {
-      id: 'expenses',
-      title: 'Expenses',
-      body: 'Record and review field operating expenses. Expenses reduce operating cash, not loan principal.',
-      href: '/expenses',
-      targetSelector: '[data-tour-nav="/expenses"]',
-    },
-    {
-      id: 'collectors-groups',
-      title: 'Collectors & Groups',
-      body: 'Manage collector assignments and lending groups that organise borrowers in the field.',
-      href: '/collectors',
-      targetSelector: '[data-tour-nav="/collectors"]',
-    },
-    {
-      id: 'risk',
-      title: 'Risk & Flags',
-      body: 'Monitor delinquency signals and flagged segments that need follow-up.',
-      href: '/risk-flags',
-      targetSelector: '[data-tour-nav="/risk-flags"]',
-    },
-    {
-      id: 'operations',
-      title: 'Operations',
-      body: 'Open the platform control centre for system health, workers, queues, and runtime status. This is separate from Operations Overview and Portfolio Health.',
-      href: '/ops',
-      targetSelector: '[data-tour="operations-dashboard"], [data-tour-nav="/ops"]',
-    },
-    {
-      id: 'reports',
-      title: 'Reports',
-      body: 'Open financial and operational reports. Export PDF, Excel, CSV, or Word from each report toolbar.',
-      href: '/reports',
-      targetSelector: '[data-tour-nav="/reports"]',
-    },
-    {
-      id: 'communication',
-      title: 'Communication Center',
-      body: 'Compose SMS, email, and in-app broadcasts for staff and programme audiences.',
-      href: '/communication-center',
-      targetSelector: '[data-testid="communication-center"], [data-tour-nav="/communication-center"]',
-    },
-    {
-      id: 'loan-rules',
-      title: 'Loan rules',
-      body: 'Configure lending rules under Settings → Loan Rules (also linked from the Operations Overview hero).',
-      href: '/settings?section=loan-rules',
-      targetSelector: '[data-testid="settings-panel"], [data-tour-nav="/settings"]',
-    },
-    {
-      id: 'settings-account',
-      title: 'Settings & account',
-      body: 'Manage users, roles, holidays, automation, notifications, and your own account preferences.',
-      href: '/settings?section=my-account',
-      targetSelector: '[data-tour-nav="/settings"]',
-    },
-    {
-      id: 'documentation',
-      title: 'Documentation Centre',
-      body: 'Browse the branded product, technical, and operations books from the Documentation Centre.',
-      href: '/documentation',
-      targetSelector: '[data-testid="documentation-centre"], [data-tour-nav="/documentation"]',
-    },
-    {
-      id: 'help-tour',
-      title: 'Help anytime',
-      body: 'Restart this tour or open role guides from the Help button in the header.',
-      targetSelector: '[aria-label="Quick help"]',
-    },
-  ],
-  [USER_ROLE.COLLECTOR]: [
-    {
-      id: 'intro',
-      title: 'Quick Tour',
-      body: 'This tour covers your field dashboard, borrowers, fees, reconciliation, and device settings.',
-    },
-    {
-      id: 'collector-dashboard',
-      title: 'Field dashboard',
-      body: "See today's collection progress, group cards, and jump into collection sheets.",
-      href: '/collector/dashboard',
-      targetSelector: '[data-testid="collector-field-dashboard"], [data-tour-nav="/collector/dashboard"]',
-    },
-    {
-      id: 'collections',
-      title: 'Borrowers',
-      body: "Open assigned borrowers and record payments for today's groups.",
-      href: '/collector/my-borrowers',
-      targetSelector: '[data-tour-nav="/collector/my-borrowers"]',
-    },
-    {
-      id: 'admin-fee',
-      title: 'Collector fees',
-      body: 'Track admin-fee collections required before loan disbursement.',
-      href: '/collector/admin-fee',
-      targetSelector: '[data-tour-nav="/collector/admin-fee"]',
-    },
-    {
-      id: 'requests',
-      title: 'Borrower requests',
-      body: 'Review update requests submitted for borrowers on your book.',
-      href: '/collector/borrower-updates',
-      targetSelector: '[data-tour-nav="/collector/borrower-updates"]',
-    },
-    {
-      id: 'expenses',
-      title: 'Expenses',
-      body: 'Record field expenses with receipts. Operating spend never changes loan principal.',
-      href: '/collector/expenses',
-      targetSelector: '[data-tour-nav="/collector/expenses"]',
-    },
-    {
-      id: 'reconciliation',
-      title: 'Reconcile',
-      body: 'Submit daily cash reconciliation and flag variances when needed.',
-      href: '/collector/reconciliation',
-      targetSelector: '[data-tour-nav="/collector/reconciliation"]',
-    },
-    {
-      id: 'holidays',
-      title: 'Holidays',
-      body: 'Request organisation holidays that shift repayment schedules after approval.',
-      href: '/collector/holidays',
-      targetSelector: '[data-tour-nav="/collector/holidays"]',
-    },
-    {
-      id: 'notifications',
-      title: 'Notifications',
-      body: 'Watch the bell icon for holiday approvals, sync alerts, and system events.',
-      targetSelector: '[data-tour="notifications-bell"], [aria-label*="notification"]',
-    },
-    {
-      id: 'offline',
-      title: 'Offline queue',
-      body: 'When offline, payments, expenses, and holiday requests are saved locally and synced when you reconnect.',
-      href: '/collector/dashboard',
-      targetSelector: '[data-tour-nav="/collector/dashboard"]',
-    },
-    {
-      id: 'settings-account',
-      title: 'Settings & account',
-      body: 'Update your profile, enable App Lock (PIN/biometrics), and turn on push notifications.',
-      href: '/collector/settings',
-      targetSelector: '[data-tour-nav="/collector/settings"]',
-    },
-  ],
-  [USER_ROLE.REGISTRATION_OFFICER]: [
-    {
-      id: 'intro',
-      title: 'Quick Tour',
-      body: 'This tour covers registration, your submission queue, records search, and account settings.',
-    },
-    {
-      id: 'register',
-      title: 'Register borrower',
-      body: 'Complete the guided wizard with photos, ID documents, guarantor details, and GPS verification.',
-      href: '/officer/register',
-      targetSelector: '[data-tour-nav="/officer/register"]',
-    },
-    {
-      id: 'my-registrations',
-      title: 'My registrations',
-      body: 'Track drafts, submissions, and approval outcomes. Use Register borrower anytime from this page.',
-      href: '/officer/my-registrations',
-      targetSelector: '[data-testid="my-registrations-dashboard"], [data-tour-nav="/officer/my-registrations"]',
-    },
-    {
-      id: 'requests',
-      title: 'Borrower requests',
-      body: 'Follow update requests that need registration officer attention.',
-      href: '/officer/borrower-updates',
-      targetSelector: '[data-tour-nav="/officer/borrower-updates"]',
-    },
-    {
-      id: 'records',
-      title: 'Borrower Records',
-      body: 'Search borrower and guarantor files in the loan archive for verification.',
-      href: '/officer/records',
-      targetSelector: '[data-tour-nav="/officer/records"]',
-    },
-    {
-      id: 'offline',
-      title: 'Offline readiness',
-      body: 'Shell pages remain available offline. Watch the banner and sync when connectivity returns.',
-      href: '/officer/register',
-      targetSelector: '[data-tour-nav="/officer/register"]',
-    },
-    {
-      id: 'settings-account',
-      title: 'Settings & account',
-      body: 'Protect this device with App Lock and update your profile under Settings.',
-      href: '/officer/settings',
-      targetSelector: '[data-tour="app-lock"], [data-tour-nav="/officer/settings"]',
-    },
-  ],
-  [USER_ROLE.APPROVER]: [
-    {
-      id: 'intro',
-      title: 'Quick Tour',
-      body: 'This tour covers your approval queues, schedule changes, records, and account settings.',
-    },
-    {
-      id: 'pending-queue',
-      title: 'Pending reviews',
-      body: 'Inspect borrower profiles, documents, and guarantors — then approve or reject with a reason.',
-      href: '/approver/pending',
-      targetSelector: '[data-tour-nav="/approver/pending"]',
-    },
-    {
-      id: 'reviewed',
-      title: 'Reviewed',
-      body: 'Look back at past approve/reject decisions when you need an audit trail of your work.',
-      href: '/approver/reviewed',
-      targetSelector: '[data-tour-nav="/approver/reviewed"]',
-    },
-    {
-      id: 'holidays',
-      title: 'Holiday requests',
-      body: 'Review collector holiday requests with maker-checker. You cannot approve a request you created.',
-      href: '/approver/holidays',
-      targetSelector: '[data-tour-nav="/approver/holidays"]',
-    },
-    {
-      id: 'schedule-changes',
-      title: 'Payment day changes',
-      body: 'Review requested payment-day schedule changes before they recalculate future weeks.',
-      href: '/approver/schedule-changes',
-      targetSelector: '[data-tour-nav="/approver/schedule-changes"]',
-    },
-    {
-      id: 'offline-sync',
-      title: 'Offline sync conflicts',
-      body: 'Approve or reject financial operations captured while collectors were offline.',
-      href: '/approver/sync-conflicts',
-      targetSelector: '[data-tour-nav="/approver/sync-conflicts"]',
-    },
-    {
-      id: 'records',
-      title: 'Borrower Records',
-      body: 'Open the loan file archive when you need full KYC or repayment context during review.',
-      href: '/approver/records',
-      targetSelector: '[data-tour-nav="/approver/records"]',
-    },
-    {
-      id: 'settings-account',
-      title: 'Settings & account',
-      body: 'Protect approval sessions with App Lock and manage notification preferences.',
-      href: '/approver/settings',
-      targetSelector: '[data-tour="app-lock"], [data-tour-nav="/approver/settings"]',
-    },
-  ],
-  [USER_ROLE.AUDITOR]: [
-    {
-      id: 'intro',
-      title: 'Quick Tour',
-      body: 'This tour covers read-only compliance surfaces — audit log, reports, records, and account settings.',
-    },
-    {
-      id: 'audit-logs',
-      title: 'Audit log',
-      body: 'Review immutable audit entries for sensitive platform actions.',
-      href: '/auditor/audit-log',
-      targetSelector: '[data-tour-nav="/auditor/audit-log"]',
-    },
-    {
-      id: 'reports',
-      title: 'Reports',
-      body: 'Access read-only financial and operational reports and export for external reviews.',
-      href: '/auditor/reports',
-      targetSelector: '[data-tour-nav="/auditor/reports"]',
-    },
-    {
-      id: 'records',
-      title: 'Borrower Records',
-      body: 'Search borrower and guarantor files when validating compliance samples.',
-      href: '/auditor/records',
-      targetSelector: '[data-tour-nav="/auditor/records"]',
-    },
-    {
-      id: 'settings-account',
-      title: 'Settings & account',
-      body: 'Adjust audit preferences and account security options under Settings.',
-      href: '/auditor/settings',
-      targetSelector: '[data-tour-nav="/auditor/settings"]',
-    },
-  ],
+export type TourStartDetail = {
+  trackId?: string;
+  force?: boolean;
 };
+
+type TourPhase = 'welcome' | 'tour' | 'exit-confirm' | 'complete' | 'idle';
 
 function completedKey(role: UserRole): string {
   return `${TOUR_COMPLETED_PREFIX}:${role}`;
@@ -418,6 +71,29 @@ function progressKey(role: UserRole): string {
 
 function analyticsKey(role: UserRole): string {
   return `${TOUR_ANALYTICS_PREFIX}:${role}`;
+}
+
+function readProgress(role: UserRole): TourProgressState | null {
+  try {
+    const raw = localStorage.getItem(progressKey(role));
+    if (!raw) {
+      return null;
+    }
+    if (/^\d+$/.test(raw)) {
+      return { trackId: TOUR_TRACK_CORE, stepIndex: Number(raw) };
+    }
+    const parsed = JSON.parse(raw) as TourProgressState;
+    if (typeof parsed?.trackId === 'string' && Number.isFinite(parsed.stepIndex)) {
+      return parsed;
+    }
+  } catch {
+    // Ignore corrupt progress.
+  }
+  return null;
+}
+
+function writeProgress(role: UserRole, trackId: string, stepIndex: number) {
+  localStorage.setItem(progressKey(role), JSON.stringify({ trackId, stepIndex }));
 }
 
 function recordTourAnalytics(role: UserRole, event: string, stepId?: string) {
@@ -468,75 +144,28 @@ function scrollTourTarget(selector?: string) {
   }
 }
 
-function getTourCompletion(role: UserRole): TourCompletionContent {
-  switch (role) {
-    case USER_ROLE.SUPER_ADMIN:
-      return {
-        nextAction: { label: 'Open Operations Overview', href: '/dashboard' },
-        checklist: [
-          'Review Operations Overview queues and Loan rules',
-          'Open Portfolio Health for board KPIs',
-          'Invite a teammate under Settings → Users',
-        ],
-      };
-    case USER_ROLE.COLLECTOR:
-      return {
-        nextAction: { label: 'Go to field dashboard', href: '/collector/dashboard' },
-        checklist: [
-          "Open today's groups from the field dashboard",
-          'Record a borrower payment',
-          'Submit daily cash reconciliation',
-        ],
-      };
-    case USER_ROLE.REGISTRATION_OFFICER:
-      return {
-        nextAction: { label: 'Start a registration', href: '/officer/register' },
-        checklist: [
-          'Begin a new borrower registration',
-          'Capture ID photos and GPS as prompted',
-          'Track status under My registrations',
-        ],
-      };
-    case USER_ROLE.APPROVER:
-      return {
-        nextAction: { label: 'Open pending reviews', href: '/approver/pending' },
-        checklist: [
-          'Open the pending approval queue',
-          'Review documents and guarantors',
-          'Approve or reject with a documented reason',
-        ],
-      };
-    case USER_ROLE.AUDITOR:
-      return {
-        nextAction: { label: 'Open audit log', href: '/auditor/audit-log' },
-        checklist: [
-          'Review recent immutable audit entries',
-          'Open read-only reports for compliance',
-          'Search Borrower Records for sample files',
-        ],
-      };
-    default:
-      return {
-        nextAction: { label: 'Continue', href: '/' },
-        checklist: [
-          'Explore your role home page',
-          'Open Help anytime to replay this tour',
-          'Update your profile under Settings',
-        ],
-      };
-  }
+function isMobileViewport(): boolean {
+  return window.matchMedia(MOBILE_NAV_MQ).matches;
 }
 
-type TourPhase = 'welcome' | 'tour' | 'exit-confirm' | 'complete' | 'idle';
+function clearTourDismissal(role: UserRole, userId: string) {
+  localStorage.removeItem(completedKey(role));
+  localStorage.removeItem(welcomeKey(userId));
+  localStorage.removeItem(TOUR_NEVER_SHOW_KEY);
+}
 
 export function useProductTour() {
   const { user, isAuthenticated } = useAuth();
   const router = useRouter();
+  const openMobileNav = useUiStore((state) => state.openMobileNav);
+  const closeMobileNav = useUiStore((state) => state.closeMobileNav);
   const role = user?.role;
   const userId = user?.id;
+  const chapters = useMemo(() => (role ? getTourChapters(role) : []), [role]);
+  const [trackId, setTrackId] = useState(TOUR_TRACK_CORE);
   const steps = useMemo(
-    () => (role ? TOUR_STEPS_BY_ROLE[role] ?? [] : []),
-    [role],
+    () => (role ? getTourStepsForTrack(role, trackId) : []),
+    [role, trackId],
   );
   const [phase, setPhase] = useState<TourPhase>('idle');
   const [stepIndex, setStepIndex] = useState(0);
@@ -549,6 +178,8 @@ export function useProductTour() {
     () => (role ? getTourCompletion(role) : null),
     [role],
   );
+
+  const activeChapter: TourChapter | undefined = chapters.find((chapter) => chapter.id === trackId);
 
   const refreshSpotlight = useCallback((selector?: string) => {
     setSpotlight(measureSpotlight(selector));
@@ -574,30 +205,78 @@ export function useProductTour() {
     [neverShowAgain, role, userId],
   );
 
-  const openWelcome = useCallback(() => {
-    if (!steps.length) {
-      return;
-    }
-    setStepIndex(0);
-    setPhase('welcome');
-  }, [steps.length]);
-
-  const startTour = useCallback(() => {
-    let resumeAt = 0;
-    if (role) {
-      const saved = Number(localStorage.getItem(progressKey(role)) ?? '0');
-      if (Number.isFinite(saved) && saved > 0 && saved < steps.length) {
-        resumeAt = saved;
+  const openWelcome = useCallback(
+    (nextTrackId: string = TOUR_TRACK_CORE) => {
+      if (!role) {
+        return;
       }
-      recordTourAnalytics(role, resumeAt > 0 ? 'tour_resumed' : 'tour_started', steps[resumeAt]?.id);
-    }
-    setStepIndex(resumeAt);
-    setPhase('tour');
-  }, [role, steps]);
+      const nextSteps = getTourStepsForTrack(role, nextTrackId);
+      if (!nextSteps.length) {
+        return;
+      }
+      setTrackId(nextTrackId);
+      setStepIndex(0);
+      setPhase('welcome');
+    },
+    [role],
+  );
+
+  const startTour = useCallback(
+    (options?: { trackId?: string; resume?: boolean }) => {
+      if (!role) {
+        return;
+      }
+
+      const requestedTrack = options?.trackId ?? trackId ?? TOUR_TRACK_CORE;
+      const nextSteps = getTourStepsForTrack(role, requestedTrack);
+      let resumeAt = 0;
+
+      if (options?.resume !== false) {
+        const saved = readProgress(role);
+        if (
+          saved &&
+          saved.trackId === requestedTrack &&
+          saved.stepIndex > 0 &&
+          saved.stepIndex < nextSteps.length
+        ) {
+          resumeAt = saved.stepIndex;
+        }
+      }
+
+      setTrackId(requestedTrack);
+      setStepIndex(resumeAt);
+      setPhase('tour');
+      recordTourAnalytics(
+        role,
+        resumeAt > 0 ? 'tour_resumed' : 'tour_started',
+        nextSteps[resumeAt]?.id,
+      );
+    },
+    [role, trackId],
+  );
+
+  const jumpToChapter = useCallback(
+    (nextTrackId: string) => {
+      if (!role) {
+        return;
+      }
+      const nextSteps = getTourStepsForTrack(role, nextTrackId);
+      if (!nextSteps.length) {
+        return;
+      }
+      setTrackId(nextTrackId);
+      setStepIndex(0);
+      writeProgress(role, nextTrackId, 0);
+      recordTourAnalytics(role, 'tour_chapter_jump', nextTrackId);
+      setPhase('tour');
+    },
+    [role],
+  );
 
   const closeTour = useCallback(
     (options?: { neverShowAgain?: boolean }) => {
       clearSpotlight();
+      closeMobileNav();
       if (role) {
         localStorage.removeItem(progressKey(role));
         recordTourAnalytics(role, 'tour_completed_or_exited', steps[stepIndex]?.id);
@@ -610,11 +289,12 @@ export function useProductTour() {
       setPhase('idle');
       setIsNavigating(false);
     },
-    [clearSpotlight, persistDismissal, role, stepIndex, steps],
+    [clearSpotlight, closeMobileNav, persistDismissal, role, stepIndex, steps],
   );
 
   const finishTour = useCallback(() => {
     clearSpotlight();
+    closeMobileNav();
     if (role) {
       localStorage.removeItem(progressKey(role));
       recordTourAnalytics(role, 'tour_completed', steps[stepIndex]?.id);
@@ -626,7 +306,7 @@ export function useProductTour() {
     setHasSavedProgress(false);
     setIsNavigating(false);
     setPhase('complete');
-  }, [clearSpotlight, role, stepIndex, steps, userId]);
+  }, [clearSpotlight, closeMobileNav, role, stepIndex, steps, userId]);
 
   const dismissCompletion = useCallback(() => {
     setPhase('idle');
@@ -634,9 +314,9 @@ export function useProductTour() {
 
   const pauseTourForLater = useCallback(() => {
     clearSpotlight();
+    closeMobileNav();
     if (role) {
-      localStorage.setItem(progressKey(role), String(stepIndex));
-      // Allow resume: clear completed/welcome dismissal without "never show"
+      writeProgress(role, trackId, stepIndex);
       localStorage.removeItem(completedKey(role));
       if (userId) {
         localStorage.removeItem(welcomeKey(userId));
@@ -646,14 +326,34 @@ export function useProductTour() {
     }
     setPhase('idle');
     setIsNavigating(false);
-  }, [clearSpotlight, role, stepIndex, steps, userId]);
+  }, [clearSpotlight, closeMobileNav, role, stepIndex, steps, trackId, userId]);
 
   const requestExit = useCallback(() => {
     setPhase('exit-confirm');
   }, []);
 
   useEffect(() => {
-    if (!isAuthenticated || !role || !userId || !steps.length) {
+    if (!isAuthenticated || !role || !userId) {
+      return;
+    }
+
+    const onStartRequest = (event: Event) => {
+      const detail = (event as CustomEvent<TourStartDetail>).detail ?? {};
+      const nextTrack = detail.trackId ?? TOUR_TRACK_CORE;
+      if (detail.force) {
+        clearTourDismissal(role, userId);
+        localStorage.removeItem(progressKey(role));
+        setHasSavedProgress(false);
+      }
+      openWelcome(nextTrack);
+    };
+
+    window.addEventListener(TOUR_START_EVENT, onStartRequest);
+    return () => window.removeEventListener(TOUR_START_EVENT, onStartRequest);
+  }, [isAuthenticated, openWelcome, role, userId]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !role || !userId) {
       return;
     }
 
@@ -669,15 +369,18 @@ export function useProductTour() {
       return;
     }
 
-    const saved = Number(localStorage.getItem(progressKey(role)) ?? '0');
-    setHasSavedProgress(Number.isFinite(saved) && saved > 0 && saved < steps.length);
+    const saved = readProgress(role);
+    if (saved) {
+      setTrackId(saved.trackId);
+      setHasSavedProgress(saved.stepIndex > 0);
+    }
 
     const timer = window.setTimeout(() => {
       setPhase('welcome');
     }, 900);
 
     return () => window.clearTimeout(timer);
-  }, [isAuthenticated, role, steps.length, userId]);
+  }, [isAuthenticated, role, userId]);
 
   useEffect(() => {
     if (phase !== 'tour') {
@@ -693,6 +396,7 @@ export function useProductTour() {
     let cancelled = false;
     let highlightTimer: number | undefined;
     let navigateTimer: number | undefined;
+    let mobileTimer: number | undefined;
 
     const runHighlight = () => {
       if (cancelled) {
@@ -707,12 +411,27 @@ export function useProductTour() {
       setIsNavigating(false);
     };
 
+    const prepareMobileNav = () => {
+      if (isMobileViewport() && shouldOpenMobileNavForStep(step)) {
+        openMobileNav();
+        return 420;
+      }
+      closeMobileNav();
+      return 0;
+    };
+
     if (step.href) {
       setIsNavigating(true);
       router.push(step.href);
-      navigateTimer = window.setTimeout(runHighlight, 700);
+      navigateTimer = window.setTimeout(() => {
+        const mobileDelay = prepareMobileNav();
+        mobileTimer = window.setTimeout(runHighlight, mobileDelay);
+      }, 700);
     } else {
-      highlightTimer = window.setTimeout(runHighlight, 120);
+      highlightTimer = window.setTimeout(() => {
+        const mobileDelay = prepareMobileNav();
+        mobileTimer = window.setTimeout(runHighlight, mobileDelay || 120);
+      }, 80);
     }
 
     return () => {
@@ -723,8 +442,20 @@ export function useProductTour() {
       if (navigateTimer) {
         window.clearTimeout(navigateTimer);
       }
+      if (mobileTimer) {
+        window.clearTimeout(mobileTimer);
+      }
     };
-  }, [clearSpotlight, phase, refreshSpotlight, router, stepIndex, steps]);
+  }, [
+    clearSpotlight,
+    closeMobileNav,
+    openMobileNav,
+    phase,
+    refreshSpotlight,
+    router,
+    stepIndex,
+    steps,
+  ]);
 
   useEffect(() => {
     if (phase !== 'tour') {
@@ -759,6 +490,9 @@ export function useProductTour() {
     step,
     stepIndex,
     phase,
+    trackId,
+    chapters,
+    activeChapter,
     neverShowAgain,
     setNeverShowAgain,
     isNavigating,
@@ -768,6 +502,7 @@ export function useProductTour() {
     completion,
     openWelcome,
     startTour,
+    jumpToChapter,
     closeTour,
     finishTour,
     dismissCompletion,
@@ -782,7 +517,7 @@ export function useProductTour() {
       const next = stepIndex + 1;
       setStepIndex(next);
       if (role) {
-        localStorage.setItem(progressKey(role), String(next));
+        writeProgress(role, trackId, next);
         recordTourAnalytics(role, 'tour_step', steps[next]?.id);
       }
     },
@@ -790,7 +525,7 @@ export function useProductTour() {
       const prev = Math.max(0, stepIndex - 1);
       setStepIndex(prev);
       if (role) {
-        localStorage.setItem(progressKey(role), String(prev));
+        writeProgress(role, trackId, prev);
       }
     },
   };
@@ -821,7 +556,6 @@ function TourSpotlight({ rect }: { rect: SpotlightRect | null }) {
         className="tour-highlight-pulse absolute rounded-lg ring-2 ring-brand-primary ring-offset-2 ring-offset-transparent"
         style={{ top, left, width, height }}
       />
-      {/* Block clicks through the cut-out without covering the visual hole */}
       <div className="pointer-events-auto absolute" style={{ top, left, width, height }} />
     </div>
   );
@@ -959,6 +693,45 @@ function TourDialogShell({
   );
 }
 
+function ChapterSkipBar({
+  chapters,
+  activeTrackId,
+  onJump,
+}: {
+  chapters: TourChapter[];
+  activeTrackId: string;
+  onJump: (trackId: string) => void;
+}) {
+  if (chapters.length <= 1) {
+    return null;
+  }
+
+  return (
+    <div className="mt-wilms-3">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-text-muted">
+        Jump to section
+      </p>
+      <div className="mt-wilms-2 flex flex-wrap gap-1.5">
+        {chapters.map((chapter) => (
+          <button
+            key={chapter.id}
+            type="button"
+            className={cn(
+              'rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-colors',
+              chapter.id === activeTrackId
+                ? 'border-brand-primary bg-brand-primary-light text-brand-primary'
+                : 'border-border bg-background text-text-muted hover:border-brand-primary/40 hover:text-text-primary',
+            )}
+            onClick={() => onJump(chapter.id)}
+          >
+            {chapter.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function ProductTourOverlay() {
   const tour = useProductTour();
 
@@ -975,16 +748,23 @@ export function ProductTourOverlay() {
       <TourDialogShell title="Welcome to WILMS" eyebrow="Guided product tour">
         <div className="inline-flex items-center gap-1.5 rounded-full border border-brand-primary/20 bg-brand-primary-light px-2.5 py-1 text-[11px] font-semibold text-brand-primary">
           <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-          About 3–5 minutes
+          {tour.activeChapter?.id === TOUR_TRACK_CORE ? 'About 2–3 minutes' : 'Deep-dive section'}
         </div>
         <p className="mt-wilms-3 text-body text-text-muted">
           WILMS is the Women&apos;s Interest-Free Loan Management System — your workspace for pools,
           registrations, collections, approvals, and reporting.
         </p>
         <p className="mt-wilms-2 text-body text-text-muted">
-          This tour highlights the menus and pages you will use most often for your role. You can
-          pause anytime and resume later from Help.
+          {tour.activeChapter
+            ? `${tour.activeChapter.label}: ${tour.activeChapter.description}`
+            : 'This tour highlights the menus and pages you will use most often for your role.'}{' '}
+          You can pause anytime, skip to another section, and resume later from Help.
         </p>
+        <ChapterSkipBar
+          chapters={tour.chapters}
+          activeTrackId={tour.trackId}
+          onJump={(nextTrackId) => tour.openWelcome(nextTrackId)}
+        />
         <div className="mt-wilms-5 flex flex-wrap items-center justify-between gap-wilms-2 border-t border-border pt-wilms-4">
           <Button
             type="button"
@@ -1002,7 +782,7 @@ export function ProductTourOverlay() {
             >
               Not now
             </Button>
-            <Button type="button" onClick={tour.startTour}>
+            <Button type="button" onClick={() => tour.startTour({ trackId: tour.trackId })}>
               {tour.hasSavedProgress ? 'Resume tour' : 'Start tour'}
             </Button>
           </div>
@@ -1022,6 +802,9 @@ export function ProductTourOverlay() {
         </div>
         <p className="mt-wilms-3 text-body text-text-muted">
           Start with the recommended next step, then work through the quick-start checklist.
+          {tour.chapters.length > 1
+            ? ' More sections are available anytime from Help → tour chapters.'
+            : null}
         </p>
         <div className="mt-wilms-4 rounded-xl border border-brand-primary/20 bg-brand-primary-light/40 p-wilms-3">
           <p className="text-small font-semibold text-text-primary">Next recommended action</p>
@@ -1090,7 +873,7 @@ export function ProductTourOverlay() {
   return (
     <TourDialogShell
       title={tour.step.title}
-      eyebrow={`Step ${tour.stepIndex + 1} of ${tour.steps.length}`}
+      eyebrow={`${tour.activeChapter?.label ?? 'Tour'} · Step ${tour.stepIndex + 1} of ${tour.steps.length}`}
       progressPercent={tour.progressPercent}
       showSpotlight
       spotlight={tour.spotlight}
@@ -1129,6 +912,11 @@ export function ProductTourOverlay() {
         ) : null}
       </div>
       <p className="mt-wilms-3 text-body leading-relaxed text-text-muted">{tour.step.body}</p>
+      <ChapterSkipBar
+        chapters={tour.chapters}
+        activeTrackId={tour.trackId}
+        onJump={tour.jumpToChapter}
+      />
       <p className="mt-wilms-2 text-[11px] text-text-muted">
         ← → to move · Esc to exit · Pause saves progress
       </p>
@@ -1159,14 +947,21 @@ export function ProductTourOverlay() {
 export function useReplayProductTour() {
   const { user } = useAuth();
 
-  return useCallback(() => {
-    if (!user?.role || !user.id) {
-      return;
-    }
-    localStorage.removeItem(completedKey(user.role));
-    localStorage.removeItem(welcomeKey(user.id));
-    localStorage.removeItem(TOUR_NEVER_SHOW_KEY);
-    localStorage.removeItem(progressKey(user.role));
-    window.location.reload();
-  }, [user?.id, user?.role]);
+  return useCallback(
+    (trackId: string = TOUR_TRACK_CORE) => {
+      if (!user?.role || !user.id) {
+        return;
+      }
+      clearTourDismissal(user.role, user.id);
+      localStorage.removeItem(progressKey(user.role));
+      window.dispatchEvent(
+        new CustomEvent<TourStartDetail>(TOUR_START_EVENT, {
+          detail: { trackId, force: true },
+        }),
+      );
+    },
+    [user?.id, user?.role],
+  );
 }
+
+export type { ProductTourStep };

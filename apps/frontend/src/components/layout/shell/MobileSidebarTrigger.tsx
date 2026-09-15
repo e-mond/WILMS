@@ -17,6 +17,7 @@ export function MobileSidebarTrigger({ className }: MobileSidebarTriggerProps) {
       onClick={toggleMobileNav}
       aria-expanded={isMobileNavOpen}
       aria-label={isMobileNavOpen ? 'Close navigation menu' : 'Open navigation menu'}
+      data-tour="mobile-nav-trigger"
       className={cn(
         'fixed left-0 top-1/2 z-[60] flex h-11 w-11 min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center',
         'rounded-r-full border border-l-0 border-border bg-card/95 text-text-primary shadow-md backdrop-blur-sm',
