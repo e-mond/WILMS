@@ -34,10 +34,25 @@ describe('product tour routes', () => {
     expect(tourSource).toContain('neverShowAgain: true');
   });
 
-  it('distinguishes Super Admin Dashboard from Operations in the tour', () => {
+  it('distinguishes Operations Overview from platform Operations', () => {
     expect(tourSource).toContain("href: '/dashboard'");
     expect(tourSource).toContain("href: '/ops'");
-    expect(tourSource).toContain('separate from the executive Dashboard');
+    expect(tourSource).toContain('separate from Operations Overview and Portfolio Health');
+  });
+
+  it('covers newly integrated Super Admin surfaces', () => {
+    expect(tourSource).toContain("href: '/executive'");
+    expect(tourSource).toContain("href: '/records'");
+    expect(tourSource).toContain("href: '/adjustments'");
+    expect(tourSource).toContain("href: '/settings?section=loan-rules'");
+    expect(tourSource).toContain("href: '/borrowers?status=PENDING'");
+  });
+
+  it('covers role account and records paths', () => {
+    expect(tourSource).toContain("href: '/collector/settings'");
+    expect(tourSource).toContain("href: '/officer/records'");
+    expect(tourSource).toContain("href: '/approver/schedule-changes'");
+    expect(tourSource).toContain("href: '/auditor/records'");
   });
 
   it('does not tour the removed collector Messages inbox', () => {
