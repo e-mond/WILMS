@@ -31,6 +31,7 @@ import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
 import { formatDisplayDate } from '@/utils/format-date';
 import { resolveAuditReason } from '@/utils/audit-reason-display';
 import { cn } from '@/utils/cn';
+import { ChevronDown, ShieldCheck } from 'lucide-react';
 
 const CSV_HEADERS = ['Timestamp', 'User', 'Action', 'Entity Type', 'Entity ID', 'Reason'];
 
@@ -88,7 +89,7 @@ function AuditActionBadge({ action }: { action: AuditEntry['action'] }) {
     AUDIT_ACTION_LABELS[action] ?? action.replaceAll('_', ' ').toLowerCase();
 
   return (
-    <span className="inline-flex max-w-full rounded-sm border border-border bg-card px-wilms-2 py-wilms-1 text-small font-semibold text-text-primary">
+    <span className="inline-flex max-w-full rounded-full border border-border/80 bg-background px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-text-primary">
       {label}
     </span>
   );
@@ -206,7 +207,27 @@ export function AuditLogReportPanel() {
   }
 
   return (
-    <div className="space-y-wilms-4">
+    <div className="space-y-wilms-5">
+      <div className="overflow-hidden rounded-2xl border border-border/80 bg-card">
+        <div className="bg-gradient-to-br from-brand-primary/[0.08] via-transparent to-slate-500/[0.04] px-wilms-5 py-wilms-5 sm:px-wilms-6">
+          <div className="flex flex-col gap-wilms-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="min-w-0">
+              <p className="text-small font-semibold uppercase tracking-wide text-brand-primary">
+                Compliance
+              </p>
+              <h1 className="mt-wilms-1 text-heading-1 font-semibold text-text-primary">Audit log</h1>
+              <p className="mt-wilms-1 max-w-2xl text-small text-text-muted">
+                Immutable trail of sensitive platform actions. Filter by date, actor, or action type.
+              </p>
+            </div>
+            <div className="inline-flex items-center gap-2 rounded-xl border border-border/70 bg-card/80 px-3 py-2 text-small text-text-muted">
+              <ShieldCheck className="h-4 w-4 text-brand-primary" aria-hidden="true" />
+              Append-only history
+            </div>
+          </div>
+        </div>
+      </div>
+
       <ExecutiveKpiGrid>
         <KpiCard variant="executive" label="Entries Loaded" value={entries.length} />
         <KpiCard
@@ -289,10 +310,10 @@ export function AuditLogReportPanel() {
           {groupedEntries.map((group) => {
             const collapsed = collapsedGroups[group.key] ?? false;
             return (
-              <section key={group.key} className="rounded-sm border border-border bg-card">
+              <section key={group.key} className="overflow-hidden rounded-2xl border border-border/80 bg-card">
                 <button
                   type="button"
-                  className="flex w-full items-center justify-between px-wilms-4 py-wilms-3 text-left"
+                  className="flex w-full items-center justify-between gap-wilms-3 px-wilms-4 py-wilms-3.5 text-left transition-colors hover:bg-background/70"
                   aria-expanded={!collapsed}
                   onClick={() =>
                     setCollapsedGroups((current) => ({
@@ -304,10 +325,19 @@ export function AuditLogReportPanel() {
                   <span className="text-heading-3 font-semibold text-text-primary">
                     {group.label}
                   </span>
-                  <span className="text-small text-text-muted">{group.entries.length} entries</span>
+                  <span className="inline-flex items-center gap-2 text-small text-text-muted">
+                    {group.entries.length} entries
+                    <ChevronDown
+                      className={cn(
+                        'h-4 w-4 transition-transform',
+                        !collapsed && 'rotate-180',
+                      )}
+                      aria-hidden="true"
+                    />
+                  </span>
                 </button>
                 {!collapsed ? (
-                  <div className="border-t border-border p-wilms-3">
+                  <div className="border-t border-border/70 p-wilms-3">
                     <DataTable<AuditEntry>
                       variant="executive"
                       layout="auto"

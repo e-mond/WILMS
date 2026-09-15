@@ -12,7 +12,7 @@ const SettingsExpensesSection = dynamic(
 
 export default function ExpensesPage() {
   return (
-    <PageShell variant="executive" description="Review, approve, and track field and office expenses.">
+    <PageShell variant="executive">
       <SettingsExpensesSection />
     </PageShell>
   );

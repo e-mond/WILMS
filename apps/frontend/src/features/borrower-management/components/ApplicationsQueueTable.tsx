@@ -6,7 +6,6 @@ import { Avatar, StatusBadge } from '@/components/data-display';
 import type { BorrowerSummary } from '@/types/borrower';
 import { resolveBorrowerDisplayId } from '@/utils/format-borrower-display-id';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
-import { cn } from '@/utils/cn';
 
 export interface ApplicationsQueueTableProps {
   applications: BorrowerSummary[];
@@ -36,15 +35,11 @@ export function ApplicationsQueueTable({
         </p>
       </div>
 
-      <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
-        {applications.map((row, index) => (
+      <ul className="space-y-wilms-3">
+        {applications.map((row) => (
           <li
             key={row.id}
-            className={cn(
-              'flex flex-col gap-wilms-3 px-wilms-4 py-wilms-4 transition-colors hover:bg-background/80 sm:flex-row sm:items-center sm:justify-between',
-              index === 0 && 'rounded-t-xl',
-              index === applications.length - 1 && 'rounded-b-xl',
-            )}
+            className="flex flex-col gap-wilms-3 rounded-xl border border-border/80 bg-card px-wilms-4 py-wilms-4 shadow-xs transition-colors hover:border-brand-primary/35 hover:bg-background/60 sm:flex-row sm:items-center sm:justify-between"
           >
             <div className="flex min-w-0 items-start gap-wilms-3 sm:items-center">
               <Avatar
@@ -97,7 +92,7 @@ export function ApplicationsQueueTable({
             <div className="flex shrink-0 items-center gap-wilms-2 sm:pl-wilms-4">
               <Link
                 href={`/borrowers/${row.id}`}
-                className="inline-flex h-8 min-w-[7.5rem] items-center justify-center rounded-sm border border-brand-primary bg-brand-primary px-wilms-3 text-small font-semibold text-card hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary"
+                className="inline-flex h-9 min-w-[7.5rem] items-center justify-center rounded-lg border border-brand-primary bg-brand-primary px-wilms-3 text-small font-semibold text-card hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary"
               >
                 Review
                 <ArrowRight className="ml-1.5 h-3.5 w-3.5" aria-hidden="true" />

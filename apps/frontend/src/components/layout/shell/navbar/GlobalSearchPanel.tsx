@@ -321,33 +321,35 @@ export function GlobalSearchPanel() {
       <div data-global-search-panel="true" className="space-y-wilms-4 motion-enter-fade">
         <label className="block" htmlFor={`${titleId}-search`}>
           <span className="sr-only">Search WILMS records and navigation</span>
-          <div className="relative">
-            <Search
-              className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-primary"
-              aria-hidden="true"
-            />
-            <Input
-              id={`${titleId}-search`}
-              type="text"
-              value={query}
-              placeholder={getGlobalSearchPlaceholder(user.role)}
-              autoComplete="off"
-              autoFocus
-              role="combobox"
-              aria-autocomplete="list"
-              aria-controls={`${titleId}-results`}
-              aria-expanded={commandItems.length > 0}
-              aria-activedescendant={
-                commandItems[activeIndex]
-                  ? `search-option-${commandItems[activeIndex]!.id}`
-                  : undefined
-              }
-              onChange={(event) => setQuery(event.target.value)}
-              className="h-12 rounded-xl border-border bg-background pl-11 pr-16 text-body shadow-xs"
-            />
-            <kbd className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-md border border-border bg-card px-1.5 py-0.5 text-[10px] font-medium text-text-tertiary">
-              ESC
-            </kbd>
+          <div className="relative overflow-hidden rounded-2xl border border-brand-primary/25 bg-gradient-to-br from-brand-primary/[0.08] via-card to-card p-[1px] shadow-[0_10px_30px_-18px_rgba(16,185,129,0.55)]">
+            <div className="relative rounded-[15px] bg-card">
+              <Search
+                className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-brand-primary"
+                aria-hidden="true"
+              />
+              <Input
+                id={`${titleId}-search`}
+                type="text"
+                value={query}
+                placeholder={getGlobalSearchPlaceholder(user.role)}
+                autoComplete="off"
+                autoFocus
+                role="combobox"
+                aria-autocomplete="list"
+                aria-controls={`${titleId}-results`}
+                aria-expanded={commandItems.length > 0}
+                aria-activedescendant={
+                  commandItems[activeIndex]
+                    ? `search-option-${commandItems[activeIndex]!.id}`
+                    : undefined
+                }
+                onChange={(event) => setQuery(event.target.value)}
+                className="h-14 border-0 bg-transparent pl-12 pr-16 text-[15px] shadow-none focus-visible:ring-0"
+              />
+              <kbd className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-lg border border-border bg-background px-2 py-1 text-[10px] font-semibold tracking-wide text-text-muted">
+                ESC
+              </kbd>
+            </div>
           </div>
         </label>
         <p className="text-small text-text-muted" id={`${titleId}-hint`}>

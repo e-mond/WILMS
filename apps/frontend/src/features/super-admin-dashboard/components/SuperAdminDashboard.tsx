@@ -276,7 +276,7 @@ function OperationalDashboardContent({
             </button>
             <Link
               href="/settings?section=loan-rules"
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-brand-primary/25 bg-brand-primary/5 px-4 text-small font-semibold text-brand-primary transition-colors hover:border-brand-primary/50 hover:bg-brand-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-amber-500 px-5 text-small font-bold text-white shadow-[0_8px_20px_-6px_rgba(245,158,11,0.65)] transition-all hover:bg-amber-400 hover:shadow-[0_10px_24px_-6px_rgba(245,158,11,0.75)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500 motion-safe:hover:-translate-y-0.5"
             >
               <Ruler className="h-4 w-4" aria-hidden="true" />
               Loan rules
