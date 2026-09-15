@@ -11,9 +11,7 @@ import type { ShellNavVariant } from '@/layouts/ShellNavLink';
 import { useShellLayoutStore } from '@/state/shellLayoutStore';
 import { cn } from '@/utils/cn';
 import { getAppVersionLabel } from '@/lib/app-version';
-import { Button } from '@/components/ui/Button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 
 export interface AppSidebarProps {
   navItems: ShellNavItem[];
@@ -47,17 +45,22 @@ export function AppSidebar({
   const roleLabel = getRoleLabel(user?.role).toUpperCase();
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-inherit">
+    <div
+      className="flex h-full flex-col overflow-hidden bg-inherit"
+      data-testid="app-sidebar"
+      data-collapsed={isSidebarCollapsed ? 'true' : 'false'}
+    >
       <div
         className={cn(
-          'relative flex shrink-0 items-center border-b border-border px-3 py-4',
-          isSidebarCollapsed ? 'justify-center px-2' : 'px-4',
+          'relative shrink-0 border-b border-border/70',
+          'bg-gradient-to-br from-brand-primary/[0.08] via-transparent to-transparent',
+          isSidebarCollapsed ? 'px-2 py-3' : 'px-3 py-3.5',
         )}
       >
         <div
           className={cn(
-            'flex w-full items-center',
-            isSidebarCollapsed ? 'justify-center' : 'justify-start',
+            'flex items-center gap-2',
+            isSidebarCollapsed ? 'justify-center' : 'justify-between pr-10',
           )}
         >
           {isExecutive ? (
@@ -75,28 +78,34 @@ export function AppSidebar({
         </div>
 
         {forceExpanded ? null : (
-          <Button
+          <button
             type="button"
-            variant="ghost"
-            size="sm"
             onClick={toggleSidebarCollapsed}
             aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             className={cn(
-              'absolute top-3 h-9 w-9 shrink-0 p-0 text-text-muted transition-colors hover:bg-background hover:text-text-primary',
+              'absolute top-3 inline-flex h-8 w-8 items-center justify-center rounded-xl border border-border/70 bg-card/80 text-text-muted',
+              'transition-colors hover:border-brand-primary/30 hover:bg-brand-primary/5 hover:text-brand-primary',
+              'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary',
               'hidden md:inline-flex',
-              isSidebarCollapsed ? 'right-1' : 'right-2',
+              isSidebarCollapsed ? 'right-2' : 'right-2.5',
             )}
           >
             {isSidebarCollapsed ? (
-              <ChevronRight className="h-5 w-5" aria-hidden="true" />
+              <PanelLeftOpen className="h-4 w-4" aria-hidden="true" />
             ) : (
-              <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+              <PanelLeftClose className="h-4 w-4" aria-hidden="true" />
             )}
-          </Button>
+          </button>
         )}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-auto px-2 py-3" data-nav-scroll="true">
+      <div
+        className={cn(
+          'min-h-0 flex-1 overflow-auto py-3',
+          isSidebarCollapsed ? 'px-1.5' : 'px-2.5',
+        )}
+        data-nav-scroll="true"
+      >
         <ShellNavigation
           items={navItems}
           ariaLabel={navAriaLabel}
@@ -107,18 +116,20 @@ export function AppSidebar({
         />
       </div>
 
-      <div className="mt-auto shrink-0 border-t border-border">
+      <div className="mt-auto shrink-0 border-t border-border/70 bg-background/40">
         {!isSidebarCollapsed ? (
-          <div className="space-y-wilms-3 px-4 py-4">
+          <div className="space-y-wilms-3 px-3 py-3.5">
             {footer}
-            <LogoutButton collapsed={false} />
+            <LogoutButton collapsed={false} className="rounded-xl" />
             {versionLabel ? (
-              <p className="text-center text-[11px] text-text-muted">{versionLabel}</p>
+              <p className="text-center text-[10px] font-medium uppercase tracking-wide text-text-muted">
+                {versionLabel}
+              </p>
             ) : null}
           </div>
         ) : (
-          <div className="flex justify-center py-4">
-            <LogoutButton collapsed={true} />
+          <div className="flex justify-center py-3">
+            <LogoutButton collapsed={true} className="rounded-xl" />
           </div>
         )}
       </div>
