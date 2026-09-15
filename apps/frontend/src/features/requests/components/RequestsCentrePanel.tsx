@@ -58,14 +58,23 @@ export function RequestsCentrePanel({
       </div>
 
       <Tabs defaultValue={defaultTab}>
-        <TabsList aria-label="Request types" className="w-full justify-start sm:w-auto">
-          <TabsTrigger value="borrower-updates">Borrower updates</TabsTrigger>
-          <TabsTrigger value="holidays">Holiday requests</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto pb-1">
+          <TabsList
+            aria-label="Request types"
+            className="inline-flex w-max min-w-full justify-start sm:w-auto"
+          >
+            <TabsTrigger value="borrower-updates" className="min-h-[44px] shrink-0">
+              Borrower updates
+            </TabsTrigger>
+            <TabsTrigger value="holidays" className="min-h-[44px] shrink-0">
+              Holiday requests
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="borrower-updates" className="mt-wilms-4">
           <section className="overflow-hidden rounded-2xl border border-border/80 bg-card">
-            <div className="border-b border-border/70 px-wilms-5 py-wilms-4">
+            <div className="border-b border-border/70 px-wilms-4 py-wilms-4 sm:px-wilms-5">
               <h2 className="text-heading-3 font-semibold text-text-primary">
                 Borrower information updates
               </h2>
@@ -73,7 +82,7 @@ export function RequestsCentrePanel({
                 Collector-submitted profile corrections awaiting review.
               </p>
             </div>
-            <div className="p-wilms-4">
+            <div className="min-w-0 p-wilms-3 sm:p-wilms-4">
               <PendingBorrowerUpdateQueue />
             </div>
           </section>
@@ -81,11 +90,11 @@ export function RequestsCentrePanel({
 
         <TabsContent value="holidays" className="mt-wilms-4 space-y-wilms-4">
           <section className="overflow-hidden rounded-2xl border border-border/80 bg-card">
-            <div className="flex items-start gap-wilms-3 border-b border-border/70 px-wilms-5 py-wilms-4">
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-sky-100 bg-sky-50 text-sky-700 dark:border-sky-900/40 dark:bg-sky-950/40 dark:text-sky-400">
+            <div className="flex items-start gap-wilms-3 border-b border-border/70 px-wilms-4 py-wilms-4 sm:px-wilms-5">
+              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-sky-100 bg-sky-50 text-sky-700 dark:border-sky-900/40 dark:bg-sky-950/40 dark:text-sky-400">
                 <CalendarDays className="h-4 w-4" aria-hidden="true" />
               </span>
-              <div>
+              <div className="min-w-0">
                 <h2 className="text-heading-3 font-semibold text-text-primary">
                   Upcoming organisation holidays
                 </h2>
@@ -94,7 +103,7 @@ export function RequestsCentrePanel({
                 </p>
               </div>
             </div>
-            <div className="p-wilms-4">
+            <div className="p-wilms-3 sm:p-wilms-4">
               {holidaysQuery.isLoading ? (
                 <p className="text-small text-text-muted">Loading upcoming holidays…</p>
               ) : upcomingHolidays.length === 0 ? (
@@ -104,10 +113,10 @@ export function RequestsCentrePanel({
                   {upcomingHolidays.map((holiday) => (
                     <li
                       key={holiday.id}
-                      className="flex flex-wrap items-baseline justify-between gap-wilms-2 rounded-xl border border-border/70 bg-background/60 px-wilms-3 py-wilms-3"
+                      className="flex flex-col gap-wilms-1 rounded-xl border border-border/70 bg-background/60 px-wilms-3 py-wilms-3 sm:flex-row sm:flex-wrap sm:items-baseline sm:justify-between sm:gap-wilms-2"
                     >
-                      <div>
-                        <p className="font-semibold text-text-primary">{holiday.name}</p>
+                      <div className="min-w-0">
+                        <p className="break-words font-semibold text-text-primary">{holiday.name}</p>
                         <p className="text-small text-text-muted">
                           {holiday.scope}
                           {holiday.branch ? ` · ${holiday.branch}` : ''}
@@ -124,14 +133,14 @@ export function RequestsCentrePanel({
           </section>
 
           <section className="overflow-hidden rounded-2xl border border-border/80 bg-card">
-            <div className="border-b border-border/70 px-wilms-5 py-wilms-4">
+            <div className="border-b border-border/70 px-wilms-4 py-wilms-4 sm:px-wilms-5">
               <h2 className="text-heading-3 font-semibold text-text-primary">Holiday requests</h2>
               <p className="mt-0.5 text-small text-text-muted">
                 Collector leave requests. Approved days are applied to the organisation calendar and
                 shift repayment schedules.
               </p>
             </div>
-            <div className="min-w-0 p-wilms-4">
+            <div className="min-w-0 p-wilms-3 sm:p-wilms-4">
               <HolidayRequestReviewQueue />
             </div>
           </section>

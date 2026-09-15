@@ -33,6 +33,7 @@ describe('ReportsIndexPanel responsive layout', () => {
     expect(await screen.findByRole('link', { name: 'Loan Portfolio Report' })).toBeInTheDocument();
 
     expect(container.querySelector('table')).toBeNull();
+    expect(container.querySelector('ul.grid-cols-1')).toBeTruthy();
     expect(container.querySelector('ul.sm\\:grid-cols-2')).toBeTruthy();
   });
 });

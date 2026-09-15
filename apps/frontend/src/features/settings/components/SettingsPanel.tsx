@@ -145,12 +145,15 @@ export function SettingsPanel() {
                   </p>
                 </div>
                 {exportDocument ? (
-                  <WilmsExportActions
-                    document={exportDocument}
-                    filenameBase="WILMS_System_Settings"
-                    showIcons
-                    permissions={[]}
-                  />
+                  <div className="w-full shrink-0 sm:w-auto">
+                    <WilmsExportActions
+                      document={exportDocument}
+                      filenameBase="WILMS_System_Settings"
+                      showIcons
+                      permissions={[]}
+                      className="flex w-full flex-wrap gap-2 [&_button]:min-h-[44px] [&_button]:flex-1 sm:[&_button]:flex-none"
+                    />
+                  </div>
                 ) : null}
               </div>
               <div className="mt-wilms-4 inline-flex items-center gap-2 rounded-xl border border-border/70 bg-card/80 px-3 py-2 text-small">
@@ -177,7 +180,7 @@ export function SettingsPanel() {
                       key={section.id}
                       type="button"
                       className={cn(
-                        'inline-flex shrink-0 items-center gap-2 rounded-lg px-wilms-3 py-wilms-2 text-left text-small font-semibold transition-colors xl:w-full',
+                        'inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-lg px-wilms-3 py-wilms-2 text-left text-small font-semibold transition-colors xl:min-h-0 xl:w-full',
                         active
                           ? 'bg-brand-primary/10 text-brand-primary'
                           : 'text-text-muted hover:bg-background hover:text-text-primary',

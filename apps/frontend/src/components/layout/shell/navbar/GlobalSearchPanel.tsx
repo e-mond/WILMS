@@ -316,7 +316,7 @@ export function GlobalSearchPanel() {
       isOpen={isOpen}
       onClose={closeGlobalSearch}
       title="Search WILMS"
-      className="max-w-2xl"
+      className="max-h-[92vh] w-full max-w-2xl p-wilms-4 sm:p-wilms-6"
     >
       <div data-global-search-panel="true" className="space-y-wilms-4 motion-enter-fade">
         <label className="block" htmlFor={`${titleId}-search`}>
@@ -324,7 +324,7 @@ export function GlobalSearchPanel() {
           <div className="relative overflow-hidden rounded-2xl border border-brand-primary/25 bg-gradient-to-br from-brand-primary/[0.08] via-card to-card p-[1px] shadow-[0_10px_30px_-18px_rgba(16,185,129,0.55)]">
             <div className="relative rounded-[15px] bg-card">
               <Search
-                className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-brand-primary"
+                className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-brand-primary sm:left-4"
                 aria-hidden="true"
               />
               <Input
@@ -344,9 +344,9 @@ export function GlobalSearchPanel() {
                     : undefined
                 }
                 onChange={(event) => setQuery(event.target.value)}
-                className="h-14 border-0 bg-transparent pl-12 pr-16 text-[15px] shadow-none focus-visible:ring-0"
+                className="h-12 min-h-[48px] border-0 bg-transparent pl-11 pr-14 text-[15px] shadow-none focus-visible:ring-0 sm:h-14 sm:pl-12 sm:pr-16"
               />
-              <kbd className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-lg border border-border bg-background px-2 py-1 text-[10px] font-semibold tracking-wide text-text-muted">
+              <kbd className="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 rounded-lg border border-border bg-background px-2 py-1 text-[10px] font-semibold tracking-wide text-text-muted sm:inline">
                 ESC
               </kbd>
             </div>
@@ -440,7 +440,7 @@ export function GlobalSearchPanel() {
                       <button
                         type="button"
                         className={cn(
-                          'flex w-full items-center gap-wilms-3 px-wilms-4 py-wilms-3 text-left',
+                          'flex w-full min-h-[52px] items-center gap-wilms-3 px-wilms-3 py-wilms-3 text-left sm:px-wilms-4',
                           'transition-colors hover:bg-background',
                           isActive && 'bg-brand-primary-light/50 ring-1 ring-inset ring-brand-primary/25',
                           'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-primary',
