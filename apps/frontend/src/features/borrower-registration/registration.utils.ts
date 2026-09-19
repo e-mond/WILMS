@@ -3,7 +3,11 @@ import type { RegisterBorrowerPayload } from '@/types/borrower-registration';
 import type { BorrowerRegistrationInput } from '@/features/borrower-registration/registration.schema';
 import type { BorrowerReviewDetail } from '@/types/approval';
 import type { GuarantorLookupResult } from '@/types/guarantor-search';
-import { BORROWER_ID_TYPE, type BorrowerIdType } from '@/constants/borrower-registration';
+import {
+  BORROWER_ID_TYPE,
+  OTHER_OCCUPATION_VALUE,
+  type BorrowerIdType,
+} from '@/constants/borrower-registration';
 
 export const DEFAULT_REGISTRATION_VALUES: BorrowerRegistrationFormValues = {
   fullName: '',
@@ -24,6 +28,7 @@ export const DEFAULT_REGISTRATION_VALUES: BorrowerRegistrationFormValues = {
   subDistrictUnit: '',
   electoralArea: '',
   businessName: '',
+  businessPremisesNumber: '',
   businessAddress: '',
   typeOfWork: '',
   typeOfWorkOther: '',
@@ -64,8 +69,10 @@ export function reviewDetailToFormValues(detail: BorrowerReviewDetail): Borrower
     subDistrictUnit: detail.subDistrictUnit ?? '',
     electoralArea: detail.electoralArea ?? '',
     businessName: detail.businessName ?? '',
+    businessPremisesNumber: detail.businessPremisesNumber ?? '',
     businessAddress: detail.businessAddress ?? '',
     typeOfWork: detail.typeOfWork ?? '',
+    typeOfWorkOther: detail.typeOfWorkOther ?? '',
     guarantorName: detail.guarantorName ?? '',
     guarantorPhone: detail.guarantorPhone ?? '',
     guarantorRelationship: detail.guarantorRelationship ?? '',
@@ -204,12 +211,14 @@ export function toRegisterBorrowerPayload(
     district: input.district,
     subDistrictUnit: input.subDistrictUnit || undefined,
     electoralArea: input.electoralArea || undefined,
-    businessName: input.businessName,
+    businessName: input.businessName?.trim() ?? '',
+    businessPremisesNumber: input.businessPremisesNumber?.trim() || undefined,
     businessAddress: input.businessAddress,
-    typeOfWork:
-      input.typeOfWork === 'Other' && input.typeOfWorkOther?.trim()
-        ? input.typeOfWorkOther.trim()
-        : input.typeOfWork,
+    typeOfWork: input.typeOfWork,
+    typeOfWorkOther:
+      input.typeOfWork === OTHER_OCCUPATION_VALUE || input.typeOfWork === 'Other'
+        ? input.typeOfWorkOther?.trim() || undefined
+        : undefined,
     guarantorName: input.guarantorName,
     guarantorPhone: input.guarantorPhone,
     guarantorRelationship: input.guarantorRelationship,

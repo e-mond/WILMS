@@ -28,7 +28,9 @@ export interface BorrowerDetail extends BorrowerSummary {
   gender?: string;
   nationality?: string;
   businessName?: string;
+  businessPremisesNumber?: string;
   typeOfWork?: string;
+  typeOfWorkOther?: string;
 }
 
 export interface BorrowerRiskSummary {

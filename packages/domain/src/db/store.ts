@@ -17,8 +17,10 @@ export interface BorrowerProfile {
   electoralArea?: string;
   alternativePhone?: string;
   businessName: string;
+  businessPremisesNumber?: string;
   businessAddress: string;
   typeOfWork: string;
+  typeOfWorkOther?: string;
   guarantorName: string;
   guarantorPhone: string;
   guarantorRelationship: string;

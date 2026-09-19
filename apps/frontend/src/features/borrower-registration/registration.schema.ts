@@ -1,4 +1,12 @@
 import { z } from 'zod';
+import {
+  BUSINESS_ADDRESS_MAX_LENGTH,
+  BUSINESS_NAME_MAX_LENGTH,
+  BUSINESS_PREMISES_NUMBER_MAX_LENGTH,
+  isKnownOccupationValue,
+  OCCUPATION_OTHER_MAX_LENGTH,
+  OTHER_OCCUPATION_VALUE,
+} from '@wilms/shared-contracts';
 import { validateBorrowerId } from '@wilms/shared-validation';
 import {
   BORROWER_GENDER,
@@ -147,10 +155,34 @@ export const addressSchema = z.object({
 });
 
 export const businessSchema = z.object({
-  businessName: z.string().trim().min(1, 'Business name is required.').max(120, 'Business name is too long.'),
-  businessAddress: addressLineSchema('Business address'),
-  typeOfWork: z.string().trim().min(1, 'Type of work is required.'),
-  typeOfWorkOther: z.string().trim().max(80, 'Please keep this under 80 characters.').optional(),
+  businessName: z
+    .string()
+    .trim()
+    .max(BUSINESS_NAME_MAX_LENGTH, `Business name must be ${BUSINESS_NAME_MAX_LENGTH} characters or fewer.`),
+  businessPremisesNumber: z
+    .string()
+    .trim()
+    .max(
+      BUSINESS_PREMISES_NUMBER_MAX_LENGTH,
+      `House / stall / shop number must be ${BUSINESS_PREMISES_NUMBER_MAX_LENGTH} characters or fewer.`,
+    ),
+  businessAddress: z
+    .string()
+    .trim()
+    .min(1, 'Business address is required.')
+    .max(
+      BUSINESS_ADDRESS_MAX_LENGTH,
+      `Business address must be ${BUSINESS_ADDRESS_MAX_LENGTH} characters or fewer.`,
+    ),
+  typeOfWork: z.string().trim().min(1, 'Business type / occupation is required.'),
+  typeOfWorkOther: z
+    .string()
+    .trim()
+    .max(
+      OCCUPATION_OTHER_MAX_LENGTH,
+      `Please keep this under ${OCCUPATION_OTHER_MAX_LENGTH} characters.`,
+    )
+    .optional(),
 });
 
 const guarantorBaseSchema = z.object({
@@ -245,14 +277,40 @@ export const signatureSchema = z.object({
 });
 
 export const businessStepSchema = businessSchema.superRefine((data, ctx) => {
-  if (data.typeOfWork === 'Other' && !data.typeOfWorkOther?.trim()) {
+  refineBusinessOccupation(data, ctx);
+});
+
+function refineBusinessOccupation(
+  data: {
+    typeOfWork: string;
+    typeOfWorkOther?: string;
+  },
+  ctx: z.RefinementCtx,
+) {
+  const occupation = data.typeOfWork.trim();
+  if (!occupation) {
+    return;
+  }
+
+  // Allow legacy free-text occupations already stored on existing records.
+  const isCatalogueValue = isKnownOccupationValue(occupation);
+  const isLegacyOther = occupation === 'Other';
+  if (!isCatalogueValue && !isLegacyOther) {
+    // Historical free-text values remain valid for edits; new form selections are catalogue keys.
+    return;
+  }
+
+  if (
+    (occupation === OTHER_OCCUPATION_VALUE || isLegacyOther) &&
+    !data.typeOfWorkOther?.trim()
+  ) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: 'Please specify the type of work.',
+      message: 'Please specify the occupation.',
       path: ['typeOfWorkOther'],
     });
   }
-});
+}
 
 export const borrowerRegistrationSchema = personalDetailsBaseSchema
   .merge(addressSchema)
@@ -270,13 +328,7 @@ export const borrowerRegistrationSchema = personalDetailsBaseSchema
         path: ['idDocument'],
       });
     }
-    if (data.typeOfWork === 'Other' && !data.typeOfWorkOther?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Please specify the type of work.',
-        path: ['typeOfWorkOther'],
-      });
-    }
+    refineBusinessOccupation(data, ctx);
     refineOptionalImageFile(
       ctx,
       data.photo,

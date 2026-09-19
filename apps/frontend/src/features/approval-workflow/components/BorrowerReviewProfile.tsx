@@ -4,6 +4,7 @@ import { formatDisplayDate } from '@/utils/format-date';
 import { resolveUserDisplayId } from '@/utils/entity-display-id';
 import { resolveEntityPhotoUrl } from '@/utils/entity-photo';
 import { buildLocationHierarchyRows } from '@/utils/location-hierarchy';
+import { resolveOccupationLabel } from '@wilms/shared-contracts';
 
 export interface BorrowerReviewProfileProps {
   borrower: BorrowerReviewDetail;
@@ -218,9 +219,13 @@ export function BorrowerReviewProfile({
       <ReviewSection
         title="Business information"
         items={[
+          [
+            'Business type / occupation',
+            formatField(resolveOccupationLabel(borrower.typeOfWork, borrower.typeOfWorkOther)),
+          ],
           ['Business name', formatField(borrower.businessName)],
+          ['House / stall / shop number', formatField(borrower.businessPremisesNumber)],
           ['Business address', formatField(borrower.businessAddress)],
-          ['Type of work', formatField(borrower.typeOfWork)],
         ]}
       />
 

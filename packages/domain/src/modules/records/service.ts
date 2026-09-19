@@ -302,8 +302,10 @@ export async function getBorrowerRecordFile(id: string) {
     gender?: string;
     email?: string;
     businessName?: string;
+    businessPremisesNumber?: string;
     businessAddress?: string;
     typeOfWork?: string;
+    typeOfWorkOther?: string;
     subDistrictUnit?: string;
     electoralArea?: string;
   } = {};
@@ -317,8 +319,10 @@ export async function getBorrowerRecordFile(id: string) {
       gender: review.gender,
       email: review.email,
       businessName: review.businessName,
+      businessPremisesNumber: review.businessPremisesNumber,
       businessAddress: review.businessAddress,
       typeOfWork: review.typeOfWork,
+      typeOfWorkOther: review.typeOfWorkOther,
       subDistrictUnit: review.subDistrictUnit,
       electoralArea: review.electoralArea,
     };

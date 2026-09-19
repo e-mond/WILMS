@@ -1,3 +1,4 @@
+import { resolveOccupationLabel } from '@wilms/shared-contracts';
 import { buildLocationHierarchyRows, deriveCityTown } from '@/utils/location-hierarchy';
 import { resolveUserDisplayId } from '@/utils/entity-display-id';
 import type { BorrowerRegistrationFormValues } from '@/types/borrower-registration';
@@ -172,14 +173,15 @@ export function buildRegistrationAgreementContent(
     }).map(([label, value]) => ({ label, value })),
   ];
 
-  const workType =
-    values.typeOfWork === 'Other' && values.typeOfWorkOther?.trim()
-      ? values.typeOfWorkOther.trim()
-      : values.typeOfWork;
+  const workType = resolveOccupationLabel(values.typeOfWork, values.typeOfWorkOther);
 
   const workRows: AgreementFieldRow[] = [
-    { label: 'Business Name', value: display(values.businessName) },
     { label: 'Business Type / Occupation', value: display(workType) },
+    { label: 'Business Name', value: display(values.businessName, 'Not provided') },
+    {
+      label: 'House / Stall / Shop Number',
+      value: display(values.businessPremisesNumber, 'Not provided'),
+    },
     { label: 'Business Address', value: display(values.businessAddress) },
   ];
 

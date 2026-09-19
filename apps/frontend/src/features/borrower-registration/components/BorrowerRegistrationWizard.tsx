@@ -14,7 +14,7 @@ import {
 } from '@wilms/shared-validation';
 import { Alert } from '@/components/feedback/Alert';
 import { EmptyState } from '@/components/feedback/EmptyState';
-import { FormField, MultiStepForm, PhotoUploadField } from '@/components/forms';
+import { FormField, MultiStepForm, PhotoUploadField, SearchableSelect } from '@/components/forms';
 import { DocumentUpload } from '@/components/forms/DocumentUpload';
 import { IdentityCaptureField } from '@/components/forms/IdentityCaptureField';
 import { SignatureUploadField } from '@/components/forms/SignatureUploadField';
@@ -25,12 +25,17 @@ import { Textarea } from '@/components/ui/Textarea';
 import {
   BORROWER_GENDER,
   BORROWER_ID_TYPE,
+  BUSINESS_ADDRESS_MAX_LENGTH,
+  BUSINESS_NAME_MAX_LENGTH,
+  BUSINESS_PREMISES_NUMBER_MAX_LENGTH,
+  GHANA_OCCUPATIONS,
   GUARANTOR_RELATIONSHIP_OPTIONS,
+  OCCUPATION_OTHER_MAX_LENGTH,
+  OTHER_OCCUPATION_VALUE,
   REGISTRATION_ADDRESS_MAX_LENGTH,
   REGISTRATION_TEXT_FIELD_MAX_LENGTH,
   REGISTRATION_ADDRESS_MIN_LENGTH,
   REGISTRATION_GPS_MAX_ACCURACY_METERS,
-  TYPE_OF_WORK_OPTIONS,
 } from '@/constants/borrower-registration';
 import { RegistrationConflictAlerts } from '@/features/borrower-registration/components/RegistrationConflictAlerts';
 import { RegistrationReviewPanel } from '@/features/borrower-registration/components/RegistrationReviewPanel';
@@ -279,6 +284,7 @@ export function BorrowerRegistrationWizard() {
   const watchedElectoralArea = watch('electoralArea');
   const watchedHouseAddress = watch('houseAddress') ?? '';
   const watchedBusinessAddress = watch('businessAddress') ?? '';
+  const watchedBusinessPremisesNumber = watch('businessPremisesNumber') ?? '';
   const watchedBusinessName = watch('businessName') ?? '';
   const watchedTypeOfWorkOther = watch('typeOfWorkOther') ?? '';
   const watchedGpsAddress = watch('gpsAddress') ?? '';
@@ -1115,78 +1121,114 @@ export function BorrowerRegistrationWizard() {
       ) : null}
 
       {currentStep === 2 ? (
-        <section className="grid gap-wilms-4 md:grid-cols-2">
+        <section className="grid gap-wilms-4 md:grid-cols-2" aria-label="Work / Business Information">
+          <h2 className="md:col-span-2 text-heading-3 font-semibold text-text-primary">
+            Work / Business Information
+          </h2>
           <FormField
-            label="Business name"
-            htmlFor="businessName"
-            required
-            error={errors.businessName?.message}
-            characterCount={{
-              current: watchedBusinessName.length,
-              max: REGISTRATION_TEXT_FIELD_MAX_LENGTH,
-            }}
-          >
-            <Input
-              id="businessName"
-              hasError={Boolean(errors.businessName)}
-              maxLength={REGISTRATION_TEXT_FIELD_MAX_LENGTH}
-              {...register('businessName')}
-            />
-          </FormField>
-          <FormField
-            label="Type of work"
+            label="Business Type / Occupation"
             htmlFor="typeOfWork"
             required
             error={errors.typeOfWork?.message}
+            hint="Select the type of work or business you currently do."
+            className="md:col-span-2"
           >
-            <Select id="typeOfWork" hasError={Boolean(errors.typeOfWork)} {...register('typeOfWork')}>
-              <option value="">Select type of work</option>
-              {TYPE_OF_WORK_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </Select>
+            <Controller
+              control={control}
+              name="typeOfWork"
+              render={({ field }) => (
+                <SearchableSelect
+                  id="typeOfWork"
+                  value={field.value}
+                  options={GHANA_OCCUPATIONS}
+                  hasError={Boolean(errors.typeOfWork)}
+                  placeholder="Search or select occupation..."
+                  fallbackLabel={field.value}
+                  onBlur={field.onBlur}
+                  onChange={(next) => {
+                    field.onChange(next);
+                    if (next !== OTHER_OCCUPATION_VALUE && next !== 'Other') {
+                      setValue('typeOfWorkOther', '', { shouldDirty: true, shouldValidate: true });
+                    }
+                  }}
+                />
+              )}
+            />
           </FormField>
-          {watchedTypeOfWork === 'Other' ? (
+          {watchedTypeOfWork === OTHER_OCCUPATION_VALUE || watchedTypeOfWork === 'Other' ? (
             <FormField
-              label="Please specify"
+              label="Specify Occupation"
               htmlFor="typeOfWorkOther"
               required
               error={errors.typeOfWorkOther?.message}
               className="md:col-span-2"
               characterCount={{
                 current: watchedTypeOfWorkOther.length,
-                max: REGISTRATION_TEXT_FIELD_MAX_LENGTH,
+                max: OCCUPATION_OTHER_MAX_LENGTH,
               }}
             >
               <Input
                 id="typeOfWorkOther"
                 hasError={Boolean(errors.typeOfWorkOther)}
-                maxLength={REGISTRATION_TEXT_FIELD_MAX_LENGTH}
+                maxLength={OCCUPATION_OTHER_MAX_LENGTH}
+                placeholder="Enter the occupation"
                 {...register('typeOfWorkOther')}
               />
             </FormField>
           ) : null}
           <FormField
-            label="Business address"
+            label="Business Name"
+            htmlFor="businessName"
+            error={errors.businessName?.message}
+            hint="If applicable, enter the name of the business or shop."
+            characterCount={{
+              current: watchedBusinessName.length,
+              max: BUSINESS_NAME_MAX_LENGTH,
+            }}
+          >
+            <Input
+              id="businessName"
+              hasError={Boolean(errors.businessName)}
+              maxLength={BUSINESS_NAME_MAX_LENGTH}
+              placeholder="Optional"
+              {...register('businessName')}
+            />
+          </FormField>
+          <FormField
+            label="House / Stall / Shop Number"
+            htmlFor="businessPremisesNumber"
+            error={errors.businessPremisesNumber?.message}
+            hint="Maximum 30 characters."
+            characterCount={{
+              current: watchedBusinessPremisesNumber.length,
+              max: BUSINESS_PREMISES_NUMBER_MAX_LENGTH,
+            }}
+          >
+            <Input
+              id="businessPremisesNumber"
+              hasError={Boolean(errors.businessPremisesNumber)}
+              maxLength={BUSINESS_PREMISES_NUMBER_MAX_LENGTH}
+              placeholder="e.g. Stall 18"
+              {...register('businessPremisesNumber')}
+            />
+          </FormField>
+          <FormField
+            label="Business Address"
             htmlFor="businessAddress"
             required
             error={errors.businessAddress?.message}
-            hint={`Where the business operates (${REGISTRATION_ADDRESS_MIN_LENGTH}–${REGISTRATION_ADDRESS_MAX_LENGTH} characters).`}
+            hint="Where the business operates (maximum 30 characters)."
             characterCount={{
               current: watchedBusinessAddress.length,
-              max: REGISTRATION_ADDRESS_MAX_LENGTH,
+              max: BUSINESS_ADDRESS_MAX_LENGTH,
             }}
             className="md:col-span-2"
           >
-            <Textarea
+            <Input
               id="businessAddress"
-              rows={2}
-              maxLength={REGISTRATION_ADDRESS_MAX_LENGTH}
-              placeholder="e.g. Makola Market, Stall 24, Accra"
+              maxLength={BUSINESS_ADDRESS_MAX_LENGTH}
+              placeholder="e.g. Kojokrom Market"
               hasError={Boolean(errors.businessAddress)}
-              className="min-h-20"
               {...register('businessAddress')}
             />
           </FormField>

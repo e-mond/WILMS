@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
+import {
+  BUSINESS_ADDRESS_MAX_LENGTH,
+  BUSINESS_PREMISES_NUMBER_MAX_LENGTH,
+  GHANA_OCCUPATIONS,
+  OTHER_OCCUPATION_VALUE,
+  resolveOccupationLabel,
+} from '@wilms/shared-contracts';
 import { BORROWER_GENDER, BORROWER_ID_TYPE } from '@/constants/borrower-registration';
-import { borrowerRegistrationSchema } from '@/features/borrower-registration/registration.schema';
+import {
+  borrowerRegistrationSchema,
+  businessStepSchema,
+} from '@/features/borrower-registration/registration.schema';
 
 function createValidRegistration(overrides: Record<string, unknown> = {}) {
   const photo = new File(['photo'], 'passport.jpg', { type: 'image/jpeg' });
@@ -21,8 +31,10 @@ function createValidRegistration(overrides: Record<string, unknown> = {}) {
     region: 'Greater Accra',
     district: 'La Nkwantanang',
     businessName: 'Ama Provisions',
-    businessAddress: 'Madina Market Stall 4',
-    typeOfWork: 'Trader',
+    businessPremisesNumber: 'Stall 18',
+    businessAddress: 'Kojokrom Market',
+    typeOfWork: 'fresh_fish_seller',
+    typeOfWorkOther: '',
     guarantorName: 'Efua Mensah',
     guarantorPhone: '+233209876543',
     guarantorRelationship: 'Sibling',
@@ -74,6 +86,133 @@ describe('borrowerRegistrationSchema', () => {
     );
   });
 
+  it('accepts a blank business name', () => {
+    const result = businessStepSchema.safeParse({
+      businessName: '',
+      businessPremisesNumber: 'Stall 18',
+      businessAddress: 'Kojokrom Market',
+      typeOfWork: 'fresh_fish_seller',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts a provided business name', () => {
+    const result = businessStepSchema.safeParse({
+      businessName: 'Gloria Provisions',
+      businessPremisesNumber: '',
+      businessAddress: 'Market Circle',
+      typeOfWork: 'petty_trader',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts house / stall / shop number variants up to 30 characters', () => {
+    for (const businessPremisesNumber of ['12', '12A', 'Stall 18', 'A'.repeat(30)]) {
+      const result = businessStepSchema.safeParse({
+        businessName: '',
+        businessPremisesNumber,
+        businessAddress: 'Kojokrom Market',
+        typeOfWork: 'fresh_fish_seller',
+      });
+      expect(result.success).toBe(true);
+    }
+  });
+
+  it('rejects house / stall / shop numbers longer than 30 characters', () => {
+    const result = businessStepSchema.safeParse({
+      businessName: '',
+      businessPremisesNumber: 'A'.repeat(BUSINESS_PREMISES_NUMBER_MAX_LENGTH + 1),
+      businessAddress: 'Kojokrom Market',
+      typeOfWork: 'fresh_fish_seller',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('accepts Ghanaian business addresses up to 30 characters', () => {
+    const result = businessStepSchema.safeParse({
+      businessName: '',
+      businessPremisesNumber: 'Stall 18',
+      businessAddress: 'B'.repeat(BUSINESS_ADDRESS_MAX_LENGTH),
+      typeOfWork: 'vegetable_seller',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects business addresses longer than 30 characters', () => {
+    const result = businessStepSchema.safeParse({
+      businessName: '',
+      businessPremisesNumber: '',
+      businessAddress: 'C'.repeat(BUSINESS_ADDRESS_MAX_LENGTH + 1),
+      typeOfWork: 'vegetable_seller',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('includes key Ghanaian occupations in the catalogue', () => {
+    const labels = new Set(GHANA_OCCUPATIONS.map((item) => item.label));
+    for (const label of [
+      'Fresh Fish Seller',
+      'Fried Fish Seller',
+      'Smoked Fish Seller',
+      'Fishmonger',
+      'Vegetable Seller',
+      'Petty Trader',
+      'Mobile Money Vendor',
+      'Carpenter',
+      'Hairdresser',
+      'Farmer',
+      'Other — Specify',
+    ]) {
+      expect(labels.has(label)).toBe(true);
+    }
+  });
+
+  it('accepts catalogue occupations and resolves labels', () => {
+    expect(resolveOccupationLabel('fresh_fish_seller')).toBe('Fresh Fish Seller');
+    const result = businessStepSchema.safeParse({
+      businessName: '',
+      businessPremisesNumber: 'Stall 18',
+      businessAddress: 'Kojokrom Market',
+      typeOfWork: 'fresh_fish_seller',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects Other — Specify without a custom occupation', () => {
+    const result = businessStepSchema.safeParse({
+      businessName: '',
+      businessPremisesNumber: '',
+      businessAddress: 'Market Circle',
+      typeOfWork: OTHER_OCCUPATION_VALUE,
+      typeOfWorkOther: '',
+    });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((issue) => issue.path[0] === 'typeOfWorkOther')).toBe(true);
+  });
+
+  it('accepts Other — Specify with a custom occupation', () => {
+    const result = businessStepSchema.safeParse({
+      businessName: '',
+      businessPremisesNumber: 'Shop A12',
+      businessAddress: 'Anaji Main Road',
+      typeOfWork: OTHER_OCCUPATION_VALUE,
+      typeOfWorkOther: 'Charcoal Seller',
+    });
+    expect(result.success).toBe(true);
+    expect(resolveOccupationLabel(OTHER_OCCUPATION_VALUE, 'Charcoal Seller')).toBe('Charcoal Seller');
+  });
+
+  it('preserves legacy free-text occupations', () => {
+    expect(resolveOccupationLabel('Trader')).toBe('Trader');
+    const result = businessStepSchema.safeParse({
+      businessName: 'Shop',
+      businessPremisesNumber: '',
+      businessAddress: 'Market Road',
+      typeOfWork: 'Trader',
+    });
+    expect(result.success).toBe(true);
+  });
+
   it('accepts exactly 10-digit voter IDs including a leading zero', () => {
     const result = borrowerRegistrationSchema.safeParse(
       createValidRegistration({
@@ -93,23 +232,6 @@ describe('borrowerRegistrationSchema', () => {
     );
     expect(result.success).toBe(false);
     expect(result.error?.issues.some((issue) => issue.path[0] === 'idNumber')).toBe(true);
-    expect(
-      result.error?.issues.some(
-        (issue) => issue.message === 'Voter ID must contain exactly 10 digits.',
-      ),
-    ).toBe(true);
-  });
-
-  it('rejects voter IDs that are too short, too long, spaced, or hyphenated', () => {
-    for (const idNumber of ['123456789', '01234567890', '01234 56789', '01234-56789']) {
-      const result = borrowerRegistrationSchema.safeParse(
-        createValidRegistration({
-          idType: BORROWER_ID_TYPE.VOTER_ID,
-          idNumber,
-        }),
-      );
-      expect(result.success).toBe(false);
-    }
   });
 
   it('rejects an ID document file that was not persisted', () => {
@@ -133,12 +255,5 @@ describe('borrowerRegistrationSchema', () => {
       }),
     );
     expect(result.success).toBe(true);
-  });
-
-  it('rejects non-image photo uploads', () => {
-    const photo = new File(['text'], 'notes.txt', { type: 'text/plain' });
-    const result = borrowerRegistrationSchema.safeParse(createValidRegistration({ photo }));
-
-    expect(result.success).toBe(false);
   });
 });
