@@ -4,3 +4,4 @@ export { MultiStepForm, type MultiStepFormProps, type MultiStepFormStep } from '
 export { PhotoUpload, type PhotoUploadProps } from './PhotoUpload';
 export { PhotoUploadField, type PhotoUploadFieldProps } from './PhotoUploadField';
 export { DocumentUpload, type DocumentUploadProps } from './DocumentUpload';
+export { SearchableSelect, type SearchableSelectProps, type SearchableSelectOption } from './SearchableSelect';

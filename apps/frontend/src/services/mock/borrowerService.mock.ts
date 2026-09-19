@@ -148,7 +148,9 @@ function registryEntryToDetail(entry: BorrowerRegistryEntry): BorrowerDetail {
     gender: entry.profile.gender,
     nationality: entry.profile.nationality,
     businessName: entry.profile.businessName,
+    businessPremisesNumber: entry.profile.businessPremisesNumber,
     typeOfWork: entry.profile.typeOfWork,
+    typeOfWorkOther: entry.profile.typeOfWorkOther,
     alternativePhone: entry.profile.guarantorPhone,
   };
 }
@@ -178,8 +180,10 @@ function registryEntryToReview(entry: BorrowerRegistryEntry): BorrowerReviewDeta
     subDistrictUnit: entry.profile.subDistrictUnit,
     electoralArea: entry.profile.electoralArea,
     businessName: entry.profile.businessName,
+    businessPremisesNumber: entry.profile.businessPremisesNumber,
     businessAddress: entry.profile.businessAddress,
     typeOfWork: entry.profile.typeOfWork,
+    typeOfWorkOther: entry.profile.typeOfWorkOther,
     guarantorName: entry.profile.guarantorName,
     guarantorPhone: entry.profile.guarantorPhone,
     guarantorRelationship: entry.profile.guarantorRelationship,

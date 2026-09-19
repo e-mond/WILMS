@@ -20,6 +20,7 @@ export interface BorrowerRegistrationFormValues {
   subDistrictUnit?: string;
   electoralArea?: string;
   businessName: string;
+  businessPremisesNumber?: string;
   businessAddress: string;
   typeOfWork: string;
   typeOfWorkOther?: string;
@@ -59,8 +60,10 @@ export interface BorrowerRegistrationProfile {
   subDistrictUnit?: string;
   electoralArea?: string;
   businessName: string;
+  businessPremisesNumber?: string;
   businessAddress: string;
   typeOfWork: string;
+  typeOfWorkOther?: string;
   guarantorName: string;
   guarantorPhone: string;
   guarantorRelationship: string;
@@ -98,8 +101,10 @@ export interface RegisterBorrowerPayload {
   subDistrictUnit?: string;
   electoralArea?: string;
   businessName: string;
+  businessPremisesNumber?: string;
   businessAddress: string;
   typeOfWork: string;
+  typeOfWorkOther?: string;
   guarantorName: string;
   guarantorPhone: string;
   guarantorRelationship: string;

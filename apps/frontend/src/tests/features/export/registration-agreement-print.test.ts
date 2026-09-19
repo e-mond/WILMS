@@ -42,8 +42,9 @@ function createValues(overrides: Record<string, unknown> = {}) {
     subDistrictUnit: 'Sekondi',
     electoralArea: 'Fijai Electoral Area',
     businessName: 'Gloria Provisions',
+    businessPremisesNumber: 'Stall 4',
     businessAddress: 'Market Stall 4',
-    typeOfWork: 'Trader',
+    typeOfWork: 'fresh_fish_seller',
     guarantorName: 'Kojo Mensah',
     guarantorPhone: '+233241234567',
     guarantorRelationship: 'Spouse',
@@ -85,8 +86,9 @@ function createReviewDetail(
     region: 'Western',
     district: 'Sekondi Takoradi Metro',
     businessName: 'Gloria Provisions',
+    businessPremisesNumber: 'Stall 4',
     businessAddress: 'Market Stall 4',
-    typeOfWork: 'Trader',
+    typeOfWork: 'fresh_fish_seller',
     guarantorName: 'Kojo Mensah',
     guarantorPhone: '+233241234567',
     guarantorRelationship: 'Spouse',
@@ -177,9 +179,9 @@ describe('registration agreement print/PDF document', () => {
     expect(html).toContain('House 12, Airport Ridge');
     expect(html).toContain('Akosua Serwaa Amponsah-Mensah-Boateng');
     expect(html).toContain('Female');
-    expect(html).toContain('Voter ID');
-    expect(html).toContain('Voter ID Number');
-    expect(html).toContain('0123456789');
+    expect(html).toContain('Fresh Fish Seller');
+    expect(html).toContain('House / Stall / Shop Number');
+    expect(html).toContain('Stall 4');
   });
 
   it('never treats raw UUIDs as registration references', () => {
