@@ -5,8 +5,11 @@ import { useSearchParams } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
 import {
+  BORROWER_ID_HELPER_TEXTS,
+  BORROWER_ID_NUMBER_LABELS,
   BORROWER_ID_PLACEHOLDERS,
   formatGhanaCardInput,
+  formatVoterIdInput,
   normalizeBorrowerId,
 } from '@wilms/shared-validation';
 import { Alert } from '@/components/feedback/Alert';
@@ -740,16 +743,40 @@ export function BorrowerRegistrationWizard() {
               <option value={BORROWER_ID_TYPE.PASSPORT}>Passport</option>
             </Select>
           </FormField>
-          <FormField label="ID number" htmlFor="idNumber" required error={errors.idNumber?.message}>
+          <FormField
+            label={
+              watchedIdType === BORROWER_ID_TYPE.VOTER_ID
+                ? BORROWER_ID_NUMBER_LABELS.VOTER_ID
+                : 'ID number'
+            }
+            htmlFor="idNumber"
+            required
+            error={errors.idNumber?.message}
+            hint={
+              watchedIdType === BORROWER_ID_TYPE.VOTER_ID
+                ? BORROWER_ID_HELPER_TEXTS.VOTER_ID
+                : undefined
+            }
+          >
             <Input
               id="idNumber"
               hasError={Boolean(errors.idNumber)}
+              inputMode={watchedIdType === BORROWER_ID_TYPE.VOTER_ID ? 'numeric' : undefined}
+              pattern={watchedIdType === BORROWER_ID_TYPE.VOTER_ID ? '[0-9]*' : undefined}
+              maxLength={watchedIdType === BORROWER_ID_TYPE.VOTER_ID ? 10 : undefined}
+              autoComplete="off"
               placeholder={
                 watchedIdType
                   ? BORROWER_ID_PLACEHOLDERS[watchedIdType as keyof typeof BORROWER_ID_PLACEHOLDERS]
                   : 'Select ID type first'
               }
               {...idNumberField}
+              onChange={(event) => {
+                if (getValues('idType') === BORROWER_ID_TYPE.VOTER_ID) {
+                  event.target.value = formatVoterIdInput(event.target.value);
+                }
+                void idNumberField.onChange(event);
+              }}
               onBlur={(event) => {
                 void idNumberField.onBlur(event);
                 const idType = getValues('idType');
@@ -760,7 +787,14 @@ export function BorrowerRegistrationWizard() {
                   });
                   return;
                 }
-                if (idType === BORROWER_ID_TYPE.VOTER_ID || idType === BORROWER_ID_TYPE.PASSPORT) {
+                if (idType === BORROWER_ID_TYPE.VOTER_ID) {
+                  setValue('idNumber', formatVoterIdInput(event.target.value), {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                  return;
+                }
+                if (idType === BORROWER_ID_TYPE.PASSPORT) {
                   setValue('idNumber', normalizeBorrowerId(idType, event.target.value), {
                     shouldDirty: true,
                     shouldValidate: true,
@@ -1262,20 +1296,32 @@ export function BorrowerRegistrationWizard() {
             </Select>
           </FormField>
           <FormField
-            label="National ID number"
+            label={
+              watchedGuarantorIdType === BORROWER_ID_TYPE.VOTER_ID
+                ? BORROWER_ID_NUMBER_LABELS.VOTER_ID
+                : 'National ID number'
+            }
             htmlFor="guarantorIdNumber"
             required
             error={errors.guarantorIdNumber?.message}
             hint={
               selectedGuarantor && !selectedGuarantor.idNumber
                 ? 'Not available on the existing record. Enter it manually.'
-                : undefined
+                : watchedGuarantorIdType === BORROWER_ID_TYPE.VOTER_ID
+                  ? BORROWER_ID_HELPER_TEXTS.VOTER_ID
+                  : undefined
             }
           >
             <Input
               id="guarantorIdNumber"
               hasError={Boolean(errors.guarantorIdNumber)}
               readOnly={Boolean(selectedGuarantor?.idNumber)}
+              inputMode={
+                watchedGuarantorIdType === BORROWER_ID_TYPE.VOTER_ID ? 'numeric' : undefined
+              }
+              pattern={watchedGuarantorIdType === BORROWER_ID_TYPE.VOTER_ID ? '[0-9]*' : undefined}
+              maxLength={watchedGuarantorIdType === BORROWER_ID_TYPE.VOTER_ID ? 10 : undefined}
+              autoComplete="off"
               placeholder={
                 watchedGuarantorIdType
                   ? BORROWER_ID_PLACEHOLDERS[
@@ -1284,13 +1330,38 @@ export function BorrowerRegistrationWizard() {
                   : 'Select ID type first'
               }
               {...register('guarantorIdNumber', {
+                onChange: (event) => {
+                  if (selectedGuarantor?.idNumber) return;
+                  if (getValues('guarantorIdType') === BORROWER_ID_TYPE.VOTER_ID) {
+                    event.target.value = formatVoterIdInput(event.target.value);
+                  }
+                },
                 onBlur: (event) => {
                   if (selectedGuarantor?.idNumber) return;
-                  if (getValues('guarantorIdType') === BORROWER_ID_TYPE.GHANA_CARD) {
+                  const guarantorIdType = getValues('guarantorIdType');
+                  if (guarantorIdType === BORROWER_ID_TYPE.GHANA_CARD) {
                     setValue('guarantorIdNumber', formatGhanaCardInput(event.target.value), {
                       shouldDirty: true,
                       shouldValidate: true,
                     });
+                    return;
+                  }
+                  if (guarantorIdType === BORROWER_ID_TYPE.VOTER_ID) {
+                    setValue('guarantorIdNumber', formatVoterIdInput(event.target.value), {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    });
+                    return;
+                  }
+                  if (guarantorIdType === BORROWER_ID_TYPE.PASSPORT) {
+                    setValue(
+                      'guarantorIdNumber',
+                      normalizeBorrowerId(guarantorIdType, event.target.value),
+                      {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      },
+                    );
                   }
                 },
               })}

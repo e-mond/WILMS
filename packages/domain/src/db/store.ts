@@ -145,7 +145,7 @@ function seedBorrowers(): void {
       fullName: 'Kwame Osei',
       phone: '+233209988776',
       idType: 'VOTER_ID',
-      idNumber: 'VID-445566778',
+      idNumber: '0445566779',
       status: BORROWER_STATUS.PENDING,
       hasActiveLoan: false,
       groupName: '',

@@ -120,12 +120,12 @@ describe('borrowerService.mock conflict checks', () => {
     });
   });
 
-  it('registers a borrower with alphanumeric voter ID A01010', async () => {
+  it('registers a borrower with a 10-digit voter ID including a leading zero', async () => {
     const result = await borrowerServiceMock.registerBorrower({
       ...basePayload,
       phone: '+233244999002',
       idType: BORROWER_ID_TYPE.VOTER_ID,
-      idNumber: 'A01010',
+      idNumber: '0123456789',
     });
 
     expect(result).toMatchObject({
@@ -136,7 +136,7 @@ describe('borrowerService.mock conflict checks', () => {
     const review = await borrowerServiceMock.getBorrowerReview(result.id);
     expect(review).toMatchObject({
       idType: BORROWER_ID_TYPE.VOTER_ID,
-      idNumber: 'A01010',
+      idNumber: '0123456789',
     });
   });
 

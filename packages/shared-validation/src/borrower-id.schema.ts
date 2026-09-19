@@ -6,25 +6,29 @@ export interface BorrowerIdValidationResult {
 }
 
 const GHANA_CARD_PATTERN = /^GHA-\d{9}-\d$/;
-/**
- * Ghana Voter IDs are alphanumeric. Historical and current cards include:
- * - short codes with a letter prefix (e.g. A01010)
- * - 8–12 digit numeric IDs
- * - hyphenated groups that normalize to 5–15 alphanumerics
- */
-const VOTER_ID_PATTERN = /^[A-Z0-9]{5,15}$/;
+/** Ghana Electoral Commission Voter ID number: exactly 10 digits (0–9). */
+const VOTER_ID_PATTERN = /^\d{10}$/;
 const PASSPORT_PATTERN = /^[A-Z0-9]{6,9}$/;
 
 export const BORROWER_ID_PLACEHOLDERS: Record<BorrowerIdType, string> = {
   GHANA_CARD: 'GHA-123456789-0',
-  VOTER_ID: 'A01010',
+  VOTER_ID: 'Enter 10-digit Voter ID number',
   PASSPORT: 'G1234567',
+};
+
+export const BORROWER_ID_NUMBER_LABELS: Record<BorrowerIdType, string> = {
+  GHANA_CARD: 'ID number',
+  VOTER_ID: 'Voter ID Number',
+  PASSPORT: 'ID number',
+};
+
+export const BORROWER_ID_HELPER_TEXTS: Partial<Record<BorrowerIdType, string>> = {
+  VOTER_ID: 'Enter the 10-digit Voter ID number exactly as shown on the Voter ID card.',
 };
 
 export const BORROWER_ID_ERROR_MESSAGES: Record<BorrowerIdType, string> = {
   GHANA_CARD: 'Enter a valid Ghana Card number (GHA-XXXXXXXXX-X).',
-  VOTER_ID:
-    'Enter a valid Voter ID (5–15 letters and/or numbers, e.g. A01010). Spaces and hyphens are optional.',
+  VOTER_ID: 'Voter ID must contain exactly 10 digits.',
   PASSPORT: 'Enter a valid passport number (6–9 letters or digits).',
 };
 
@@ -42,9 +46,17 @@ export function formatGhanaCardInput(value: string): string {
   return `GHA-${digits.slice(0, 9)}-${digits.slice(9)}`;
 }
 
-/** Normalize Voter ID for storage and comparison: uppercase, strip spaces/hyphens. */
+/** Live input filter: digits only, max 10 characters. Preserves leading zeroes. */
+export function formatVoterIdInput(value: string): string {
+  return value.replace(/\D/g, '').slice(0, 10);
+}
+
+/**
+ * Normalize Voter ID for storage and comparison.
+ * Does not strip letters/punctuation — invalid input must fail validation.
+ */
 export function normalizeVoterId(idNumber: string): string {
-  return idNumber.trim().toUpperCase().replace(/[\s-]+/g, '');
+  return idNumber.trim();
 }
 
 export function normalizeBorrowerId(idType: string, idNumber: string): string {
@@ -93,12 +105,9 @@ export function validateBorrowerId(
         ? { valid: true }
         : { valid: false, error: BORROWER_ID_ERROR_MESSAGES.GHANA_CARD };
     case 'VOTER_ID':
-      if (!VOTER_ID_PATTERN.test(normalized)) {
-        return { valid: false, error: BORROWER_ID_ERROR_MESSAGES.VOTER_ID };
-      }
-      // Reject IDs that are only punctuation leftovers or clearly not voter IDs
-      // (already covered by pattern). Require at least one alphanumeric which pattern ensures.
-      return { valid: true };
+      return VOTER_ID_PATTERN.test(normalized)
+        ? { valid: true }
+        : { valid: false, error: BORROWER_ID_ERROR_MESSAGES.VOTER_ID };
     case 'PASSPORT':
       return PASSPORT_PATTERN.test(normalized)
         ? { valid: true }

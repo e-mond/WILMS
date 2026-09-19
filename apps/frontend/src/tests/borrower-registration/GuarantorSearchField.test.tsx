@@ -34,7 +34,7 @@ const lookup: GuarantorLookupResult = {
   displayId: 'BRW-2026-00417',
   community: 'Fijai',
   idType: 'VOTER_ID',
-  idNumber: 'A01010',
+  idNumber: '0123456789',
   isGroupLeader: false,
   isBlacklisted: false,
   eligibility: {

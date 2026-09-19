@@ -29,7 +29,7 @@ function sampleValues(kind: 'short' | 'long'): BorrowerRegistrationFormValues {
     email: kind === 'short' ? '' : 'akosua.longname@example.com',
     nationality: 'Ghanaian',
     idType: BORROWER_ID_TYPE.VOTER_ID,
-    idNumber: 'A01010',
+    idNumber: '0123456789',
     houseAddress:
       kind === 'short'
         ? 'House 4, Madina'

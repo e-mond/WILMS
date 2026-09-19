@@ -30,7 +30,7 @@ describe('guarantor form population from lookup', () => {
     const fields = guarantorFormFieldsFromLookup(
       lookup({
         idType: BORROWER_ID_TYPE.VOTER_ID,
-        idNumber: 'A01010',
+        idNumber: '0123456789',
         photoUploadId: 'photo-1',
         photoUrl: 'https://cdn.example/photo.jpg',
       }),
@@ -39,7 +39,7 @@ describe('guarantor form population from lookup', () => {
     expect(fields.guarantorName).toBe('Efua Mensah');
     expect(fields.guarantorPhone).toBe('0205556677');
     expect(fields.guarantorIdType).toBe(BORROWER_ID_TYPE.VOTER_ID);
-    expect(fields.guarantorIdNumber).toBe('A01010');
+    expect(fields.guarantorIdNumber).toBe('0123456789');
     expect(fields.photoFetched).toBe(true);
     expect(fields.idFetched).toBe(true);
   });
@@ -83,7 +83,7 @@ describe('guarantor form population from lookup', () => {
         name: 'Ama Boateng',
         phone: '0241111111',
         idType: BORROWER_ID_TYPE.VOTER_ID,
-        idNumber: 'A01010',
+        idNumber: '0123456789',
         photoUploadId: 'photo-a',
         photoUrl: 'https://cdn.example/a.jpg',
         isGroupLeader: true,

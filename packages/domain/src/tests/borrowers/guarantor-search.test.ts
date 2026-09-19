@@ -47,7 +47,7 @@ function makeBorrower(overrides: Partial<BorrowerRecord> = {}): BorrowerRecord {
     fullName: 'Gloria Serwaa',
     phone: '0551112233',
     idType: 'VOTER_ID',
-    idNumber: 'A01010',
+    idNumber: '0123456789',
     status: BORROWER_STATUS.APPROVED,
     hasActiveLoan: false,
     groupName: 'Airport Ridge Group 001',
@@ -112,7 +112,7 @@ describe('guarantor search and capacity rules', () => {
     const lookup = await lookupGuarantorForRegistration({ phone: '0551112233' });
     expect(lookup.name).toBe('Gloria Serwaa');
     expect(lookup.idType).toBe('VOTER_ID');
-    expect(lookup.idNumber).toBe('A01010');
+    expect(lookup.idNumber).toBe('0123456789');
     expect(lookup.displayId).toMatch(/^BRW-/);
     expect(lookup.displayId).not.toBe('borrower-1');
   });
@@ -143,7 +143,7 @@ describe('guarantor search and capacity rules', () => {
     const lookup = await lookupGuarantorForRegistration({ phone: '0551112233' });
     expect(lookup.name).toBe('Gloria Serwaa');
     expect(lookup.idType).toBe('VOTER_ID');
-    expect(lookup.idNumber).toBe('A01010');
+    expect(lookup.idNumber).toBe('0123456789');
     expect(lookup.photoUploadId).toBe('borrower-photo-1');
     expect(lookup.borrowerId).toBe('borrower-1');
   });
