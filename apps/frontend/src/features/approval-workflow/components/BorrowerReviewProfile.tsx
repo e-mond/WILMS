@@ -183,7 +183,10 @@ export function BorrowerReviewProfile({
           ['Email', formatField(borrower.email)],
           ['Nationality', formatField(borrower.nationality)],
           ['ID type', formatField(borrower.idType)],
-          ['ID number', formatField(borrower.idNumber)],
+          [
+            borrower.idType === 'VOTER_ID' ? 'Voter ID Number' : 'ID number',
+            formatField(borrower.idNumber),
+          ],
         ]}
       />
 
@@ -228,7 +231,10 @@ export function BorrowerReviewProfile({
           ['Phone', formatField(borrower.guarantorPhone)],
           ['Relationship', formatField(borrower.guarantorRelationship)],
           ['ID type', formatField(borrower.guarantorIdType)],
-          ['ID number', formatField(borrower.guarantorIdNumber)],
+          [
+            borrower.guarantorIdType === 'VOTER_ID' ? 'Voter ID Number' : 'ID number',
+            formatField(borrower.guarantorIdNumber),
+          ],
         ]}
       />
 

@@ -74,11 +74,11 @@ describe('borrowerRegistrationSchema', () => {
     );
   });
 
-  it('accepts alphanumeric voter IDs such as A01010', () => {
+  it('accepts exactly 10-digit voter IDs including a leading zero', () => {
     const result = borrowerRegistrationSchema.safeParse(
       createValidRegistration({
         idType: BORROWER_ID_TYPE.VOTER_ID,
-        idNumber: 'A01010',
+        idNumber: '0123456789',
       }),
     );
     expect(result.success).toBe(true);
@@ -88,11 +88,28 @@ describe('borrowerRegistrationSchema', () => {
     const result = borrowerRegistrationSchema.safeParse(
       createValidRegistration({
         idType: BORROWER_ID_TYPE.VOTER_ID,
-        idNumber: 'A01',
+        idNumber: 'A123456789',
       }),
     );
     expect(result.success).toBe(false);
     expect(result.error?.issues.some((issue) => issue.path[0] === 'idNumber')).toBe(true);
+    expect(
+      result.error?.issues.some(
+        (issue) => issue.message === 'Voter ID must contain exactly 10 digits.',
+      ),
+    ).toBe(true);
+  });
+
+  it('rejects voter IDs that are too short, too long, spaced, or hyphenated', () => {
+    for (const idNumber of ['123456789', '01234567890', '01234 56789', '01234-56789']) {
+      const result = borrowerRegistrationSchema.safeParse(
+        createValidRegistration({
+          idType: BORROWER_ID_TYPE.VOTER_ID,
+          idNumber,
+        }),
+      );
+      expect(result.success).toBe(false);
+    }
   });
 
   it('rejects an ID document file that was not persisted', () => {

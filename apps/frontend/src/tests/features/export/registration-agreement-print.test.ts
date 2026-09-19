@@ -32,7 +32,7 @@ function createValues(overrides: Record<string, unknown> = {}) {
     email: '',
     nationality: 'Ghanaian',
     idType: BORROWER_ID_TYPE.VOTER_ID,
-    idNumber: 'A01010',
+    idNumber: '0123456789',
     houseAddress:
       'House 12, Airport Ridge, Sekondi-Takoradi with a very long address line that must wrap cleanly without clipping',
     gpsAddress: 'WS-123-4567',
@@ -72,13 +72,13 @@ function createReviewDetail(
     community: 'Fijai',
     groupName: '',
     groupId: '',
-    nationalId: 'A01010',
+    nationalId: '0123456789',
     registeredAt: '2026-03-01T10:00:00.000Z',
     dateOfBirth: '1990-01-15',
     gender: BORROWER_GENDER.FEMALE,
     nationality: 'Ghanaian',
     idType: BORROWER_ID_TYPE.VOTER_ID,
-    idNumber: 'A01010',
+    idNumber: '0123456789',
     houseAddress: 'House 12',
     gpsAddress: 'WS-123-4567',
     city: 'Fijai',
@@ -178,6 +178,8 @@ describe('registration agreement print/PDF document', () => {
     expect(html).toContain('Akosua Serwaa Amponsah-Mensah-Boateng');
     expect(html).toContain('Female');
     expect(html).toContain('Voter ID');
+    expect(html).toContain('Voter ID Number');
+    expect(html).toContain('0123456789');
   });
 
   it('never treats raw UUIDs as registration references', () => {

@@ -155,7 +155,11 @@ export function buildRegistrationAgreementContent(
     { label: 'Email', value: display(values.email) },
     { label: 'Nationality', value: display(values.nationality) },
     { label: 'Identification Type', value: humanizeToken(values.idType) },
-    { label: 'Identification Number', value: display(values.idNumber) },
+    {
+      label:
+        values.idType === 'VOTER_ID' ? 'Voter ID Number' : 'Identification Number',
+      value: display(values.idNumber),
+    },
     { label: 'Residential Address', value: display(values.houseAddress) },
     { label: 'Ghana Digital Address', value: display(values.gpsAddress) },
     ...buildLocationHierarchyRows({
@@ -184,7 +188,11 @@ export function buildRegistrationAgreementContent(
     { label: 'Contact', value: display(values.guarantorPhone) },
     { label: 'Relationship', value: display(values.guarantorRelationship) },
     { label: 'ID Type', value: humanizeToken(values.guarantorIdType) },
-    { label: 'ID Number', value: display(values.guarantorIdNumber) },
+    {
+      label:
+        values.guarantorIdType === 'VOTER_ID' ? 'Voter ID Number' : 'ID Number',
+      value: display(values.guarantorIdNumber),
+    },
   ];
 
   const borrowerSignatureMode = resolveSignatureCaptureMode({
